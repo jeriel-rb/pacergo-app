@@ -10,7 +10,10 @@
       "Bash(node -e \"const p=require\\('./package.json'\\);const all={...p.dependencies,...p.devDependencies};['nativewind','tailwindcss','react-native-reanimated','react-native-worklets','jest-expo','@supabase/supabase-js','i18next','@tanstack/react-query'].forEach\\(k=>console.log\\(k, all[k]||'MISSING'\\)\\)\")",
       "Bash(node -e \"const p=require\\('./package.json'\\);const all={...p.dependencies,...p.devDependencies};['nativewind','tailwindcss','jest-expo','@testing-library/react-native'].forEach\\(k=>console.log\\(k, all[k]||'MISSING'\\)\\)\")",
       "Bash(npm test *)",
-      "Bash(grep -E \"\\\\.env$\")"
+      "Bash(grep -E \"\\\\.env$\")",
+      "Bash(node -e \"console.log\\('RNTL', require\\('@testing-library/react-native/package.json'\\).version\\); const p=require\\('@testing-library/react-native/package.json'\\); console.log\\('peerDeps', JSON.stringify\\(p.peerDependencies\\)\\); console.log\\('deps', JSON.stringify\\(p.dependencies\\)\\);\")",
+      "Bash(node -e \"const rtl=require\\('@testing-library/react-native'\\); console.log\\(Object.keys\\(rtl\\).filter\\(k=>/render|screen/i.test\\(k\\)\\)\\);\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\).devDependencies; console.log\\('RNTL', p['@testing-library/react-native']\\); console.log\\('rtr', p['react-test-renderer']\\);\")"
     ]
   }
 }

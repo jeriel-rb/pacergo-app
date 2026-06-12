@@ -38,6 +38,9 @@ function Guarded() {
       <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
       <Stack.Screen name="saved" options={{ presentation: 'modal' }} />
       <Stack.Screen name="companion/[id]" />
+      <Stack.Screen name="booking/request/[companionId]" />
+      <Stack.Screen name="booking/[id]" />
+      <Stack.Screen name="booking/review/[id]" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }

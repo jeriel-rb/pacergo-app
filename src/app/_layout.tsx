@@ -41,6 +41,11 @@ function Guarded() {
       <Stack.Screen name="booking/request/[companionId]" />
       <Stack.Screen name="booking/[id]" />
       <Stack.Screen name="booking/review/[id]" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="companion-setup" />
+      <Stack.Screen name="companion-dashboard" />
+      <Stack.Screen name="listing-editor" />
+      <Stack.Screen name="availability-editor" />
+      <Stack.Screen name="verification" />
     </Stack>
   );
 }

@@ -65,7 +65,20 @@ migration `0003_discovery.sql` is applied and `companion_listings` /
 (`nearby_companions`, `get_companion`) are `security definer` and return only safe
 columns + rounded distance — never raw coordinates or PII. The map uses
 `react-native-maps` (Apple Maps on iOS needs no key; Android needs a Google Maps
-API key). The "Request a session" CTA on a companion is disabled until M3 (Booking).
+API key).
+
+## Booking (M3)
+
+The booking loop: a seeker requests a session from a companion's detail screen
+(choose offering, time, place), the companion accepts/declines, either party can
+cancel or mark complete, and both can leave a review afterward. A guarded state
+machine (`src/features/booking/stateMachine.ts`) decides which actions appear in
+the UI; the **actual transitions are enforced server-side** by `SECURITY DEFINER`
+RPCs (`accept_booking`/`decline_booking`/`cancel_booking`/`complete_booking`) —
+clients cannot UPDATE bookings directly, and reviews are constrained to the
+booking counterparty. A trigger writes `notifications` rows on booking events and
+recomputes a companion's rating on review. Requires migration `0004_booking.sql`.
+Expo push delivery + the in-app notification center come later (M5).
 
 ## Stack
 

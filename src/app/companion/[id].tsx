@@ -1,5 +1,5 @@
 import { View, ScrollView } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { AppText } from '@/components/ui/AppText';
@@ -13,6 +13,7 @@ import { useSavedIds, useToggleSaved } from '@/features/discovery/useSaved';
 export default function CompanionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
+  const router = useRouter();
   const { data } = useCompanion(id);
   const saved = useSavedIds();
   const toggle = useToggleSaved();
@@ -54,7 +55,10 @@ export default function CompanionDetailScreen() {
             variant="secondary"
             onPress={() => toggle.mutate({ companionId: id, saved: isSaved })}
           />
-          <Button label={t('companion.comingSoon')} onPress={() => {}} disabled />
+          <Button
+            label={t('companion.request')}
+            onPress={() => router.push(`/booking/request/${id}`)}
+          />
         </View>
       </ScrollView>
     </ScreenContainer>

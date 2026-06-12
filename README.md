@@ -20,10 +20,11 @@ See the design spec at [`docs/superpowers/specs/2026-06-12-pacergo-design.md`](d
 
 ## Database
 
-The foundational schema lives in [`supabase/migrations/0001_foundation.sql`](supabase/migrations/0001_foundation.sql)
-(profiles, activities, profile_activities, RLS, and the `handle_new_user` trigger).
+The schema lives in [`supabase/migrations/`](supabase/migrations/):
+`0001_foundation.sql` (profiles, activities, profile_activities, RLS, `handle_new_user`
+trigger) and `0002_onboarding.sql` (adds `profiles.onboarding_completed`).
 
-Apply it to the Supabase project one of these ways:
+Apply them to the Supabase project one of these ways:
 
 - **Dashboard:** paste the migration SQL into the project's SQL Editor and run it.
 - **CLI:** `supabase link --project-ref <ref>` then `supabase db push`.
@@ -38,6 +39,22 @@ values
   ('verification-docs', 'verification-docs', false)
 on conflict (id) do nothing;
 ```
+
+## Auth (M1)
+
+Google/Apple sign-in is config-gated. To enable it:
+
+1. In Supabase → Authentication → Providers, enable **Google** and **Apple**.
+2. Create Google OAuth client IDs (Web + iOS) and put them in `.env`
+   (`EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`).
+3. Apple Sign In requires a paid Apple Developer account and a dev/standalone
+   build (it does not work in Expo Go).
+4. Apply migrations `0001_foundation.sql` and `0002_onboarding.sql`.
+
+Until configured, the sign-in screen shows "Sign-in isn't configured yet" and the
+rest of the app builds and runs normally. After sign-in, users without
+`onboarding_completed` are routed through the onboarding wizard (name, 18+ gate,
+experience, area, Gym activity) before reaching the tabs.
 
 ## Stack
 

@@ -4,5 +4,45 @@
   "discover": { "title": "Find a companion" },
   "bookings": { "title": "Your bookings" },
   "chatScreen": { "title": "Messages" },
-  "profile": { "title": "Profile" }
+  "auth": {
+    "welcomeTitle": "Find your training partner",
+    "welcomeSubtitle": "Pros, experienced peers, or someone to just train with — near you.",
+    "continueGoogle": "Continue with Google",
+    "continueApple": "Continue with Apple",
+    "notConfigured": "Sign-in isn't configured yet",
+    "signOut": "Sign out"
+  },
+  "onboarding": {
+    "nameLabel": "What should we call you?",
+    "namePlaceholder": "Your name",
+    "birthdateLabel": "Your birthdate",
+    "ageError": "You must be 18 or older to use Pacergo.",
+    "experienceLabel": "Your experience level",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "activitiesLabel": "What do you want to train?",
+    "areaLabel": "Your area (optional)",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Finish",
+    "saveError": "Couldn't save your profile. Try again."
+  },
+  "profile": {
+    "title": "Profile",
+    "availableAsCompanion": "Available as a companion",
+    "settings": "Settings",
+    "noName": "Set up your profile"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "themeSystem": "System",
+    "english": "English",
+    "chinese": "中文",
+    "signOut": "Sign out"
+  }
 }

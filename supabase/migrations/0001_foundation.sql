@@ -95,10 +95,18 @@ alter table profiles enable row level security;
 alter table activities enable row level security;
 alter table profile_activities enable row level security;
 
--- profiles: any authenticated user can read; only owner writes own row
+-- profiles: owner can read/write their own row ONLY.
+-- Privacy note: profiles holds sensitive data (exact `location`, `birthdate`,
+-- `gender`, `push_token`). We deliberately do NOT make the base table
+-- world-readable. Public discovery of OTHER users' limited fields is added in
+-- M2 (Discovery) via a `public_profiles` view that exposes only safe columns
+-- (display_name, photo_url, bio, experience_level, home_area, is_companion)
+-- plus a `nearby_companions` SECURITY DEFINER RPC that returns distance bands
+-- computed server-side — never raw coordinates or PII.
 drop policy if exists "profiles readable by authenticated" on profiles;
-create policy "profiles readable by authenticated"
-  on profiles for select to authenticated using (true);
+drop policy if exists "profiles owner can read" on profiles;
+create policy "profiles owner can read"
+  on profiles for select to authenticated using (auth.uid() = id);
 
 drop policy if exists "profiles owner can update" on profiles;
 create policy "profiles owner can update"

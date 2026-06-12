@@ -1394,10 +1394,13 @@ alter table profiles enable row level security;
 alter table activities enable row level security;
 alter table profile_activities enable row level security;
 
--- profiles: any authenticated user can read; only owner writes own row
+-- profiles: owner can read/write their own row ONLY (no PII/location/push_token
+-- leak). Public-safe discovery of other users is added in M2 via a
+-- `public_profiles` view + `nearby_companions` RPC (distance bands only).
 drop policy if exists "profiles readable by authenticated" on profiles;
-create policy "profiles readable by authenticated"
-  on profiles for select to authenticated using (true);
+drop policy if exists "profiles owner can read" on profiles;
+create policy "profiles owner can read"
+  on profiles for select to authenticated using (auth.uid() = id);
 
 drop policy if exists "profiles owner can update" on profiles;
 create policy "profiles owner can update"

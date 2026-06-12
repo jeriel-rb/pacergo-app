@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:pacergo-5eybzgxf.manus.space)",
+      "Bash(git -C /Users/jeriel/Documents/github/pacergo-app log --oneline -10)",
+      "Bash(rm -rf pacergo-scaffold)",
+      "Bash(npx create-expo-app@latest pacergo-scaffold --template default)",
+      "Bash(grep -vE '^\\(node_modules|\\\\.git\\)$')"
+    ]
+  }
+}

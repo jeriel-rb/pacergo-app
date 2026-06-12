@@ -48,6 +48,7 @@
     "cancel": "Cancel",
     "complete": "Mark complete",
     "review": "Leave a review",
+    "message": "Message",
     "when": "When",
     "where": "Where",
     "price": "Price"
@@ -60,7 +61,12 @@
     "thanks": "Thanks for your review!",
     "error": "Couldn't submit. Try again."
   },
-  "chatScreen": { "title": "Messages" },
+  "chatScreen": {
+    "title": "Messages",
+    "empty": "No conversations yet.",
+    "placeholder": "Message…",
+    "send": "Send"
+  },
   "auth": {
     "welcomeTitle": "Find your training partner",
     "welcomeSubtitle": "Pros, experienced peers, or someone to just train with — near you.",

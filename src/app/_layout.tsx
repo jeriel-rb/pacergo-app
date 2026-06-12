@@ -46,6 +46,7 @@ function Guarded() {
       <Stack.Screen name="listing-editor" />
       <Stack.Screen name="availability-editor" />
       <Stack.Screen name="verification" />
+      <Stack.Screen name="chat/[id]" />
     </Stack>
   );
 }

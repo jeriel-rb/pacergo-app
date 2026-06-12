@@ -1,56 +1,62 @@
-# Welcome to your Expo app 👋
+# Pacergo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Find an in-person workout companion in Taiwan — from certified pro trainers (Tier A) to experienced peers (Tier B) to training buddies (Tier C). React Native (Expo) + Supabase.
 
-## Get started
+See the design spec at [`docs/superpowers/specs/2026-06-12-pacergo-design.md`](docs/superpowers/specs/2026-06-12-pacergo-design.md) and the M0 plan at [`docs/superpowers/plans/2026-06-12-pacergo-m0-foundation.md`](docs/superpowers/plans/2026-06-12-pacergo-m0-foundation.md).
 
-1. Install dependencies
+## Setup
 
-   ```bash
-   npm install
-   ```
+1. `npm install`
+2. Copy `.env.example` to `.env` and fill in the Supabase values.
+3. Apply the database schema (see **Database** below).
+4. `npx expo start`
 
-2. Start the app
+## Scripts
 
-   ```bash
-   npx expo start
-   ```
+- `npm test` — run the Jest test suite
+- `npm run typecheck` — type-check (`tsc --noEmit`)
+- `npx expo start` — start the dev server
+- `npx expo export --platform ios` — production-bundle (build smoke test)
 
-In the output, you'll find options to open the app in a
+## Database
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The foundational schema lives in [`supabase/migrations/0001_foundation.sql`](supabase/migrations/0001_foundation.sql)
+(profiles, activities, profile_activities, RLS, and the `handle_new_user` trigger).
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Apply it to the Supabase project one of these ways:
 
-## Get a fresh project
+- **Dashboard:** paste the migration SQL into the project's SQL Editor and run it.
+- **CLI:** `supabase link --project-ref <ref>` then `supabase db push`.
 
-When you're ready, run:
+Then create the storage buckets (run in the SQL Editor):
 
-```bash
-npm run reset-project
+```sql
+insert into storage.buckets (id, name, public)
+values
+  ('avatars', 'avatars', true),
+  ('listing-photos', 'listing-photos', true),
+  ('verification-docs', 'verification-docs', false)
+on conflict (id) do nothing;
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Stack
 
-### Other setup steps
+Expo SDK 56 · React Native 0.85 · expo-router (`src/app/`) · NativeWind · Reanimated 4 ·
+i18next (en / zh-Hant) · Supabase · TanStack Query · Zustand · jest-expo + Testing Library.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Project structure
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+src/
+  app/            # expo-router routes (root layout + (tabs) group)
+  components/ui/  # design-system component kit
+  lib/
+    theme/        # tokens + dark/light/system ThemeProvider
+    i18n/         # i18next setup
+    format/       # NTD / distance / locale formatters
+    supabase/     # Supabase client singleton
+    query/        # TanStack Query client
+  locales/        # en.json, zh-Hant.json
+  types/          # ambient TS declarations
+supabase/migrations/  # SQL migrations
+```

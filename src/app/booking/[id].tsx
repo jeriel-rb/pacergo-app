@@ -1,4 +1,4 @@
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Share } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
@@ -59,6 +59,15 @@ export default function BookingDetailScreen() {
     router.push(`/chat/${convoId}`);
   }
 
+  async function shareDetails() {
+    if (!booking) return;
+    await Share.share({
+      message: `Pacergo session with ${name ?? ''} — ${booking.scheduled_start ?? ''} at ${
+        booking.location_name ?? ''
+      }`,
+    });
+  }
+
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={{ paddingTop: 16, gap: 16 }}>
@@ -92,6 +101,7 @@ export default function BookingDetailScreen() {
             />
           ))}
           <Button label={t('bookingDetail.message')} variant="secondary" onPress={openChat} />
+          <Button label={t('safety.sharePlans')} variant="ghost" onPress={shareDetails} />
           {booking.status === 'completed' ? (
             <Button
               label={t('bookingDetail.review')}

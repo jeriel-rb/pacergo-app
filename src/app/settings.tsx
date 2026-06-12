@@ -1,15 +1,36 @@
-import { View } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useTheme } from '@/lib/theme/ThemeProvider';
 import { supabase } from '@/lib/supabase/client';
+import { useDeleteAccount } from '@/features/account/useDeleteAccount';
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const { preference, setPreference } = useTheme();
+  const router = useRouter();
+  const del = useDeleteAccount();
+
+  function confirmDelete() {
+    Alert.alert('Pacergo', t('settings.deleteConfirm'), [
+      { text: t('bookingDetail.cancel'), style: 'cancel' },
+      {
+        text: t('settings.deleteAccount'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await del.mutateAsync();
+          } catch {
+            Alert.alert('Pacergo', t('settings.deleteError'));
+          }
+        },
+      },
+    ]);
+  }
 
   return (
     <ScreenContainer>
@@ -40,6 +61,21 @@ export default function SettingsScreen() {
             ]}
           />
         </View>
+
+        <Pressable
+          onPress={() => router.push('/notifications')}
+          className="rounded-lg bg-dark-surface p-4"
+        >
+          <AppText variant="body">{t('settings.notifications')}</AppText>
+        </Pressable>
+        <Pressable onPress={() => router.push('/safety')} className="rounded-lg bg-dark-surface p-4">
+          <AppText variant="body">{t('settings.safety')}</AppText>
+        </Pressable>
+        <Pressable onPress={confirmDelete} className="rounded-lg bg-dark-surface p-4">
+          <AppText variant="body" className="text-danger">
+            {t('settings.deleteAccount')}
+          </AppText>
+        </Pressable>
 
         <View className="mt-auto pb-6">
           <Button

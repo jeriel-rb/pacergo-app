@@ -1,7 +1,22 @@
 {
   "tabs": { "discover": "探索", "bookings": "預約", "chat": "訊息", "profile": "個人檔案" },
   "common": { "free": "免費", "loading": "載入中…", "retry": "重試" },
-  "discover": { "title": "尋找夥伴" },
+  "discover": {
+    "title": "尋找夥伴",
+    "feed": "清單",
+    "map": "地圖",
+    "all": "全部",
+    "empty": "附近沒有夥伴，試著放寬距離或更換運動類型。",
+    "saved": "已儲存"
+  },
+  "companion": {
+    "offerings": "提供的課程",
+    "request": "預約課程",
+    "comingSoon": "預約功能即將推出",
+    "save": "儲存",
+    "saved": "已儲存",
+    "reviews": "{{count}} 則評價"
+  },
   "bookings": { "title": "你的預約" },
   "chatScreen": { "title": "訊息" },
   "auth": {

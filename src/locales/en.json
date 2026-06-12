@@ -1,7 +1,22 @@
 {
   "tabs": { "discover": "Discover", "bookings": "Bookings", "chat": "Chat", "profile": "Profile" },
   "common": { "free": "Free", "loading": "Loading…", "retry": "Retry" },
-  "discover": { "title": "Find a companion" },
+  "discover": {
+    "title": "Find a companion",
+    "feed": "List",
+    "map": "Map",
+    "all": "All",
+    "empty": "No companions nearby. Try widening your distance or switching activity.",
+    "saved": "Saved"
+  },
+  "companion": {
+    "offerings": "Sessions offered",
+    "request": "Request a session",
+    "comingSoon": "Booking comes soon",
+    "save": "Save",
+    "saved": "Saved",
+    "reviews": "{{count}} reviews"
+  },
   "bookings": { "title": "Your bookings" },
   "chatScreen": { "title": "Messages" },
   "auth": {

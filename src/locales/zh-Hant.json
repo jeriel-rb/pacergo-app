@@ -162,6 +162,43 @@
     "themeSystem": "系統",
     "english": "English",
     "chinese": "中文",
+    "notifications": "通知",
+    "safety": "安全中心",
+    "deleteAccount": "刪除帳號",
+    "deleteConfirm": "永久刪除你的帳號和所有資料？此操作無法復原。",
+    "deleteError": "無法刪除帳號，請再試一次。",
     "signOut": "登出"
+  },
+  "safety": {
+    "report": "檢舉",
+    "block": "封鎖",
+    "blocked": "已封鎖",
+    "reportTitle": "檢舉這個人",
+    "reason_inappropriate": "不當內容",
+    "reason_harassment": "騷擾",
+    "reason_spam": "垃圾訊息",
+    "reason_safety": "安全疑慮",
+    "reason_other": "其他",
+    "details": "詳細說明（選填）",
+    "submit": "送出檢舉",
+    "reported": "謝謝你，我們的團隊會進行審查。",
+    "blockConfirm": "要封鎖這個人嗎？他們不會出現在探索中，也無法傳訊息給你。",
+    "error": "發生錯誤，請再試一次。",
+    "centerTitle": "安全中心",
+    "tipsTitle": "安全會面",
+    "tip1": "第一次見面選在公共健身房或人多的地方。",
+    "tip2": "告訴朋友你要去哪裡、和誰見面。",
+    "tip3": "相信你的直覺——如果感覺不對就離開。",
+    "sharePlans": "分享我的課程資訊"
+  },
+  "notif": {
+    "title": "通知",
+    "empty": "目前沒有通知。",
+    "generic": "更新",
+    "booking_requested": "新的課程邀請",
+    "booking_accepted": "你的課程已被接受",
+    "booking_declined": "你的邀請被婉拒",
+    "booking_cancelled": "有一堂課程被取消",
+    "booking_completed": "有一堂課程已完成"
   }
 }

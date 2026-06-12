@@ -99,6 +99,15 @@ button on a booking find-or-creates the conversation and opens the thread.
 Requires migration `0006_chat.sql` with the `messages` table added to the
 `supabase_realtime` publication.
 
+## Trust & safety (M5)
+
+Report and block users (block is enforced in the `nearby_companions` RPC, both
+directions), a safety center with meeting tips + native share-session-details, an
+in-app notification center reading the `notifications` table (written by booking
+triggers since M3), and account deletion via a `delete_account()` SECURITY DEFINER
+RPC (cascades through FKs). Requires migration `0007_trust_safety.sql`. This
+completes v1 (M0–M5).
+
 ## Stack
 
 Expo SDK 56 · React Native 0.85 · expo-router (`src/app/`) · NativeWind · Reanimated 4 ·

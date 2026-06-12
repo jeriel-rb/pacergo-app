@@ -47,6 +47,9 @@ function Guarded() {
       <Stack.Screen name="availability-editor" />
       <Stack.Screen name="verification" />
       <Stack.Screen name="chat/[id]" />
+      <Stack.Screen name="report/[id]" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="safety" />
+      <Stack.Screen name="notifications" />
     </Stack>
   );
 }

@@ -162,6 +162,43 @@
     "themeSystem": "System",
     "english": "English",
     "chinese": "中文",
+    "notifications": "Notifications",
+    "safety": "Safety center",
+    "deleteAccount": "Delete account",
+    "deleteConfirm": "Permanently delete your account and all data? This can't be undone.",
+    "deleteError": "Couldn't delete the account. Try again.",
     "signOut": "Sign out"
+  },
+  "safety": {
+    "report": "Report",
+    "block": "Block",
+    "blocked": "Blocked",
+    "reportTitle": "Report this person",
+    "reason_inappropriate": "Inappropriate content",
+    "reason_harassment": "Harassment",
+    "reason_spam": "Spam",
+    "reason_safety": "Safety concern",
+    "reason_other": "Other",
+    "details": "Details (optional)",
+    "submit": "Submit report",
+    "reported": "Thanks — our team will review this.",
+    "blockConfirm": "Block this person? They won't appear in discovery and can't message you.",
+    "error": "Something went wrong. Try again.",
+    "centerTitle": "Safety center",
+    "tipsTitle": "Meeting safely",
+    "tip1": "Meet in a public gym or busy place for the first session.",
+    "tip2": "Tell a friend where you're going and who you're meeting.",
+    "tip3": "Trust your instincts — leave if anything feels off.",
+    "sharePlans": "Share my session details"
+  },
+  "notif": {
+    "title": "Notifications",
+    "empty": "No notifications yet.",
+    "generic": "Update",
+    "booking_requested": "New session request",
+    "booking_accepted": "Your session was accepted",
+    "booking_declined": "Your request was declined",
+    "booking_cancelled": "A session was cancelled",
+    "booking_completed": "A session was completed"
   }
 }

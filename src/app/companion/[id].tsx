@@ -1,4 +1,4 @@
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
@@ -9,6 +9,7 @@ import { TierBadge } from '@/components/ui/TierBadge';
 import { PriceTag } from '@/components/ui/PriceTag';
 import { useCompanion } from '@/features/discovery/useCompanion';
 import { useSavedIds, useToggleSaved } from '@/features/discovery/useSaved';
+import { useBlock } from '@/features/safety/useBlocks';
 
 export default function CompanionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,6 +18,7 @@ export default function CompanionDetailScreen() {
   const { data } = useCompanion(id);
   const saved = useSavedIds();
   const toggle = useToggleSaved();
+  const block = useBlock();
 
   const detail = data?.detail;
   const isSaved = (saved.data ?? []).includes(id);
@@ -58,6 +60,28 @@ export default function CompanionDetailScreen() {
           <Button
             label={t('companion.request')}
             onPress={() => router.push(`/booking/request/${id}`)}
+          />
+          <Button
+            label={t('safety.report')}
+            variant="ghost"
+            onPress={() => router.push(`/report/${id}`)}
+          />
+          <Button
+            label={t('safety.block')}
+            variant="ghost"
+            onPress={() =>
+              Alert.alert('Pacergo', t('safety.blockConfirm'), [
+                { text: t('bookingDetail.cancel'), style: 'cancel' },
+                {
+                  text: t('safety.block'),
+                  style: 'destructive',
+                  onPress: () => {
+                    block.mutate(id);
+                    router.back();
+                  },
+                },
+              ])
+            }
           />
         </View>
       </ScrollView>

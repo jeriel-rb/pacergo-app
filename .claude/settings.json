@@ -14,7 +14,8 @@
       "Bash(node -e \"console.log\\('RNTL', require\\('@testing-library/react-native/package.json'\\).version\\); const p=require\\('@testing-library/react-native/package.json'\\); console.log\\('peerDeps', JSON.stringify\\(p.peerDependencies\\)\\); console.log\\('deps', JSON.stringify\\(p.dependencies\\)\\);\")",
       "Bash(node -e \"const rtl=require\\('@testing-library/react-native'\\); console.log\\(Object.keys\\(rtl\\).filter\\(k=>/render|screen/i.test\\(k\\)\\)\\);\")",
       "Bash(node -e \"const p=require\\('./package.json'\\).devDependencies; console.log\\('RNTL', p['@testing-library/react-native']\\); console.log\\('rtr', p['react-test-renderer']\\);\")",
-      "Bash(npx jest *)"
+      "Bash(npx jest *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('react-native-maps', p.dependencies['react-native-maps'] || 'MISSING'\\)\")"
     ]
   }
 }

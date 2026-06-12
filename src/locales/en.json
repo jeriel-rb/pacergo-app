@@ -17,7 +17,49 @@
     "saved": "Saved",
     "reviews": "{{count}} reviews"
   },
-  "bookings": { "title": "Your bookings" },
+  "bookings": {
+    "title": "Your bookings",
+    "upcoming": "Upcoming",
+    "requests": "Requests",
+    "past": "Past",
+    "empty": "Nothing here yet."
+  },
+  "bookingStatus": {
+    "requested": "Requested",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "expired": "Expired"
+  },
+  "request": {
+    "title": "Request a session",
+    "pickOffering": "Choose a session",
+    "when": "When (YYYY-MM-DD HH:MM)",
+    "where": "Where (gym or area)",
+    "note": "Note (optional)",
+    "send": "Send request",
+    "sent": "Request sent",
+    "error": "Couldn't send the request. Try again."
+  },
+  "bookingDetail": {
+    "accept": "Accept",
+    "decline": "Decline",
+    "cancel": "Cancel",
+    "complete": "Mark complete",
+    "review": "Leave a review",
+    "when": "When",
+    "where": "Where",
+    "price": "Price"
+  },
+  "review": {
+    "title": "Leave a review",
+    "rating": "Rating",
+    "comment": "Comment (optional)",
+    "submit": "Submit review",
+    "thanks": "Thanks for your review!",
+    "error": "Couldn't submit. Try again."
+  },
   "chatScreen": { "title": "Messages" },
   "auth": {
     "welcomeTitle": "Find your training partner",

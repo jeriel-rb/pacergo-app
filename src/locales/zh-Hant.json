@@ -17,7 +17,49 @@
     "saved": "已儲存",
     "reviews": "{{count}} 則評價"
   },
-  "bookings": { "title": "你的預約" },
+  "bookings": {
+    "title": "你的預約",
+    "upcoming": "即將到來",
+    "requests": "邀請",
+    "past": "過去",
+    "empty": "目前沒有內容。"
+  },
+  "bookingStatus": {
+    "requested": "已送出",
+    "accepted": "已接受",
+    "declined": "已婉拒",
+    "cancelled": "已取消",
+    "completed": "已完成",
+    "expired": "已過期"
+  },
+  "request": {
+    "title": "預約課程",
+    "pickOffering": "選擇課程",
+    "when": "時間（YYYY-MM-DD HH:MM）",
+    "where": "地點（健身房或地區）",
+    "note": "備註（選填）",
+    "send": "送出預約",
+    "sent": "預約已送出",
+    "error": "無法送出預約，請再試一次。"
+  },
+  "bookingDetail": {
+    "accept": "接受",
+    "decline": "婉拒",
+    "cancel": "取消",
+    "complete": "標記完成",
+    "review": "留下評價",
+    "when": "時間",
+    "where": "地點",
+    "price": "價格"
+  },
+  "review": {
+    "title": "留下評價",
+    "rating": "評分",
+    "comment": "評論（選填）",
+    "submit": "送出評價",
+    "thanks": "感謝你的評價！",
+    "error": "無法送出，請再試一次。"
+  },
   "chatScreen": { "title": "訊息" },
   "auth": {
     "welcomeTitle": "尋找你的訓練夥伴",

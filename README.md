@@ -88,7 +88,16 @@ Any user can become a companion: a wizard creates a `companion_listings` row +
 requests + upcoming sessions (from `useBookings`), with listing/availability
 editors and a Tier A verification flow that uploads a doc to the private
 `verification-docs` bucket and inserts a `verifications` row (admin review is
-out-of-app). Requires migration `0005_companion.sql`. Realtime chat is M4b.
+out-of-app). Requires migration `0005_companion.sql`.
+
+## Chat (M4b)
+
+Realtime 1:1 chat between booking parties. `conversations` store a sorted
+participant pair with denormalized counterpart names (so the inbox renders under
+owner-only profile RLS); `messages` stream via Supabase Realtime. A "Message"
+button on a booking find-or-creates the conversation and opens the thread.
+Requires migration `0006_chat.sql` with the `messages` table added to the
+`supabase_realtime` publication.
 
 ## Stack
 

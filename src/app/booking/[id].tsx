@@ -11,6 +11,7 @@ import { useBooking } from '@/features/booking/useBooking';
 import { useTransitionBooking } from '@/features/booking/useTransitionBooking';
 import { availableActions, type BookingAction } from '@/features/booking/stateMachine';
 import { useSession } from '@/features/auth/useSession';
+import { useEnsureConversation } from '@/features/chat/useEnsureConversation';
 
 const ACTION_VARIANT: Record<BookingAction, 'primary' | 'secondary' | 'destructive'> = {
   accept: 'primary',
@@ -26,6 +27,7 @@ export default function BookingDetailScreen() {
   const { session } = useSession();
   const { data: booking } = useBooking(id);
   const transition = useTransitionBooking(id);
+  const ensure = useEnsureConversation();
 
   if (!booking) {
     return (
@@ -42,6 +44,20 @@ export default function BookingDetailScreen() {
   const name = amSeeker ? booking.companion_name : booking.seeker_name;
   const photo = amSeeker ? booking.companion_photo : booking.seeker_photo;
   const actions = availableActions(booking.status, role);
+
+  async function openChat() {
+    if (!booking) return;
+    const otherId = amSeeker ? booking.companion_id : booking.seeker_id;
+    const otherName = amSeeker ? booking.companion_name : booking.seeker_name;
+    const otherPhoto = amSeeker ? booking.companion_photo : booking.seeker_photo;
+    const convoId = await ensure.mutateAsync({
+      otherId,
+      otherName,
+      otherPhoto,
+      bookingId: booking.id,
+    });
+    router.push(`/chat/${convoId}`);
+  }
 
   return (
     <ScreenContainer>
@@ -75,6 +91,7 @@ export default function BookingDetailScreen() {
               disabled={transition.isPending}
             />
           ))}
+          <Button label={t('bookingDetail.message')} variant="secondary" onPress={openChat} />
           {booking.status === 'completed' ? (
             <Button
               label={t('bookingDetail.review')}

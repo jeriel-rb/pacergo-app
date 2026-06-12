@@ -48,6 +48,7 @@
     "cancel": "取消",
     "complete": "標記完成",
     "review": "留下評價",
+    "message": "傳訊息",
     "when": "時間",
     "where": "地點",
     "price": "價格"
@@ -60,7 +61,12 @@
     "thanks": "感謝你的評價！",
     "error": "無法送出，請再試一次。"
   },
-  "chatScreen": { "title": "訊息" },
+  "chatScreen": {
+    "title": "訊息",
+    "empty": "目前沒有對話。",
+    "placeholder": "輸入訊息…",
+    "send": "送出"
+  },
   "auth": {
     "welcomeTitle": "尋找你的訓練夥伴",
     "welcomeSubtitle": "專業教練、有經驗的夥伴，或只是一起訓練的人——就在你附近。",

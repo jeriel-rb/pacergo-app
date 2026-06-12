@@ -1,0 +1,8 @@
+{
+  "tabs": { "discover": "Discover", "bookings": "Bookings", "chat": "Chat", "profile": "Profile" },
+  "common": { "free": "Free", "loading": "Loading…", "retry": "Retry" },
+  "discover": { "title": "Find a companion" },
+  "bookings": { "title": "Your bookings" },
+  "chatScreen": { "title": "Messages" },
+  "profile": { "title": "Profile" }
+}

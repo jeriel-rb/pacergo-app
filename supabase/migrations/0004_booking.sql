@@ -42,9 +42,10 @@ create table if not exists reviews (
   reviewer_id uuid not null references profiles (id) on delete cascade,
   reviewee_id uuid not null references profiles (id) on delete cascade,
   rating int not null check (rating between 1 and 5),
-  comment text,
+  comment text check (comment is null or char_length(comment) <= 1000),
   created_at timestamptz not null default now(),
-  unique (booking_id, reviewer_id)
+  unique (booking_id, reviewer_id),
+  check (reviewer_id <> reviewee_id)
 );
 
 create table if not exists notifications (
@@ -67,31 +68,47 @@ create policy "bookings parties read"
   on bookings for select to authenticated
   using (seeker_id = auth.uid() or companion_id = auth.uid());
 
+-- Inserts: only the seeker, only as a 'requested' booking, only against an
+-- ACTUAL active companion. No 'pre-accepted' forgery.
 drop policy if exists "bookings seeker insert" on bookings;
 create policy "bookings seeker insert"
   on bookings for insert to authenticated
-  with check (seeker_id = auth.uid());
+  with check (
+    seeker_id = auth.uid()
+    and status = 'requested'
+    and cancelled_by is null
+    and completed_at is null
+    and exists (
+      select 1 from companion_listings l
+      where l.profile_id = companion_id and l.status = 'active'
+    )
+  );
 
-drop policy if exists "bookings parties update" on bookings;
-create policy "bookings parties update"
-  on bookings for update to authenticated
-  using (seeker_id = auth.uid() or companion_id = auth.uid())
-  with check (seeker_id = auth.uid() or companion_id = auth.uid());
+-- NOTE: there is deliberately NO broad UPDATE policy. All status transitions go
+-- through the SECURITY DEFINER RPCs below, which enforce role + the allowed FSM
+-- and set cancelled_by / completed_at server-side. Clients cannot UPDATE rows
+-- directly (immutable fields like agreed_price stay tamper-proof).
 
 drop policy if exists "reviews readable" on reviews;
 create policy "reviews readable"
   on reviews for select to authenticated using (true);
 
+-- Reviews: author = caller, no self-review, reviewee must be the COUNTERPARTY
+-- of a COMPLETED booking the caller belongs to.
 drop policy if exists "reviews author insert" on reviews;
 create policy "reviews author insert"
   on reviews for insert to authenticated
   with check (
     reviewer_id = auth.uid()
+    and reviewer_id <> reviewee_id
     and exists (
       select 1 from bookings b
       where b.id = booking_id
         and b.status = 'completed'
-        and (b.seeker_id = auth.uid() or b.companion_id = auth.uid())
+        and (
+          (b.seeker_id = auth.uid() and b.companion_id = reviews.reviewee_id)
+          or (b.companion_id = auth.uid() and b.seeker_id = reviews.reviewee_id)
+        )
     )
   );
 
@@ -104,7 +121,50 @@ create policy "notifications owner update"
   on notifications for update to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
 
--- Notify the relevant party on booking insert/status change.
+-- ── Guarded transitions (SECURITY DEFINER; enforce role + FSM) ──────────────
+create or replace function accept_booking(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update bookings set status = 'accepted'
+  where id = p_id and companion_id = auth.uid() and status = 'requested';
+  if not found then raise exception 'accept not allowed'; end if;
+end $$;
+
+create or replace function decline_booking(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update bookings set status = 'declined'
+  where id = p_id and companion_id = auth.uid() and status = 'requested';
+  if not found then raise exception 'decline not allowed'; end if;
+end $$;
+
+create or replace function cancel_booking(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update bookings set status = 'cancelled', cancelled_by = auth.uid()
+  where id = p_id
+    and (seeker_id = auth.uid() or companion_id = auth.uid())
+    and status in ('requested', 'accepted');
+  if not found then raise exception 'cancel not allowed'; end if;
+end $$;
+
+create or replace function complete_booking(p_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update bookings set status = 'completed', completed_at = now()
+  where id = p_id
+    and (seeker_id = auth.uid() or companion_id = auth.uid())
+    and status = 'accepted';
+  if not found then raise exception 'complete not allowed'; end if;
+end $$;
+
+grant execute on function accept_booking(uuid) to authenticated;
+grant execute on function decline_booking(uuid) to authenticated;
+grant execute on function cancel_booking(uuid) to authenticated;
+grant execute on function complete_booking(uuid) to authenticated;
+
+-- Notify the relevant party on booking insert/status change. recipient and
+-- payload are derived server-side only (no attacker-controlled routing).
 create or replace function notify_booking_event()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare
@@ -117,7 +177,7 @@ begin
     ntype := 'booking_' || new.status;
     if new.status in ('accepted', 'declined') then
       recipient := new.seeker_id;
-    elsif new.cancelled_by is not null then
+    elsif new.status = 'cancelled' and new.cancelled_by is not null then
       recipient := case when new.cancelled_by = new.seeker_id then new.companion_id else new.seeker_id end;
     else
       recipient := new.seeker_id;

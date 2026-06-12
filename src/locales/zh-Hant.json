@@ -1,0 +1,8 @@
+{
+  "tabs": { "discover": "探索", "bookings": "預約", "chat": "訊息", "profile": "個人檔案" },
+  "common": { "free": "免費", "loading": "載入中…", "retry": "重試" },
+  "discover": { "title": "尋找夥伴" },
+  "bookings": { "title": "你的預約" },
+  "chatScreen": { "title": "訊息" },
+  "profile": { "title": "個人檔案" }
+}

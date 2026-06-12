@@ -80,6 +80,16 @@ booking counterparty. A trigger writes `notifications` rows on booking events an
 recomputes a companion's rating on review. Requires migration `0004_booking.sql`.
 Expo push delivery + the in-app notification center come later (M5).
 
+## Companion mode (M4a)
+
+Any user can become a companion: a wizard creates a `companion_listings` row +
+`listing_offerings` (activity · tier · price; only Tier C may be free, enforced by
+`validateOffering`) and flips `profiles.is_companion`. A dashboard shows incoming
+requests + upcoming sessions (from `useBookings`), with listing/availability
+editors and a Tier A verification flow that uploads a doc to the private
+`verification-docs` bucket and inserts a `verifications` row (admin review is
+out-of-app). Requires migration `0005_companion.sql`. Realtime chat is M4b.
+
 ## Stack
 
 Expo SDK 56 · React Native 0.85 · expo-router (`src/app/`) · NativeWind · Reanimated 4 ·

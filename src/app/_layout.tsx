@@ -17,6 +17,8 @@ import { SpaceGrotesk_600SemiBold } from '@expo-google-fonts/space-grotesk';
 import { ThemeProvider } from '@/lib/theme/ThemeProvider';
 import { queryClient } from '@/lib/query/client';
 import { supabase } from '@/lib/supabase/client';
+import { SessionProvider } from '@/features/auth/SessionProvider';
+import { useRouteGuard } from '@/features/auth/useRouteGuard';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +27,18 @@ AppState.addEventListener('change', (state) => {
   if (state === 'active') supabase.auth.startAutoRefresh();
   else supabase.auth.stopAutoRefresh();
 });
+
+function Guarded() {
+  useRouteGuard();
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(onboarding)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -44,11 +58,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" />
-            </Stack>
-          </ThemeProvider>
+          <SessionProvider>
+            <ThemeProvider>
+              <Guarded />
+            </ThemeProvider>
+          </SessionProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

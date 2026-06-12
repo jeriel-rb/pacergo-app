@@ -1,11 +1,12 @@
 import { Text, type TextProps } from 'react-native';
 
-type Variant = 'display' | 'h1' | 'h2' | 'body' | 'caption';
+type Variant = 'display' | 'h1' | 'h2' | 'h3' | 'body' | 'caption';
 
 const variantClass: Record<Variant, string> = {
   display: 'font-display text-[32px] leading-[40px] text-dark-text',
   h1: 'font-display text-[28px] leading-[34px] text-dark-text',
   h2: 'font-sans-semibold text-[22px] leading-[28px] text-dark-text',
+  h3: 'font-sans-semibold text-[18px] leading-[24px] text-dark-text',
   body: 'font-sans text-[16px] leading-[22px] text-dark-text',
   caption: 'font-sans text-[13px] leading-[18px] text-dark-text-secondary',
 };

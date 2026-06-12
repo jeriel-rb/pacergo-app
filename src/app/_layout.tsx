@@ -36,6 +36,8 @@ function Guarded() {
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="saved" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="companion/[id]" />
     </Stack>
   );
 }

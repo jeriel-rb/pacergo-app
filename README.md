@@ -56,6 +56,17 @@ rest of the app builds and runs normally. After sign-in, users without
 `onboarding_completed` are routed through the onboarding wizard (name, 18+ gate,
 experience, area, Gym activity) before reaching the tabs.
 
+## Discovery (M2)
+
+The Discover tab calls the `nearby_companions` PostGIS RPC with a center coordinate
+(from `expo-location`, falling back to Taipei). Companion data appears once
+migration `0003_discovery.sql` is applied and `companion_listings` /
+`listing_offerings` rows exist with a `profiles.location`. The RPCs
+(`nearby_companions`, `get_companion`) are `security definer` and return only safe
+columns + rounded distance — never raw coordinates or PII. The map uses
+`react-native-maps` (Apple Maps on iOS needs no key; Android needs a Google Maps
+API key). The "Request a session" CTA on a companion is disabled until M3 (Booking).
+
 ## Stack
 
 Expo SDK 56 · React Native 0.85 · expo-router (`src/app/`) · NativeWind · Reanimated 4 ·

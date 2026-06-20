@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Search, Wallet } from "lucide-react";
+import { Menu, X, UserSearch } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { Wordmark } from "./wordmark";
 import { LanguageSwitcher } from "./language-switcher";
 import { ProductMenu } from "./product-menu";
+import { LifterGlyph } from "./illustrations";
 
 export function SiteNav() {
   const { t } = useTranslation("nav");
@@ -29,8 +30,8 @@ export function SiteNav() {
   ];
 
   const audience = [
-    { href: find, label: t("menu.find_label"), desc: t("menu.find_desc"), Icon: Search },
-    { href: earn, label: t("menu.earn_label"), desc: t("menu.earn_desc"), Icon: Wallet },
+    { href: find, label: t("menu.find_label"), desc: t("menu.find_desc"), Icon: UserSearch },
+    { href: earn, label: t("menu.earn_label"), desc: t("menu.earn_desc"), Icon: LifterGlyph },
   ];
 
   return (

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Search, Wallet } from "lucide-react";
+import { ChevronDown, UserSearch } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { LifterGlyph } from "./illustrations";
 
 /** Desktop "Product" dropdown linking to the two audience pages (localized). */
 export function ProductMenu() {
@@ -17,13 +18,13 @@ export function ProductMenu() {
       href: getLocalizedPath("/find", locale),
       label: t("menu.find_label"),
       desc: t("menu.find_desc"),
-      Icon: Search,
+      Icon: UserSearch,
     },
     {
       href: getLocalizedPath("/earn", locale),
       label: t("menu.earn_label"),
       desc: t("menu.earn_desc"),
-      Icon: Wallet,
+      Icon: LifterGlyph,
     },
   ];
 

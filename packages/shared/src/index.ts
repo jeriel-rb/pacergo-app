@@ -1,5 +1,13 @@
 // @pacergo/shared — enums, types, helpers, constants, schemas.
-// Scaffold only. Re-export from the subfolders here as code is extracted, e.g.:
-//   export * from './types/database';
-//   export * from './schemas';
-export {};
+// Shared across apps/web (Next.js) and apps/mobile (React Native).
+
+export * from './enums/tier';
+export * from './enums/activity';
+export * from './enums/booking';
+export * from './enums/experience';
+
+export * from './constants/tier-labels';
+export * from './constants/activity-meta';
+
+export * from './types/trainer';
+export * from './types/booking';

@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { Bell } from "lucide-react";
+import type { UserProfile } from "@pacergo/shared";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
-import { ThemeToggle } from "./theme-toggle";
-import { LanguageSwitcher } from "./language-switcher";
+import { SettingsSheet } from "@/features/settings/settings-sheet";
 import {
   getCurrentLocale,
   getLocalizedPath,
@@ -14,8 +13,8 @@ import {
 } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 
-/** Sticky top bar: wordmark, inline nav on desktop, and the action cluster. */
-export function AppHeader() {
+/** Sticky top bar: wordmark, inline nav on desktop, and the settings entry. */
+export function AppHeader({ user }: { user: UserProfile | null }) {
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const stripped = pathWithoutLeadingLocale(pathname);
@@ -55,15 +54,7 @@ export function AppHeader() {
         </nav>
 
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <Bell size={18} />
-          </button>
-          <ThemeToggle />
-          <LanguageSwitcher className="ml-1" />
+          <SettingsSheet user={user} />
         </div>
       </div>
     </header>

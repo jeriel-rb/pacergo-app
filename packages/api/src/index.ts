@@ -4,3 +4,4 @@
 export * from './supabase-client';
 export * from './queries/trainers';
 export * from './queries/activities';
+export * from './queries/user';

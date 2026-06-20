@@ -11,26 +11,32 @@ export function PriceTag({
   isFree = false,
   perHour = false,
   locale = "zh",
+  tone = "default",
   className,
 }: {
   amount: number;
   isFree?: boolean;
   perHour?: boolean;
   locale?: Locale;
+  /** "onDark" renders white text for use on the gradient header. */
+  tone?: "default" | "onDark";
   className?: string;
 }) {
+  const valueColor = tone === "onDark" ? "text-white" : "text-primary";
+  const unitColor = tone === "onDark" ? "text-white/75" : "text-muted-foreground";
+
   if (isFree) {
     return (
-      <span className={cn("font-semibold text-primary", className)}>
+      <span className={cn("font-semibold", valueColor, className)}>
         {FREE[locale]}
       </span>
     );
   }
   return (
-    <span className={cn("font-semibold text-primary", className)}>
+    <span className={cn("font-semibold", valueColor, className)}>
       {`NT$${amount.toLocaleString()}`}
       {perHour && (
-        <span className="ml-0.5 text-xs font-normal text-muted-foreground">
+        <span className={cn("ml-0.5 text-xs font-normal", unitColor)}>
           {PER_HOUR[locale]}
         </span>
       )}

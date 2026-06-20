@@ -1,50 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { TrainerSummary } from "@pacergo/shared";
-import { CategoryFilter } from "./category-filter";
-import { TrainerCard } from "./trainer-card";
-import { filterTrainers, type TrainerCategory } from "./filter-trainers";
+import { TrainerGrid } from "@/features/trainer/trainer-grid";
+import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 
-/** Recommended-trainers section: category filter + responsive card grid. */
+/** Home "推薦陪練師" section: heading + view-all link + the shared trainer grid. */
 export function RecommendedTrainers({
   trainers,
-  heading,
-  showViewAll = true,
 }: {
   trainers: TrainerSummary[];
-  heading?: string;
-  showViewAll?: boolean;
 }) {
-  const { t, i18n } = useTranslation("home");
-  const locale = i18n.language.startsWith("zh") ? "zh" : "en";
-  const [category, setCategory] = useState<TrainerCategory>("all");
-  const visible = filterTrainers(trainers, category);
+  const { t } = useTranslation("home");
+  const pathname = usePathname();
+  const viewAllHref = getLocalizedPath("/trainers", getCurrentLocale(pathname));
 
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">{heading ?? t("recommended")}</h2>
-        {showViewAll && (
-          <button
-            type="button"
-            className="inline-flex items-center text-sm font-medium text-primary"
-          >
-            {t("viewAll")}
-            <ChevronRight size={16} />
-          </button>
-        )}
+        <h2 className="text-lg font-bold">{t("recommended")}</h2>
+        <Link
+          href={viewAllHref}
+          className="inline-flex items-center text-sm font-medium text-primary"
+        >
+          {t("viewAll")}
+          <ChevronRight size={16} />
+        </Link>
       </div>
-
-      <CategoryFilter value={category} onChange={setCategory} />
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {visible.map((trainer) => (
-          <TrainerCard key={trainer.id} trainer={trainer} locale={locale} />
-        ))}
-      </div>
+      <TrainerGrid trainers={trainers} />
     </section>
   );
 }

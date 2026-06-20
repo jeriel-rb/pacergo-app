@@ -7,15 +7,19 @@ export function RatingStars({
   count,
   size = 14,
   showValue = true,
+  tone = "default",
   className,
 }: {
   value: number;
   count?: number;
   size?: number;
   showValue?: boolean;
+  /** "onDark" renders white text for use on the gradient header. */
+  tone?: "default" | "onDark";
   className?: string;
 }) {
   const full = Math.round(value);
+  const onDark = tone === "onDark";
   return (
     <div className={cn("inline-flex items-center gap-1", className)}>
       <span className="flex items-center">
@@ -27,18 +31,32 @@ export function RatingStars({
             className={
               i < full
                 ? "fill-amber-400 text-amber-400"
-                : "fill-muted text-muted"
+                : onDark
+                  ? "fill-white/25 text-white/25"
+                  : "fill-muted text-muted"
             }
           />
         ))}
       </span>
       {showValue && (
-        <span className="text-sm font-semibold text-foreground">
+        <span
+          className={cn(
+            "text-sm font-semibold",
+            onDark ? "text-white" : "text-foreground",
+          )}
+        >
           {value.toFixed(1)}
         </span>
       )}
       {count != null && (
-        <span className="text-xs text-muted-foreground">({count})</span>
+        <span
+          className={cn(
+            "text-xs",
+            onDark ? "text-white/75" : "text-muted-foreground",
+          )}
+        >
+          ({count})
+        </span>
       )}
     </div>
   );

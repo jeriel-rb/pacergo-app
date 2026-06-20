@@ -1,0 +1,19 @@
+{
+  "tagline": "Find an in-person workout companion in Taiwan — from certified pros to training buddies.",
+  "columns": {
+    "product": {
+      "heading": "Product",
+      "links": ["How it works", "Tiers & pricing", "Trust & safety", "For companions"]
+    },
+    "company": {
+      "heading": "Company",
+      "links": ["About", "Careers", "Press", "Contact"]
+    },
+    "legal": {
+      "heading": "Legal",
+      "links": ["Privacy", "Terms", "Community guidelines", "Cookies"]
+    }
+  },
+  "rights": "© {{year}} Pacergo. Made in Taiwan.",
+  "motto": "Set the pace · Never train alone"
+}

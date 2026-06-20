@@ -1,6 +1,6 @@
 /* Pacergo — type system.
    Bricolage Grotesque (display) · Hanken Grotesk (body) · JetBrains Mono (labels). */
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@300..700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 /* ==========================================================================
@@ -13,9 +13,9 @@
   --color-paper: #f5f7fa; /* white */
   --color-white: #ffffff; /* elevated surface within the white family */
 
-  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Bricolage Grotesque", "Noto Sans TC", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk", "Noto Sans TC", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Noto Sans TC", ui-monospace, monospace;
 
   --radius: 0.375rem;
 

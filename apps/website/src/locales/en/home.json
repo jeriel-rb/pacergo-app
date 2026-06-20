@@ -1,0 +1,126 @@
+{
+  "hero": {
+    "eyebrow": "In-person fitness · Taiwan",
+    "title_1": "Find your",
+    "title_2": "workout ",
+    "title_highlight": "companion.",
+    "sub": "From certified trainers to training buddies — meet real people near you, match on activity and pace, and train together in person.",
+    "cta_primary": "Join the waitlist",
+    "cta_secondary": "See how it works",
+    "stats": [
+      { "value": "3", "label": "companion tiers" },
+      { "value": "NT$", "label": "transparent pricing" },
+      { "value": "100%", "label": "verified profiles" }
+    ]
+  },
+  "mockup": {
+    "discover": "Discover",
+    "tier_a": "Tier A",
+    "meta": "Strength · 1.2km",
+    "book": "Book session"
+  },
+  "activities_label": "Supported activities",
+  "activities": [
+    "Gym",
+    "Running",
+    "Climbing",
+    "Yoga",
+    "Boxing",
+    "Hiking",
+    "Swimming",
+    "Cycling",
+    "Pilates",
+    "Tennis",
+    "Basketball",
+    "CrossFit"
+  ],
+  "steps": {
+    "eyebrow": "How it works",
+    "title_1": "Three steps from solo to ",
+    "title_highlight": "side by side.",
+    "items": [
+      {
+        "no": "01",
+        "title": "Discover",
+        "body": "Browse companions near you, filtered by activity, tier, and price. Every profile shows distance, rating, and what they actually do."
+      },
+      {
+        "no": "02",
+        "title": "Book",
+        "body": "Request a session — pick the offering, time, and place. They accept, you meet. Reschedule or cancel anytime, no awkwardness."
+      },
+      {
+        "no": "03",
+        "title": "Train",
+        "body": "Show up and train together in person. Rate each other afterwards so the community stays strong and accountable."
+      }
+    ]
+  },
+  "tiers": {
+    "eyebrow": "The tiers",
+    "title_1": "Three tiers. ",
+    "title_highlight": "One community.",
+    "intro": "Whether you need a coach, a sparring partner, or just someone to keep you honest — there's a tier and a price that fits.",
+    "tier_word": "Tier",
+    "most_trusted": "Most trusted",
+    "per_session": "/ session",
+    "items": [
+      {
+        "code": "A",
+        "name": "Certified Pros",
+        "price": "NT$800–1,500",
+        "blurb": "Licensed, verified trainers for structured, goal-driven coaching.",
+        "features": ["Document-verified credentials", "Structured programming", "Built for specific goals"]
+      },
+      {
+        "code": "B",
+        "name": "Experienced Peers",
+        "price": "NT$300–700",
+        "blurb": "Seasoned athletes who train alongside you and share what works.",
+        "features": ["Real training experience", "Hands-on, not hands-off", "Push past your plateau"]
+      },
+      {
+        "code": "C",
+        "name": "Training Buddies",
+        "price": "Free–NT$200",
+        "blurb": "Someone to show up with. Low-stakes accountability to build the habit.",
+        "features": ["Accountability partner", "Casual & flexible", "Free to get started"]
+      }
+    ]
+  },
+  "safety": {
+    "eyebrow": "Trust & safety",
+    "title_1": "Built to keep",
+    "title_2": "meetups ",
+    "title_highlight": "safe.",
+    "intro": "Meeting strangers to work out should feel safe by default. Safety isn't a setting in Pacergo — it's wired into every booking.",
+    "items": [
+      {
+        "title": "Verified profiles",
+        "body": "Tier-A pros submit credentials to a private review before they can list. You always know who you're meeting."
+      },
+      {
+        "title": "Report & block",
+        "body": "One tap to report or block. Blocks are enforced both ways — blocked users disappear from each other's discovery entirely."
+      },
+      {
+        "title": "Share your session",
+        "body": "Send session details — who, where, when — to a trusted contact before you head out, straight from the app."
+      },
+      {
+        "title": "Meet in public",
+        "body": "A built-in safety center with first-meet guidance and public-venue suggestions keeps early sessions low-risk."
+      }
+    ]
+  },
+  "cta": {
+    "eyebrow": "Early access",
+    "title_1": "Ready to find your ",
+    "title_highlight": "pace?",
+    "sub": "Join the waitlist and be first to train with a companion when Pacergo opens in your city.",
+    "email_placeholder": "you@example.com",
+    "submit": "Join the waitlist",
+    "success": "You're on the list — we'll be in touch at {{email}}.",
+    "launching": "Launching in Taiwan · 繁體中文 & English"
+  }
+}

@@ -17,7 +17,7 @@ export function ThemeSettingRow() {
   const Icon = isDark ? Moon : Sun;
 
   return (
-    <li className="flex items-center justify-between rounded-lg px-3 py-2.5">
+    <li className="flex h-12 items-center justify-between rounded-lg px-3">
       <span className="flex items-center gap-3 text-sm font-medium">
         <Icon size={18} className="text-muted-foreground" />
         {t("theme")}

@@ -85,7 +85,7 @@ export function SettingsSheet({ user }: { user: UserProfile | null }) {
         <div className="flex-1 overflow-y-auto p-3">
           <ul className="space-y-1">
             <ThemeSettingRow />
-            <li className="flex items-center justify-between rounded-lg px-3 py-2.5">
+            <li className="flex h-12 items-center justify-between rounded-lg px-3">
               <span className="flex items-center gap-3 text-sm font-medium">
                 <Globe size={18} className="text-muted-foreground" />
                 {t("language")}
@@ -117,7 +117,7 @@ function SettingRow({ icon: Icon, label }: { icon: LucideIcon; label: string }) 
     <li>
       <button
         type="button"
-        className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 transition-colors hover:bg-accent"
+        className="flex h-12 w-full items-center justify-between rounded-lg px-3 transition-colors hover:bg-accent"
       >
         <span className="flex items-center gap-3 text-sm font-medium">
           <Icon size={18} className="text-muted-foreground" />

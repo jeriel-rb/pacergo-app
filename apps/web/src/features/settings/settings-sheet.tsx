@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import {
   Settings,
-  Moon,
   Globe,
   Bell,
   ShieldCheck,
@@ -24,8 +23,8 @@ import {
   SheetDescription,
 } from "@/shared/components/ui/sheet";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
-import { ThemeToggle } from "@/shared/components/shell/theme-toggle";
 import { LanguageSwitcher } from "@/shared/components/shell/language-switcher";
+import { ThemeSettingRow } from "./theme-setting-row";
 import { Button } from "@/shared/components/ui/button";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 
@@ -85,13 +84,7 @@ export function SettingsSheet({ user }: { user: UserProfile | null }) {
 
         <div className="flex-1 overflow-y-auto p-3">
           <ul className="space-y-1">
-            <li className="flex items-center justify-between rounded-lg px-3 py-2.5">
-              <span className="flex items-center gap-3 text-sm font-medium">
-                <Moon size={18} className="text-muted-foreground" />
-                {t("theme")}
-              </span>
-              <ThemeToggle />
-            </li>
+            <ThemeSettingRow />
             <li className="flex items-center justify-between rounded-lg px-3 py-2.5">
               <span className="flex items-center gap-3 text-sm font-medium">
                 <Globe size={18} className="text-muted-foreground" />

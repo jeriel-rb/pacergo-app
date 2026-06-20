@@ -12,6 +12,7 @@ import { ProductMenu } from "./product-menu";
 
 export function SiteNav() {
   const { t } = useTranslation("nav");
+  const { t: tc } = useTranslation("common");
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const home = getLocalizedPath("/", locale);
@@ -54,7 +55,7 @@ export function SiteNav() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <LanguageSwitcher />
+            <LanguageSwitcher className="hidden md:inline-flex" />
             <Link
               href={`${home}#waitlist`}
               className="hidden h-9 items-center rounded-(--radius) bg-ink px-4 text-sm font-semibold text-paper transition-transform hover:-translate-y-px md:inline-flex"
@@ -113,6 +114,13 @@ export function SiteNav() {
                   {link.label}
                 </Link>
               ))}
+            </div>
+
+            <div className="flex items-center justify-between border-t border-ink/10 pt-4">
+              <span className="font-mono text-[0.66rem] uppercase tracking-[0.18em] text-ink/45">
+                {tc("language.label")}
+              </span>
+              <LanguageSwitcher />
             </div>
 
             <Link

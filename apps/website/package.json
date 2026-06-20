@@ -1,6 +1,28 @@
 {
   "name": "@pacergo/website",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
-  "description": "Pacergo public marketing site (Next.js). Placeholder — not yet scaffolded."
+  "description": "Pacergo public marketing site (Next.js 15, App Router, Tailwind v4).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.561.0",
+    "next": "15.5.9",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
+    "@types/react": "~19.2.2",
+    "@types/react-dom": "~19.2.2",
+    "tailwindcss": "^4",
+    "typescript": "~6.0.3"
+  }
 }

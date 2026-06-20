@@ -1,7 +1,48 @@
 # @pacergo/website
 
-Pacergo **public marketing site** (Next.js).
+Pacergo's **public marketing site** — Next.js 15 (App Router) + Tailwind v4.
 
-> **Placeholder.** Not yet scaffolded. When work starts here, scaffold with
-> `npx create-next-app@latest .` (App Router, TypeScript, Tailwind) and wire it to
-> `@pacergo/shared` as needed.
+## Develop
+
+```bash
+yarn install                          # from the monorepo root
+yarn workspace @pacergo/website dev   # http://localhost:3000
+```
+
+Other scripts: `build`, `start`, `typecheck`.
+
+## Design system
+
+A deliberately tiny token set — the brand is the entire palette. **Every neutral is
+an opacity of ink or paper; no colors live outside these three values.**
+
+| Token            | Value     | Role                         |
+| ---------------- | --------- | ---------------------------- |
+| `--color-brand`  | `#1565ff` | blue — the single accent     |
+| `--color-ink`    | `#0a0a0a` | black — text & dark sections |
+| `--color-paper`  | `#f5f7fa` | off-white — page background  |
+
+Tokens live in [`src/app/globals.css`](src/app/globals.css) (`@theme`), so Tailwind
+utilities are `bg-brand`, `text-ink`, `bg-paper`, and opacity modifiers like
+`text-ink/60` / `border-ink/10`.
+
+**Type:** Bricolage Grotesque (display) · Hanken Grotesk (body) · JetBrains Mono (labels).
+
+## Structure
+
+```
+src/
+  app/
+    layout.tsx        # metadata + fonts
+    page.tsx          # composes the landing sections
+    globals.css       # design tokens + motion primitives
+  components/site/    # Nav, Hero, PhoneMock, Marquee, Steps, Tiers, Safety, Cta, Footer, Reveal
+  lib/utils.ts        # cn() — clsx + tailwind-merge
+```
+
+## Notes
+
+- The waitlist form is front-end only (shows a success state). Wire it to a real
+  endpoint or `@pacergo/api` when the backend is ready.
+- English copy for now; the app ships en + zh-Hant, so locale routing is a natural
+  next step.

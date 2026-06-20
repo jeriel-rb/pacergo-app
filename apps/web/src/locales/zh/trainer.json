@@ -1,0 +1,20 @@
+{
+  "listTitle": "陪練師",
+  "listSubtitle": "找到最適合你的訓練夥伴",
+  "services": "服務項目",
+  "bio": "個人簡介",
+  "certs": "認證資格",
+  "gyms": "健身房會籍",
+  "gymsNote": "可在以上健身房進行陪練服務",
+  "availability": "可預約時段",
+  "reviews": "用戶評價",
+  "noReviews": "尚無評價",
+  "manager": "平台特約經理人",
+  "managerRegion": "負責區域",
+  "bookNow": "立即預約",
+  "bookHint": "預約後陪練師將在 24 小時內確認",
+  "bookingRequested": "已送出預約邀請，陪練師將盡快與你確認。",
+  "bidding": "競標制",
+  "ratingCount": "({{count}})",
+  "weekdaysShort": ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]
+}

@@ -1,0 +1,35 @@
+{
+  "greeting": "Hi, {{name}} 👋",
+  "prompt": "今天想一起訓練嗎？",
+  "switchTrainer": "切換陪練員",
+  "hero": {
+    "kicker": "FIND YOUR TRAINING PARTNER",
+    "title": "找到你的訓練夥伴",
+    "subtitle": "6+ 位專業陪練師等你"
+  },
+  "actions": {
+    "find": "找夥伴",
+    "log": "訓練記錄",
+    "aiPlan": "AI 訓練計劃",
+    "hours": "時數包"
+  },
+  "quickActions": "快速功能",
+  "quickActionsEn": "QUICK ACTIONS",
+  "quick": {
+    "record": "記錄訓練",
+    "body": "身體數據",
+    "aiPhoto": "AI 修圖",
+    "diet": "飲食日誌"
+  },
+  "weeklyProgress": "本週訓練進度",
+  "weeklyProgressEn": "WEEKLY PROGRESS",
+  "weeklyCount": "{{done}}/{{total}} 完成訓練",
+  "recommended": "推薦陪練師",
+  "viewAll": "查看全部",
+  "category": {
+    "all": "全部",
+    "gym": "健身",
+    "running": "陪跑",
+    "hiking": "陪爬"
+  }
+}

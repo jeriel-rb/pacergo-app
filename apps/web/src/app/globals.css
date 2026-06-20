@@ -1,0 +1,154 @@
+/* Pacergo product app — blue theme.
+   Brand blue (#1565ff) is shared with the marketing site. Tokens follow the
+   shadcn/Tailwind-v4 CSS-variable convention with a light (default) + dark set.
+   Radius scale mirrors apps/mobile (sm 10 · md 16 · lg 20 · xl 28). */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f4f6fa;
+  --foreground: #14151a;
+  --card: #ffffff;
+  --card-foreground: #14151a;
+  --popover: #ffffff;
+  --popover-foreground: #14151a;
+
+  --primary: #1565ff;
+  --primary-foreground: #ffffff;
+  --brand: #1565ff;
+
+  --secondary: #eef2f8;
+  --secondary-foreground: #14151a;
+  --muted: #eef1f6;
+  --muted-foreground: #6b7280;
+  --accent: #e7f0ff;
+  --accent-foreground: #1565ff;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #16a34a;
+  --warning: #f59e0b;
+
+  --border: #e6e9f0;
+  --input: #e6e9f0;
+  --ring: #1565ff;
+
+  /* Tier badge intents (see @pacergo/shared TIER_INTENT). */
+  --tier-primary-bg: #1565ff;
+  --tier-primary-fg: #ffffff;
+  --tier-dark-bg: #14151a;
+  --tier-dark-fg: #ffffff;
+  --tier-soft-bg: #dce9ff;
+  --tier-soft-fg: #1565ff;
+
+  /* Hero gradient. */
+  --hero-from: #1565ff;
+  --hero-to: #3b82f6;
+
+  --radius: 1rem;
+}
+
+.dark {
+  --background: #161619;
+  --foreground: #f5f5f7;
+  --card: #1f1f24;
+  --card-foreground: #f5f5f7;
+  --popover: #1f1f24;
+  --popover-foreground: #f5f5f7;
+
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --brand: #3b82f6;
+
+  --secondary: #26262c;
+  --secondary-foreground: #f5f5f7;
+  --muted: #232328;
+  --muted-foreground: #a1a1aa;
+  --accent: #1e293b;
+  --accent-foreground: #93c5fd;
+
+  --destructive: #f87171;
+  --destructive-foreground: #161619;
+  --success: #4ade80;
+  --warning: #fbbf24;
+
+  --border: #2c2c32;
+  --input: #2c2c32;
+  --ring: #3b82f6;
+
+  --tier-primary-bg: #3b82f6;
+  --tier-primary-fg: #ffffff;
+  --tier-dark-bg: #e8eaf0;
+  --tier-dark-fg: #161619;
+  --tier-soft-bg: #1e2a44;
+  --tier-soft-fg: #93c5fd;
+
+  --hero-from: #1d4ed8;
+  --hero-to: #2563eb;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-brand: var(--brand);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --font-sans: "Inter", "Noto Sans TC", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Hide scrollbars on horizontal chip rows while keeping scroll. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

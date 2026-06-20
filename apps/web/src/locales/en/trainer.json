@@ -1,0 +1,20 @@
+{
+  "listTitle": "Trainers",
+  "listSubtitle": "Find the training partner that fits you",
+  "services": "Services",
+  "bio": "About",
+  "certs": "Certifications",
+  "gyms": "Gym membership",
+  "gymsNote": "Sessions available at the gyms above",
+  "availability": "Available times",
+  "reviews": "Reviews",
+  "noReviews": "No reviews yet",
+  "manager": "Platform manager",
+  "managerRegion": "Region",
+  "bookNow": "Book now",
+  "bookHint": "The trainer will confirm within 24 hours",
+  "bookingRequested": "Booking request sent — the trainer will confirm shortly.",
+  "bidding": "Bidding",
+  "ratingCount": "({{count}})",
+  "weekdaysShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+}

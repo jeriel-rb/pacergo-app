@@ -74,5 +74,8 @@
     "test": "jest --forceExit",
     "typecheck": "tsc --noEmit"
   },
-  "private": true
+  "private": true,
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  }
 }

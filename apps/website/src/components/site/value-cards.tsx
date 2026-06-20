@@ -1,12 +1,14 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { SectionLabel } from "./section-label";
 import { Reveal } from "./reveal";
 
 type Card = { title?: string; name?: string; body: string };
+/** Any icon that accepts className + strokeWidth — lucide icons and our own glyphs. */
+type IconType = ComponentType<{ className?: string; strokeWidth?: number }>;
 
 /**
  * A titled grid of value/feature cards driven by a translation key.
@@ -22,7 +24,7 @@ export function ValueCards({
 }: {
   ns: string;
   k: string;
-  icons?: LucideIcon[];
+  icons?: IconType[];
   columns?: 3 | 4;
   surface?: "paper" | "white";
 }) {

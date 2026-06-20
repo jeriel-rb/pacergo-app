@@ -7,13 +7,17 @@ import { AudienceHero } from "@/components/site/audience-hero";
 import { ValueCards } from "@/components/site/value-cards";
 import { FlowSteps } from "@/components/site/flow-steps";
 import { AudienceCta } from "@/components/site/audience-cta";
+import { CompanionsIllustration } from "@/components/site/illustrations";
 
 export function FindContent() {
   return (
     <>
       <SiteNav />
       <main>
-        <AudienceHero ns="find" />
+        <AudienceHero
+          ns="find"
+          illustration={<CompanionsIllustration className="w-[300px] sm:w-[360px]" />}
+        />
         <ValueCards
           ns="find"
           k="pains"

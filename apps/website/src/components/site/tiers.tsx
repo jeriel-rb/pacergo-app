@@ -9,7 +9,6 @@ import { Reveal } from "./reveal";
 type Tier = {
   code: string;
   name: string;
-  price: string;
   blurb: string;
   features: string[];
 };
@@ -46,12 +45,6 @@ export function Tiers() {
                     : "border-ink/12 bg-paper hover:border-ink/30",
                 )}
               >
-                {featured && (
-                  <span className="absolute right-6 top-8 rounded-full bg-brand px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-paper">
-                    {t("tiers.most_trusted")}
-                  </span>
-                )}
-
                 <div className="flex items-baseline gap-3">
                   <span
                     className={cn(
@@ -67,26 +60,18 @@ export function Tiers() {
                       featured ? "text-paper/55" : "text-ink/45",
                     )}
                   >
-                    {t("tiers.tier_word")}
+                    {tier.name}
                   </span>
                 </div>
 
-                <h3 className="mt-6 text-xl font-semibold">{tier.name}</h3>
                 <p
                   className={cn(
-                    "mt-2 text-[0.9rem] leading-relaxed",
-                    featured ? "text-paper/65" : "text-ink/60",
+                    "mt-6 text-[0.95rem] leading-relaxed",
+                    featured ? "text-paper/70" : "text-ink/65",
                   )}
                 >
                   {tier.blurb}
                 </p>
-
-                <div className="mt-6 flex items-baseline gap-1.5">
-                  <span className="font-display text-2xl font-semibold">{tier.price}</span>
-                  <span className={cn("text-xs", featured ? "text-paper/50" : "text-ink/45")}>
-                    {t("tiers.per_session")}
-                  </span>
-                </div>
 
                 <ul
                   className={cn(
@@ -101,6 +86,16 @@ export function Tiers() {
                     </li>
                   ))}
                 </ul>
+
+                <p
+                  className={cn(
+                    "mt-7 flex items-center gap-2 font-mono text-[0.66rem] uppercase tracking-[0.14em]",
+                    featured ? "text-paper/45" : "text-ink/45",
+                  )}
+                >
+                  <span className="size-1.5 rounded-full bg-brand" />
+                  {t("tiers.rate_note")}
+                </p>
               </Reveal>
             );
           })}

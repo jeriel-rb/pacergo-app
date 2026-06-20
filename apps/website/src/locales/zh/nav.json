@@ -1,7 +1,12 @@
 {
+  "product": "產品",
   "how": "運作方式",
-  "tiers": "分級",
   "safety": "安全",
-  "sign_in": "登入",
-  "waitlist": "加入候補名單"
+  "waitlist": "加入候補名單",
+  "menu": {
+    "find_label": "我要找夥伴",
+    "find_desc": "找健身夥伴或合格教練——依時段預約，沒有合約。",
+    "earn_label": "我要當夥伴",
+    "earn_desc": "把你的時間、陪伴或專長變現，價格自己訂。"
+  }
 }

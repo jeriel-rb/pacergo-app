@@ -1,16 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 /**
  * A restrained device mockup of the Pacergo app: a minimal map with a
- * self-drawing brand "route" and a companion booking card. Pure markup —
- * only the three brand colors (and their opacities) appear here.
+ * self-drawing brand "route" and a companion booking card. A cycling
+ * Discover → Book → Train stepper underneath narrates the actual flow.
+ * Pure markup — only the three brand colors (and their opacities) appear here.
  */
 export function PhoneMock({ className }: { className?: string }) {
   const { t } = useTranslation("home");
+  const flow = t("mockup.flow", { returnObjects: true }) as string[];
+
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => (s + 1) % flow.length), 1900);
+    return () => clearInterval(id);
+  }, [flow.length]);
 
   return (
     <div className={cn("relative mx-auto w-[280px] sm:w-[320px]", className)}>
@@ -51,10 +60,15 @@ export function PhoneMock({ className }: { className?: string }) {
               }}
             />
             <circle cx="40" cy="160" r="6" fill="var(--color-brand)" />
-            <circle cx="40" cy="160" r="11" fill="var(--color-brand)" opacity="0.18" />
             <circle cx="196" cy="44" r="5" fill="var(--color-ink)" />
             <circle cx="196" cy="44" r="10" stroke="var(--color-ink)" strokeOpacity="0.18" />
           </svg>
+
+          {/* pulsing "you are here" node */}
+          <span className="absolute left-[14%] top-[76%] flex size-3">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand/40" />
+            <span className="relative inline-flex size-3 rounded-full bg-brand" />
+          </span>
 
           <div className="absolute left-[44%] top-[38%] flex size-7 items-center justify-center rounded-full border-2 border-white bg-ink text-[0.55rem] font-bold text-paper shadow-md">
             A
@@ -82,15 +96,38 @@ export function PhoneMock({ className }: { className?: string }) {
                 <span>· {t("mockup.meta")}</span>
               </div>
             </div>
-            <div className="text-right">
-              <p className="font-mono text-[0.6rem] text-ink/45">NT$</p>
-              <p className="font-display text-base font-semibold text-ink">900</p>
-            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-1 text-[0.58rem] font-semibold text-brand">
+              <span className="size-1.5 rounded-full bg-brand" />
+              {t("mockup.available")}
+            </span>
           </div>
-          <button className="mt-3 h-9 w-full rounded-[var(--radius)] bg-brand text-xs font-semibold text-paper">
+          <button className="mt-3 h-9 w-full rounded-(--radius) bg-brand text-xs font-semibold text-paper">
             {t("mockup.book")}
           </button>
         </div>
+      </div>
+
+      {/* flow narration */}
+      <div className="mt-6 flex items-center justify-center gap-2">
+        {flow.map((label, i) => (
+          <div key={label} className="flex items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] transition-colors duration-300",
+                i === step ? "bg-ink text-paper" : "text-ink/45",
+              )}
+            >
+              <span
+                className={cn(
+                  "size-1.5 rounded-full transition-colors duration-300",
+                  i === step ? "bg-brand" : "bg-ink/25",
+                )}
+              />
+              {label}
+            </span>
+            {i < flow.length - 1 && <span className="h-px w-3 bg-ink/15" />}
+          </div>
+        ))}
       </div>
     </div>
   );

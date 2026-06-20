@@ -1,7 +1,12 @@
 {
+  "product": "Product",
   "how": "How it works",
-  "tiers": "Tiers",
   "safety": "Safety",
-  "sign_in": "Sign in",
-  "waitlist": "Join the waitlist"
+  "waitlist": "Join the waitlist",
+  "menu": {
+    "find_label": "For members",
+    "find_desc": "Find a companion or certified pro — book by the session, no contracts.",
+    "earn_label": "For companions",
+    "earn_desc": "Monetize your time, company, or skill. Set your own rates."
+  }
 }

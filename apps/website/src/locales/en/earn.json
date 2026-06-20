@@ -1,0 +1,82 @@
+{
+  "hero": {
+    "eyebrow": "For companions",
+    "title_1": "Get paid for your",
+    "title_2": "time, company, or ",
+    "title_highlight": "skill.",
+    "sub": "Coach, train alongside, or just be the reason someone shows up. List what you offer, set your own rates, and earn on your own schedule.",
+    "cta_primary": "Become a companion",
+    "cta_secondary": "How earning works"
+  },
+  "who": {
+    "eyebrow": "Who earns",
+    "title_1": "If people train better with you, ",
+    "title_highlight": "you can earn.",
+    "intro": "Pacergo isn't only for trainers. Whatever you bring, you set your own rate.",
+    "items": [
+      {
+        "name": "Certified trainers",
+        "body": "Verify your credentials and coach clients with structured programming."
+      },
+      {
+        "name": "Experienced athletes",
+        "body": "Turn experience into sessions — train alongside people and share what works."
+      },
+      {
+        "name": "Motivating buddies",
+        "body": "Be the accountability that gets people to show up. Start free or low-cost."
+      }
+    ]
+  },
+  "how": {
+    "eyebrow": "How earning works",
+    "title_1": "List it. Set your rate. ",
+    "title_highlight": "Get booked.",
+    "items": [
+      {
+        "no": "01",
+        "title": "Create your listing",
+        "body": "Add your activities and offerings. Verify credentials if you're a certified pro."
+      },
+      {
+        "no": "02",
+        "title": "Set your own rates",
+        "body": "You decide what each session costs and when you're available. No fixed pricing."
+      },
+      {
+        "no": "03",
+        "title": "Accept & get paid",
+        "body": "Approve the booking requests that fit, train, and get paid — on your schedule."
+      }
+    ]
+  },
+  "benefits": {
+    "eyebrow": "Why companions choose Pacergo",
+    "title_1": "Your time, ",
+    "title_highlight": "your terms.",
+    "items": [
+      {
+        "title": "You set the price",
+        "body": "Every offering is priced by you. Pacergo never sets your rates."
+      },
+      {
+        "title": "You choose the hours",
+        "body": "Accept only the sessions and times that work for you. No quotas."
+      },
+      {
+        "title": "Keep your independence",
+        "body": "No exclusivity and no chair to rent. Bring your own clients or find new ones."
+      },
+      {
+        "title": "Safety built in",
+        "body": "Verified members, two-way reviews, and reporting protect every session."
+      }
+    ]
+  },
+  "cta": {
+    "eyebrow": "Early access",
+    "title_1": "Start earning with ",
+    "title_highlight": "Pacergo.",
+    "sub": "Join the waitlist to set up your companion profile before launch."
+  }
+}

@@ -4,22 +4,20 @@
     "title_1": "Find your",
     "title_2": "workout ",
     "title_highlight": "companion.",
-    "sub": "From certified trainers to training buddies — meet real people near you, match on activity and pace, and train together in person.",
+    "sub": "Book someone to train with by the session — and just show up. No contracts, no lock-in.",
     "cta_primary": "Join the waitlist",
-    "cta_secondary": "See how it works",
-    "stats": [
-      { "value": "3", "label": "companion tiers" },
-      { "value": "NT$", "label": "transparent pricing" },
-      { "value": "100%", "label": "verified profiles" }
-    ]
+    "cta_secondary": "How it works"
   },
   "mockup": {
     "discover": "Discover",
-    "tier_a": "Tier A",
+    "tier_a": "Certified",
     "meta": "Strength · 1.2km",
-    "book": "Book session"
+    "available": "Available today",
+    "book": "Request session",
+    "flow": ["Discover", "Book", "Train"]
   },
   "activities_label": "Supported activities",
+  "activities_more": "& more",
   "activities": [
     "Gym",
     "Running",
@@ -42,12 +40,12 @@
       {
         "no": "01",
         "title": "Discover",
-        "body": "Browse companions near you, filtered by activity, tier, and price. Every profile shows distance, rating, and what they actually do."
+        "body": "Browse companions near you, filtered by activity and what you're after. Every profile shows distance, rating, and how they train."
       },
       {
         "no": "02",
         "title": "Book",
-        "body": "Request a session — pick the offering, time, and place. They accept, you meet. Reschedule or cancel anytime, no awkwardness."
+        "body": "Request a session — pick a time and place. They accept, you meet. Reschedule or cancel anytime, no awkwardness."
       },
       {
         "no": "03",
@@ -57,34 +55,29 @@
     ]
   },
   "tiers": {
-    "eyebrow": "The tiers",
-    "title_1": "Three tiers. ",
-    "title_highlight": "One community.",
-    "intro": "Whether you need a coach, a sparring partner, or just someone to keep you honest — there's a tier and a price that fits.",
-    "tier_word": "Tier",
-    "most_trusted": "Most trusted",
-    "per_session": "/ session",
+    "eyebrow": "Who you'll meet",
+    "title_1": "From certified pros to ",
+    "title_highlight": "training buddies.",
+    "intro": "However you like to train, there's someone for it — and the kinds of companions keep growing.",
+    "rate_note": "Each companion sets their own rate",
     "items": [
       {
         "code": "A",
         "name": "Certified Pros",
-        "price": "NT$800–1,500",
         "blurb": "Licensed, verified trainers for structured, goal-driven coaching.",
         "features": ["Document-verified credentials", "Structured programming", "Built for specific goals"]
       },
       {
         "code": "B",
         "name": "Experienced Peers",
-        "price": "NT$300–700",
         "blurb": "Seasoned athletes who train alongside you and share what works.",
         "features": ["Real training experience", "Hands-on, not hands-off", "Push past your plateau"]
       },
       {
         "code": "C",
         "name": "Training Buddies",
-        "price": "Free–NT$200",
         "blurb": "Someone to show up with. Low-stakes accountability to build the habit.",
-        "features": ["Accountability partner", "Casual & flexible", "Free to get started"]
+        "features": ["Accountability partner", "Casual & flexible", "Whatever pace suits you"]
       }
     ]
   },
@@ -97,7 +90,7 @@
     "items": [
       {
         "title": "Verified profiles",
-        "body": "Tier-A pros submit credentials to a private review before they can list. You always know who you're meeting."
+        "body": "Certified pros submit credentials to a private review before they can list. You always know who you're meeting."
       },
       {
         "title": "Report & block",

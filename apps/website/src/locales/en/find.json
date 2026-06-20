@@ -1,0 +1,82 @@
+{
+  "hero": {
+    "eyebrow": "For members",
+    "title_1": "Train with someone.",
+    "title_2": "Skip the ",
+    "title_highlight": "contract.",
+    "sub": "Find a workout companion or certified pro near you, book by the session, and just show up. No memberships, no lock-in, no hard sell.",
+    "cta_primary": "Join the waitlist",
+    "cta_secondary": "How it works"
+  },
+  "pains": {
+    "eyebrow": "Why Pacergo",
+    "title_1": "Everything a gym contract ",
+    "title_highlight": "isn't.",
+    "items": [
+      {
+        "title": "Pay by the session",
+        "body": "No annual lock-in or monthly fees you forget to cancel. Book one session at a time."
+      },
+      {
+        "title": "No commitment",
+        "body": "Train once a week or once a month. Reschedule or cancel anytime — no penalties."
+      },
+      {
+        "title": "No hard sell",
+        "body": "No front-desk upsells or packages. Just the session you actually asked for."
+      },
+      {
+        "title": "Real people nearby",
+        "body": "Match on activity and location, see ratings, and meet someone who fits how you train."
+      }
+    ]
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "title_1": "From scrolling to ",
+    "title_highlight": "training.",
+    "items": [
+      {
+        "no": "01",
+        "title": "Discover",
+        "body": "Browse companions and pros near you, filtered by activity and what you're after."
+      },
+      {
+        "no": "02",
+        "title": "Book a session",
+        "body": "Pick a time and place and send a request. They accept — that's it."
+      },
+      {
+        "no": "03",
+        "title": "Show up & train",
+        "body": "Meet in person and train. Rate each other afterwards to keep the community strong."
+      }
+    ]
+  },
+  "kinds": {
+    "eyebrow": "Who you'll find",
+    "title_1": "From certified pros to ",
+    "title_highlight": "training buddies.",
+    "intro": "Whatever you need — structured coaching, an experienced partner, or just someone to show up with. Each one sets their own rate.",
+    "items": [
+      {
+        "name": "Certified pros",
+        "body": "Licensed, verified trainers for structured, goal-driven coaching."
+      },
+      {
+        "name": "Experienced peers",
+        "body": "Seasoned athletes who train alongside you and share what works."
+      },
+      {
+        "name": "Training buddies",
+        "body": "Someone to keep you accountable and make showing up easier."
+      }
+    ]
+  },
+  "cta": {
+    "eyebrow": "Early access",
+    "title_1": "Find your ",
+    "title_highlight": "companion.",
+    "sub": "Join the waitlist and be first to book when Pacergo opens in your city."
+  }
+}

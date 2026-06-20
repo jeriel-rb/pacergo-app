@@ -23,7 +23,7 @@ export function Steps() {
         </h2>
       </div>
 
-      <div className="mt-16 grid gap-px overflow-hidden rounded-[var(--radius)] border border-ink/10 bg-ink/10 md:grid-cols-3">
+      <div className="mt-16 grid gap-px overflow-hidden rounded-(--radius) border border-ink/10 bg-ink/10 md:grid-cols-3">
         {items.map((step, i) => {
           const Icon = ICONS[i] ?? MapPin;
           return (

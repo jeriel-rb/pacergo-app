@@ -1,0 +1,32 @@
+import {
+  Home,
+  Users,
+  Dumbbell,
+  MessageCircle,
+  User,
+  type LucideIcon,
+} from "lucide-react";
+
+export interface NavItem {
+  /** Matches a key in the `nav` i18n namespace. */
+  key: "home" | "community" | "trainers" | "messages" | "profile";
+  /** Unprefixed route (locale is applied at render time). */
+  href: string;
+  icon: LucideIcon;
+  /** The emphasized center action in the bottom bar. */
+  center?: boolean;
+}
+
+export const NAV_ITEMS: NavItem[] = [
+  { key: "home", href: "/", icon: Home },
+  { key: "community", href: "/community", icon: Users },
+  { key: "trainers", href: "/trainers", icon: Dumbbell, center: true },
+  { key: "messages", href: "/messages", icon: MessageCircle },
+  { key: "profile", href: "/profile", icon: User },
+];
+
+/** Whether `href` is the active route given the locale-stripped pathname. */
+export function isNavItemActive(strippedPath: string, href: string): boolean {
+  if (href === "/") return strippedPath === "/";
+  return strippedPath === href || strippedPath.startsWith(`${href}/`);
+}

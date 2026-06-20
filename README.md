@@ -150,6 +150,6 @@ apps/
         query/          # TanStack Query client
       locales/          # en.json, zh-Hant.json
       types/            # ambient TS declarations
-  web/                  # @pacergo/web — product app (Next.js, placeholder)
+  web/                  # @pacergo/web — product app (Next.js 15, App Router)
   website/              # @pacergo/website — marketing site (Next.js, placeholder)
 ```

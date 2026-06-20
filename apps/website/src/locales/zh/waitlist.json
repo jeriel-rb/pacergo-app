@@ -1,0 +1,14 @@
+{
+  "eyebrow": "搶先體驗",
+  "title_1": "加入",
+  "title_highlight": "候補名單。",
+  "sub": "當 Pacergo 在你的城市上線時，第一個找到夥伴——或成為夥伴開始賺錢。一上線，我們就用 Email 通知你。",
+  "name_label": "姓名",
+  "name_placeholder": "你的名字",
+  "email_label": "Email",
+  "email_placeholder": "you@example.com",
+  "submit": "加入候補名單",
+  "success_title": "你已加入名單！",
+  "success_body": "謝謝你，{{name}}——Pacergo 上線時，我們會透過 {{email}} 與你聯繫。",
+  "fine_print": "台灣上線中 · 繁體中文 & English · 不寄垃圾信，隨時可取消訂閱"
+}

@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { SectionLabel } from "./section-label";
-import { WaitlistForm } from "./waitlist-form";
 
 export function Cta() {
   const { t } = useTranslation("home");
+  const waitlist = getLocalizedPath("/waitlist", getCurrentLocale(usePathname()));
 
   return (
     <section id="waitlist" className="relative overflow-hidden bg-ink text-paper">
@@ -22,11 +26,17 @@ export function Cta() {
           {t("cta.sub")}
         </p>
 
-        <div className="mx-auto mt-9 max-w-lg">
-          <WaitlistForm />
+        <div className="mt-9 flex justify-center">
+          <Link
+            href={waitlist}
+            className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-7 text-sm font-semibold text-paper transition-transform hover:-translate-y-px"
+          >
+            {t("cta.submit")}
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
 
-        <p className="mt-5 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-paper/40">
+        <p className="mt-6 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-paper/40">
           {t("cta.launching")}
         </p>
       </div>

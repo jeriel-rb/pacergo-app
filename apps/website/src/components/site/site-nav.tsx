@@ -19,6 +19,7 @@ export function SiteNav() {
   const home = getLocalizedPath("/", locale);
   const find = getLocalizedPath("/find", locale);
   const earn = getLocalizedPath("/earn", locale);
+  const waitlist = getLocalizedPath("/waitlist", locale);
 
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -58,7 +59,7 @@ export function SiteNav() {
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher className="hidden md:inline-flex" />
             <Link
-              href={`${home}#waitlist`}
+              href={waitlist}
               className="hidden h-9 items-center rounded-(--radius) bg-ink px-4 text-sm font-semibold text-paper transition-transform hover:-translate-y-px md:inline-flex"
             >
               {t("waitlist")}
@@ -125,7 +126,7 @@ export function SiteNav() {
             </div>
 
             <Link
-              href={`${home}#waitlist`}
+              href={waitlist}
               onClick={close}
               className="flex h-11 items-center justify-center rounded-(--radius) bg-ink text-sm font-semibold text-paper"
             >

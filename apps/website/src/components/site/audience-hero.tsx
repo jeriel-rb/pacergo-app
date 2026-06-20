@@ -1,12 +1,16 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { SectionLabel } from "./section-label";
 
 /** Type-led hero shared by the audience pages (/find, /earn), with an illustration. */
 export function AudienceHero({ ns, illustration }: { ns: string; illustration?: React.ReactNode }) {
   const { t } = useTranslation(ns);
+  const waitlist = getLocalizedPath("/waitlist", getCurrentLocale(usePathname()));
 
   return (
     <section id="top" className="relative overflow-hidden">
@@ -40,13 +44,13 @@ export function AudienceHero({ ns, illustration }: { ns: string; illustration?: 
             className="animate-rise mt-9 flex flex-wrap items-center gap-3"
             style={{ animationDelay: "320ms" }}
           >
-            <a
-              href="#join"
+            <Link
+              href={waitlist}
               className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-6 text-sm font-semibold text-paper transition-transform hover:-translate-y-px"
             >
               {t("hero.cta_primary")}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
+            </Link>
             <a
               href="#how"
               className="inline-flex h-12 items-center rounded-(--radius) border border-ink/15 px-6 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-paper"

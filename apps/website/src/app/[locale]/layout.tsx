@@ -3,7 +3,7 @@ import initTranslations from "@/app/i18n";
 import i18nConfig from "@/i18nConfig";
 import { TranslationsProvider } from "@/components/translations-provider";
 
-const NAMESPACES = ["common", "nav", "home", "footer", "find", "earn"];
+const NAMESPACES = ["common", "nav", "home", "footer", "find", "earn", "waitlist"];
 
 type LocaleParams = { params: Promise<{ locale: string }> };
 

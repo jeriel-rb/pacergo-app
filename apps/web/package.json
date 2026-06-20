@@ -1,0 +1,6 @@
+{
+  "name": "@pacergo/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pacergo product app (Next.js, behind auth). Placeholder — not yet scaffolded."
+}

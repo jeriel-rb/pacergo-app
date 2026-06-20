@@ -2,21 +2,28 @@
 
 Find an in-person workout companion in Taiwan — from certified pro trainers (Tier A) to experienced peers (Tier B) to training buddies (Tier C). React Native (Expo) + Supabase.
 
+This is a **Yarn 4 workspaces monorepo**. The mobile app lives in [`apps/mobile/`](apps/mobile/);
+shared code and data access have package homes in [`packages/`](packages/) (scaffolds for now).
+
 See the design spec at [`docs/superpowers/specs/2026-06-12-pacergo-design.md`](docs/superpowers/specs/2026-06-12-pacergo-design.md) and the M0 plan at [`docs/superpowers/plans/2026-06-12-pacergo-m0-foundation.md`](docs/superpowers/plans/2026-06-12-pacergo-m0-foundation.md).
 
 ## Setup
 
-1. `npm install`
-2. Copy `.env.example` to `.env` and fill in the Supabase values.
+Requires Node ≥ 20 and Corepack (`corepack enable`) so the pinned Yarn 4 is used.
+
+1. `yarn install` (from the repo root)
+2. Copy `apps/mobile/.env.example` to `apps/mobile/.env` and fill in the Supabase values.
 3. Apply the database schema (see **Database** below).
-4. `npx expo start`
+4. `yarn mobile` (alias for `yarn workspace pacergo start`)
 
 ## Scripts
 
-- `npm test` — run the Jest test suite
-- `npm run typecheck` — type-check (`tsc --noEmit`)
-- `npx expo start` — start the dev server
-- `npx expo export --platform ios` — production-bundle (build smoke test)
+Run from the repo root:
+
+- `yarn test` — run the mobile Jest suite (`yarn workspace pacergo test`)
+- `yarn typecheck` — type-check the mobile app (`tsc --noEmit`)
+- `yarn mobile` / `yarn mobile:ios` / `yarn mobile:android` / `yarn mobile:web` — start the dev server
+- `yarn workspace pacergo exec expo export --platform ios` — production-bundle (build smoke test)
 
 ## Database
 
@@ -116,16 +123,33 @@ i18next (en / zh-Hant) · Supabase · TanStack Query · Zustand · jest-expo + T
 ## Project structure
 
 ```
-src/
-  app/            # expo-router routes (root layout + (tabs) group)
-  components/ui/  # design-system component kit
-  lib/
-    theme/        # tokens + dark/light/system ThemeProvider
-    i18n/         # i18next setup
-    format/       # NTD / distance / locale formatters
-    supabase/     # Supabase client singleton
-    query/        # TanStack Query client
-  locales/        # en.json, zh-Hant.json
-  types/          # ambient TS declarations
-supabase/migrations/  # SQL migrations
+package.json            # root: Yarn 4 workspaces (apps/*, packages/*)
+tsconfig.base.json      # shared compiler options for the packages
+.yarnrc.yml             # nodeLinker: node-modules (required for RN/Metro)
+
+supabase/
+  migrations/           # SQL migrations (0001–0007)
+  functions/            # edge functions (empty for now)
+  seed.sql              # local seed data (empty for now)
+
+packages/               # scaffolds — real code extracted incrementally
+  shared/               # @pacergo/shared — enums, types, helpers, constants, schemas
+  api/                  # @pacergo/api — supabase client, queries, mutations
+
+apps/
+  mobile/               # @pacergo "pacergo" — the Expo app (this is the v1 product)
+    src/
+      app/              # expo-router routes (root layout + (tabs) group)
+      components/ui/    # design-system component kit
+      features/         # account, auth, booking, chat, companion, discovery, …
+      lib/
+        theme/          # tokens + dark/light/system ThemeProvider
+        i18n/           # i18next setup
+        format/         # NTD / distance / locale formatters
+        supabase/       # Supabase client singleton
+        query/          # TanStack Query client
+      locales/          # en.json, zh-Hant.json
+      types/            # ambient TS declarations
+  web/                  # @pacergo/web — product app (Next.js, placeholder)
+  website/              # @pacergo/website — marketing site (Next.js, placeholder)
 ```

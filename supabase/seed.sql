@@ -1,0 +1,1 @@
+-- Seed data for local Supabase. Populated later (supabase db seed).

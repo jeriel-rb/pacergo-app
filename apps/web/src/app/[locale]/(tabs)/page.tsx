@@ -1,8 +1,7 @@
-export default function HomePage() {
-  return (
-    <main className="mx-auto max-w-md p-6">
-      <h1 className="text-2xl font-semibold text-foreground">Pacergo</h1>
-      <p className="text-muted-foreground">Scaffold OK.</p>
-    </main>
-  );
+import { getRecommendedTrainers } from "@pacergo/api";
+import { HomeView } from "@/features/home/home-view";
+
+export default async function HomePage() {
+  const trainers = await getRecommendedTrainers();
+  return <HomeView trainers={trainers} />;
 }

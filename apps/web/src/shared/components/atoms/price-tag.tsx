@@ -28,7 +28,7 @@ export function PriceTag({
   }
   return (
     <span className={cn("font-semibold text-primary", className)}>
-      NT${amount.toLocaleString()}
+      {`NT$${amount.toLocaleString()}`}
       {perHour && (
         <span className="ml-0.5 text-xs font-normal text-muted-foreground">
           {PER_HOUR[locale]}

@@ -7,6 +7,10 @@ const i18nConfig = {
   defaultLocale: "zh",
   prefixDefault: false,
   localeCookie: LOCALE_COOKIE_NAME,
+  // Don't auto-redirect by the browser's Accept-Language. Taiwan zh is the
+  // landing default for everyone; visitors opt into English via the switcher
+  // (which sets the NEXT_LOCALE cookie, still honored above detection).
+  localeDetector: false as const,
 };
 
 export default i18nConfig;

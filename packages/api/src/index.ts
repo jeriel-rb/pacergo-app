@@ -1,6 +1,6 @@
 // @pacergo/api — Supabase client, queries, mutations.
-// Scaffold only. As code is extracted:
-//   export * from './supabase-client';
-//   export * from './queries';
-//   export * from './mutations';
-export {};
+// Env-gated: serves mock fixtures until Supabase env vars are present.
+
+export * from './supabase-client';
+export * from './queries/trainers';
+export * from './queries/activities';

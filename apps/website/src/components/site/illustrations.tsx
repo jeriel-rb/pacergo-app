@@ -22,26 +22,29 @@ export function LifterIllustration({ className }: { className?: string }) {
 
       {/* exertion sparks */}
       <g stroke={BRAND} strokeWidth="6" strokeLinecap="round">
-        <path d="M46 40 L34 28" />
-        <path d="M254 40 L266 28" />
+        <path d="M40 38 L28 26" />
+        <path d="M260 38 L272 26" />
       </g>
 
-      {/* barbell */}
-      <line x1="54" y1="58" x2="246" y2="58" stroke={INK} strokeWidth="12" strokeLinecap="round" />
-      <circle cx="56" cy="58" r="26" fill={BRAND} />
-      <circle cx="244" cy="58" r="26" fill={BRAND} />
-      <circle cx="86" cy="58" r="13" fill={INK} />
-      <circle cx="214" cy="58" r="13" fill={INK} />
+      {/* barbell — bar, brand weight plates, ink collars */}
+      <line x1="48" y1="56" x2="252" y2="56" stroke={INK} strokeWidth="10" strokeLinecap="round" />
+      <rect x="56" y="30" width="17" height="52" rx="8.5" fill={BRAND} />
+      <rect x="227" y="30" width="17" height="52" rx="8.5" fill={BRAND} />
+      <rect x="82" y="40" width="10" height="32" rx="5" fill={INK} />
+      <rect x="208" y="40" width="10" height="32" rx="5" fill={INK} />
 
       {/* arms up to the bar */}
-      <path d="M126 110 L116 62" stroke={INK} strokeWidth="16" strokeLinecap="round" />
-      <path d="M174 110 L184 62" stroke={INK} strokeWidth="16" strokeLinecap="round" />
+      <path d="M126 112 L120 60" stroke={INK} strokeWidth="16" strokeLinecap="round" />
+      <path d="M174 112 L180 60" stroke={INK} strokeWidth="16" strokeLinecap="round" />
 
-      {/* solid V-taper torso (reads as bulk) */}
-      <path d="M122 108 Q150 99 178 108 L162 198 Q150 205 138 198 Z" fill={INK} />
+      {/* solid torso — shoulders dome up to the neck, taper to the waist */}
+      <path
+        d="M120 116 C122 98 138 92 150 92 C162 92 178 98 180 116 L163 199 Q150 206 137 199 Z"
+        fill={INK}
+      />
 
       {/* head */}
-      <circle cx="150" cy="82" r="22" fill={INK} />
+      <circle cx="150" cy="74" r="20" fill={INK} />
 
       {/* legs */}
       <path

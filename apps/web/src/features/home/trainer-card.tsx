@@ -43,7 +43,7 @@ export function TrainerCard({
               e.stopPropagation();
               setSaved((s) => !s);
             }}
-            className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card text-muted-foreground shadow-sm"
+            className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
           >
             <Star
               size={14}

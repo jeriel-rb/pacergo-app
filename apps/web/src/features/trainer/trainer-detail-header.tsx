@@ -34,7 +34,7 @@ export function TrainerDetailHeader({
       <Link
         href={backHref}
         aria-label={t("back", { defaultValue: "Back" })}
-        className="absolute left-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white"
+        className="absolute left-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
       >
         <ChevronLeft size={20} />
       </Link>

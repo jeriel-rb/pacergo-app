@@ -143,6 +143,16 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+
+  /* Every interactive element gets a pointer cursor (native buttons default to
+     an arrow). Disabled controls keep the default cursor. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  summary {
+    cursor: pointer;
+  }
 }
 
 /* Hide scrollbars on horizontal chip rows while keeping scroll. */

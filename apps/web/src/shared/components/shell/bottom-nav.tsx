@@ -31,7 +31,7 @@ export function BottomNav() {
               <li key={item.key}>
                 <Link
                   href={href}
-                  className="-mt-7 flex flex-col items-center gap-1"
+                  className="-mt-7 flex flex-col items-center gap-1 transition-opacity hover:opacity-80"
                 >
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30">
                     <Icon size={22} />
@@ -53,7 +53,7 @@ export function BottomNav() {
             <li key={item.key}>
               <Link
                 href={href}
-                className="flex flex-col items-center gap-1 px-2 py-1"
+                className="flex flex-col items-center gap-1 px-2 py-1 transition-opacity hover:opacity-80"
               >
                 <Icon
                   size={22}

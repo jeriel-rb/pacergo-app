@@ -49,7 +49,10 @@ export function AuthCard({ mode }: { mode: "sign-in" | "sign-up" }) {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {isSignIn ? t("noAccount") : t("haveAccount")}{" "}
-        <Link href={altHref} className="font-semibold text-primary">
+        <Link
+          href={altHref}
+          className="font-semibold text-primary transition-colors hover:text-primary/80"
+        >
           {isSignIn ? t("signUpLink") : t("signInLink")}
         </Link>
       </p>

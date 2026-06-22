@@ -24,7 +24,7 @@ export function RecommendedTrainers({
         <h2 className="text-lg font-bold">{t("recommended")}</h2>
         <Link
           href={viewAllHref}
-          className="inline-flex items-center text-sm font-medium text-primary"
+          className="inline-flex items-center text-sm font-medium text-primary transition-colors hover:text-primary/80"
         >
           {t("viewAll")}
           <ChevronRight size={16} />

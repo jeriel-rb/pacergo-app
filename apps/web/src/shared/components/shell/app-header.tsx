@@ -25,7 +25,7 @@ export function AppHeader({ user }: { user: UserProfile | null }) {
       <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between gap-4 px-4 lg:max-w-5xl lg:px-6">
         <Link
           href={getLocalizedPath("/", locale)}
-          className="flex items-center gap-2 font-bold tracking-tight text-foreground"
+          className="flex items-center gap-2 font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
         >
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
             P

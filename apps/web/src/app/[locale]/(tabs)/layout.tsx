@@ -1,13 +1,13 @@
-import { getCurrentUser } from "@pacergo/api";
 import { AppHeader } from "@/shared/components/shell/app-header";
 import { BottomNav } from "@/shared/components/shell/bottom-nav";
+import { getSessionUser } from "@/lib/auth";
 
 export default async function TabsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   return (
     <div className="min-h-screen">
       <AppHeader user={user} />

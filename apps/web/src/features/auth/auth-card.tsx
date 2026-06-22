@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { SocialButtons } from "./social-buttons";
+import { EmailAuthForm } from "./email-auth-form";
 import { ThemeToggle } from "@/shared/components/shell/theme-toggle";
 import { LanguageSwitcher } from "@/shared/components/shell/language-switcher";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
@@ -40,7 +40,7 @@ export function AuthCard({ mode }: { mode: "sign-in" | "sign-up" }) {
       </div>
 
       <div className="mt-8">
-        <SocialButtons />
+        <EmailAuthForm mode={mode} />
       </div>
 
       <p className="mx-auto mt-6 max-w-xs text-center text-xs leading-relaxed text-muted-foreground">

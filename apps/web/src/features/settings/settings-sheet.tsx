@@ -27,6 +27,7 @@ import { LanguageSwitcher } from "@/shared/components/shell/language-switcher";
 import { ThemeSettingRow } from "./theme-setting-row";
 import { Button } from "@/shared/components/ui/button";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 /** Gear button → slide-in settings sheet (profile + settings list). */
 export function SettingsSheet({ user }: { user: UserProfile | null }) {
@@ -38,9 +39,11 @@ export function SettingsSheet({ user }: { user: UserProfile | null }) {
 
   const profileHref = getLocalizedPath("/profile", locale);
 
-  function signOut() {
+  async function signOut() {
     setOpen(false);
+    await createSupabaseBrowserClient().auth.signOut();
     router.push(getLocalizedPath("/sign-in", locale));
+    router.refresh();
   }
 
   return (

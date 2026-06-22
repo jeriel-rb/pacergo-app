@@ -1,11 +1,13 @@
 {
   "greeting": "Hi, {{name}} 👋",
+  "guest": "夥伴",
   "prompt": "今天想一起訓練嗎？",
   "switchTrainer": "切換陪練員",
   "hero": {
     "kicker": "FIND YOUR TRAINING PARTNER",
     "title": "找到你的訓練夥伴",
-    "subtitle": "6+ 位專業陪練師等你"
+    "subtitle": "6+ 位專業陪練師等你",
+    "cta": "立即探索"
   },
   "actions": {
     "find": "找夥伴",
@@ -24,6 +26,10 @@
   "weeklyProgress": "本週訓練進度",
   "weeklyProgressEn": "WEEKLY PROGRESS",
   "weeklyCount": "{{done}}/{{total}} 完成訓練",
+  "tools": "個人工具",
+  "toolsEn": "PERSONAL TOOLS",
+  "myTrainer": "你的固定夥伴",
+  "myTrainerHint": "配對後，你的固定陪練夥伴會顯示在這裡。",
   "recommended": "推薦陪練師",
   "viewAll": "查看全部",
   "category": {

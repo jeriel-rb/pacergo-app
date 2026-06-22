@@ -1,11 +1,13 @@
 {
   "greeting": "Hi, {{name}} 👋",
+  "guest": "there",
   "prompt": "Ready to train together today?",
   "switchTrainer": "Switch trainer",
   "hero": {
     "kicker": "FIND YOUR TRAINING PARTNER",
     "title": "Find your training partner",
-    "subtitle": "6+ pro trainers waiting for you"
+    "subtitle": "6+ pro trainers waiting for you",
+    "cta": "Browse trainers"
   },
   "actions": {
     "find": "Find partner",
@@ -24,6 +26,10 @@
   "weeklyProgress": "This week's progress",
   "weeklyProgressEn": "WEEKLY PROGRESS",
   "weeklyCount": "{{done}}/{{total}} workouts done",
+  "tools": "Your tools",
+  "toolsEn": "PERSONAL TOOLS",
+  "myTrainer": "Your partner",
+  "myTrainerHint": "Once you connect, your regular training partner shows up here.",
   "recommended": "Recommended trainers",
   "viewAll": "View all",
   "category": {

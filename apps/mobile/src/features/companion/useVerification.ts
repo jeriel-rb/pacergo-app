@@ -13,7 +13,7 @@ export function useMyVerification() {
       const { data, error } = await supabase
         .from('verifications')
         .select('id, doc_type, status, created_at')
-        .eq('profile_id', uid)
+        .eq('user_id', uid)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -44,7 +44,7 @@ export function useSubmitVerification() {
       if (up) throw up;
       const { error } = await supabase
         .from('verifications')
-        .insert({ profile_id: uid, doc_type: docType, document_path: path, status: 'pending' });
+        .insert({ user_id: uid, doc_type: docType, document_path: path, status: 'pending' });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['verification', uid] }),

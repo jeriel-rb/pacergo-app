@@ -42,8 +42,8 @@ export default function OnboardingScreen() {
       });
       const userId = session?.user.id;
       if (userId) {
-        await supabase.from('profile_activities').insert(
-          parsed.data.activityIds.map((activity_id) => ({ profile_id: userId, activity_id }))
+        await supabase.from('user_activities').insert(
+          parsed.data.activityIds.map((activity_id) => ({ user_id: userId, activity_id }))
         );
       }
       store.reset();

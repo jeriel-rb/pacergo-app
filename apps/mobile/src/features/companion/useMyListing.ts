@@ -14,7 +14,7 @@ export function useMyListing() {
       const { data: listing, error } = await supabase
         .from('companion_listings')
         .select('*')
-        .eq('profile_id', uid)
+        .eq('user_id', uid)
         .maybeSingle();
       if (error) throw error;
       let offerings: Offering[] = [];

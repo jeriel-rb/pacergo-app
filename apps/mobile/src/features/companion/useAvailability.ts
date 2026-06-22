@@ -13,7 +13,7 @@ export function useAvailability() {
       const { data, error } = await supabase
         .from('availability')
         .select('id, weekday, start_minute, end_minute')
-        .eq('profile_id', uid)
+        .eq('user_id', uid)
         .order('weekday');
       if (error) throw error;
       return (data ?? []) as AvailabilitySlot[];
@@ -27,12 +27,12 @@ export function useSaveAvailability() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (slots: { weekday: number; start_minute: number; end_minute: number }[]) => {
-      const { error: del } = await supabase.from('availability').delete().eq('profile_id', uid);
+      const { error: del } = await supabase.from('availability').delete().eq('user_id', uid);
       if (del) throw del;
       if (slots.length > 0) {
         const { error } = await supabase
           .from('availability')
-          .insert(slots.map((s) => ({ ...s, profile_id: uid })));
+          .insert(slots.map((s) => ({ ...s, user_id: uid })));
         if (error) throw error;
       }
     },

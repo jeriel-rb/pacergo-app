@@ -2,7 +2,7 @@ import type { Tier } from '@/features/discovery/types';
 
 export type Listing = {
   id: string;
-  profile_id: string;
+  user_id: string;
   headline: string | null;
   bio_long: string | null;
   served_area: string | null;

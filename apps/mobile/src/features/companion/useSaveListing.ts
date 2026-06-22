@@ -17,7 +17,7 @@ export function useSaveListing() {
     mutationFn: async (patch: ListingPatch): Promise<string> => {
       const { data, error } = await supabase
         .from('companion_listings')
-        .upsert({ profile_id: uid, ...patch }, { onConflict: 'profile_id' })
+        .upsert({ user_id: uid, ...patch }, { onConflict: 'user_id' })
         .select()
         .single();
       if (error) throw error;

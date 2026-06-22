@@ -35,7 +35,7 @@ export function useCompanion(id: string) {
       const { data: listing, error: e2 } = await supabase
         .from('companion_listings')
         .select('id')
-        .eq('profile_id', id)
+        .eq('user_id', id)
         .maybeSingle();
       if (e2) throw e2;
 

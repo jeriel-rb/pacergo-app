@@ -21,7 +21,7 @@ export function useProfile() {
     enabled: Boolean(userId),
     queryFn: async (): Promise<Profile | null> => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
@@ -37,7 +37,7 @@ export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (patch: Partial<Profile>) => {
-      const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
+      const { error } = await supabase.from('users').update(patch).eq('id', userId);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['profile', userId] }),

@@ -29,6 +29,6 @@ describe('useProfile', () => {
   it('loads the current user profile', async () => {
     const { result } = renderHook(() => useProfile(), { wrapper });
     await waitFor(() => expect(result.current.data?.display_name).toBe('Lee'));
-    expect(supabase.from as jest.Mock).toHaveBeenCalledWith('profiles');
+    expect(supabase.from as jest.Mock).toHaveBeenCalledWith('users');
   });
 });

@@ -1,6 +1,6 @@
 import type { ExperienceLevel } from "../enums/experience";
 
-/** The signed-in user. Field names mirror the `profiles` table / mobile app. */
+/** The signed-in user. Field names mirror the `users` table / mobile app. */
 export interface UserProfile {
   id: string;
   display_name: string;

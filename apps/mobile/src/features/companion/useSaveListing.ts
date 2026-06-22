@@ -22,7 +22,7 @@ export function useSaveListing() {
         .single();
       if (error) throw error;
       const { error: e2 } = await supabase
-        .from('profiles')
+        .from('users')
         .update({ is_companion: true })
         .eq('id', uid);
       if (e2) throw e2;

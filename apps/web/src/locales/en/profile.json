@@ -1,0 +1,62 @@
+{
+  "title": "Profile",
+  "subtitle": "Manage your profile and account",
+  "editPhoto": "Change photo",
+  "uploading": "Uploading…",
+  "avatarHintType": "Please choose an image file",
+  "avatarHintSize": "Image must be under 2 MB",
+  "fields": {
+    "displayName": "Display name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell others a bit about yourself…",
+    "experience": "Experience",
+    "homeArea": "Home area",
+    "homeAreaPlaceholder": "e.g. Da'an, Taipei"
+  },
+  "experience": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "save": "Save changes",
+  "saved": "Saved",
+  "account": {
+    "title": "Account",
+    "sub": "ACCOUNT",
+    "email": "Email",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "changeEmail": "Change email",
+    "changePassword": "Change password",
+    "signOut": "Sign out",
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete account",
+    "deleteDesc": "Permanently delete your account and all data. This can't be undone."
+  },
+  "changeEmailDialog": {
+    "title": "Change email",
+    "desc": "We'll send a confirmation link to your new email address.",
+    "newEmail": "New email",
+    "submit": "Send confirmation",
+    "sent": "Confirmation sent — check your new inbox to finish the change."
+  },
+  "changePasswordDialog": {
+    "title": "Change password",
+    "desc": "Enter a new password (at least 6 characters).",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "mismatch": "Passwords do not match.",
+    "submit": "Update password",
+    "done": "Password updated."
+  },
+  "deleteDialog": {
+    "title": "Delete account",
+    "desc": "This permanently deletes your account and profile and can't be undone. Type DELETE to confirm.",
+    "placeholder": "Type DELETE",
+    "confirm": "Delete forever"
+  },
+  "cancel": "Cancel",
+  "notSignedIn": "Sign in to manage your profile.",
+  "mockNotice": "Connect Supabase to edit and save your profile.",
+  "genericError": "Something went wrong. Please try again."
+}

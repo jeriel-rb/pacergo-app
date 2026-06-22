@@ -1,5 +1,11 @@
-import { ComingSoon } from "@/shared/components/atoms/coming-soon";
+import { getCurrentProfile } from "@/lib/profile";
+import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
+import { ProfileView } from "@/features/profile/profile-view";
 
-export default function ProfilePage() {
-  return <ComingSoon titleKey="profile" />;
+// Per-request so profile edits reflect immediately after router.refresh().
+export const dynamic = "force-dynamic";
+
+export default async function ProfilePage() {
+  const profile = await getCurrentProfile();
+  return <ProfileView profile={profile} editable={SUPABASE_CONFIGURED} />;
 }

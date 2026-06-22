@@ -1,0 +1,62 @@
+{
+  "title": "個人檔案",
+  "subtitle": "管理你的個人資料與帳號",
+  "editPhoto": "更換照片",
+  "uploading": "上傳中…",
+  "avatarHintType": "請選擇圖片檔案",
+  "avatarHintSize": "圖片需小於 2MB",
+  "fields": {
+    "displayName": "顯示名稱",
+    "bio": "自我介紹",
+    "bioPlaceholder": "簡單介紹一下你自己…",
+    "experience": "訓練經驗",
+    "homeArea": "活動區域",
+    "homeAreaPlaceholder": "例如：台北市大安區"
+  },
+  "experience": {
+    "beginner": "初學",
+    "intermediate": "中階",
+    "advanced": "進階"
+  },
+  "save": "儲存變更",
+  "saved": "已儲存",
+  "account": {
+    "title": "帳號",
+    "sub": "ACCOUNT",
+    "email": "電子郵件",
+    "verified": "已驗證",
+    "unverified": "未驗證",
+    "changeEmail": "變更電子郵件",
+    "changePassword": "變更密碼",
+    "signOut": "登出",
+    "dangerZone": "危險區域",
+    "deleteAccount": "刪除帳號",
+    "deleteDesc": "永久刪除你的帳號與所有資料，此動作無法復原。"
+  },
+  "changeEmailDialog": {
+    "title": "變更電子郵件",
+    "desc": "我們會寄送確認信到你的新電子郵件地址。",
+    "newEmail": "新的電子郵件",
+    "submit": "寄送確認信",
+    "sent": "確認信已寄出，請到新信箱完成變更。"
+  },
+  "changePasswordDialog": {
+    "title": "變更密碼",
+    "desc": "輸入新的密碼（至少 6 個字元）。",
+    "newPassword": "新密碼",
+    "confirmPassword": "確認新密碼",
+    "mismatch": "兩次輸入的密碼不一致。",
+    "submit": "更新密碼",
+    "done": "密碼已更新。"
+  },
+  "deleteDialog": {
+    "title": "刪除帳號",
+    "desc": "這會永久刪除你的帳號與個人資料，且無法復原。請輸入 DELETE 以確認。",
+    "placeholder": "輸入 DELETE",
+    "confirm": "永久刪除"
+  },
+  "cancel": "取消",
+  "notSignedIn": "請先登入以管理你的個人檔案。",
+  "mockNotice": "連接 Supabase 後即可編輯並儲存你的個人檔案。",
+  "genericError": "發生錯誤，請再試一次。"
+}

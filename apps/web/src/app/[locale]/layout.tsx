@@ -4,7 +4,15 @@ import i18nConfig from "@/i18nConfig";
 import { TranslationsProvider } from "@/components/translations-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 
-const NAMESPACES = ["common", "nav", "home", "trainer", "auth", "settings"];
+const NAMESPACES = [
+  "common",
+  "nav",
+  "home",
+  "trainer",
+  "auth",
+  "settings",
+  "profile",
+];
 
 type LocaleParams = { params: Promise<{ locale: string }> };
 

@@ -19,5 +19,8 @@ dist/
 .env
 .env*.local
 
+# supabase CLI link state
+supabase/.temp/
+
 # macOS
 .DS_Store

@@ -2,9 +2,9 @@ import type {
   ActivitySlug,
   TrainerSummary,
   TrainerProfile,
-} from '@pacergo/shared';
-import { USE_MOCK } from '../supabase-client';
-import { MOCK_TRAINERS, RECOMMENDED_IDS } from '../mock/trainers';
+} from "@pacergo/shared";
+import { USE_MOCK, getSupabase } from "../supabase-client";
+import { MOCK_TRAINERS, RECOMMENDED_IDS } from "../mock/trainers";
 
 const toSummary = (t: TrainerProfile): TrainerSummary => ({
   id: t.id,
@@ -32,7 +32,12 @@ export async function getRecommendedTrainers(opts?: {
       ? feed.filter((t) => t.activities.includes(opts.activity!))
       : feed;
   }
-  throw new Error('Supabase trainers query not implemented yet');
+
+  const { data, error } = await getSupabase().rpc("recommended_companions", {
+    p_activity: opts?.activity ?? null,
+  });
+  if (error) throw error;
+  return (data ?? []) as TrainerSummary[];
 }
 
 /** Full trainer profile by id, or null if not found. */
@@ -42,5 +47,10 @@ export async function getTrainerById(
   if (USE_MOCK) {
     return MOCK_TRAINERS.find((t) => t.id === id) ?? null;
   }
-  throw new Error('Supabase trainer-by-id query not implemented yet');
+
+  const { data, error } = await getSupabase().rpc("companion_profile", {
+    p_id: id,
+  });
+  if (error) throw error;
+  return (data ?? null) as TrainerProfile | null;
 }

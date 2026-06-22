@@ -1,10 +1,12 @@
-import type { ActivitySlug } from '@pacergo/shared';
-import { USE_MOCK } from '../supabase-client';
-import { MOCK_ACTIVITIES } from '../mock/activities';
+import type { ActivitySlug } from "@pacergo/shared";
+import { MOCK_ACTIVITIES } from "../mock/activities";
 
+/**
+ * Activity taxonomy. This is public reference data (not user-specific), so it's
+ * served from the static list in both mock and live modes.
+ */
 export async function getActivities(): Promise<
   { slug: ActivitySlug; is_active: boolean }[]
 > {
-  if (USE_MOCK) return MOCK_ACTIVITIES;
-  throw new Error('Supabase activities query not implemented yet');
+  return MOCK_ACTIVITIES;
 }

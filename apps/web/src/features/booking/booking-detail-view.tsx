@@ -22,6 +22,7 @@ import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import type { MyReview } from "@/lib/reviews";
+import { MessageButton } from "@/features/chat/message-button";
 import { StatusBadge, counterparty, formatWhen } from "./booking-ui";
 import { BookingActionsBar } from "./booking-actions-bar";
 import { ReviewSection } from "./review-section";
@@ -42,6 +43,10 @@ export function BookingDetailView({
   const backHref = getLocalizedPath("/sessions", getCurrentLocale(pathname));
 
   const other = counterparty(booking, currentUserId);
+  const otherId =
+    currentUserId === booking.seeker_id
+      ? booking.companion_id
+      : booking.seeker_id;
   const activityLabel = booking.activity_slug
     ? ACTIVITY_META[booking.activity_slug][locale]
     : "—";
@@ -115,6 +120,8 @@ export function BookingDetailView({
       </Card>
 
       <BookingActionsBar booking={booking} currentUserId={currentUserId} />
+
+      <MessageButton otherId={otherId} className="w-full" />
 
       {booking.status === "completed" && (
         <ReviewSection bookingId={booking.id} myReview={myReview} />

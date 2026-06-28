@@ -14,3 +14,4 @@ export * from './constants/activity-meta';
 export * from './types/trainer';
 export * from './types/booking';
 export * from './types/user';
+export * from './types/chat';

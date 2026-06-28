@@ -1,0 +1,12 @@
+{
+  "title": "訊息",
+  "empty": "還沒有任何對話。預約一堂課後就能與陪練師聊聊。",
+  "noMessages": "尚無訊息",
+  "threadEmpty": "開始你們的對話吧。",
+  "back": "返回",
+  "send": "送出",
+  "messageButton": "傳訊息",
+  "composer": {
+    "placeholder": "輸入訊息…"
+  }
+}

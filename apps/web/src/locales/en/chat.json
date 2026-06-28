@@ -1,0 +1,12 @@
+{
+  "title": "Messages",
+  "empty": "No conversations yet. Book a session to start chatting with a trainer.",
+  "noMessages": "No messages yet",
+  "threadEmpty": "Say hello to start the conversation.",
+  "back": "Back",
+  "send": "Send",
+  "messageButton": "Message",
+  "composer": {
+    "placeholder": "Type a message…"
+  }
+}

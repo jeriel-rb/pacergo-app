@@ -15,3 +15,4 @@ export * from './types/trainer';
 export * from './types/booking';
 export * from './types/user';
 export * from './types/chat';
+export * from './types/nearby';

@@ -1,6 +1,15 @@
 {
   "listTitle": "陪練師",
   "listSubtitle": "找到最適合你的訓練夥伴",
+  "viewList": "列表",
+  "viewMap": "地圖",
+  "nearby": {
+    "locating": "正在尋找你附近的陪練師…",
+    "denied": "需要定位權限才能顯示附近的陪練師。",
+    "error": "無法取得位置，請稍後再試。",
+    "retry": "重新定位",
+    "count": "附近有 {{count}} 位陪練師"
+  },
   "services": "服務項目",
   "bio": "個人簡介",
   "certs": "認證資格",

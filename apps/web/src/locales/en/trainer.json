@@ -1,6 +1,15 @@
 {
   "listTitle": "Trainers",
   "listSubtitle": "Find the training partner that fits you",
+  "viewList": "List",
+  "viewMap": "Map",
+  "nearby": {
+    "locating": "Finding trainers near you…",
+    "denied": "Location permission is needed to show nearby trainers.",
+    "error": "Couldn't get your location. Please try again.",
+    "retry": "Retry location",
+    "count": "{{count}} trainers nearby"
+  },
   "services": "Services",
   "bio": "About",
   "certs": "Certifications",

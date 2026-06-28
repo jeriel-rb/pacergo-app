@@ -26,6 +26,12 @@
   "weeklyProgress": "本週訓練進度",
   "weeklyProgressEn": "WEEKLY PROGRESS",
   "weeklyCount": "{{done}}/{{total}} 完成訓練",
+  "weeklyTarget": {
+    "title": "設定每週目標",
+    "desc": "你希望這週完成幾次訓練？",
+    "unit": "次 / 週",
+    "save": "儲存目標"
+  },
   "tools": "個人工具",
   "toolsEn": "PERSONAL TOOLS",
   "myTrainer": "你的固定夥伴",

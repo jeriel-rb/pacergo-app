@@ -14,6 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { TrainerSummary, UserProfile } from "@pacergo/shared";
+import type { WeeklyProgress } from "@/lib/goals";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
@@ -56,10 +57,12 @@ export function HomeView({
   trainers,
   user,
   savedIds,
+  weeklyProgress,
 }: {
   trainers: TrainerSummary[];
   user: UserProfile | null;
   savedIds?: string[];
+  weeklyProgress: WeeklyProgress;
 }) {
   const { t } = useTranslation(["home", "trainer", "common"]);
   const locale = useLocale();
@@ -149,9 +152,8 @@ export function HomeView({
           <WeeklyProgressCard
             title={t("weeklyProgress")}
             subtitleEn={t("weeklyProgressEn")}
-            percent={0}
-            countLabel={t("weeklyCount", { done: 0, total: 5 })}
-            soon
+            target={weeklyProgress.target}
+            done={weeklyProgress.done}
           />
 
           <Card className="p-4 sm:p-5">

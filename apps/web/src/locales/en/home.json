@@ -26,6 +26,12 @@
   "weeklyProgress": "This week's progress",
   "weeklyProgressEn": "WEEKLY PROGRESS",
   "weeklyCount": "{{done}}/{{total}} workouts done",
+  "weeklyTarget": {
+    "title": "Set weekly goal",
+    "desc": "How many sessions do you want to complete this week?",
+    "unit": "× / week",
+    "save": "Save goal"
+  },
   "tools": "Your tools",
   "toolsEn": "PERSONAL TOOLS",
   "myTrainer": "Your partner",

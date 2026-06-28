@@ -2,6 +2,10 @@
   "title": "Trainer Studio",
   "subtitle": "Manage your listing, plans, and bookable times",
   "viewRequests": "View booking requests",
+  "intro": {
+    "title": "Become a trainer",
+    "body": "Fill in your listing below, set the status to \"Active\", and add at least one plan — then seekers can find and book you."
+  },
   "save": "Save",
   "saved": "Saved",
   "error": "Something went wrong. Please try again.",

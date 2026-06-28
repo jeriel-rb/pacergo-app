@@ -25,6 +25,13 @@ export function StudioView({ data }: { data: MyListing }) {
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </header>
 
+      {!data.is_companion && (
+        <Card className="space-y-1.5 border-primary/20 bg-primary/5 p-5">
+          <p className="font-semibold">{t("intro.title")}</p>
+          <p className="text-sm text-muted-foreground">{t("intro.body")}</p>
+        </Card>
+      )}
+
       {hasListing && data.listing && (
         <Card className="flex items-center justify-between gap-3 p-5">
           <div className="flex items-center gap-2">

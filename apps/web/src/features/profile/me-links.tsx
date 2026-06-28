@@ -14,8 +14,9 @@ import { getLocalizedPath } from "@/lib/locale-path";
 import { Card } from "@/shared/components/ui/card";
 
 /** Navigation links surfaced under the "Me" tab (Saved, Sessions, trainer
- *  backend …). Extended as later phases land. */
-export function MeLinks() {
+ *  backend …). The trainer entry reads "Become a trainer" until the user has a
+ *  listing, then "Trainer Studio". */
+export function MeLinks({ isCompanion = false }: { isCompanion?: boolean }) {
   const { t } = useTranslation("profile");
   const locale = useLocale();
 
@@ -36,7 +37,7 @@ export function MeLinks() {
       href: getLocalizedPath("/studio", locale),
       icon: Dumbbell,
       tint: "text-primary",
-      label: t("studioLink"),
+      label: isCompanion ? t("studioLink") : t("becomeTrainerLink"),
     },
   ];
 

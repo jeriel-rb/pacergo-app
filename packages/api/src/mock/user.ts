@@ -7,4 +7,5 @@ export const MOCK_USER: UserProfile = {
   photo_url: null,
   experience_level: "intermediate",
   gender: "male",
+  is_companion: false,
 };

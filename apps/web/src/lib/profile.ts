@@ -10,6 +10,7 @@ interface MyProfileRow {
   experience_level: ExperienceLevel | null;
   home_area: string | null;
   gender: Gender | null;
+  is_companion: boolean | null;
 }
 
 /**
@@ -39,5 +40,6 @@ export async function getCurrentProfile(): Promise<UserProfile | null> {
     bio: row?.bio ?? null,
     home_area: row?.home_area ?? null,
     gender: row?.gender ?? null,
+    is_companion: row?.is_companion ?? false,
   };
 }

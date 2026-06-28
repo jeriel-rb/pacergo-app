@@ -50,7 +50,7 @@ export function ProfileView({
         <ProfileForm profile={profile} disabled={disabled} />
       </Card>
 
-      <MeLinks />
+      <MeLinks isCompanion={profile.is_companion ?? false} />
 
       <AccountSection profile={profile} disabled={disabled} />
     </div>

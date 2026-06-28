@@ -12,4 +12,6 @@ export interface UserProfile {
   bio?: string | null;
   home_area?: string | null;
   gender?: Gender | null;
+  /** Whether the user has a trainer listing (drives the "become a trainer" UI). */
+  is_companion?: boolean;
 }

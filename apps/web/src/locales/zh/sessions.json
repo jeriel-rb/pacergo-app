@@ -47,5 +47,15 @@
     "notePlaceholder": "想達成的目標、需要注意的事項…",
     "submit": "送出預約請求"
   },
+  "review": {
+    "title": "留下評價",
+    "desc": "為這次訓練評分，幫助其他夥伴。",
+    "leave": "撰寫評價",
+    "your": "你的評價",
+    "edit": "編輯",
+    "comment": "心得（選填）",
+    "commentPlaceholder": "分享這次訓練的感受…",
+    "submit": "送出評價"
+  },
   "error": "發生錯誤，請再試一次。"
 }

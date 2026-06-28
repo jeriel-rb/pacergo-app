@@ -47,5 +47,15 @@
     "notePlaceholder": "Your goals, anything to be aware of…",
     "submit": "Send booking request"
   },
+  "review": {
+    "title": "Leave a review",
+    "desc": "Rate this session to help other partners.",
+    "leave": "Write a review",
+    "your": "Your review",
+    "edit": "Edit",
+    "comment": "Comment (optional)",
+    "commentPlaceholder": "Share how the session went…",
+    "submit": "Submit review"
+  },
   "error": "Something went wrong. Please try again."
 }

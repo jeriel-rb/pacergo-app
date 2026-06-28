@@ -21,16 +21,20 @@ import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import type { MyReview } from "@/lib/reviews";
 import { StatusBadge, counterparty, formatWhen } from "./booking-ui";
 import { BookingActionsBar } from "./booking-actions-bar";
+import { ReviewSection } from "./review-section";
 
 /** A single booking/session detail + its available actions. */
 export function BookingDetailView({
   booking,
   currentUserId,
+  myReview,
 }: {
   booking: BookingRecord;
   currentUserId: string | null;
+  myReview: MyReview | null;
 }) {
   const { t } = useTranslation("sessions");
   const locale = useLocale();
@@ -111,6 +115,10 @@ export function BookingDetailView({
       </Card>
 
       <BookingActionsBar booking={booking} currentUserId={currentUserId} />
+
+      {booking.status === "completed" && (
+        <ReviewSection bookingId={booking.id} myReview={myReview} />
+      )}
     </div>
   );
 }

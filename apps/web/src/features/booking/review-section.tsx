@@ -1,0 +1,177 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Star, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import type { MyReview } from "@/lib/reviews";
+import { Card } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Textarea } from "@/shared/components/ui/textarea";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/shared/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { submitReview } from "./review-actions";
+
+/** Review affordance on a completed booking — shows the user's review or a
+ *  prompt to leave one. Either party can review the other. */
+export function ReviewSection({
+  bookingId,
+  myReview,
+}: {
+  bookingId: string;
+  myReview: MyReview | null;
+}) {
+  const { t } = useTranslation("sessions");
+
+  if (myReview) {
+    return (
+      <Card className="space-y-2 p-5">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold">{t("review.your")}</p>
+          <ReviewDialog
+            bookingId={bookingId}
+            initial={myReview}
+            trigger={
+              <button
+                type="button"
+                className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
+              >
+                {t("review.edit")}
+              </button>
+            }
+          />
+        </div>
+        <Stars value={myReview.rating} />
+        {myReview.comment && (
+          <p className="text-sm text-foreground/80">{myReview.comment}</p>
+        )}
+      </Card>
+    );
+  }
+
+  return (
+    <ReviewDialog
+      bookingId={bookingId}
+      trigger={
+        <Button className="w-full gap-2">
+          <Star size={16} />
+          {t("review.leave")}
+        </Button>
+      }
+    />
+  );
+}
+
+function ReviewDialog({
+  bookingId,
+  initial,
+  trigger,
+}: {
+  bookingId: string;
+  initial?: MyReview;
+  trigger: React.ReactNode;
+}) {
+  const { t } = useTranslation("sessions");
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [rating, setRating] = useState(initial?.rating ?? 5);
+  const [comment, setComment] = useState(initial?.comment ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    try {
+      await submitReview(bookingId, rating, comment.trim() || null);
+      setOpen(false);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("error"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) {
+          setRating(initial?.rating ?? 5);
+          setComment(initial?.comment ?? "");
+        }
+      }}
+    >
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("review.title")}</DialogTitle>
+          <DialogDescription>{t("review.desc")}</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex justify-center gap-1.5 py-1">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              aria-label={`${n}`}
+              onClick={() => setRating(n)}
+            >
+              <Star
+                size={32}
+                className={cn(
+                  "transition-colors",
+                  n <= rating
+                    ? "fill-amber-400 text-amber-400"
+                    : "text-muted-foreground/30",
+                )}
+              />
+            </button>
+          ))}
+        </div>
+
+        <Textarea
+          label={t("review.comment")}
+          placeholder={t("review.commentPlaceholder")}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          maxLength={1000}
+        />
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <Button onClick={save} disabled={saving} className="w-full gap-2">
+          {saving && <Loader2 size={16} className="animate-spin" />}
+          {t("review.submit")}
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Stars({ value }: { value: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          size={16}
+          className={cn(
+            n <= value
+              ? "fill-amber-400 text-amber-400"
+              : "text-muted-foreground/30",
+          )}
+        />
+      ))}
+    </div>
+  );
+}

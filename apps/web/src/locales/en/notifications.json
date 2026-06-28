@@ -1,0 +1,12 @@
+{
+  "title": "Notifications",
+  "empty": "No notifications yet.",
+  "type": {
+    "booking_requested": "You have a new booking request",
+    "booking_accepted": "Your booking was accepted",
+    "booking_declined": "Your booking was declined",
+    "booking_cancelled": "A booking was cancelled",
+    "booking_completed": "Session complete — leave a review!",
+    "default": "You have a new notification"
+  }
+}

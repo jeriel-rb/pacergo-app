@@ -1,0 +1,12 @@
+{
+  "title": "通知",
+  "empty": "目前沒有通知。",
+  "type": {
+    "booking_requested": "你有一個新的預約請求",
+    "booking_accepted": "你的預約已被接受",
+    "booking_declined": "你的預約已被婉拒",
+    "booking_cancelled": "有一筆預約已被取消",
+    "booking_completed": "訓練已完成，留下你的評價吧！",
+    "default": "你有一則新通知"
+  }
+}

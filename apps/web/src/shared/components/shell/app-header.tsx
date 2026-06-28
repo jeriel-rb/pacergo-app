@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { UserProfile } from "@pacergo/shared";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
 import { SettingsSheet } from "@/features/settings/settings-sheet";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
   getCurrentLocale,
@@ -15,7 +16,13 @@ import {
 import { cn } from "@/lib/utils";
 
 /** Sticky top bar: wordmark, inline nav on desktop, and the settings entry. */
-export function AppHeader({ user }: { user: UserProfile | null }) {
+export function AppHeader({
+  user,
+  unreadCount = 0,
+}: {
+  user: UserProfile | null;
+  unreadCount?: number;
+}) {
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const stripped = pathWithoutLeadingLocale(pathname);
@@ -68,6 +75,7 @@ export function AppHeader({ user }: { user: UserProfile | null }) {
         </nav>
 
         <div className="flex items-center gap-1">
+          <NotificationBell count={unreadCount} />
           <SettingsSheet user={user} />
         </div>
       </div>

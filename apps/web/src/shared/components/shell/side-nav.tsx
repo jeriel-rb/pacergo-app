@@ -8,6 +8,7 @@ import { NAV_ITEMS, isNavItemActive } from "./nav-items";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "./language-switcher";
 import { SettingsSheet } from "@/features/settings/settings-sheet";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
@@ -18,7 +19,13 @@ import {
 import { cn } from "@/lib/utils";
 
 /** Persistent desktop sidebar nav (lg+). Replaces the top nav on wide screens. */
-export function SideNav({ user }: { user: UserProfile | null }) {
+export function SideNav({
+  user,
+  unreadCount = 0,
+}: {
+  user: UserProfile | null;
+  unreadCount?: number;
+}) {
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const stripped = pathWithoutLeadingLocale(pathname);
@@ -96,6 +103,7 @@ export function SideNav({ user }: { user: UserProfile | null }) {
         )}
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-1">
+            <NotificationBell count={unreadCount} />
             <ThemeToggle />
             <SettingsSheet user={user} />
           </div>

@@ -12,6 +12,7 @@ import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { RatingStars } from "@/shared/components/atoms/rating-stars";
 import { ActivityIconCircle } from "@/shared/components/atoms/activity";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { toggleSaved } from "@/features/saved/saved-actions";
 import { cn } from "@/lib/utils";
 
 type Locale = "zh" | "en";
@@ -20,14 +21,30 @@ type Locale = "zh" | "en";
 export function TrainerCard({
   trainer,
   locale,
+  saved: initialSaved = false,
 }: {
   trainer: TrainerSummary;
   locale: Locale;
+  /** Whether the signed-in user has this trainer saved. */
+  saved?: boolean;
 }) {
   const pathname = usePathname();
   const routeLocale = getCurrentLocale(pathname);
   const href = getLocalizedPath(`/trainers/${trainer.id}`, routeLocale);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(initialSaved);
+
+  async function onToggleSave(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const optimistic = !saved;
+    setSaved(optimistic);
+    try {
+      const result = await toggleSaved(trainer.id);
+      if (result !== null) setSaved(result);
+    } catch {
+      setSaved(!optimistic); // revert
+    }
+  }
 
   return (
     <Link href={href} className="block">
@@ -38,11 +55,7 @@ export function TrainerCard({
             type="button"
             aria-label="Save"
             aria-pressed={saved}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setSaved((s) => !s);
-            }}
+            onClick={onToggleSave}
             className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
           >
             <Star
@@ -54,16 +67,18 @@ export function TrainerCard({
 
         <div className="space-y-1.5 p-3">
           <TierBadge tier={trainer.tier} locale={locale} showGrade />
-          <div className="flex items-center justify-between gap-2">
-            <span className="truncate font-semibold">
+          {/* Name + price stack: on narrow 2-up cards an inline row squeezes the
+              name to a single glyph, so give each its own line. */}
+          <div className="space-y-0.5">
+            <p className="truncate font-semibold leading-tight">
               {trainer.display_name}
-            </span>
+            </p>
             <PriceTag
               amount={trainer.price_ntd}
               isFree={trainer.is_free}
               perHour
               locale={locale}
-              className="shrink-0 text-sm"
+              className="text-sm"
             />
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">

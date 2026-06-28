@@ -1,4 +1,5 @@
 import type { ExperienceLevel } from "../enums/experience";
+import type { Gender } from "../enums/gender";
 
 /** The signed-in user. Field names mirror the `users` table / mobile app. */
 export interface UserProfile {
@@ -10,4 +11,5 @@ export interface UserProfile {
   /** Optional richer profile fields (populated when read from the `users` table). */
   bio?: string | null;
   home_area?: string | null;
+  gender?: Gender | null;
 }

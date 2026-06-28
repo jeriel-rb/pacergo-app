@@ -6,6 +6,7 @@ import { Card } from "@/shared/components/ui/card";
 import { AvatarUploader } from "./avatar-uploader";
 import { ProfileForm } from "./profile-form";
 import { AccountSection } from "./account-section";
+import { MeLinks } from "./me-links";
 
 /** Profile page body: identity + editable fields + the account/security section. */
 export function ProfileView({
@@ -48,6 +49,8 @@ export function ProfileView({
         />
         <ProfileForm profile={profile} disabled={disabled} />
       </Card>
+
+      <MeLinks />
 
       <AccountSection profile={profile} disabled={disabled} />
     </div>

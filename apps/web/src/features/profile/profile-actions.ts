@@ -1,4 +1,4 @@
-import type { ExperienceLevel } from "@pacergo/shared";
+import type { ExperienceLevel, Gender } from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { avatarObjectPath } from "./avatar";
 
@@ -7,6 +7,7 @@ export interface ProfileFields {
   bio: string | null;
   experience_level: ExperienceLevel | null;
   home_area: string | null;
+  gender: Gender | null;
 }
 
 async function requireUserId(
@@ -19,11 +20,16 @@ async function requireUserId(
   return user.id;
 }
 
-/** Persist the editable `users` columns for the signed-in user. */
+/** Persist the editable `users` columns for the signed-in user (via RPC). */
 export async function updateProfileFields(fields: ProfileFields): Promise<void> {
   const supabase = createSupabaseBrowserClient();
-  const uid = await requireUserId(supabase);
-  const { error } = await supabase.from("users").update(fields).eq("id", uid);
+  const { error } = await supabase.rpc("update_my_profile", {
+    p_display_name: fields.display_name,
+    p_bio: fields.bio,
+    p_experience_level: fields.experience_level,
+    p_home_area: fields.home_area,
+    p_gender: fields.gender,
+  });
   if (error) throw new Error(error.message);
 }
 
@@ -44,12 +50,16 @@ export async function uploadAvatar(file: File): Promise<string> {
   // Cache-bust so the new image shows even though the path is stable.
   const url = `${publicUrl}?v=${Date.now()}`;
 
-  const { error } = await supabase
-    .from("users")
-    .update({ photo_url: url })
-    .eq("id", uid);
+  const { error } = await supabase.rpc("set_my_photo_url", { p_url: url });
   if (error) throw new Error(error.message);
   return url;
+}
+
+/** Clear the avatar, reverting to the lettered initials. */
+export async function removeAvatar(): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("set_my_photo_url", { p_url: null });
+  if (error) throw new Error(error.message);
 }
 
 /** Set a new password for the signed-in user. */

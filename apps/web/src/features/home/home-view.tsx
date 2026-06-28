@@ -55,9 +55,11 @@ function SectionLabel({ title, sub }: { title: string; sub: string }) {
 export function HomeView({
   trainers,
   user,
+  savedIds,
 }: {
   trainers: TrainerSummary[];
   user: UserProfile | null;
+  savedIds?: string[];
 }) {
   const { t } = useTranslation(["home", "trainer", "common"]);
   const locale = useLocale();
@@ -83,7 +85,12 @@ export function HomeView({
       href: trainersHref,
     },
     { icon: LineChart, label: t("actions.log"), tint: "bg-blue-500/10 text-blue-500", soon: true },
-    { icon: Sparkles, label: t("actions.aiPlan"), tint: "bg-violet-500/10 text-violet-500", soon: true },
+    {
+      icon: Sparkles,
+      label: t("actions.aiPlan"),
+      tint: "bg-violet-500/10 text-violet-500",
+      href: getLocalizedPath("/ai-plan", locale),
+    },
     { icon: Ticket, label: t("actions.hours"), tint: "bg-emerald-500/10 text-emerald-500", soon: true },
   ];
 
@@ -122,7 +129,7 @@ export function HomeView({
       {/* Dashboard. Desktop: hero + actions (left), sticky personal rail (right),
           recommended trainers below-left. Mobile: a single stacked column in
           DOM order — hero, actions, rail, recommended. */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2 lg:col-start-1 lg:row-start-1">
           <HeroBanner
             href={trainersHref}
@@ -162,7 +169,7 @@ export function HomeView({
         </aside>
 
         <div className="lg:col-span-2 lg:col-start-1 lg:row-start-2">
-          <RecommendedTrainers trainers={trainers} />
+          <RecommendedTrainers trainers={trainers} savedIds={savedIds} />
         </div>
       </div>
     </div>

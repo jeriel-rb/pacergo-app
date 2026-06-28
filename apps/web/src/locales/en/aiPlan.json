@@ -1,0 +1,55 @@
+{
+  "title": "AI Training Menu",
+  "subtitle": "Based on your goal and age, AI builds a personalized training plan and nutrition advice",
+  "goalLabel": "Choose your goal",
+  "goal": {
+    "fat_loss": "Fat Loss",
+    "muscle_gain": "Build Muscle",
+    "endurance": "Endurance",
+    "flexibility": "Flexibility"
+  },
+  "ageLabel": "Age group",
+  "age": {
+    "youth": "Youth 15-25",
+    "adult": "Adult 26-45",
+    "senior": "Senior 46+"
+  },
+  "levelLabel": "Level",
+  "level": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "genderLabel": "Gender",
+  "gender": {
+    "male": "Male",
+    "female": "Female"
+  },
+  "nutrition": "Include nutrition advice",
+  "generate": "Generate plan",
+  "generating": "Generating…",
+  "empty": {
+    "title": "Choose a goal and age group",
+    "sub": "AI will generate a personalized plan for you"
+  },
+  "error": "Something went wrong. Please try again.",
+  "examplesTitle": "Example plans",
+  "examples": {
+    "muscleBeginner": {
+      "title": "Beginner Muscle Plan",
+      "sub": "Full-body activation, build the habit"
+    },
+    "endurance": {
+      "title": "Endurance Builder",
+      "sub": "Structured pacing, push your limits"
+    },
+    "fatLoss": {
+      "title": "Fat Loss 8 Weeks",
+      "sub": "Cardio + lifting for efficient fat burn"
+    },
+    "flexibility": {
+      "title": "Flexibility Program",
+      "sub": "Full-body stretch and core stability"
+    }
+  }
+}

@@ -5,11 +5,16 @@
   "uploading": "上傳中…",
   "avatarHintType": "請選擇圖片檔案",
   "avatarHintSize": "圖片需小於 2MB",
+  "photo": {
+    "title": "個人照片",
+    "remove": "移除照片"
+  },
   "fields": {
     "displayName": "顯示名稱",
     "bio": "自我介紹",
     "bioPlaceholder": "簡單介紹一下你自己…",
     "experience": "訓練經驗",
+    "gender": "性別",
     "homeArea": "活動區域",
     "homeAreaPlaceholder": "例如：台北市大安區"
   },
@@ -18,8 +23,17 @@
     "intermediate": "中階",
     "advanced": "進階"
   },
+  "gender": {
+    "male": "男性",
+    "female": "女性",
+    "other": "其他"
+  },
   "save": "儲存變更",
   "saved": "已儲存",
+  "savedLink": "收藏的陪練師",
+  "savedTitle": "我的收藏",
+  "savedSubtitle": "你收藏的陪練師都在這裡",
+  "savedEmpty": "還沒有收藏任何陪練師。點擊卡片上的星星即可收藏。",
   "account": {
     "title": "帳號",
     "sub": "ACCOUNT",

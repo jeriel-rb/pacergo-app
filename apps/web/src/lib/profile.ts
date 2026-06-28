@@ -1,7 +1,16 @@
-import type { UserProfile } from "@pacergo/shared";
+import type { ExperienceLevel, Gender, UserProfile } from "@pacergo/shared";
 import { getCurrentUser } from "@pacergo/api";
 import { createSupabaseServerClient } from "./supabase/server";
 import { SUPABASE_CONFIGURED } from "./supabase/env";
+
+interface MyProfileRow {
+  display_name: string | null;
+  photo_url: string | null;
+  bio: string | null;
+  experience_level: ExperienceLevel | null;
+  home_area: string | null;
+  gender: Gender | null;
+}
 
 /**
  * The signed-in user's full, editable profile (read from the `users` table).
@@ -18,19 +27,17 @@ export async function getCurrentProfile(): Promise<UserProfile | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
-    .from("users")
-    .select("display_name, photo_url, bio, experience_level, home_area")
-    .eq("id", user.id)
-    .single();
+  const { data } = await supabase.rpc("get_my_profile");
+  const row = (data ?? null) as MyProfileRow | null;
 
   return {
     id: user.id,
     email: user.email ?? "",
-    display_name: data?.display_name ?? user.email?.split("@")[0] ?? "User",
-    photo_url: data?.photo_url ?? null,
-    experience_level: data?.experience_level ?? null,
-    bio: data?.bio ?? null,
-    home_area: data?.home_area ?? null,
+    display_name: row?.display_name ?? user.email?.split("@")[0] ?? "User",
+    photo_url: row?.photo_url ?? null,
+    experience_level: row?.experience_level ?? null,
+    bio: row?.bio ?? null,
+    home_area: row?.home_area ?? null,
+    gender: row?.gender ?? null,
   };
 }

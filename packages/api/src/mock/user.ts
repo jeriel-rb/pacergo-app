@@ -6,4 +6,5 @@ export const MOCK_USER: UserProfile = {
   email: "jeriel@roundbytes.com",
   photo_url: null,
   experience_level: "intermediate",
+  gender: "male",
 };

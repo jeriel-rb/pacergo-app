@@ -5,11 +5,16 @@
   "uploading": "Uploading…",
   "avatarHintType": "Please choose an image file",
   "avatarHintSize": "Image must be under 2 MB",
+  "photo": {
+    "title": "Profile photo",
+    "remove": "Remove photo"
+  },
   "fields": {
     "displayName": "Display name",
     "bio": "Bio",
     "bioPlaceholder": "Tell others a bit about yourself…",
     "experience": "Experience",
+    "gender": "Gender",
     "homeArea": "Home area",
     "homeAreaPlaceholder": "e.g. Da'an, Taipei"
   },
@@ -18,8 +23,17 @@
     "intermediate": "Intermediate",
     "advanced": "Advanced"
   },
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
+  },
   "save": "Save changes",
   "saved": "Saved",
+  "savedLink": "Saved trainers",
+  "savedTitle": "Saved",
+  "savedSubtitle": "The trainers you've favorited",
+  "savedEmpty": "No saved trainers yet. Tap the star on any card to save one.",
   "account": {
     "title": "Account",
     "sub": "ACCOUNT",

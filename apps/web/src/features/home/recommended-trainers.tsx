@@ -11,8 +11,10 @@ import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 /** Home "推薦陪練師" section: heading + view-all link + the shared trainer grid. */
 export function RecommendedTrainers({
   trainers,
+  savedIds,
 }: {
   trainers: TrainerSummary[];
+  savedIds?: string[];
 }) {
   const { t } = useTranslation("home");
   const pathname = usePathname();
@@ -30,7 +32,7 @@ export function RecommendedTrainers({
           <ChevronRight size={16} />
         </Link>
       </div>
-      <TrainerGrid trainers={trainers} />
+      <TrainerGrid trainers={trainers} savedIds={savedIds} />
     </section>
   );
 }

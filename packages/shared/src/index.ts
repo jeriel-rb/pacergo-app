@@ -5,6 +5,8 @@ export * from './enums/tier';
 export * from './enums/activity';
 export * from './enums/booking';
 export * from './enums/experience';
+export * from './enums/gender';
+export * from './enums/training';
 
 export * from './constants/tier-labels';
 export * from './constants/activity-meta';

@@ -6,7 +6,9 @@ import { useTranslation } from "react-i18next";
 import { Loader2, Check } from "lucide-react";
 import {
   EXPERIENCE_LEVELS,
+  GENDERS,
   type ExperienceLevel,
+  type Gender,
   type UserProfile,
 } from "@pacergo/shared";
 import { Input } from "@/shared/components/ui/input";
@@ -32,6 +34,7 @@ export function ProfileForm({
   const [experience, setExperience] = useState<ExperienceLevel | null>(
     profile.experience_level,
   );
+  const [gender, setGender] = useState<Gender | null>(profile.gender ?? null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +50,7 @@ export function ProfileForm({
         bio: bio.trim() || null,
         home_area: homeArea.trim() || null,
         experience_level: experience,
+        gender,
       });
       setSaved(true);
       router.refresh();
@@ -60,33 +64,23 @@ export function ProfileForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-1.5">
-        <label htmlFor="displayName" className="text-sm font-medium">
-          {t("fields.displayName")}
-        </label>
-        <Input
-          id="displayName"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          required
-          maxLength={60}
-          disabled={disabled}
-        />
-      </div>
+      <Input
+        label={t("fields.displayName")}
+        value={displayName}
+        onChange={(e) => setDisplayName(e.target.value)}
+        required
+        maxLength={60}
+        disabled={disabled}
+      />
 
-      <div className="space-y-1.5">
-        <label htmlFor="bio" className="text-sm font-medium">
-          {t("fields.bio")}
-        </label>
-        <Textarea
-          id="bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          placeholder={t("fields.bioPlaceholder")}
-          maxLength={300}
-          disabled={disabled}
-        />
-      </div>
+      <Textarea
+        label={t("fields.bio")}
+        value={bio}
+        onChange={(e) => setBio(e.target.value)}
+        placeholder={t("fields.bioPlaceholder")}
+        maxLength={300}
+        disabled={disabled}
+      />
 
       <div className="space-y-1.5">
         <span className="text-sm font-medium">{t("fields.experience")}</span>
@@ -119,26 +113,45 @@ export function ProfileForm({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="homeArea" className="text-sm font-medium">
-          {t("fields.homeArea")}
-        </label>
-        <Input
-          id="homeArea"
-          value={homeArea}
-          onChange={(e) => setHomeArea(e.target.value)}
-          placeholder={t("fields.homeAreaPlaceholder")}
-          maxLength={80}
-          disabled={disabled}
-        />
+        <span className="text-sm font-medium">{t("fields.gender")}</span>
+        <div className="flex flex-wrap gap-2">
+          {GENDERS.map((g) => {
+            const active = gender === g;
+            return (
+              <button
+                key={g}
+                type="button"
+                disabled={disabled}
+                aria-pressed={active}
+                onClick={() =>
+                  setGender((current) => (current === g ? null : g))
+                }
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50",
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-card hover:bg-accent",
+                )}
+              >
+                {t(`gender.${g}`)}
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      <Input
+        label={t("fields.homeArea")}
+        value={homeArea}
+        onChange={(e) => setHomeArea(e.target.value)}
+        placeholder={t("fields.homeAreaPlaceholder")}
+        maxLength={80}
+        disabled={disabled}
+      />
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Button
-        type="submit"
-        disabled={saving || disabled}
-        className="gap-2 rounded-xl"
-      >
+      <Button type="submit" disabled={saving || disabled} className="gap-2">
         {saving && <Loader2 size={16} className="animate-spin" />}
         {saved && !saving && <Check size={16} />}
         {saved && !saving ? t("saved") : t("save")}

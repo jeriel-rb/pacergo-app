@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Star, ChevronRight, type LucideIcon } from "lucide-react";
+import { Star, CalendarClock, ChevronRight, type LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getLocalizedPath } from "@/lib/locale-path";
@@ -14,6 +14,12 @@ export function MeLinks() {
   const locale = useLocale();
 
   const links: { href: string; icon: LucideIcon; tint: string; label: string }[] = [
+    {
+      href: getLocalizedPath("/sessions", locale),
+      icon: CalendarClock,
+      tint: "text-primary",
+      label: t("sessionsLink"),
+    },
     {
       href: getLocalizedPath("/saved", locale),
       icon: Star,

@@ -9,6 +9,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "./language-switcher";
 import { SettingsSheet } from "@/features/settings/settings-sheet";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
+import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
   getCurrentLocale,
   getLocalizedPath,
@@ -39,8 +40,23 @@ export function SideNav({ user }: { user: UserProfile | null }) {
 
       <nav aria-label={t("menu")} className="flex-1 space-y-1 px-3 py-4">
         {NAV_ITEMS.map((item) => {
-          const active = isNavItemActive(stripped, item.href);
           const Icon = item.icon;
+
+          if (item.comingSoon) {
+            return (
+              <div
+                key={item.key}
+                aria-disabled="true"
+                className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground/50"
+              >
+                <Icon size={20} />
+                {t(item.key)}
+                <SoonBadge className="ml-auto" />
+              </div>
+            );
+          }
+
+          const active = isNavItemActive(stripped, item.href);
           return (
             <Link
               key={item.key}

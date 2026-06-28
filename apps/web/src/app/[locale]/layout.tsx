@@ -13,6 +13,7 @@ const NAMESPACES = [
   "settings",
   "profile",
   "aiPlan",
+  "sessions",
 ];
 
 type LocaleParams = { params: Promise<{ locale: string }> };

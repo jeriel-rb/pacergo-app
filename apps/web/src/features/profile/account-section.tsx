@@ -60,7 +60,7 @@ export function AccountSection({
       </div>
 
       {notice && (
-        <div className="mt-4 flex items-start gap-2 rounded-xl bg-success/10 px-3.5 py-3 text-sm text-success">
+        <div className="mt-4 flex items-start gap-2 rounded-md bg-success/10 px-3.5 py-3 text-sm text-success">
           <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
           <span className="flex-1">{notice}</span>
           <button
@@ -99,7 +99,7 @@ export function AccountSection({
       </ul>
 
       {/* Danger zone */}
-      <div className="mt-5 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+      <div className="mt-5 rounded-md border border-destructive/30 bg-destructive/5 p-4">
         <p className="text-sm font-semibold text-destructive">
           {t("account.dangerZone")}
         </p>
@@ -110,7 +110,7 @@ export function AccountSection({
           variant="destructive"
           onClick={() => setDeleteOpen(true)}
           disabled={disabled}
-          className="mt-3 gap-2 rounded-xl"
+          className="mt-3 gap-2"
         >
           <Trash2 size={16} />
           {t("account.deleteAccount")}

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { TrainerProfile } from "@pacergo/shared";
+import type { CompanionOffering, TrainerProfile } from "@pacergo/shared";
 import { TrainerDetailHeader } from "./trainer-detail-header";
 import {
   ServiceTags,
@@ -14,7 +14,15 @@ import { PlatformManagerCard } from "./platform-manager-card";
 import { BookingCTA } from "./booking-cta";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 
-export function TrainerDetailView({ trainer }: { trainer: TrainerProfile }) {
+export function TrainerDetailView({
+  trainer,
+  offerings,
+  currentUserId,
+}: {
+  trainer: TrainerProfile;
+  offerings: CompanionOffering[];
+  currentUserId: string | null;
+}) {
   const pathname = usePathname();
   const backHref = getLocalizedPath("/trainers", getCurrentLocale(pathname));
 
@@ -27,7 +35,14 @@ export function TrainerDetailView({ trainer }: { trainer: TrainerProfile }) {
       <AvailabilityList trainer={trainer} />
       <ReviewsSection trainer={trainer} />
       {trainer.manager && <PlatformManagerCard manager={trainer.manager} />}
-      <BookingCTA price={trainer.price_ntd} isFree={trainer.is_free} />
+      <BookingCTA
+        companionId={trainer.id}
+        companionName={trainer.display_name}
+        offerings={offerings}
+        price={trainer.price_ntd}
+        isFree={trainer.is_free}
+        isSelf={currentUserId === trainer.id}
+      />
     </div>
   );
 }

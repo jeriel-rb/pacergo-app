@@ -1,0 +1,51 @@
+{
+  "title": "我的預約",
+  "subtitle": "你的訓練預約與紀錄",
+  "empty": "還沒有任何預約。在陪練師頁面預約一堂課開始吧。",
+  "back": "返回",
+  "flexible": "時間待確認",
+  "groups": {
+    "requests": "待回覆",
+    "upcoming": "即將到來",
+    "past": "歷史紀錄"
+  },
+  "status": {
+    "requested": "待確認",
+    "accepted": "已確認",
+    "declined": "已婉拒",
+    "cancelled": "已取消",
+    "completed": "已完成",
+    "expired": "已過期"
+  },
+  "roles": {
+    "asSeeker": "預約對象",
+    "asCompanion": "你的學員"
+  },
+  "detail": {
+    "activity": "項目",
+    "when": "時間",
+    "duration": "時長",
+    "location": "地點",
+    "price": "費用",
+    "note": "備註"
+  },
+  "actions": {
+    "accept": "接受",
+    "decline": "婉拒",
+    "cancel": "取消預約",
+    "complete": "標記完成"
+  },
+  "book": {
+    "title": "預約訓練",
+    "subtitle": "向 {{name}} 送出預約請求",
+    "offering": "選擇方案",
+    "when": "希望時間",
+    "whenHint": "可留空，與陪練師討論後再決定",
+    "location": "地點",
+    "locationPlaceholder": "例如：台北市信義區 World Gym",
+    "note": "備註",
+    "notePlaceholder": "想達成的目標、需要注意的事項…",
+    "submit": "送出預約請求"
+  },
+  "error": "發生錯誤，請再試一次。"
+}

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { UserProfile } from "@pacergo/shared";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
 import { SettingsSheet } from "@/features/settings/settings-sheet";
+import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
   getCurrentLocale,
   getLocalizedPath,
@@ -35,6 +36,19 @@ export function AppHeader({ user }: { user: UserProfile | null }) {
 
         <nav className="hidden lg:flex lg:items-center lg:gap-1">
           {NAV_ITEMS.map((item) => {
+            if (item.comingSoon) {
+              return (
+                <span
+                  key={item.key}
+                  aria-disabled="true"
+                  className="flex cursor-not-allowed items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground/50"
+                >
+                  {t(item.key)}
+                  <SoonBadge />
+                </span>
+              );
+            }
+
             const active = isNavItemActive(stripped, item.href);
             return (
               <Link

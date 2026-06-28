@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
+import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
   getCurrentLocale,
   getLocalizedPath,
@@ -25,6 +26,25 @@ export function BottomNav() {
           const active = isNavItemActive(stripped, item.href);
           const href = getLocalizedPath(item.href, locale);
           const Icon = item.icon;
+
+          if (item.comingSoon) {
+            return (
+              <li key={item.key}>
+                <div
+                  aria-disabled="true"
+                  className="flex cursor-not-allowed flex-col items-center gap-1 px-2 py-1 opacity-50"
+                >
+                  <span className="relative">
+                    <Icon size={22} className="text-muted-foreground" />
+                    <SoonBadge className="absolute -right-3 -top-2 scale-90" />
+                  </span>
+                  <span className="text-[10px] font-medium text-muted-foreground">
+                    {t(item.key)}
+                  </span>
+                </div>
+              </li>
+            );
+          }
 
           if (item.center) {
             return (

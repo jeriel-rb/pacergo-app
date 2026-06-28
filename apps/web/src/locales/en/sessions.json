@@ -1,0 +1,51 @@
+{
+  "title": "My Sessions",
+  "subtitle": "Your training bookings and history",
+  "empty": "No bookings yet. Book a session from a trainer's page to get started.",
+  "back": "Back",
+  "flexible": "Time to be confirmed",
+  "groups": {
+    "requests": "Pending",
+    "upcoming": "Upcoming",
+    "past": "History"
+  },
+  "status": {
+    "requested": "Pending",
+    "accepted": "Confirmed",
+    "declined": "Declined",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "expired": "Expired"
+  },
+  "roles": {
+    "asSeeker": "Trainer",
+    "asCompanion": "Your client"
+  },
+  "detail": {
+    "activity": "Activity",
+    "when": "Time",
+    "duration": "Duration",
+    "location": "Location",
+    "price": "Price",
+    "note": "Note"
+  },
+  "actions": {
+    "accept": "Accept",
+    "decline": "Decline",
+    "cancel": "Cancel",
+    "complete": "Mark complete"
+  },
+  "book": {
+    "title": "Book a session",
+    "subtitle": "Send a booking request to {{name}}",
+    "offering": "Choose a plan",
+    "when": "Preferred time",
+    "whenHint": "Optional — you can agree on a time with the trainer",
+    "location": "Location",
+    "locationPlaceholder": "e.g. World Gym, Xinyi, Taipei",
+    "note": "Note",
+    "notePlaceholder": "Your goals, anything to be aware of…",
+    "submit": "Send booking request"
+  },
+  "error": "Something went wrong. Please try again."
+}

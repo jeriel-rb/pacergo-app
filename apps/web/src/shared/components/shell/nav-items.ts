@@ -15,11 +15,13 @@ export interface NavItem {
   icon: LucideIcon;
   /** The emphasized center action in the bottom bar. */
   center?: boolean;
+  /** Feature not built yet → rendered disabled with a "Soon" badge. */
+  comingSoon?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { key: "home", href: "/", icon: Home },
-  { key: "community", href: "/community", icon: Users },
+  { key: "community", href: "/community", icon: Users, comingSoon: true },
   { key: "trainers", href: "/trainers", icon: Dumbbell, center: true },
   { key: "messages", href: "/messages", icon: MessageCircle },
   { key: "profile", href: "/profile", icon: User },

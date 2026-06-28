@@ -1,18 +1,51 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export const Input = React.forwardRef<
-  HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement>
->(({ className, type, ...props }, ref) => (
-  <input
-    ref={ref}
-    type={type}
-    className={cn(
-      "flex h-11 w-full rounded-xl border border-border bg-card px-3.5 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
-      className,
-    )}
-    {...props}
-  />
-));
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Optional label rendered above the input, with a consistent gap. */
+  label?: React.ReactNode;
+  /** Muted helper text below the input. */
+  hint?: React.ReactNode;
+  /** Error message below the input (overrides hint styling). */
+  error?: React.ReactNode;
+}
+
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, label, hint, error, id, ...props }, ref) => {
+    const reactId = React.useId();
+    const inputId = id ?? (label ? reactId : undefined);
+
+    const input = (
+      <input
+        ref={ref}
+        id={inputId}
+        type={type}
+        className={cn(
+          "flex h-11 w-full rounded-md border border-border bg-card px-3.5 text-sm text-foreground transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+          className,
+        )}
+        {...props}
+      />
+    );
+
+    if (!label && !hint && !error) return input;
+
+    return (
+      <div className="space-y-1.5">
+        {label && (
+          <label htmlFor={inputId} className="text-sm font-medium">
+            {label}
+          </label>
+        )}
+        {input}
+        {error ? (
+          <p className="text-xs text-destructive">{error}</p>
+        ) : hint ? (
+          <p className="text-xs text-muted-foreground">{hint}</p>
+        ) : null}
+      </div>
+    );
+  },
+);
 Input.displayName = "Input";

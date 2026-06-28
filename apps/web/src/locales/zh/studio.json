@@ -1,0 +1,53 @@
+{
+  "title": "陪練師後台",
+  "subtitle": "管理你的服務介紹、方案與可預約時段",
+  "viewRequests": "查看預約請求",
+  "save": "儲存",
+  "saved": "已儲存",
+  "error": "發生錯誤，請再試一次。",
+  "status": {
+    "draft": "草稿",
+    "active": "上架中",
+    "paused": "暫停"
+  },
+  "statusHint": {
+    "draft": "草稿不會出現在搜尋中。",
+    "active": "上架後學員即可搜尋並預約你。",
+    "paused": "暫停期間不會出現在搜尋中。"
+  },
+  "listing": {
+    "title": "服務介紹",
+    "subtitle": "讓學員快速認識你",
+    "headline": "標題",
+    "headlinePlaceholder": "例如：陽光重訓搭子，陪你建立運動習慣",
+    "bio": "詳細介紹",
+    "bioPlaceholder": "你的專長、訓練風格、經歷…",
+    "area": "服務區域",
+    "areaPlaceholder": "例如：台北市信義區",
+    "status": "上架狀態"
+  },
+  "offerings": {
+    "title": "方案與價格",
+    "subtitle": "設定你提供的訓練項目（健身 / 陪跑 / 陪爬）",
+    "needListing": "請先儲存服務介紹，再新增方案。",
+    "empty": "尚未新增任何方案。",
+    "activity": "項目",
+    "tier": "等級",
+    "price": "價格 (NT$)",
+    "minutes": "時長（分鐘）",
+    "free": "免費體驗",
+    "add": "新增方案",
+    "remove": "移除"
+  },
+  "availability": {
+    "title": "可預約時段",
+    "subtitle": "設定你每週固定的可預約時間",
+    "empty": "尚未設定任何時段。",
+    "weekday": "星期",
+    "start": "開始時間",
+    "end": "結束時間",
+    "add": "新增時段",
+    "remove": "移除",
+    "badRange": "結束時間需晚於開始時間。"
+  }
+}

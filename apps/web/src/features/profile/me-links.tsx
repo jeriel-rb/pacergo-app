@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Star, CalendarClock, ChevronRight, type LucideIcon } from "lucide-react";
+import {
+  Star,
+  CalendarClock,
+  Dumbbell,
+  ChevronRight,
+  type LucideIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getLocalizedPath } from "@/lib/locale-path";
@@ -25,6 +31,12 @@ export function MeLinks() {
       icon: Star,
       tint: "text-amber-500",
       label: t("savedLink"),
+    },
+    {
+      href: getLocalizedPath("/studio", locale),
+      icon: Dumbbell,
+      tint: "text-primary",
+      label: t("studioLink"),
     },
   ];
 

@@ -1,0 +1,53 @@
+{
+  "title": "Trainer Studio",
+  "subtitle": "Manage your listing, plans, and bookable times",
+  "viewRequests": "View booking requests",
+  "save": "Save",
+  "saved": "Saved",
+  "error": "Something went wrong. Please try again.",
+  "status": {
+    "draft": "Draft",
+    "active": "Active",
+    "paused": "Paused"
+  },
+  "statusHint": {
+    "draft": "Drafts don't appear in search.",
+    "active": "Active listings are searchable and bookable.",
+    "paused": "Paused listings are hidden from search."
+  },
+  "listing": {
+    "title": "Listing",
+    "subtitle": "Help seekers get to know you",
+    "headline": "Headline",
+    "headlinePlaceholder": "e.g. Friendly strength buddy, build the habit with me",
+    "bio": "About you",
+    "bioPlaceholder": "Your specialties, style, experience…",
+    "area": "Service area",
+    "areaPlaceholder": "e.g. Xinyi, Taipei",
+    "status": "Status"
+  },
+  "offerings": {
+    "title": "Plans & pricing",
+    "subtitle": "Set the sessions you offer (gym / running / hiking)",
+    "needListing": "Save your listing first, then add plans.",
+    "empty": "No plans yet.",
+    "activity": "Activity",
+    "tier": "Tier",
+    "price": "Price (NT$)",
+    "minutes": "Minutes",
+    "free": "Free trial",
+    "add": "Add plan",
+    "remove": "Remove"
+  },
+  "availability": {
+    "title": "Availability",
+    "subtitle": "Set your weekly bookable times",
+    "empty": "No times set yet.",
+    "weekday": "Day",
+    "start": "Start",
+    "end": "End",
+    "add": "Add slot",
+    "remove": "Remove",
+    "badRange": "End time must be after start time."
+  }
+}

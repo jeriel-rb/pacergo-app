@@ -45,7 +45,7 @@ export function ProfileView({
       <Card className="overflow-hidden p-0">
         <BannerUploader bannerUrl={profile.banner_url ?? null} disabled={disabled} />
         <div className="space-y-6 px-5 pb-5 sm:px-6 sm:pb-6">
-          <div className="-mt-10 w-fit rounded-full ring-4 ring-card">
+          <div className="relative z-10 -mt-10 w-fit rounded-full ring-4 ring-card">
             <AvatarUploader
               name={profile.display_name}
               photoUrl={profile.photo_url}

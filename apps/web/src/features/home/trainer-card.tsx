@@ -77,8 +77,8 @@ export function TrainerCard({
         </div>
 
         <div className="px-3 pb-3">
-          {/* Avatar overlaps the banner */}
-          <div className="-mt-7 w-fit rounded-full ring-4 ring-card">
+          {/* Avatar overlaps the banner (z-10 so the relative banner doesn't cover it) */}
+          <div className="relative z-10 -mt-7 w-fit rounded-full ring-4 ring-card">
             <InitialAvatar
               name={trainer.display_name}
               src={trainer.photo_url}

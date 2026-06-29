@@ -7,6 +7,7 @@ export interface AdminVerification {
   display_name: string;
   photo_url: string | null;
   doc_type: string;
+  activity: string | null;
   label: string | null;
   document_path: string;
   status: "pending" | "approved" | "rejected";

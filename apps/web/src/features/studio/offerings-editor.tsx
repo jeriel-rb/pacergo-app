@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2, Lock } from "lucide-react";
+import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   TIERS,
@@ -10,7 +10,7 @@ import {
   type ActivitySlug,
   type Tier,
 } from "@pacergo/shared";
-import type { StudioOffering, StudioVerification } from "@/lib/studio";
+import type { StudioOffering, VerificationMap } from "@/lib/studio";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -33,17 +33,16 @@ const PRICE_BANDS: Record<Tier, { min: number; max: number | null }> = {
 export function OfferingsEditor({
   offerings,
   hasListing,
-  verification,
+  verifications,
 }: {
   offerings: StudioOffering[];
   hasListing: boolean;
-  verification: StudioVerification | null;
+  verifications: VerificationMap;
 }) {
   const { t } = useTranslation("studio");
   const locale = useLocale();
   const router = useRouter();
 
-  const tierAUnlocked = verification?.status === "approved";
   const usedActivities = new Set(offerings.map((o) => o.activity));
   const availableActivities = ACTIVITIES.filter((a) => !usedActivities.has(a));
 
@@ -56,17 +55,16 @@ export function OfferingsEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Keep the selected activity within what's still addable (one tier per
-  // activity), and never leave Tier A selected while it's locked.
+  // Keep the selected activity within what's still addable (one tier per activity).
   useEffect(() => {
     if (availableActivities.length > 0 && !availableActivities.includes(activity)) {
       setActivity(availableActivities[0]);
     }
   }, [availableActivities, activity]);
 
-  useEffect(() => {
-    if (!tierAUnlocked && tier === "A") setTier("C");
-  }, [tierAUnlocked, tier]);
+  // Tier A requires an approved certification *for the selected activity*.
+  const activityCertStatus = verifications[activity]?.status;
+  const tierANeedsCert = tier === "A" && activityCertStatus !== "approved";
 
   const band = PRICE_BANDS[tier];
   const priceHint =
@@ -155,73 +153,76 @@ export function OfferingsEditor({
             ))}
           </div>
 
-          <div className="space-y-3 border-t border-border pt-4">
-            {!tierAUnlocked && <CertificationGate verification={verification} />}
+          {availableActivities.length === 0 ? (
+            <p className="border-t border-border pt-4 text-sm text-muted-foreground">
+              {t("offerings.allAdded")}
+            </p>
+          ) : (
+            <div className="space-y-3 border-t border-border pt-4">
+              <ChipRow
+                label={t("offerings.activity")}
+                options={ACTIVITIES.map((a) => ({
+                  value: a,
+                  label: ACTIVITY_META[a][locale],
+                  disabled: usedActivities.has(a),
+                }))}
+                value={activity}
+                onChange={setActivity}
+              />
+              <ChipRow
+                label={t("offerings.tier")}
+                options={TIERS.map((tr) => ({ value: tr, label: tr }))}
+                value={tier}
+                onChange={setTier}
+              />
 
-            {availableActivities.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                {t("offerings.allAdded")}
-              </p>
-            ) : (
-              <>
-                <ChipRow
-                  label={t("offerings.activity")}
-                  options={ACTIVITIES.map((a) => ({
-                    value: a,
-                    label: ACTIVITY_META[a][locale],
-                    disabled: usedActivities.has(a),
-                  }))}
-                  value={activity}
-                  onChange={setActivity}
+              {tierANeedsCert ? (
+                <CertificationGate
+                  activity={activity}
+                  activityLabel={ACTIVITY_META[activity][locale]}
+                  status={activityCertStatus}
                 />
-                <ChipRow
-                  label={t("offerings.tier")}
-                  options={TIERS.map((tr) => ({
-                    value: tr,
-                    label: tr,
-                    locked: tr === "A" && !tierAUnlocked,
-                  }))}
-                  value={tier}
-                  onChange={setTier}
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    label={t("offerings.price")}
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    min={0}
-                  />
-                  <Input
-                    type="number"
-                    label={t("offerings.minutes")}
-                    value={minutes}
-                    onChange={(e) => setMinutes(e.target.value)}
-                    min={15}
-                    step={15}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">💡 {priceHint}</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="number"
+                      label={t("offerings.price")}
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      min={0}
+                    />
+                    <Input
+                      type="number"
+                      label={t("offerings.minutes")}
+                      value={minutes}
+                      onChange={(e) => setMinutes(e.target.value)}
+                      min={15}
+                      step={15}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">💡 {priceHint}</p>
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                  {error && <p className="text-sm text-destructive">{error}</p>}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={add}
-                  disabled={busy}
-                  className="w-full gap-2"
-                >
-                  {busy ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Plus size={16} />
-                  )}
-                  {t("offerings.add")}
-                </Button>
-              </>
-            )}
-          </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={add}
+                    disabled={busy}
+                    className="w-full gap-2"
+                  >
+                    {busy ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Plus size={16} />
+                    )}
+                    {t("offerings.add")}
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </>
       )}
     </Card>
@@ -235,7 +236,7 @@ function ChipRow<T extends string>({
   onChange,
 }: {
   label: string;
-  options: { value: T; label: string; disabled?: boolean; locked?: boolean }[];
+  options: { value: T; label: string; disabled?: boolean }[];
   value: T;
   onChange: (v: T) => void;
 }) {
@@ -243,28 +244,24 @@ function ChipRow<T extends string>({
     <div className="space-y-1.5">
       <span className="text-sm font-medium">{label}</span>
       <div className="flex flex-wrap gap-2">
-        {options.map((o) => {
-          const inactive = o.disabled || o.locked;
-          return (
-            <button
-              key={o.value}
-              type="button"
-              aria-pressed={value === o.value}
-              aria-disabled={inactive || undefined}
-              onClick={() => !inactive && onChange(o.value)}
-              className={cn(
-                "inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
-                value === o.value && !inactive
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-card hover:bg-accent",
-                inactive && "cursor-not-allowed opacity-50 hover:bg-card",
-              )}
-            >
-              {o.locked && <Lock size={12} />}
-              {o.label}
-            </button>
-          );
-        })}
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            aria-pressed={value === o.value}
+            aria-disabled={o.disabled || undefined}
+            onClick={() => !o.disabled && onChange(o.value)}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+              value === o.value && !o.disabled
+                ? "bg-primary text-primary-foreground"
+                : "border border-border bg-card hover:bg-accent",
+              o.disabled && "cursor-not-allowed opacity-50 hover:bg-card",
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
       </div>
     </div>
   );

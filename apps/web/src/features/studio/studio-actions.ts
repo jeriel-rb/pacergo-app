@@ -66,10 +66,12 @@ export async function removeAvailability(id: string): Promise<void> {
 }
 
 /**
- * Upload a Tier A certification (PDF) to the private verification bucket and
- * register it for admin review. Unlocks Tier A once an admin approves it.
+ * Upload a Tier A certification (PDF) for a specific activity to the private
+ * verification bucket and register it for admin review. Approval unlocks Tier A
+ * for that activity only.
  */
 export async function submitCertification(input: {
+  activity: ActivitySlug;
   file: File;
   label: string;
 }): Promise<void> {
@@ -89,6 +91,7 @@ export async function submitCertification(input: {
     p_doc_type: "certification",
     p_document_path: path,
     p_label: input.label,
+    p_activity_slug: input.activity,
   });
   if (error) throw new Error(error.message);
 }

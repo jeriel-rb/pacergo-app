@@ -46,13 +46,13 @@
     "remove": "Remove"
   },
   "cert": {
-    "title": "Tier A needs verification",
-    "body": "Tier A is for certified pros. Upload a gym instructor licence or certification (PDF) for review to unlock it.",
+    "title": "Tier A needs a {{activity}} certification",
+    "body": "Tier A is for certified pros. Upload a certification PDF (e.g. a gym instructor licence) for review — it unlocks Tier A for this activity once approved.",
     "label": "Certification name",
     "labelPlaceholder": "e.g. NASM-CPT, ACE Personal Trainer",
     "choose": "Choose PDF",
     "submit": "Submit for review",
-    "pending": "Your certification is under review. Tier A unlocks once it's approved.",
+    "pending": "Your {{activity}} certification is under review — Tier A unlocks for {{activity}} once it's approved.",
     "approved": "Verified — Tier A is unlocked.",
     "rejected": "Your last submission was rejected. Please upload a valid certification.",
     "needFile": "Please choose a PDF to upload.",

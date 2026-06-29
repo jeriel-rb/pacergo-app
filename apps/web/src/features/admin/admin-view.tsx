@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Check, FileText, Loader2, X } from "lucide-react";
+import { ACTIVITY_META, type ActivitySlug } from "@pacergo/shared";
 import type { AdminVerification } from "@/lib/admin";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
+import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
 import { getCertSignedUrl, reviewVerification } from "./admin-actions";
 
@@ -51,7 +53,11 @@ export function AdminView({ queue }: { queue: AdminVerification[] }) {
 
 function Row({ v }: { v: AdminVerification }) {
   const { t } = useTranslation("admin");
+  const locale = useLocale();
   const router = useRouter();
+  const activityLabel = v.activity
+    ? ACTIVITY_META[v.activity as ActivitySlug]?.[locale] ?? v.activity
+    : null;
   const [notes, setNotes] = useState(v.notes ?? "");
   const [busy, setBusy] = useState<"approve" | "reject" | "doc" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +94,14 @@ function Row({ v }: { v: AdminVerification }) {
       <div className="flex items-center gap-3">
         <InitialAvatar name={v.display_name} src={v.photo_url} size={40} />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{v.display_name}</p>
+          <div className="flex items-center gap-2">
+            <p className="truncate font-medium">{v.display_name}</p>
+            {activityLabel && (
+              <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                {activityLabel}
+              </span>
+            )}
+          </div>
           <p className="truncate text-sm text-muted-foreground">
             {v.label || t("noLabel")}
           </p>

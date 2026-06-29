@@ -30,16 +30,20 @@ export interface StudioAvailability {
   end_minute: number;
 }
 
-/** The caller's latest Tier A certification submission (null if never submitted). */
+/** Status of a Tier A certification for one activity. */
+export type VerificationStatus = "pending" | "approved" | "rejected";
+
 export interface StudioVerification {
-  status: "pending" | "approved" | "rejected";
+  status: VerificationStatus;
   label: string | null;
-  created_at: string;
 }
+
+/** Per-activity certification status, keyed by ActivitySlug (e.g. `gym`). */
+export type VerificationMap = Record<string, StudioVerification>;
 
 export interface MyListing {
   is_companion: boolean;
-  verification: StudioVerification | null;
+  verifications: VerificationMap;
   listing: StudioListing | null;
   offerings: StudioOffering[];
   availability: StudioAvailability[];
@@ -47,7 +51,7 @@ export interface MyListing {
 
 const EMPTY: MyListing = {
   is_companion: false,
-  verification: null,
+  verifications: {},
   listing: null,
   offerings: [],
   availability: [],
@@ -61,7 +65,7 @@ export async function getMyListing(): Promise<MyListing> {
   const r = (data ?? {}) as Partial<MyListing>;
   return {
     is_companion: r.is_companion ?? false,
-    verification: r.verification ?? null,
+    verifications: r.verifications ?? {},
     listing: r.listing ?? null,
     offerings: r.offerings ?? [],
     availability: r.availability ?? [],

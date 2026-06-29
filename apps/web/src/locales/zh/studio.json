@@ -46,13 +46,13 @@
     "remove": "移除"
   },
   "cert": {
-    "title": "A 級需要審核認證",
-    "body": "A 級為專業認證教練。請上傳健身教練證照或專業認證（PDF）以供審核，通過後即可解鎖。",
+    "title": "A 級需要 {{activity}} 的認證",
+    "body": "A 級為專業認證教練。請上傳該項目的認證（PDF，例如健身教練證照）以供審核，通過後即可解鎖此項目的 A 級。",
     "label": "認證名稱",
     "labelPlaceholder": "例如：NASM-CPT、ACE 私人教練",
     "choose": "選擇 PDF",
     "submit": "送出審核",
-    "pending": "你的認證審核中，通過後即可解鎖 A 級。",
+    "pending": "你的 {{activity}} 認證審核中，通過後即可解鎖 {{activity}} 的 A 級。",
     "approved": "已驗證 — A 級已解鎖。",
     "rejected": "上次送出的認證未通過，請上傳有效的認證文件。",
     "needFile": "請選擇要上傳的 PDF。",

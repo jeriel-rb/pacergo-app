@@ -3,22 +3,28 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { BadgeCheck, Clock, FileUp, Loader2, ShieldAlert } from "lucide-react";
-import type { StudioVerification } from "@/lib/studio";
+import { Clock, FileUp, Loader2, ShieldAlert } from "lucide-react";
+import type { ActivitySlug } from "@pacergo/shared";
+import type { VerificationStatus } from "@/lib/studio";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { validateCertFile } from "./certification";
 import { submitCertification } from "./studio-actions";
 
 /**
- * Tier A gate. A trainer must upload a certification (PDF, e.g. a gym instructor
- * licence) and have a platform admin approve it before Tier A unlocks. Shows the
- * current review state, or the upload form when nothing is pending/approved.
+ * Per-activity Tier A gate. Shown only when the trainer has selected an activity
+ * + Tier A and isn't already approved for that activity. They upload a
+ * certification PDF (e.g. a gym instructor licence) for admin review; approval
+ * unlocks Tier A for this activity only.
  */
 export function CertificationGate({
-  verification,
+  activity,
+  activityLabel,
+  status,
 }: {
-  verification: StudioVerification | null;
+  activity: ActivitySlug;
+  activityLabel: string;
+  status: VerificationStatus | undefined;
 }) {
   const { t } = useTranslation("studio");
   const router = useRouter();
@@ -28,22 +34,11 @@ export function CertificationGate({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const status = verification?.status ?? "none";
-
-  if (status === "approved") {
-    return (
-      <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
-        <BadgeCheck size={16} className="shrink-0" />
-        <span>{t("cert.approved")}</span>
-      </div>
-    );
-  }
-
   if (status === "pending") {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
-        <Clock size={16} className="shrink-0" />
-        <span>{t("cert.pending")}</span>
+      <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+        <Clock size={16} className="mt-0.5 shrink-0" />
+        <span>{t("cert.pending", { activity: activityLabel })}</span>
       </div>
     );
   }
@@ -70,7 +65,7 @@ export function CertificationGate({
     setBusy(true);
     setError(null);
     try {
-      await submitCertification({ file, label: label.trim() });
+      await submitCertification({ activity, file, label: label.trim() });
       setFile(null);
       setLabel("");
       router.refresh();
@@ -82,11 +77,13 @@ export function CertificationGate({
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-3">
+    <div className="space-y-3 rounded-lg border border-primary/25 bg-primary/5 p-3">
       <div className="flex items-start gap-2">
         <ShieldAlert size={16} className="mt-0.5 shrink-0 text-primary" />
         <div className="space-y-0.5">
-          <p className="text-sm font-medium">{t("cert.title")}</p>
+          <p className="text-sm font-medium">
+            {t("cert.title", { activity: activityLabel })}
+          </p>
           <p className="text-xs text-muted-foreground">{t("cert.body")}</p>
         </div>
       </div>

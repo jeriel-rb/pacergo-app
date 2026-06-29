@@ -9,6 +9,12 @@
     "title": "Profile photo",
     "remove": "Remove photo"
   },
+  "bannerHintType": "Please choose an image file",
+  "bannerHintSize": "Image must be under 4 MB",
+  "banner": {
+    "edit": "Change cover photo",
+    "remove": "Remove cover photo"
+  },
   "fields": {
     "displayName": "Display name",
     "bio": "Bio",

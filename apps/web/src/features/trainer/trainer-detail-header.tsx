@@ -31,15 +31,27 @@ export function TrainerDetailHeader({
 
   return (
     <GradientHeader className="rounded-[24px] p-5">
+      {trainer.banner_url && (
+        <>
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${trainer.banner_url})` }}
+          />
+          {/* Darken so the white hero text stays legible over any image. */}
+          <div aria-hidden className="absolute inset-0 bg-black/45" />
+        </>
+      )}
+
       <Link
         href={backHref}
         aria-label={t("back", { defaultValue: "Back" })}
-        className="absolute left-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
+        className="absolute left-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
       >
         <ChevronLeft size={20} />
       </Link>
 
-      <div className="flex items-start justify-between gap-4 pt-8">
+      <div className="relative z-10 flex items-start justify-between gap-4 pt-8">
         <div className="min-w-0">
           <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold">
             {gradeLabel}
@@ -70,8 +82,9 @@ export function TrainerDetailHeader({
 
         <InitialAvatar
           name={trainer.display_name}
+          src={trainer.photo_url}
           size={72}
-          className="shrink-0 bg-white/25 text-white"
+          className="shrink-0 bg-white/25 text-white ring-2 ring-white/40"
         />
       </div>
     </GradientHeader>

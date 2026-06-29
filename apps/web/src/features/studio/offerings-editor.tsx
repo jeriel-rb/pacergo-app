@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   TIERS,
@@ -10,37 +10,69 @@ import {
   type ActivitySlug,
   type Tier,
 } from "@pacergo/shared";
-import type { StudioOffering } from "@/lib/studio";
+import type { StudioOffering, StudioVerification } from "@/lib/studio";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Switch } from "@/shared/components/ui/switch";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
 import { addOffering, removeOffering } from "./studio-actions";
+import { CertificationGate } from "./certification-gate";
 
 const ACTIVITIES: ActivitySlug[] = ["gym", "running", "hiking"];
 
-/** Manage the trainer's offerings (activity × tier × price). */
+/** Recommended price band per tier (NT$). `max: null` = no upper bound. */
+const PRICE_BANDS: Record<Tier, { min: number; max: number | null }> = {
+  C: { min: 0, max: 600 },
+  B: { min: 600, max: 1000 },
+  A: { min: 1000, max: null },
+};
+
+/** Manage the trainer's offerings — one tier per activity. */
 export function OfferingsEditor({
   offerings,
   hasListing,
+  verification,
 }: {
   offerings: StudioOffering[];
   hasListing: boolean;
+  verification: StudioVerification | null;
 }) {
   const { t } = useTranslation("studio");
   const locale = useLocale();
   const router = useRouter();
 
-  const [activity, setActivity] = useState<ActivitySlug>("gym");
+  const tierAUnlocked = verification?.status === "approved";
+  const usedActivities = new Set(offerings.map((o) => o.activity));
+  const availableActivities = ACTIVITIES.filter((a) => !usedActivities.has(a));
+
+  const [activity, setActivity] = useState<ActivitySlug>(
+    availableActivities[0] ?? "gym",
+  );
   const [tier, setTier] = useState<Tier>("C");
   const [price, setPrice] = useState("600");
   const [minutes, setMinutes] = useState("60");
-  const [isFree, setIsFree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Keep the selected activity within what's still addable (one tier per
+  // activity), and never leave Tier A selected while it's locked.
+  useEffect(() => {
+    if (availableActivities.length > 0 && !availableActivities.includes(activity)) {
+      setActivity(availableActivities[0]);
+    }
+  }, [availableActivities, activity]);
+
+  useEffect(() => {
+    if (!tierAUnlocked && tier === "A") setTier("C");
+  }, [tierAUnlocked, tier]);
+
+  const band = PRICE_BANDS[tier];
+  const priceHint =
+    band.max === null
+      ? t("offerings.priceHintMin", { tier, min: band.min })
+      : t("offerings.priceHintRange", { tier, min: band.min, max: band.max });
 
   async function add() {
     setBusy(true);
@@ -49,8 +81,8 @@ export function OfferingsEditor({
       await addOffering({
         activity,
         tier,
-        priceNtd: isFree ? 0 : parseInt(price, 10) || 0,
-        isFree,
+        priceNtd: parseInt(price, 10) || 0,
+        isFree: false,
         sessionMinutes: parseInt(minutes, 10) || 60,
       });
       router.refresh();
@@ -124,60 +156,71 @@ export function OfferingsEditor({
           </div>
 
           <div className="space-y-3 border-t border-border pt-4">
-            <ChipRow
-              label={t("offerings.activity")}
-              options={ACTIVITIES.map((a) => ({
-                value: a,
-                label: ACTIVITY_META[a][locale],
-              }))}
-              value={activity}
-              onChange={setActivity}
-            />
-            <ChipRow
-              label={t("offerings.tier")}
-              options={TIERS.map((tr) => ({ value: tr, label: tr }))}
-              value={tier}
-              onChange={setTier}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="number"
-                label={t("offerings.price")}
-                value={isFree ? "0" : price}
-                onChange={(e) => setPrice(e.target.value)}
-                disabled={isFree}
-                min={0}
-              />
-              <Input
-                type="number"
-                label={t("offerings.minutes")}
-                value={minutes}
-                onChange={(e) => setMinutes(e.target.value)}
-                min={15}
-                step={15}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">{t("offerings.free")}</span>
-              <Switch checked={isFree} onChange={setIsFree} />
-            </div>
+            {!tierAUnlocked && <CertificationGate verification={verification} />}
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {availableActivities.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t("offerings.allAdded")}
+              </p>
+            ) : (
+              <>
+                <ChipRow
+                  label={t("offerings.activity")}
+                  options={ACTIVITIES.map((a) => ({
+                    value: a,
+                    label: ACTIVITY_META[a][locale],
+                    disabled: usedActivities.has(a),
+                  }))}
+                  value={activity}
+                  onChange={setActivity}
+                />
+                <ChipRow
+                  label={t("offerings.tier")}
+                  options={TIERS.map((tr) => ({
+                    value: tr,
+                    label: tr,
+                    locked: tr === "A" && !tierAUnlocked,
+                  }))}
+                  value={tier}
+                  onChange={setTier}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    label={t("offerings.price")}
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    min={0}
+                  />
+                  <Input
+                    type="number"
+                    label={t("offerings.minutes")}
+                    value={minutes}
+                    onChange={(e) => setMinutes(e.target.value)}
+                    min={15}
+                    step={15}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">💡 {priceHint}</p>
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={add}
-              disabled={busy}
-              className="w-full gap-2"
-            >
-              {busy ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Plus size={16} />
-              )}
-              {t("offerings.add")}
-            </Button>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={add}
+                  disabled={busy}
+                  className="w-full gap-2"
+                >
+                  {busy ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Plus size={16} />
+                  )}
+                  {t("offerings.add")}
+                </Button>
+              </>
+            )}
           </div>
         </>
       )}
@@ -192,7 +235,7 @@ function ChipRow<T extends string>({
   onChange,
 }: {
   label: string;
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; disabled?: boolean; locked?: boolean }[];
   value: T;
   onChange: (v: T) => void;
 }) {
@@ -200,22 +243,28 @@ function ChipRow<T extends string>({
     <div className="space-y-1.5">
       <span className="text-sm font-medium">{label}</span>
       <div className="flex flex-wrap gap-2">
-        {options.map((o) => (
-          <button
-            key={o.value}
-            type="button"
-            aria-pressed={value === o.value}
-            onClick={() => onChange(o.value)}
-            className={cn(
-              "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
-              value === o.value
-                ? "bg-primary text-primary-foreground"
-                : "border border-border bg-card hover:bg-accent",
-            )}
-          >
-            {o.label}
-          </button>
-        ))}
+        {options.map((o) => {
+          const inactive = o.disabled || o.locked;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              aria-pressed={value === o.value}
+              aria-disabled={inactive || undefined}
+              onClick={() => !inactive && onChange(o.value)}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+                value === o.value && !inactive
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border bg-card hover:bg-accent",
+                inactive && "cursor-not-allowed opacity-50 hover:bg-card",
+              )}
+            >
+              {o.locked && <Lock size={12} />}
+              {o.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -58,6 +58,8 @@ export interface PlatformManager {
 
 /** Full trainer profile for the detail page. */
 export interface TrainerProfile extends TrainerSummary {
+  /** Wide cover photo for the detail hero (null → brand gradient only). */
+  banner_url: string | null;
   bio: string;
   certifications: string[];
   offerings: Offering[];

@@ -7,6 +7,8 @@ export interface UserProfile {
   display_name: string;
   email: string;
   photo_url: string | null;
+  /** Wide cover photo shown behind the avatar on the profile + trainer pages. */
+  banner_url?: string | null;
   experience_level: ExperienceLevel | null;
   /** Optional richer profile fields (populated when read from the `users` table). */
   bio?: string | null;
@@ -14,4 +16,6 @@ export interface UserProfile {
   gender?: Gender | null;
   /** Whether the user has a trainer listing (drives the "become a trainer" UI). */
   is_companion?: boolean;
+  /** Platform admin (can review Tier A verification requests). */
+  is_admin?: boolean;
 }

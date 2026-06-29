@@ -1,0 +1,19 @@
+{
+  "title": "A 級認證審核",
+  "subtitle": "審核認證申請，核准 A 級陪練師",
+  "pendingTitle": "待審核",
+  "historyTitle": "已審核",
+  "empty": "目前沒有待審核的申請。",
+  "submitted": "{{date}} 送出",
+  "noLabel": "（未填認證名稱）",
+  "viewDoc": "檢視文件（PDF）",
+  "notesPlaceholder": "備註（選填，未通過時會顯示給陪練師）…",
+  "approve": "核准",
+  "reject": "退回",
+  "approved": "已核准",
+  "rejected": "已退回",
+  "pending": "待審核",
+  "notAdmin": "你沒有權限存取此頁面。",
+  "error": "發生錯誤，請再試一次。",
+  "docError": "無法開啟文件。"
+}

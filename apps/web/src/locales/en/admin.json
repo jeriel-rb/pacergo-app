@@ -1,0 +1,19 @@
+{
+  "title": "Tier A verification",
+  "subtitle": "Review certification requests and approve Tier A trainers",
+  "pendingTitle": "Pending review",
+  "historyTitle": "Reviewed",
+  "empty": "No pending requests. You're all caught up.",
+  "submitted": "Submitted {{date}}",
+  "noLabel": "(no certification name)",
+  "viewDoc": "View document (PDF)",
+  "notesPlaceholder": "Optional note (shown to the trainer if rejected)…",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approved": "Approved",
+  "rejected": "Rejected",
+  "pending": "Pending",
+  "notAdmin": "You don't have access to this page.",
+  "error": "Something went wrong. Please try again.",
+  "docError": "Could not open the document."
+}

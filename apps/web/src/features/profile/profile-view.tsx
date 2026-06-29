@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { UserProfile } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { AvatarUploader } from "./avatar-uploader";
+import { BannerUploader } from "./banner-uploader";
 import { ProfileForm } from "./profile-form";
 import { AccountSection } from "./account-section";
 import { MeLinks } from "./me-links";
@@ -41,13 +42,18 @@ export function ProfileView({
         </p>
       )}
 
-      <Card className="space-y-6 p-5 sm:p-6">
-        <AvatarUploader
-          name={profile.display_name}
-          photoUrl={profile.photo_url}
-          disabled={disabled}
-        />
-        <ProfileForm profile={profile} disabled={disabled} />
+      <Card className="overflow-hidden p-0">
+        <BannerUploader bannerUrl={profile.banner_url ?? null} disabled={disabled} />
+        <div className="space-y-6 px-5 pb-5 sm:px-6 sm:pb-6">
+          <div className="-mt-10 w-fit rounded-full ring-4 ring-card">
+            <AvatarUploader
+              name={profile.display_name}
+              photoUrl={profile.photo_url}
+              disabled={disabled}
+            />
+          </div>
+          <ProfileForm profile={profile} disabled={disabled} />
+        </div>
       </Card>
 
       <MeLinks isCompanion={profile.is_companion ?? false} />

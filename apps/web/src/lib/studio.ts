@@ -30,8 +30,16 @@ export interface StudioAvailability {
   end_minute: number;
 }
 
+/** The caller's latest Tier A certification submission (null if never submitted). */
+export interface StudioVerification {
+  status: "pending" | "approved" | "rejected";
+  label: string | null;
+  created_at: string;
+}
+
 export interface MyListing {
   is_companion: boolean;
+  verification: StudioVerification | null;
   listing: StudioListing | null;
   offerings: StudioOffering[];
   availability: StudioAvailability[];
@@ -39,6 +47,7 @@ export interface MyListing {
 
 const EMPTY: MyListing = {
   is_companion: false,
+  verification: null,
   listing: null,
   offerings: [],
   availability: [],
@@ -52,6 +61,7 @@ export async function getMyListing(): Promise<MyListing> {
   const r = (data ?? {}) as Partial<MyListing>;
   return {
     is_companion: r.is_companion ?? false,
+    verification: r.verification ?? null,
     listing: r.listing ?? null,
     offerings: r.offerings ?? [],
     availability: r.availability ?? [],

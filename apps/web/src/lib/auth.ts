@@ -12,6 +12,8 @@ export async function getSessionUser(): Promise<UserProfile | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const { data: isAdmin } = await supabase.rpc("am_i_admin");
+
   const meta = user.user_metadata ?? {};
   return {
     id: user.id,
@@ -23,5 +25,6 @@ export async function getSessionUser(): Promise<UserProfile | null> {
     email: user.email ?? "",
     photo_url: (meta.avatar_url as string) ?? null,
     experience_level: null,
+    is_admin: isAdmin === true,
   };
 }

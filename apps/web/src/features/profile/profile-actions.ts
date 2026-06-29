@@ -1,6 +1,7 @@
 import type { ExperienceLevel, Gender } from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { avatarObjectPath } from "./avatar";
+import { bannerObjectPath } from "./banner";
 
 export interface ProfileFields {
   display_name: string;
@@ -59,6 +60,35 @@ export async function uploadAvatar(file: File): Promise<string> {
 export async function removeAvatar(): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.rpc("set_my_photo_url", { p_url: null });
+  if (error) throw new Error(error.message);
+}
+
+/** Upload a new banner to Storage and save its public URL. Returns the URL. */
+export async function uploadBanner(file: File): Promise<string> {
+  const supabase = createSupabaseBrowserClient();
+  const uid = await requireUserId(supabase);
+  const path = bannerObjectPath(uid, file);
+
+  const { error: uploadError } = await supabase.storage
+    .from("banners")
+    .upload(path, file, { upsert: true, cacheControl: "3600" });
+  if (uploadError) throw new Error(uploadError.message);
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("banners").getPublicUrl(path);
+  // Cache-bust so the new image shows even though the path is stable.
+  const url = `${publicUrl}?v=${Date.now()}`;
+
+  const { error } = await supabase.rpc("set_my_banner_url", { p_url: url });
+  if (error) throw new Error(error.message);
+  return url;
+}
+
+/** Clear the banner, reverting to the brand gradient. */
+export async function removeBanner(): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("set_my_banner_url", { p_url: null });
   if (error) throw new Error(error.message);
 }
 

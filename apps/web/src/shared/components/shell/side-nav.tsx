@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { UserProfile } from "@pacergo/shared";
-import { NAV_ITEMS, isNavItemActive } from "./nav-items";
+import { NAV_ITEMS, ADMIN_NAV_ITEM, isNavItemActive } from "./nav-items";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "./language-switcher";
 import { SettingsSheet } from "@/features/settings/settings-sheet";
@@ -30,6 +30,7 @@ export function SideNav({
   const locale = getCurrentLocale(pathname);
   const stripped = pathWithoutLeadingLocale(pathname);
   const { t } = useTranslation("nav");
+  const items = user?.is_admin ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS;
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 backdrop-blur lg:flex">
@@ -46,7 +47,7 @@ export function SideNav({
       </div>
 
       <nav aria-label={t("menu")} className="flex-1 space-y-1 px-3 py-4">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon;
 
           if (item.comingSoon) {

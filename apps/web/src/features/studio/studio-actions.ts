@@ -3,6 +3,7 @@
 import type { ActivitySlug, Tier } from "@pacergo/shared";
 import type { ListingStatus } from "@/lib/studio";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { certObjectPath } from "./certification";
 
 export async function upsertMyListing(input: {
   headline: string | null;
@@ -61,5 +62,33 @@ export async function addAvailability(input: {
 export async function removeAvailability(id: string): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.rpc("remove_availability", { p_id: id });
+  if (error) throw new Error(error.message);
+}
+
+/**
+ * Upload a Tier A certification (PDF) to the private verification bucket and
+ * register it for admin review. Unlocks Tier A once an admin approves it.
+ */
+export async function submitCertification(input: {
+  file: File;
+  label: string;
+}): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const path = certObjectPath(user.id, Date.now());
+  const { error: uploadError } = await supabase.storage
+    .from("verification-docs")
+    .upload(path, input.file, { contentType: "application/pdf", upsert: false });
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { error } = await supabase.rpc("submit_verification", {
+    p_doc_type: "certification",
+    p_document_path: path,
+    p_label: input.label,
+  });
   if (error) throw new Error(error.message);
 }

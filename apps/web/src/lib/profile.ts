@@ -6,6 +6,7 @@ import { SUPABASE_CONFIGURED } from "./supabase/env";
 interface MyProfileRow {
   display_name: string | null;
   photo_url: string | null;
+  banner_url: string | null;
   bio: string | null;
   experience_level: ExperienceLevel | null;
   home_area: string | null;
@@ -36,6 +37,7 @@ export async function getCurrentProfile(): Promise<UserProfile | null> {
     email: user.email ?? "",
     display_name: row?.display_name ?? user.email?.split("@")[0] ?? "User",
     photo_url: row?.photo_url ?? null,
+    banner_url: row?.banner_url ?? null,
     experience_level: row?.experience_level ?? null,
     bio: row?.bio ?? null,
     home_area: row?.home_area ?? null,

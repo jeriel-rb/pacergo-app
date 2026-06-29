@@ -9,6 +9,12 @@
     "title": "個人照片",
     "remove": "移除照片"
   },
+  "bannerHintType": "請選擇圖片檔案",
+  "bannerHintSize": "圖片需小於 4MB",
+  "banner": {
+    "edit": "更換封面照片",
+    "remove": "移除封面照片"
+  },
   "fields": {
     "displayName": "顯示名稱",
     "bio": "自我介紹",

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { NAV_ITEMS, isNavItemActive } from "./nav-items";
+import { NAV_ITEMS, ADMIN_NAV_ITEM, isNavItemActive } from "./nav-items";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
   getCurrentLocale,
@@ -13,16 +13,17 @@ import {
 import { cn } from "@/lib/utils";
 
 /** Mobile/tablet bottom tab bar. Hidden on desktop (nav moves into the header). */
-export function BottomNav() {
+export function BottomNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const stripped = pathWithoutLeadingLocale(pathname);
   const { t } = useTranslation("nav");
+  const items = isAdmin ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur lg:hidden">
       <ul className="mx-auto flex max-w-md items-end justify-around px-2 py-2">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = isNavItemActive(stripped, item.href);
           const href = getLocalizedPath(item.href, locale);
           const Icon = item.icon;

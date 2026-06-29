@@ -31,7 +31,7 @@ export function TrainerDetailView({
   const backHref = getLocalizedPath("/trainers", getCurrentLocale(pathname));
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto max-w-2xl space-y-4">
       <TrainerDetailHeader trainer={trainer} backHref={backHref} />
       <ServiceTags trainer={trainer} />
       <BioSection trainer={trainer} />

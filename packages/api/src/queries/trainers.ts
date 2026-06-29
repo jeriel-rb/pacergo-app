@@ -10,6 +10,7 @@ const toSummary = (t: TrainerProfile): TrainerSummary => ({
   id: t.id,
   display_name: t.display_name,
   photo_url: t.photo_url,
+  banner_url: t.banner_url,
   tier: t.tier,
   activities: t.activities,
   home_area: t.home_area,

@@ -6,6 +6,7 @@ const make = (id: string, activities: TrainerSummary["activities"]): TrainerSumm
   id,
   display_name: id,
   photo_url: null,
+  banner_url: null,
   tier: "C",
   activities,
   home_area: "台北市",

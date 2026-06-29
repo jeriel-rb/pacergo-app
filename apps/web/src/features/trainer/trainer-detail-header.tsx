@@ -4,13 +4,20 @@ import Link from "next/link";
 import { ChevronLeft, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { TIER_LABELS, type TrainerProfile } from "@pacergo/shared";
-import { GradientHeader } from "@/shared/components/atoms/gradient-header";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { RatingStars } from "@/shared/components/atoms/rating-stars";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
+import { TierBadge } from "@/shared/components/atoms/tier-badge";
 import { useLocale } from "@/shared/hooks/use-locale";
 
-/** Gradient hero for the trainer detail page. */
+const GRADIENT =
+  "linear-gradient(135deg, var(--hero-from), var(--hero-to))";
+
+/**
+ * Trainer detail hero: a banner cover photo (or brand gradient) with the avatar
+ * overlapping a solid info panel below — text never sits on the image, so it
+ * stays legible and responsive at every width.
+ */
 export function TrainerDetailHeader({
   trainer,
   backHref,
@@ -21,7 +28,6 @@ export function TrainerDetailHeader({
   const { t } = useTranslation("trainer");
   const locale = useLocale();
 
-  const gradeLabel = locale === "zh" ? `${trainer.tier} 級` : `Tier ${trainer.tier}`;
   const subtitle = [
     TIER_LABELS[trainer.tier][locale],
     trainer.is_bidding ? t("bidding") : null,
@@ -30,63 +36,68 @@ export function TrainerDetailHeader({
     .join(" · ");
 
   return (
-    <GradientHeader className="rounded-[24px] p-5">
-      {trainer.banner_url && (
-        <>
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${trainer.banner_url})` }}
-          />
-          {/* Darken so the white hero text stays legible over any image. */}
-          <div aria-hidden className="absolute inset-0 bg-black/45" />
-        </>
-      )}
-
-      <Link
-        href={backHref}
-        aria-label={t("back", { defaultValue: "Back" })}
-        className="absolute left-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
+    <div className="overflow-hidden rounded-3xl border border-border bg-card">
+      {/* Banner */}
+      <div
+        className="h-36 w-full bg-cover bg-center sm:h-48"
+        style={
+          trainer.banner_url
+            ? { backgroundImage: `url(${trainer.banner_url})` }
+            : { backgroundImage: GRADIENT }
+        }
       >
-        <ChevronLeft size={20} />
-      </Link>
+        <Link
+          href={backHref}
+          aria-label={t("back", { defaultValue: "Back" })}
+          className="m-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur transition-colors hover:bg-black/55"
+        >
+          <ChevronLeft size={20} />
+        </Link>
+      </div>
 
-      <div className="relative z-10 flex items-start justify-between gap-4 pt-8">
-        <div className="min-w-0">
-          <span className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold">
-            {gradeLabel}
-          </span>
-          <h1 className="mt-2 text-2xl font-bold">{trainer.display_name}</h1>
-          <p className="mt-1 text-sm text-white/85">{subtitle}</p>
-          <div className="mt-2">
-            <RatingStars
-              value={trainer.rating_avg}
-              count={trainer.rating_count}
-              tone="onDark"
+      {/* Info panel */}
+      <div className="px-5 pb-5 sm:px-6 sm:pb-6">
+        <div className="flex items-end justify-between gap-3">
+          <div className="-mt-10 w-fit rounded-full ring-4 ring-card">
+            <InitialAvatar
+              name={trainer.display_name}
+              src={trainer.photo_url}
+              size={80}
             />
           </div>
-          <div className="mt-1 flex items-center gap-1 text-sm text-white/85">
-            <MapPin size={14} />
+          <TierBadge
+            tier={trainer.tier}
+            locale={locale}
+            showGrade
+            className="mb-1"
+          />
+        </div>
+
+        <div className="mt-3 space-y-2">
+          <div>
+            <h1 className="text-2xl font-bold leading-tight">
+              {trainer.display_name}
+            </h1>
+            <p className="text-sm text-muted-foreground">{subtitle}</p>
+          </div>
+
+          <RatingStars value={trainer.rating_avg} count={trainer.rating_count} />
+
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <MapPin size={14} className="shrink-0" />
             <span>{trainer.home_area}</span>
           </div>
-          <div className="mt-3 inline-flex items-center rounded-full bg-white/15 px-3 py-1.5">
+
+          <div className="inline-flex items-center rounded-full bg-accent px-3 py-1.5">
             <PriceTag
               amount={trainer.price_ntd}
               isFree={trainer.is_free}
               perHour
               locale={locale}
-              tone="onDark"
             />
           </div>
         </div>
-
-        <InitialAvatar
-          name={trainer.display_name}
-          src={trainer.photo_url}
-          size={72}
-          className="shrink-0 bg-white/25 text-white ring-2 ring-white/40"
-        />
       </div>
-    </GradientHeader>
+    </div>
   );
 }

@@ -17,7 +17,10 @@ import { cn } from "@/lib/utils";
 
 type Locale = "zh" | "en";
 
-/** Discovery card for a trainer. Links to the detail page; star toggles save. */
+const GRADIENT = "linear-gradient(135deg, var(--hero-from), var(--hero-to))";
+
+/** Discovery card for a trainer: banner cover + overlapping avatar, then details.
+ *  The whole card links to the detail page; the star toggles save. */
 export function TrainerCard({
   trainer,
   locale,
@@ -47,16 +50,24 @@ export function TrainerCard({
   }
 
   return (
-    <Link href={href} className="block">
+    <Link href={href} className="group block">
       <Card className="overflow-hidden transition-shadow hover:shadow-md">
-        <div className="relative flex items-center justify-center bg-accent/60 py-7">
-          <InitialAvatar name={trainer.display_name} size={72} />
+        {/* Banner cover (or brand gradient) */}
+        <div className="relative h-20 overflow-hidden sm:h-24">
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+            style={
+              trainer.banner_url
+                ? { backgroundImage: `url(${trainer.banner_url})` }
+                : { backgroundImage: GRADIENT }
+            }
+          />
           <button
             type="button"
             aria-label="Save"
             aria-pressed={saved}
             onClick={onToggleSave}
-            className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+            className="absolute right-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground"
           >
             <Star
               size={14}
@@ -65,12 +76,19 @@ export function TrainerCard({
           </button>
         </div>
 
-        <div className="space-y-1.5 p-3">
-          <TierBadge tier={trainer.tier} locale={locale} showGrade />
-          {/* Name + price stack: on narrow 2-up cards an inline row squeezes the
-              name to a single glyph, so give each its own line. */}
-          <div className="space-y-0.5">
-            <p className="truncate font-semibold leading-tight">
+        <div className="px-3 pb-3">
+          {/* Avatar overlaps the banner */}
+          <div className="-mt-7 w-fit rounded-full ring-4 ring-card">
+            <InitialAvatar
+              name={trainer.display_name}
+              src={trainer.photo_url}
+              size={48}
+            />
+          </div>
+
+          <div className="mt-2 space-y-1">
+            <TierBadge tier={trainer.tier} locale={locale} showGrade />
+            <p className="truncate pt-0.5 font-semibold leading-tight">
               {trainer.display_name}
             </p>
             <PriceTag
@@ -80,20 +98,20 @@ export function TrainerCard({
               locale={locale}
               className="text-sm"
             />
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin size={12} />
-            <span className="truncate">{trainer.home_area}</span>
-          </div>
-          <RatingStars
-            value={trainer.rating_avg}
-            count={trainer.rating_count}
-            size={12}
-          />
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {trainer.activities.map((slug) => (
-              <ActivityIconCircle key={slug} slug={slug} />
-            ))}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin size={12} className="shrink-0" />
+              <span className="truncate">{trainer.home_area}</span>
+            </div>
+            <RatingStars
+              value={trainer.rating_avg}
+              count={trainer.rating_count}
+              size={12}
+            />
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {trainer.activities.map((slug) => (
+                <ActivityIconCircle key={slug} slug={slug} />
+              ))}
+            </div>
           </div>
         </div>
       </Card>

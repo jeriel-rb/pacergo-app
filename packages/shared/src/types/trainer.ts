@@ -11,6 +11,8 @@ export interface TrainerSummary {
   id: string;
   display_name: string;
   photo_url: string | null;
+  /** Wide cover photo for the card/hero (null → brand gradient). */
+  banner_url: string | null;
   tier: Tier;
   activities: ActivitySlug[];
   home_area: string;
@@ -58,8 +60,6 @@ export interface PlatformManager {
 
 /** Full trainer profile for the detail page. */
 export interface TrainerProfile extends TrainerSummary {
-  /** Wide cover photo for the detail hero (null → brand gradient only). */
-  banner_url: string | null;
   bio: string;
   certifications: string[];
   offerings: Offering[];

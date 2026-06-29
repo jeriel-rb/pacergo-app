@@ -129,13 +129,13 @@ export function AvailabilityEditor({
                     aria-pressed={weekday === d}
                     onClick={() => setWeekday(d)}
                     className={cn(
-                      "h-9 w-9 rounded-full text-sm font-medium transition-colors",
+                      "h-9 min-w-9 rounded-full px-2 text-xs font-medium transition-colors",
                       weekday === d
                         ? "bg-primary text-primary-foreground"
                         : "border border-border bg-card hover:bg-accent",
                     )}
                   >
-                    {weekdays[d]?.slice(-1)}
+                    {weekdays[d]}
                   </button>
                 ))}
               </div>

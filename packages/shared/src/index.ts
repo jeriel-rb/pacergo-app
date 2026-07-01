@@ -9,6 +9,7 @@ export * from './enums/gender';
 export * from './enums/training';
 
 export * from './constants/tier-labels';
+export * from './constants/tier-pricing';
 export * from './constants/activity-meta';
 
 export * from './types/trainer';

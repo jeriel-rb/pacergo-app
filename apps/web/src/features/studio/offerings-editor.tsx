@@ -7,6 +7,9 @@ import { useTranslation } from "react-i18next";
 import {
   TIERS,
   ACTIVITY_META,
+  TIER_PRICE_BANDS,
+  isPriceInTierBand,
+  TIER_REQUIRES_CERT,
   type ActivitySlug,
   type Tier,
 } from "@pacergo/shared";
@@ -21,13 +24,6 @@ import { addOffering, removeOffering } from "./studio-actions";
 import { CertificationGate } from "./certification-gate";
 
 const ACTIVITIES: ActivitySlug[] = ["gym", "running", "hiking"];
-
-/** Recommended price band per tier (NT$). `max: null` = no upper bound. */
-const PRICE_BANDS: Record<Tier, { min: number; max: number | null }> = {
-  C: { min: 0, max: 600 },
-  B: { min: 600, max: 1000 },
-  A: { min: 1000, max: null },
-};
 
 /** Manage the trainer's offerings — one tier per activity. */
 export function OfferingsEditor({
@@ -50,7 +46,7 @@ export function OfferingsEditor({
     availableActivities[0] ?? "gym",
   );
   const [tier, setTier] = useState<Tier>("C");
-  const [price, setPrice] = useState("600");
+  const [price, setPrice] = useState(String(TIER_PRICE_BANDS.C.min));
   const [minutes, setMinutes] = useState("60");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,15 +58,25 @@ export function OfferingsEditor({
     }
   }, [availableActivities, activity]);
 
-  // Tier A requires an approved certification *for the selected activity*.
+  // Certified tiers (B & A) require an approved certification *for the selected
+  // activity*. Tier C is open.
   const activityCertStatus = verifications[activity]?.status;
-  const tierANeedsCert = tier === "A" && activityCertStatus !== "approved";
+  const certRequired =
+    TIER_REQUIRES_CERT[tier] && activityCertStatus !== "approved";
 
-  const band = PRICE_BANDS[tier];
-  const priceHint =
-    band.max === null
-      ? t("offerings.priceHintMin", { tier, min: band.min })
-      : t("offerings.priceHintRange", { tier, min: band.min, max: band.max });
+  const band = TIER_PRICE_BANDS[tier];
+  const priceHint = t("offerings.priceHintRange", {
+    tier,
+    min: band.min,
+    max: band.max,
+  });
+  const priceValid = isPriceInTierBand(tier, parseInt(price, 10));
+
+  /** Switching tier: reset the price to that tier's floor so it's in-band. */
+  function selectTier(next: Tier) {
+    setTier(next);
+    setPrice(String(TIER_PRICE_BANDS[next].min));
+  }
 
   async function add() {
     setBusy(true);
@@ -173,10 +179,10 @@ export function OfferingsEditor({
                 label={t("offerings.tier")}
                 options={TIERS.map((tr) => ({ value: tr, label: tr }))}
                 value={tier}
-                onChange={setTier}
+                onChange={selectTier}
               />
 
-              {tierANeedsCert ? (
+              {certRequired ? (
                 <CertificationGate
                   activity={activity}
                   activityLabel={ACTIVITY_META[activity][locale]}
@@ -190,7 +196,8 @@ export function OfferingsEditor({
                       label={t("offerings.price")}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      min={0}
+                      min={band.min}
+                      max={band.max}
                     />
                     <Input
                       type="number"
@@ -201,7 +208,16 @@ export function OfferingsEditor({
                       step={15}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">💡 {priceHint}</p>
+                  <p
+                    className={cn(
+                      "text-xs",
+                      priceValid
+                        ? "text-muted-foreground"
+                        : "text-destructive",
+                    )}
+                  >
+                    💡 {priceHint}
+                  </p>
 
                   {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -209,7 +225,7 @@ export function OfferingsEditor({
                     type="button"
                     variant="outline"
                     onClick={add}
-                    disabled={busy}
+                    disabled={busy || !priceValid}
                     className="w-full gap-2"
                   >
                     {busy ? (

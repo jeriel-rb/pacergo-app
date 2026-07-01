@@ -58,6 +58,7 @@ export function StudioView({ data }: { data: MyListing }) {
         offerings={data.offerings}
         hasListing={hasListing}
         verifications={data.verifications}
+        competitions={data.competitions}
       />
       <AvailabilityEditor
         availability={data.availability}

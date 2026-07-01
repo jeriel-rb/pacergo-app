@@ -10,6 +10,7 @@ import {
   TIER_PRICE_BANDS,
   isPriceInTierBand,
   TIER_REQUIRES_CERT,
+  TIER_REQUIRES_COMPETITION,
   type ActivitySlug,
   type Tier,
 } from "@pacergo/shared";
@@ -21,7 +22,7 @@ import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
 import { addOffering, removeOffering } from "./studio-actions";
-import { CertificationGate } from "./certification-gate";
+import { VerificationGate } from "./certification-gate";
 
 const ACTIVITIES: ActivitySlug[] = ["gym", "running", "hiking"];
 
@@ -30,10 +31,12 @@ export function OfferingsEditor({
   offerings,
   hasListing,
   verifications,
+  competitions,
 }: {
   offerings: StudioOffering[];
   hasListing: boolean;
   verifications: VerificationMap;
+  competitions: VerificationMap;
 }) {
   const { t } = useTranslation("studio");
   const locale = useLocale();
@@ -59,10 +62,14 @@ export function OfferingsEditor({
   }, [availableActivities, activity]);
 
   // Certified tiers (B & A) require an approved certification *for the selected
-  // activity*. Tier C is open.
+  // activity*; Tier A additionally requires approved competition experience.
+  // Tier C is open. Cert is gated first, then competition (A only).
   const activityCertStatus = verifications[activity]?.status;
+  const activityCompStatus = competitions[activity]?.status;
   const certRequired =
     TIER_REQUIRES_CERT[tier] && activityCertStatus !== "approved";
+  const competitionRequired =
+    TIER_REQUIRES_COMPETITION[tier] && activityCompStatus !== "approved";
 
   const band = TIER_PRICE_BANDS[tier];
   const priceHint = t("offerings.priceHintRange", {
@@ -183,10 +190,18 @@ export function OfferingsEditor({
               />
 
               {certRequired ? (
-                <CertificationGate
+                <VerificationGate
+                  docType="certification"
                   activity={activity}
                   activityLabel={ACTIVITY_META[activity][locale]}
                   status={activityCertStatus}
+                />
+              ) : competitionRequired ? (
+                <VerificationGate
+                  docType="competition"
+                  activity={activity}
+                  activityLabel={ACTIVITY_META[activity][locale]}
+                  status={activityCompStatus}
                 />
               ) : (
                 <>

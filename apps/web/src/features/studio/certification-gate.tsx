@@ -8,20 +8,23 @@ import type { ActivitySlug } from "@pacergo/shared";
 import type { VerificationStatus } from "@/lib/studio";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { validateCertFile } from "./certification";
-import { submitCertification } from "./studio-actions";
+import { validateCertFile, type VerificationDocType } from "./certification";
+import { submitVerificationDoc } from "./studio-actions";
 
 /**
- * Per-activity Tier A gate. Shown only when the trainer has selected an activity
- * + Tier A and isn't already approved for that activity. They upload a
- * certification PDF (e.g. a gym instructor licence) for admin review; approval
- * unlocks Tier A for this activity only.
+ * Per-activity verification gate for the certified tiers. Handles both document
+ * kinds via `docType`: a `certification` (unlocks Tiers B & A) and a
+ * `competition` experience proof (additionally required for Tier A). Copy is
+ * driven by the matching i18n namespace (`cert.*` / `comp.*`); the trainer
+ * uploads a PDF for admin review and the tier unlocks once approved.
  */
-export function CertificationGate({
+export function VerificationGate({
+  docType,
   activity,
   activityLabel,
   status,
 }: {
+  docType: VerificationDocType;
   activity: ActivitySlug;
   activityLabel: string;
   status: VerificationStatus | undefined;
@@ -34,11 +37,14 @@ export function CertificationGate({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // i18n key prefix: certifications live under `cert.*`, competitions `comp.*`.
+  const k = docType === "competition" ? "comp" : "cert";
+
   if (status === "pending") {
     return (
       <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
         <Clock size={16} className="mt-0.5 shrink-0" />
-        <span>{t("cert.pending", { activity: activityLabel })}</span>
+        <span>{t(`${k}.pending`, { activity: activityLabel })}</span>
       </div>
     );
   }
@@ -49,7 +55,7 @@ export function CertificationGate({
     if (!f) return;
     const invalid = validateCertFile(f);
     if (invalid) {
-      setError(t(invalid === "type" ? "cert.hintType" : "cert.hintSize"));
+      setError(t(invalid === "type" ? `${k}.hintType` : `${k}.hintSize`));
       setFile(null);
       return;
     }
@@ -59,13 +65,13 @@ export function CertificationGate({
 
   async function submit() {
     if (!file) {
-      setError(t("cert.needFile"));
+      setError(t(`${k}.needFile`));
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      await submitCertification({ activity, file, label: label.trim() });
+      await submitVerificationDoc({ docType, activity, file, label: label.trim() });
       setFile(null);
       setLabel("");
       router.refresh();
@@ -82,21 +88,21 @@ export function CertificationGate({
         <ShieldAlert size={16} className="mt-0.5 shrink-0 text-primary" />
         <div className="space-y-0.5">
           <p className="text-sm font-medium">
-            {t("cert.title", { activity: activityLabel })}
+            {t(`${k}.title`, { activity: activityLabel })}
           </p>
-          <p className="text-xs text-muted-foreground">{t("cert.body")}</p>
+          <p className="text-xs text-muted-foreground">{t(`${k}.body`)}</p>
         </div>
       </div>
 
       {status === "rejected" && (
         <p className="text-xs font-medium text-destructive">
-          {t("cert.rejected")}
+          {t(`${k}.rejected`)}
         </p>
       )}
 
       <Input
-        label={t("cert.label")}
-        placeholder={t("cert.labelPlaceholder")}
+        label={t(`${k}.label`)}
+        placeholder={t(`${k}.labelPlaceholder`)}
         value={label}
         onChange={(e) => setLabel(e.target.value)}
       />
@@ -115,7 +121,7 @@ export function CertificationGate({
         className="w-full justify-start gap-2 font-normal"
       >
         <FileUp size={16} />
-        <span className="truncate">{file ? file.name : t("cert.choose")}</span>
+        <span className="truncate">{file ? file.name : t(`${k}.choose`)}</span>
       </Button>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -127,7 +133,7 @@ export function CertificationGate({
         className="w-full gap-2"
       >
         {busy && <Loader2 size={16} className="animate-spin" />}
-        {t("cert.submit")}
+        {t(`${k}.submit`)}
       </Button>
     </div>
   );

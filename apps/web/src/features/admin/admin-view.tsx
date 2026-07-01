@@ -96,6 +96,9 @@ function Row({ v }: { v: AdminVerification }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="truncate font-medium">{v.display_name}</p>
+            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+              {t(`docType.${v.doc_type}`, { defaultValue: v.doc_type })}
+            </span>
             {activityLabel && (
               <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                 {activityLabel}

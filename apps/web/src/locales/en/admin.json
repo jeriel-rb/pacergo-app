@@ -1,11 +1,15 @@
 {
-  "title": "Tier A verification",
-  "subtitle": "Review certification requests and approve Tier A trainers",
+  "title": "Trainer verification",
+  "subtitle": "Review certification and competition-experience requests",
   "pendingTitle": "Pending review",
   "historyTitle": "Reviewed",
   "empty": "No pending requests. You're all caught up.",
   "submitted": "Submitted {{date}}",
-  "noLabel": "(no certification name)",
+  "noLabel": "(no name given)",
+  "docType": {
+    "certification": "Certification",
+    "competition": "Competition"
+  },
   "viewDoc": "View document (PDF)",
   "notesPlaceholder": "Optional note (shown to the trainer if rejected)…",
   "approve": "Approve",

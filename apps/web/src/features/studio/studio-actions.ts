@@ -3,7 +3,10 @@
 import type { ActivitySlug, Tier } from "@pacergo/shared";
 import type { ListingStatus } from "@/lib/studio";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { certObjectPath } from "./certification";
+import {
+  verificationObjectPath,
+  type VerificationDocType,
+} from "./certification";
 
 export async function upsertMyListing(input: {
   headline: string | null;
@@ -66,14 +69,16 @@ export async function removeAvailability(id: string): Promise<void> {
 }
 
 /**
- * Upload a Tier A certification (PDF) for a specific activity to the private
- * verification bucket and register it for admin review. Approval unlocks Tier A
- * for that activity only.
+ * Upload a verification document (PDF) for a specific activity to the private
+ * verification bucket and register it for admin review. A `certification`
+ * unlocks Tiers B & A for that activity; a `competition` (competition
+ * experience) is additionally required for Tier A.
  */
-export async function submitCertification(input: {
+export async function submitVerificationDoc(input: {
   activity: ActivitySlug;
   file: File;
   label: string;
+  docType: VerificationDocType;
 }): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const {
@@ -81,14 +86,14 @@ export async function submitCertification(input: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not signed in");
 
-  const path = certObjectPath(user.id, Date.now());
+  const path = verificationObjectPath(user.id, Date.now(), input.docType);
   const { error: uploadError } = await supabase.storage
     .from("verification-docs")
     .upload(path, input.file, { contentType: "application/pdf", upsert: false });
   if (uploadError) throw new Error(uploadError.message);
 
   const { error } = await supabase.rpc("submit_verification", {
-    p_doc_type: "certification",
+    p_doc_type: input.docType,
     p_document_path: path,
     p_label: input.label,
     p_activity_slug: input.activity,

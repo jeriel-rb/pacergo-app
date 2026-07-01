@@ -43,7 +43,10 @@ export type VerificationMap = Record<string, StudioVerification>;
 
 export interface MyListing {
   is_companion: boolean;
+  /** Per-activity certification status (unlocks Tiers B & A). */
   verifications: VerificationMap;
+  /** Per-activity competition-experience status (additionally unlocks Tier A). */
+  competitions: VerificationMap;
   listing: StudioListing | null;
   offerings: StudioOffering[];
   availability: StudioAvailability[];
@@ -52,6 +55,7 @@ export interface MyListing {
 const EMPTY: MyListing = {
   is_companion: false,
   verifications: {},
+  competitions: {},
   listing: null,
   offerings: [],
   availability: [],
@@ -66,6 +70,7 @@ export async function getMyListing(): Promise<MyListing> {
   return {
     is_companion: r.is_companion ?? false,
     verifications: r.verifications ?? {},
+    competitions: r.competitions ?? {},
     listing: r.listing ?? null,
     offerings: r.offerings ?? [],
     availability: r.availability ?? [],

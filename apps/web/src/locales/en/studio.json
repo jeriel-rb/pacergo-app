@@ -58,6 +58,20 @@
     "hintType": "Certification must be a PDF file.",
     "hintSize": "PDF must be under 8 MB."
   },
+  "comp": {
+    "title": "{{activity}} competition experience required",
+    "body": "Tier A also needs proof of competition experience. Upload a PDF (e.g. a race result, medal certificate, or event record) for review — it unlocks Tier A for this activity once approved.",
+    "label": "Competition / result",
+    "labelPlaceholder": "e.g. 2024 Taipei Marathon — 3rd place",
+    "choose": "Choose PDF",
+    "submit": "Submit for review",
+    "pending": "Your {{activity}} competition experience is under review — Tier A unlocks for {{activity}} once it's approved.",
+    "approved": "Verified — Tier A is unlocked.",
+    "rejected": "Your last submission was rejected. Please upload valid competition proof.",
+    "needFile": "Please choose a PDF to upload.",
+    "hintType": "Proof must be a PDF file.",
+    "hintSize": "PDF must be under 8 MB."
+  },
   "availability": {
     "title": "Availability",
     "subtitle": "Set your weekly bookable times",

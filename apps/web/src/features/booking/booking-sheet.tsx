@@ -19,12 +19,20 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { Select } from "@/shared/components/ui/select";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 import { createBooking } from "./booking-actions";
+
+/** Bookable time slots: every 30 minutes from 06:00 to 22:00. */
+const TIME_SLOTS = Array.from({ length: 33 }, (_, i) => {
+  const h = 6 + Math.floor(i / 2);
+  const m = i % 2 === 0 ? "00" : "30";
+  return `${String(h).padStart(2, "0")}:${m}`;
+});
 
 /** Booking request form (modal). Triggered from the trainer detail CTA. */
 export function BookingSheet({
@@ -44,7 +52,8 @@ export function BookingSheet({
 
   const [open, setOpen] = useState(false);
   const [offeringId, setOfferingId] = useState(offerings[0]?.id ?? "");
-  const [when, setWhen] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +70,8 @@ export function BookingSheet({
       const id = await createBooking({
         companionId,
         offeringId,
-        scheduledStart: when ? new Date(when).toISOString() : null,
+        scheduledStart:
+          date && time ? new Date(`${date}T${time}`).toISOString() : null,
         durationMin: selected?.session_minutes ?? null,
         locationName: location.trim() || null,
         seekerNote: note.trim() || null,
@@ -124,13 +134,34 @@ export function BookingSheet({
             </div>
           </div>
 
-          <Input
-            type="datetime-local"
-            label={t("book.when")}
-            hint={t("book.whenHint")}
-            value={when}
-            onChange={(e) => setWhen(e.target.value)}
-          />
+          <div className="space-y-1.5">
+            <span className="text-sm font-medium">{t("book.when")}</span>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="date"
+                aria-label={t("book.whenDate")}
+                min={new Date().toISOString().slice(0, 10)}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <Select
+                aria-label={t("book.whenTime")}
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                disabled={!date}
+              >
+                <option value="">{t("book.whenTime")}</option>
+                {TIME_SLOTS.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {slot}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("book.whenHint")}
+            </p>
+          </div>
 
           <Input
             label={t("book.location")}

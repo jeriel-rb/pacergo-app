@@ -45,7 +45,9 @@
     "locationPlaceholder": "e.g. World Gym, Xinyi, Taipei",
     "note": "Note",
     "notePlaceholder": "Your goals, anything to be aware of…",
-    "submit": "Send booking request"
+    "submit": "Send booking request",
+    "whenDate": "Date",
+    "whenTime": "Time"
   },
   "review": {
     "title": "Leave a review",

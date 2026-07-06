@@ -45,7 +45,9 @@
     "locationPlaceholder": "例如：台北市信義區 World Gym",
     "note": "備註",
     "notePlaceholder": "想達成的目標、需要注意的事項…",
-    "submit": "送出預約請求"
+    "submit": "送出預約請求",
+    "whenDate": "日期",
+    "whenTime": "時間"
   },
   "review": {
     "title": "留下評價",

@@ -8,8 +8,8 @@ import {
   WEIGHT_CLASSES,
   AGE_BANDS,
   DIET_MODES,
-} from "@pacergo/shared";
-import { composePlan, type PlanSelection } from "../plan-composer";
+} from "../index";
+import { composePlan, type PlanSelection } from "../plan/plan-composer";
 
 const BASE: PlanSelection = {
   goal: "muscle_gain",

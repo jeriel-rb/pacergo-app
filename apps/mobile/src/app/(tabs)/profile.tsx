@@ -30,6 +30,10 @@ export default function ProfileScreen() {
           </AppText>
         </Pressable>
 
+        <Pressable onPress={() => router.push('/ai-plan')} className="rounded-lg bg-dark-surface p-4">
+          <AppText variant="body">{t('profile.aiPlan')}</AppText>
+        </Pressable>
+
         <Pressable onPress={() => router.push('/settings')} className="rounded-lg bg-dark-surface p-4">
           <AppText variant="body">{t('profile.settings')}</AppText>
         </Pressable>

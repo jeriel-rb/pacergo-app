@@ -12,6 +12,8 @@ export * from './constants/tier-labels';
 export * from './constants/tier-pricing';
 export * from './constants/activity-meta';
 
+export * from './plan/plan-composer';
+
 export * from './types/trainer';
 export * from './types/booking';
 export * from './types/user';

@@ -9,6 +9,7 @@ export type Profile = {
   bio: string | null;
   experience_level: 'beginner' | 'intermediate' | 'advanced' | null;
   home_area: string | null;
+  gender: 'male' | 'female' | 'other' | null;
   is_companion: boolean;
   onboarding_completed: boolean;
 };

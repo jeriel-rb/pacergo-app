@@ -9,8 +9,9 @@ import {
   TRAINING_GOALS,
   TRAINING_LOCATIONS,
   WEIGHT_CLASSES,
+  composePlan,
+  type PlanSelection,
 } from "@pacergo/shared";
-import { composePlan, type PlanSelection } from "./plan-composer";
 
 /**
  * Compose the training-menu markdown for a selection. Plans are assembled

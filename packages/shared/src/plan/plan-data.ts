@@ -1,13 +1,13 @@
 import type {
   AgeBand,
   DietMode,
-  ExperienceLevel,
-  PlanGender,
   TrainingFrequency,
   TrainingGoal,
   TrainingLocation,
   WeightClass,
-} from "@pacergo/shared";
+} from "../enums/training";
+import type { ExperienceLevel } from "../enums/experience";
+import type { PlanGender } from "../enums/gender";
 
 /**
  * Authored content for the AI training-menu composer. Everything here is

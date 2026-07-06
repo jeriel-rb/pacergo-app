@@ -3,7 +3,7 @@ import {
   TIERS,
   TIER_LABELS,
   TIER_INTENT,
-  TIER_PRICE_BANDS,
+  TIER_PRICE_FLOORS,
   PLATFORM_MIN_PRICE_NTD,
   isPriceInTierBand,
   TIER_REQUIRES_CERT,
@@ -26,27 +26,27 @@ describe('shared domain constants', () => {
     }
   });
 
-  it('has a valid price band for every tier, at or above the platform floor', () => {
+  it('has a price floor for every tier, at or above the platform floor', () => {
     for (const t of TIERS) {
-      const band = TIER_PRICE_BANDS[t];
-      expect(band.min).toBeGreaterThanOrEqual(PLATFORM_MIN_PRICE_NTD);
-      expect(band.max).toBeGreaterThanOrEqual(band.min);
+      expect(TIER_PRICE_FLOORS[t]).toBeGreaterThanOrEqual(PLATFORM_MIN_PRICE_NTD);
     }
   });
 
-  it('orders tier bands C < B < A without gaps that undercut the floor', () => {
-    expect(TIER_PRICE_BANDS.C.min).toBe(PLATFORM_MIN_PRICE_NTD);
-    expect(TIER_PRICE_BANDS.C.max).toBe(TIER_PRICE_BANDS.B.min);
-    expect(TIER_PRICE_BANDS.B.max).toBe(TIER_PRICE_BANDS.A.min);
+  it('orders tier floors C < B < A, starting at the platform floor', () => {
+    expect(TIER_PRICE_FLOORS.C).toBe(PLATFORM_MIN_PRICE_NTD);
+    expect(TIER_PRICE_FLOORS.C).toBeLessThan(TIER_PRICE_FLOORS.B);
+    expect(TIER_PRICE_FLOORS.B).toBeLessThan(TIER_PRICE_FLOORS.A);
   });
 
-  it('validates prices against the inclusive tier band', () => {
-    expect(isPriceInTierBand('C', 600)).toBe(true);
-    expect(isPriceInTierBand('C', 800)).toBe(true);
-    expect(isPriceInTierBand('C', 599)).toBe(false);
-    expect(isPriceInTierBand('C', 801)).toBe(false);
-    expect(isPriceInTierBand('A', 1500)).toBe(true);
-    expect(isPriceInTierBand('A', 1501)).toBe(false);
+  it('validates prices against the tier floor, with no ceiling', () => {
+    expect(isPriceInTierBand('C', 400)).toBe(true);
+    expect(isPriceInTierBand('C', 399)).toBe(false);
+    expect(isPriceInTierBand('C', 2000)).toBe(true);
+    expect(isPriceInTierBand('B', 800)).toBe(true);
+    expect(isPriceInTierBand('B', 799)).toBe(false);
+    expect(isPriceInTierBand('A', 1200)).toBe(true);
+    expect(isPriceInTierBand('A', 1199)).toBe(false);
+    expect(isPriceInTierBand('A', 99999)).toBe(true);
     expect(isPriceInTierBand('B', Number.NaN)).toBe(false);
   });
 

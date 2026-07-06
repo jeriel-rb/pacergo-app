@@ -2,26 +2,27 @@ import type { Tier } from '../enums/tier';
 
 /**
  * Platform-wide price floor (NT$ per session). No offering may be listed below
- * this — it guarantees trainers a livable rate and signals "this platform
- * starts at NT$600" to seekers.
+ * this — it guarantees companions a fair rate and signals "this platform
+ * starts at NT$400" to seekers.
  */
-export const PLATFORM_MIN_PRICE_NTD = 600;
+export const PLATFORM_MIN_PRICE_NTD = 400;
 
 /**
- * Enforced price band per tier (NT$ per session), both bounds inclusive.
- * Ranges are intentionally narrow so trainers within a tier don't undercut each
- * other into a race to the bottom. Kept in sync with the `add_offering` RPC.
+ * Enforced price floor per tier (NT$ per session, inclusive). There is
+ * deliberately **no ceiling**: floors keep tiers from undercutting each other
+ * into a race to the bottom, while high-demand companions stay free to price
+ * at a premium. Kept in sync with the `add_offering` RPC.
+ *   C: 400+   B: 800+   A: 1200+
  */
-export const TIER_PRICE_BANDS: Record<Tier, { min: number; max: number }> = {
-  C: { min: 600, max: 800 },
-  B: { min: 800, max: 1200 },
-  A: { min: 1200, max: 1500 },
+export const TIER_PRICE_FLOORS: Record<Tier, number> = {
+  C: 400,
+  B: 800,
+  A: 1200,
 };
 
-/** True when `price` sits within the (inclusive) band for `tier`. */
+/** True when `price` clears the (inclusive) floor for `tier`. No upper bound. */
 export function isPriceInTierBand(tier: Tier, price: number): boolean {
-  const band = TIER_PRICE_BANDS[tier];
-  return Number.isFinite(price) && price >= band.min && price <= band.max;
+  return Number.isFinite(price) && price >= TIER_PRICE_FLOORS[tier];
 }
 
 /**

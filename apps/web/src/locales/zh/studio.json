@@ -39,10 +39,10 @@
     "tier": "等級",
     "price": "價格 (NT$)",
     "minutes": "時長（分鐘）",
-    "priceHintRange": "{{tier}} 級價格須為 NT${{min}}–{{max}}",
     "allAdded": "你已為每個項目都新增方案。如需更改等級，請先移除其中一個。",
     "add": "新增方案",
-    "remove": "移除"
+    "remove": "移除",
+    "priceHintFloor": "{{tier}} 級價格 NT${{min}} 起，無上限"
   },
   "cert": {
     "title": "需要 {{activity}} 的認證",

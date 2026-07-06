@@ -39,10 +39,10 @@
     "tier": "Tier",
     "price": "Price (NT$)",
     "minutes": "Minutes",
-    "priceHintRange": "Tier {{tier}} price must be NT${{min}}–{{max}}",
     "allAdded": "You've added a plan for every activity. Remove one to change its tier.",
     "add": "Add plan",
-    "remove": "Remove"
+    "remove": "Remove",
+    "priceHintFloor": "Tier {{tier}} price starts at NT${{min}} — no upper limit"
   },
   "cert": {
     "title": "{{activity}} certification required",

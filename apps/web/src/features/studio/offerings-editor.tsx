@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import {
   TIERS,
   ACTIVITY_META,
-  TIER_PRICE_BANDS,
+  TIER_PRICE_FLOORS,
   isPriceInTierBand,
   TIER_REQUIRES_CERT,
   TIER_REQUIRES_COMPETITION,
@@ -49,7 +49,7 @@ export function OfferingsEditor({
     availableActivities[0] ?? "gym",
   );
   const [tier, setTier] = useState<Tier>("C");
-  const [price, setPrice] = useState(String(TIER_PRICE_BANDS.C.min));
+  const [price, setPrice] = useState(String(TIER_PRICE_FLOORS.C));
   const [minutes, setMinutes] = useState("60");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,18 +71,14 @@ export function OfferingsEditor({
   const competitionRequired =
     TIER_REQUIRES_COMPETITION[tier] && activityCompStatus !== "approved";
 
-  const band = TIER_PRICE_BANDS[tier];
-  const priceHint = t("offerings.priceHintRange", {
-    tier,
-    min: band.min,
-    max: band.max,
-  });
+  const floor = TIER_PRICE_FLOORS[tier];
+  const priceHint = t("offerings.priceHintFloor", { tier, min: floor });
   const priceValid = isPriceInTierBand(tier, parseInt(price, 10));
 
   /** Switching tier: reset the price to that tier's floor so it's in-band. */
   function selectTier(next: Tier) {
     setTier(next);
-    setPrice(String(TIER_PRICE_BANDS[next].min));
+    setPrice(String(TIER_PRICE_FLOORS[next]));
   }
 
   async function add() {
@@ -211,8 +207,7 @@ export function OfferingsEditor({
                       label={t("offerings.price")}
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      min={band.min}
-                      max={band.max}
+                      min={floor}
                     />
                     <Input
                       type="number"

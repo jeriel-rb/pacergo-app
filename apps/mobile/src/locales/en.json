@@ -44,12 +44,14 @@
   "request": {
     "title": "Request a session",
     "pickOffering": "Choose a session",
-    "when": "When (YYYY-MM-DD HH:MM)",
+    "when": "Preferred time",
     "where": "Where (gym or area)",
     "note": "Note (optional)",
     "send": "Send request",
     "sent": "Request sent",
-    "error": "Couldn't send the request. Try again."
+    "error": "Couldn't send the request. Try again.",
+    "flexible": "Flexible",
+    "whenHint": "Optional — you can agree on a time with your companion later"
   },
   "bookingDetail": {
     "accept": "Accept",

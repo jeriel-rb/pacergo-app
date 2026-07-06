@@ -44,12 +44,14 @@
   "request": {
     "title": "預約課程",
     "pickOffering": "選擇課程",
-    "when": "時間（YYYY-MM-DD HH:MM）",
+    "when": "希望時間",
     "where": "地點（健身房或地區）",
     "note": "備註（選填）",
     "send": "送出預約",
     "sent": "預約已送出",
-    "error": "無法送出預約，請再試一次。"
+    "error": "無法送出預約，請再試一次。",
+    "flexible": "彈性",
+    "whenHint": "可先不選，之後再與陪練師討論"
   },
   "bookingDetail": {
     "accept": "接受",

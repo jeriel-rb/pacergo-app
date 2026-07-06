@@ -10,6 +10,7 @@ import {
   PersonStanding,
   Leaf,
   Loader2,
+  Timer,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -17,10 +18,18 @@ import {
   AGE_BANDS,
   EXPERIENCE_LEVELS,
   PLAN_GENDERS,
+  WEIGHT_CLASSES,
+  TRAINING_FREQUENCIES,
+  TRAINING_LOCATIONS,
+  DIET_MODES,
   type TrainingGoal,
   type AgeBand,
   type ExperienceLevel,
   type PlanGender,
+  type WeightClass,
+  type TrainingFrequency,
+  type TrainingLocation,
+  type DietMode,
 } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -36,6 +45,7 @@ const GOAL_META: Record<TrainingGoal, { icon: LucideIcon; tint: string }> = {
   muscle_gain: { icon: Dumbbell, tint: "bg-blue-500/10 text-blue-500" },
   endurance: { icon: Activity, tint: "bg-emerald-500/10 text-emerald-500" },
   flexibility: { icon: PersonStanding, tint: "bg-violet-500/10 text-violet-500" },
+  functional: { icon: Timer, tint: "bg-orange-500/10 text-orange-500" },
 };
 
 /** Example presets shown at the bottom — each fills goal + level and scrolls up. */
@@ -44,6 +54,7 @@ const EXAMPLES: { key: string; goal: TrainingGoal; level: ExperienceLevel }[] = 
   { key: "endurance", goal: "endurance", level: "intermediate" },
   { key: "fatLoss", goal: "fat_loss", level: "intermediate" },
   { key: "flexibility", goal: "flexibility", level: "beginner" },
+  { key: "functional", goal: "functional", level: "intermediate" },
 ];
 
 export function AiPlanView({
@@ -59,7 +70,13 @@ export function AiPlanView({
   const [ageBand, setAgeBand] = useState<AgeBand | null>(null);
   const [level, setLevel] = useState<ExperienceLevel | null>(null);
   const [gender, setGender] = useState<PlanGender>(initialGender);
+  // The remaining dimensions default to the most common answer so three taps
+  // (goal / age / level) are enough to generate — but each stays adjustable.
+  const [weightClass, setWeightClass] = useState<WeightClass>("medium");
+  const [frequency, setFrequency] = useState<TrainingFrequency>("mid");
+  const [location, setLocation] = useState<TrainingLocation>("full_gym");
   const [nutrition, setNutrition] = useState(true);
+  const [dietMode, setDietMode] = useState<DietMode>("none");
 
   const [generating, setGenerating] = useState(false);
   const [plan, setPlan] = useState<string | null>(null);
@@ -73,9 +90,20 @@ export function AiPlanView({
     setError(false);
     setPlan(null);
     try {
-      // Static content — the small floor just lets the animation breathe.
+      // Composed content — the small floor just lets the animation breathe.
       const [res] = await Promise.all([
-        generateTrainingPlan({ goal, gender, level, ageBand, nutrition, locale }),
+        generateTrainingPlan({
+          goal,
+          gender,
+          level,
+          ageBand,
+          weightClass,
+          frequency,
+          location,
+          nutrition,
+          dietMode,
+          locale,
+        }),
         new Promise((r) => setTimeout(r, 650)),
       ]);
       if ("markdown" in res) setPlan(res.markdown);
@@ -176,19 +204,72 @@ export function AiPlanView({
             setPlan(null);
           }}
         />
+        <Segmented
+          label={t("weightLabel")}
+          options={WEIGHT_CLASSES.map((w) => ({ value: w, label: t(`weight.${w}`) }))}
+          value={weightClass}
+          onChange={(v) => {
+            setWeightClass(v);
+            setPlan(null);
+          }}
+        />
       </Card>
 
-      {/* Nutrition toggle */}
-      <Card className="flex items-center justify-between p-4 sm:p-5">
-        <span className="flex items-center gap-2 text-sm font-medium">
-          <Leaf size={18} className="text-emerald-500" />
-          {t("nutrition")}
-        </span>
-        <Switch
-          checked={nutrition}
-          onChange={setNutrition}
-          aria-label={t("nutrition")}
+      {/* Training frequency + location */}
+      <Card className="space-y-4 p-4 sm:p-5">
+        <Segmented
+          label={t("freqLabel")}
+          options={TRAINING_FREQUENCIES.map((f) => ({
+            value: f,
+            label: t(`freq.${f}`),
+          }))}
+          value={frequency}
+          onChange={(v) => {
+            setFrequency(v);
+            setPlan(null);
+          }}
         />
+        <Segmented
+          label={t("locationLabel")}
+          options={TRAINING_LOCATIONS.map((l) => ({
+            value: l,
+            label: t(`location.${l}`),
+          }))}
+          value={location}
+          onChange={(v) => {
+            setLocation(v);
+            setPlan(null);
+          }}
+        />
+      </Card>
+
+      {/* Nutrition toggle + diet mode */}
+      <Card className="space-y-4 p-4 sm:p-5">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <Leaf size={18} className="text-emerald-500" />
+            {t("nutrition")}
+          </span>
+          <Switch
+            checked={nutrition}
+            onChange={(v) => {
+              setNutrition(v);
+              setPlan(null);
+            }}
+            aria-label={t("nutrition")}
+          />
+        </div>
+        {nutrition && (
+          <Segmented
+            label={t("dietLabel")}
+            options={DIET_MODES.map((d) => ({ value: d, label: t(`diet.${d}`) }))}
+            value={dietMode}
+            onChange={(v) => {
+              setDietMode(v);
+              setPlan(null);
+            }}
+          />
+        )}
       </Card>
 
       <Button

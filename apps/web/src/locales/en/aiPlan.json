@@ -1,12 +1,13 @@
 {
   "title": "AI Training Menu",
-  "subtitle": "Based on your goal and age, AI builds a personalized training plan and nutrition advice",
+  "subtitle": "AI builds a 60-minute training menu for your goal: 10 min warm-up + 40 min training + 10 min cool-down",
   "goalLabel": "Choose your goal",
   "goal": {
     "fat_loss": "Fat Loss",
     "muscle_gain": "Build Muscle",
     "endurance": "Endurance",
-    "flexibility": "Flexibility"
+    "flexibility": "Flexibility",
+    "functional": "Functional"
   },
   "ageLabel": "Age group",
   "age": {
@@ -25,7 +26,32 @@
     "male": "Male",
     "female": "Female"
   },
+  "weightLabel": "Body type",
+  "weight": {
+    "slim": "Slim",
+    "medium": "Medium",
+    "heavy": "Heavier"
+  },
+  "freqLabel": "Training frequency",
+  "freq": {
+    "low": "1–2 days/wk",
+    "mid": "3–4 days/wk",
+    "high": "5+ days/wk"
+  },
+  "locationLabel": "Training place",
+  "location": {
+    "home": "Home (no gear)",
+    "full_gym": "Full gym",
+    "limited_gym": "Limited-gear gym"
+  },
   "nutrition": "Include nutrition advice",
+  "dietLabel": "Diet mode",
+  "diet": {
+    "none": "No specific",
+    "muscle_gain": "Muscle gain",
+    "fat_loss": "Fat loss",
+    "intermittent_fasting": "Fasting (IF)"
+  },
   "generate": "Generate plan",
   "generating": "Generating…",
   "empty": {
@@ -50,6 +76,10 @@
     "flexibility": {
       "title": "Flexibility Program",
       "sub": "Full-body stretch and core stability"
+    },
+    "functional": {
+      "title": "Functional Performance",
+      "sub": "Hyrox / CrossFit-style mixed training"
     }
   }
 }

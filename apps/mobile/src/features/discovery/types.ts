@@ -1,4 +1,7 @@
-export type Tier = 'A' | 'B' | 'C';
+// Tier is defined once in @pacergo/shared; re-exported here so existing
+// mobile imports keep working.
+export type { Tier } from '@pacergo/shared';
+import type { Tier } from '@pacergo/shared';
 
 export type NearbyCompanion = {
   companion_id: string;

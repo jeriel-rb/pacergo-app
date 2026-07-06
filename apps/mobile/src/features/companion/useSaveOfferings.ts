@@ -3,27 +3,26 @@ import { supabase } from '@/lib/supabase/client';
 import { useSession } from '@/features/auth/useSession';
 import type { OfferingDraft } from './types';
 
+/**
+ * Persist offerings through the `add_offering` RPC (same path as web), so the
+ * server enforces the platform rules: per-tier price floors, cert-gated tiers
+ * (B/A need an approved certification, A also competition experience), and
+ * one offering per activity (the RPC replaces any existing one).
+ */
 export function useSaveOfferings() {
   const { session } = useSession();
   const uid = session?.user.id;
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      listingId,
-      offerings,
-    }: {
-      listingId: string;
-      offerings: OfferingDraft[];
-    }) => {
-      const { error: del } = await supabase
-        .from('listing_offerings')
-        .delete()
-        .eq('listing_id', listingId);
-      if (del) throw del;
-      if (offerings.length > 0) {
-        const { error } = await supabase
-          .from('listing_offerings')
-          .insert(offerings.map((o) => ({ ...o, listing_id: listingId })));
+    mutationFn: async ({ offerings }: { offerings: OfferingDraft[] }) => {
+      for (const o of offerings) {
+        const { error } = await supabase.rpc('add_offering', {
+          p_activity_slug: o.activity_slug,
+          p_tier: o.tier,
+          p_price_ntd: o.price_ntd,
+          p_is_free: false,
+          p_session_minutes: o.session_minutes,
+        });
         if (error) throw error;
       }
     },

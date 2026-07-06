@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { View, TextInput, Pressable, Switch, Alert, ScrollView } from 'react-native';
+import { View, TextInput, Pressable, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { TIER_PRICE_FLOORS, TIER_REQUIRES_CERT, type Tier } from '@pacergo/shared';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
@@ -11,7 +12,6 @@ import { useSaveListing } from '@/features/companion/useSaveListing';
 import { useSaveOfferings } from '@/features/companion/useSaveOfferings';
 import { useCompanionStore } from '@/features/companion/companionStore';
 import { validateOffering } from '@/features/companion/validateOffering';
-import type { Tier } from '@/features/discovery/types';
 
 const TIERS: Tier[] = ['A', 'B', 'C'];
 
@@ -24,28 +24,38 @@ export default function CompanionSetup() {
   const saveOfferings = useSaveOfferings();
 
   const [activityId, setActivityId] = useState<string | null>(null);
-  const [tier, setTier] = useState<Tier>('B');
+  const [tier, setTier] = useState<Tier>('C');
   const [minutes, setMinutes] = useState('60');
-  const [price, setPrice] = useState('');
-  const [isFree, setIsFree] = useState(false);
+  const [price, setPrice] = useState(String(TIER_PRICE_FLOORS.C));
+
+  function selectTier(next: Tier) {
+    setTier(next);
+    // Reset to the tier's floor so the draft starts valid.
+    setPrice(String(TIER_PRICE_FLOORS[next]));
+  }
 
   function addOffering() {
-    const aId = activityId ?? activities.data?.[0]?.id;
-    if (!aId) return;
+    const activity = (activities.data ?? []).find(
+      (a) => a.id === (activityId ?? activities.data?.[0]?.id),
+    );
+    if (!activity) return;
     const draft = {
-      activity_id: aId,
+      activity_id: activity.id,
+      activity_slug: activity.slug,
       tier,
-      price_ntd: isFree ? 0 : Number(price) || 0,
-      is_free: isFree,
+      price_ntd: Number(price) || 0,
       session_minutes: Number(minutes) || 60,
     };
-    const v = validateOffering({ tier: draft.tier, priceNtd: draft.price_ntd, isFree: draft.is_free });
+    const v = validateOffering({ tier: draft.tier, priceNtd: draft.price_ntd, isFree: false });
     if (!v.ok) {
-      Alert.alert('Pacergo', t('companionSetup.invalidOffering'));
+      Alert.alert(
+        'Pacergo',
+        t('companionSetup.belowFloor', { min: TIER_PRICE_FLOORS[tier], tier }),
+      );
       return;
     }
     store.addOffering(draft);
-    setPrice('');
+    setPrice(String(TIER_PRICE_FLOORS[tier]));
   }
 
   async function finish() {
@@ -54,18 +64,21 @@ export default function CompanionSetup() {
       return;
     }
     try {
-      const listingId = await saveListing.mutateAsync({
+      await saveListing.mutateAsync({
         headline: store.headline || null,
         bio_long: null,
         served_area: store.servedArea || null,
         status: 'active',
       });
-      await saveOfferings.mutateAsync({ listingId, offerings: store.offerings });
+      await saveOfferings.mutateAsync({ offerings: store.offerings });
       store.reset();
       Alert.alert('Pacergo', t('companionSetup.saved'));
       router.replace('/companion-dashboard');
-    } catch {
-      Alert.alert('Pacergo', t('companionSetup.error'));
+    } catch (e) {
+      // Surface the server rule that failed (price floor / cert / competition
+      // gate from the add_offering RPC) instead of a generic error.
+      const detail = e instanceof Error && e.message ? `\n${e.message}` : '';
+      Alert.alert('Pacergo', `${t('companionSetup.error')}${detail}`);
     }
   }
 
@@ -108,7 +121,7 @@ export default function CompanionSetup() {
           {TIERS.map((tt) => (
             <Pressable
               key={tt}
-              onPress={() => setTier(tt)}
+              onPress={() => selectTier(tt)}
               className={`h-10 w-10 items-center justify-center rounded-full ${
                 tier === tt ? 'bg-brand-deep' : 'bg-dark-surface'
               }`}
@@ -117,10 +130,9 @@ export default function CompanionSetup() {
             </Pressable>
           ))}
         </View>
-        <View className="flex-row items-center justify-between rounded-md bg-dark-surface px-4 py-3">
-          <AppText variant="body">{t('companionSetup.free')}</AppText>
-          <Switch value={isFree} onValueChange={setIsFree} />
-        </View>
+        {TIER_REQUIRES_CERT[tier] ? (
+          <AppText variant="caption">{t('companionSetup.certHint')}</AppText>
+        ) : null}
         <TextInput
           placeholder={t('companionSetup.minutes')}
           placeholderTextColor="#6B6B74"
@@ -129,16 +141,17 @@ export default function CompanionSetup() {
           onChangeText={setMinutes}
           className="rounded-md bg-dark-surface px-4 py-3 text-dark-text"
         />
-        {!isFree ? (
-          <TextInput
-            placeholder={t('companionSetup.price')}
-            placeholderTextColor="#6B6B74"
-            keyboardType="number-pad"
-            value={price}
-            onChangeText={setPrice}
-            className="rounded-md bg-dark-surface px-4 py-3 text-dark-text"
-          />
-        ) : null}
+        <TextInput
+          placeholder={t('companionSetup.price')}
+          placeholderTextColor="#6B6B74"
+          keyboardType="number-pad"
+          value={price}
+          onChangeText={setPrice}
+          className="rounded-md bg-dark-surface px-4 py-3 text-dark-text"
+        />
+        <AppText variant="caption">
+          {t('companionSetup.floorHint', { tier, min: TIER_PRICE_FLOORS[tier] })}
+        </AppText>
         <Button label={t('companionSetup.add')} variant="secondary" onPress={addOffering} />
 
         {store.offerings.map((o, i) => (
@@ -150,7 +163,7 @@ export default function CompanionSetup() {
             <View className="flex-row items-center gap-2">
               <TierBadge tier={o.tier} />
               <AppText variant="body">
-                {o.session_minutes} min · {o.is_free ? t('companionSetup.free') : `NT$${o.price_ntd}`}
+                {o.session_minutes} min · NT${o.price_ntd}
               </AppText>
             </View>
             <AppText variant="caption">✕</AppText>

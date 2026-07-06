@@ -1,6 +1,15 @@
 {
-  "tabs": { "discover": "Discover", "bookings": "Bookings", "chat": "Chat", "profile": "Profile" },
-  "common": { "free": "Free", "loading": "Loading…", "retry": "Retry" },
+  "tabs": {
+    "discover": "Discover",
+    "bookings": "Bookings",
+    "chat": "Chat",
+    "profile": "Profile"
+  },
+  "common": {
+    "free": "Free",
+    "loading": "Loading…",
+    "retry": "Retry"
+  },
   "discover": {
     "title": "Find a companion",
     "feed": "List",
@@ -106,13 +115,14 @@
     "tier": "Tier",
     "minutes": "Minutes",
     "price": "Price (NTD)",
-    "free": "Free",
     "add": "Add",
     "finish": "Publish listing",
     "needOffering": "Add at least one session type.",
-    "invalidOffering": "Only Tier C can be free; A and B need a price.",
     "saved": "Your listing is live!",
-    "error": "Couldn't save. Try again."
+    "error": "Couldn't save. Try again.",
+    "floorHint": "Tier {{tier}} starts at NT${{min}} — no upper limit",
+    "belowFloor": "Tier {{tier}} price must be at least NT${{min}}.",
+    "certHint": "Tiers B & A need an approved certification for this activity (Tier A also needs approved competition experience)."
   },
   "dashboard": {
     "title": "Companion dashboard",

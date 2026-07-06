@@ -1,7 +1,8 @@
 import { View, Text } from 'react-native';
+import type { Tier } from '@pacergo/shared';
 import { palette } from '@/lib/theme/tokens';
 
-export type Tier = 'A' | 'B' | 'C';
+export type { Tier };
 
 export function TierBadge({ tier }: { tier: Tier }) {
   const color = palette.tier[tier].to;

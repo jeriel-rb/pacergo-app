@@ -10291,6 +10291,7 @@ __metadata:
     "@expo-google-fonts/noto-sans-tc": "npm:^0.4.3"
     "@expo-google-fonts/space-grotesk": "npm:^0.4.1"
     "@expo/ui": "npm:~56.0.17"
+    "@pacergo/shared": "workspace:*"
     "@react-native-async-storage/async-storage": "npm:2.2.0"
     "@react-native/jest-preset": "npm:0.85.3"
     "@react-native/metro-config": "npm:0.85.3"

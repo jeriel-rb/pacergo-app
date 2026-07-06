@@ -1,6 +1,15 @@
 {
-  "tabs": { "discover": "探索", "bookings": "預約", "chat": "訊息", "profile": "個人檔案" },
-  "common": { "free": "免費", "loading": "載入中…", "retry": "重試" },
+  "tabs": {
+    "discover": "探索",
+    "bookings": "預約",
+    "chat": "訊息",
+    "profile": "個人檔案"
+  },
+  "common": {
+    "free": "免費",
+    "loading": "載入中…",
+    "retry": "重試"
+  },
   "discover": {
     "title": "尋找夥伴",
     "feed": "清單",
@@ -106,13 +115,14 @@
     "tier": "等級",
     "minutes": "分鐘",
     "price": "價格（NTD）",
-    "free": "免費",
     "add": "新增",
     "finish": "發佈檔案",
     "needOffering": "請至少新增一種課程類型。",
-    "invalidOffering": "只有 C 級可以免費；A、B 級需要設定價格。",
     "saved": "你的檔案已上線！",
-    "error": "無法儲存，請再試一次。"
+    "error": "無法儲存，請再試一次。",
+    "floorHint": "{{tier}} 級 NT${{min}} 起，無上限",
+    "belowFloor": "{{tier}} 級價格不得低於 NT${{min}}。",
+    "certHint": "B、A 級需先通過該項目的證照審核（A 級另需通過比賽經歷審核）。"
   },
   "dashboard": {
     "title": "夥伴中心",

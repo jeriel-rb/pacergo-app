@@ -7,15 +7,9 @@ import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { TierBadge } from '@/components/ui/TierBadge';
 import { PriceTag } from '@/components/ui/PriceTag';
+import { BOOKING_TIME_SLOTS } from '@pacergo/shared';
 import { useCompanion } from '@/features/discovery/useCompanion';
 import { useCreateBooking } from '@/features/booking/useCreateBooking';
-
-/** Bookable time slots: every 30 minutes from 06:00 to 22:00 (same as web). */
-const TIME_SLOTS = Array.from({ length: 33 }, (_, i) => {
-  const h = 6 + Math.floor(i / 2);
-  const m = i % 2 === 0 ? '00' : '30';
-  return `${String(h).padStart(2, '0')}:${m}`;
-});
 
 function toKey(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -129,7 +123,7 @@ export default function RequestScreen() {
           {day ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View className="flex-row gap-2">
-                {TIME_SLOTS.map((s) => (
+                {BOOKING_TIME_SLOTS.map((s) => (
                   <Pressable
                     key={s}
                     onPress={() => setSlot(s)}

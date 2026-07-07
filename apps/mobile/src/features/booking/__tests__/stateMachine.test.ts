@@ -10,8 +10,8 @@ describe('availableActions', () => {
   });
 
   it('lets either party cancel or complete an accepted booking', () => {
-    expect(availableActions('accepted', 'seeker')).toEqual(['cancel', 'complete']);
-    expect(availableActions('accepted', 'companion')).toEqual(['cancel', 'complete']);
+    expect(availableActions('accepted', 'seeker')).toEqual(['complete', 'cancel']);
+    expect(availableActions('accepted', 'companion')).toEqual(['complete', 'cancel']);
   });
 
   it('offers no actions on terminal states', () => {

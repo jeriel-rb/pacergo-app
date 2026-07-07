@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import {
   ACTIVITY_META,
+  BOOKING_TIME_SLOTS,
   TIER_LABELS,
   type CompanionOffering,
 } from "@pacergo/shared";
@@ -26,13 +27,6 @@ import { useLocale } from "@/shared/hooks/use-locale";
 import { getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 import { createBooking } from "./booking-actions";
-
-/** Bookable time slots: every 30 minutes from 06:00 to 22:00. */
-const TIME_SLOTS = Array.from({ length: 33 }, (_, i) => {
-  const h = 6 + Math.floor(i / 2);
-  const m = i % 2 === 0 ? "00" : "30";
-  return `${String(h).padStart(2, "0")}:${m}`;
-});
 
 /** Booking request form (modal). Triggered from the trainer detail CTA. */
 export function BookingSheet({
@@ -151,7 +145,7 @@ export function BookingSheet({
                 disabled={!date}
               >
                 <option value="">{t("book.whenTime")}</option>
-                {TIME_SLOTS.map((slot) => (
+                {BOOKING_TIME_SLOTS.map((slot) => (
                   <option key={slot} value={slot}>
                     {slot}
                   </option>

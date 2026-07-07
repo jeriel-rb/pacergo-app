@@ -14,6 +14,8 @@ export * from './constants/activity-meta';
 
 export * from './plan/plan-composer';
 
+export * from './booking/state-machine';
+
 export * from './types/trainer';
 export * from './types/booking';
 export * from './types/user';

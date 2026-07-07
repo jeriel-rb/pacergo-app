@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { BookingRecord } from "@pacergo/shared";
+import {
+  availableActions,
+  type BookingAction,
+  type BookingRecord,
+} from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import {
   acceptBooking,
@@ -14,9 +18,17 @@ import {
 } from "./booking-actions";
 
 type Action = {
-  key: string;
+  key: BookingAction;
   run: (id: string) => Promise<void>;
   variant?: "default" | "outline";
+};
+
+/** How each FSM action runs + renders; the FSM itself is shared with mobile. */
+const ACTION_META: Record<BookingAction, Omit<Action, "key">> = {
+  accept: { run: acceptBooking },
+  decline: { run: declineBooking, variant: "outline" },
+  cancel: { run: cancelBooking, variant: "outline" },
+  complete: { run: completeBooking },
 };
 
 /** Role + status aware booking actions (accept/decline/cancel/complete). */
@@ -34,18 +46,10 @@ export function BookingActionsBar({
 
   const iAmCompanion = currentUserId === booking.companion_id;
 
-  const actions: Action[] = [];
-  if (booking.status === "requested") {
-    if (iAmCompanion) {
-      actions.push({ key: "accept", run: acceptBooking });
-      actions.push({ key: "decline", run: declineBooking, variant: "outline" });
-    } else {
-      actions.push({ key: "cancel", run: cancelBooking, variant: "outline" });
-    }
-  } else if (booking.status === "accepted") {
-    actions.push({ key: "complete", run: completeBooking });
-    actions.push({ key: "cancel", run: cancelBooking, variant: "outline" });
-  }
+  const actions: Action[] = availableActions(
+    booking.status,
+    iAmCompanion ? "companion" : "seeker",
+  ).map((key) => ({ key, ...ACTION_META[key] }));
 
   async function dispatch(action: Action) {
     setBusy(true);

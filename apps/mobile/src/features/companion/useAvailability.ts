@@ -1,24 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useSession } from '@/features/auth/useSession';
+import { useMyListing } from './useMyListing';
 import type { AvailabilitySlot } from './types';
 
 export function useAvailability() {
-  const { session } = useSession();
-  const uid = session?.user.id;
-  return useQuery({
-    queryKey: ['availability', uid],
-    enabled: Boolean(uid),
-    queryFn: async (): Promise<AvailabilitySlot[]> => {
-      const { data, error } = await supabase
-        .from('availability')
-        .select('id, weekday, start_minute, end_minute')
-        .eq('user_id', uid)
-        .order('weekday');
-      if (error) throw error;
-      return (data ?? []) as AvailabilitySlot[];
-    },
-  });
+  const listing = useMyListing();
+  return { ...listing, data: listing.data?.availability as AvailabilitySlot[] | undefined };
 }
 
 export function useSaveAvailability() {
@@ -27,15 +15,9 @@ export function useSaveAvailability() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (slots: { weekday: number; start_minute: number; end_minute: number }[]) => {
-      const { error: del } = await supabase.from('availability').delete().eq('user_id', uid);
-      if (del) throw del;
-      if (slots.length > 0) {
-        const { error } = await supabase
-          .from('availability')
-          .insert(slots.map((s) => ({ ...s, user_id: uid })));
-        if (error) throw error;
-      }
+      const { error } = await supabase.rpc('set_my_availability', { p_slots: slots });
+      if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['availability', uid] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['myListing', uid] }),
   });
 }

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { useSession } from '@/features/auth/useSession';
-import type { Conversation } from './types';
+import type { ConversationSummary } from './types';
 
 export function useConversations() {
   const { session } = useSession();
@@ -9,14 +9,10 @@ export function useConversations() {
   return useQuery({
     queryKey: ['conversations', uid],
     enabled: Boolean(uid),
-    queryFn: async (): Promise<Conversation[]> => {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select('*')
-        .or(`participant_a.eq.${uid},participant_b.eq.${uid}`)
-        .order('last_message_at', { ascending: false });
+    queryFn: async (): Promise<ConversationSummary[]> => {
+      const { data, error } = await supabase.rpc('my_conversations');
       if (error) throw error;
-      return (data ?? []) as Conversation[];
+      return (data ?? []) as ConversationSummary[];
     },
   });
 }

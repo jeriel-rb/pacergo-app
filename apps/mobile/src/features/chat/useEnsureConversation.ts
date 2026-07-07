@@ -1,53 +1,18 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
-import { useSession } from '@/features/auth/useSession';
-import { useProfile } from '@/features/profile/useProfile';
-import { orderPair } from './orderPair';
 
-export type EnsureInput = {
-  otherId: string;
-  otherName: string | null;
-  otherPhoto: string | null;
-  bookingId?: string | null;
-};
-
+/**
+ * Find-or-create the conversation with another user via start_conversation
+ * (server requires an existing booking between the two and snapshots names).
+ */
 export function useEnsureConversation() {
-  const { session } = useSession();
-  const { data: me } = useProfile();
-  const myId = session?.user.id;
-
   return useMutation({
-    mutationFn: async (input: EnsureInput): Promise<string> => {
-      if (!myId) throw new Error('no session');
-      const [a, b] = orderPair(myId, input.otherId);
-      const myName = me?.display_name ?? null;
-      const myPhoto = me?.photo_url ?? null;
-      const aIsMe = a === myId;
-
-      const { data: existing, error: selErr } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('participant_a', a)
-        .eq('participant_b', b)
-        .maybeSingle();
-      if (selErr) throw selErr;
-      if (existing?.id) return existing.id as string;
-
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert({
-          participant_a: a,
-          participant_b: b,
-          a_name: aIsMe ? myName : input.otherName,
-          a_photo: aIsMe ? myPhoto : input.otherPhoto,
-          b_name: aIsMe ? input.otherName : myName,
-          b_photo: aIsMe ? input.otherPhoto : myPhoto,
-          booking_id: input.bookingId ?? null,
-        })
-        .select('id')
-        .single();
+    mutationFn: async ({ otherId }: { otherId: string }): Promise<string> => {
+      const { data, error } = await supabase.rpc('start_conversation', {
+        p_other_id: otherId,
+      });
       if (error) throw error;
-      return (data as { id: string }).id;
+      return data as string;
     },
   });
 }

@@ -1,10 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
-import { useSession } from '@/features/auth/useSession';
 import type { ReportReason } from './reportSchema';
 
 export function useReport() {
-  const { session } = useSession();
   return useMutation({
     mutationFn: async ({
       reportedId,
@@ -17,12 +15,11 @@ export function useReport() {
       details?: string;
       bookingId?: string | null;
     }) => {
-      const { error } = await supabase.from('reports').insert({
-        reporter_id: session?.user.id,
-        reported_id: reportedId,
-        reason,
-        details: details || null,
-        booking_id: bookingId ?? null,
+      const { error } = await supabase.rpc('report_user', {
+        p_reported_id: reportedId,
+        p_reason: reason,
+        p_details: details || null,
+        p_booking_id: bookingId ?? null,
       });
       if (error) throw error;
     },

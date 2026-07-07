@@ -9,24 +9,21 @@ export type ListingPatch = {
   status: 'draft' | 'active' | 'paused';
 };
 
+/** Create/update the listing via RPC (also flags the user as a companion). */
 export function useSaveListing() {
   const { session } = useSession();
   const uid = session?.user.id;
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (patch: ListingPatch): Promise<string> => {
-      const { data, error } = await supabase
-        .from('companion_listings')
-        .upsert({ user_id: uid, ...patch }, { onConflict: 'user_id' })
-        .select()
-        .single();
+      const { data, error } = await supabase.rpc('upsert_my_listing', {
+        p_headline: patch.headline,
+        p_bio_long: patch.bio_long,
+        p_served_area: patch.served_area,
+        p_status: patch.status,
+      });
       if (error) throw error;
-      const { error: e2 } = await supabase
-        .from('users')
-        .update({ is_companion: true })
-        .eq('id', uid);
-      if (e2) throw e2;
-      return (data as { id: string }).id;
+      return data as string;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['myListing', uid] });

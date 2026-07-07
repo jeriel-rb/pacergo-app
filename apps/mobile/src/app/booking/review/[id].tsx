@@ -7,13 +7,11 @@ import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { useBooking } from '@/features/booking/useBooking';
 import { useSubmitReview } from '@/features/booking/useSubmitReview';
-import { useSession } from '@/features/auth/useSession';
 
 export default function ReviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
   const router = useRouter();
-  const { session } = useSession();
   const { data: booking } = useBooking(id);
   const submit = useSubmitReview(id);
 
@@ -22,10 +20,8 @@ export default function ReviewScreen() {
 
   async function send() {
     if (!booking) return;
-    const amSeeker = booking.seeker_id === session?.user.id;
-    const revieweeId = amSeeker ? booking.companion_id : booking.seeker_id;
     try {
-      await submit.mutateAsync({ revieweeId, rating, comment });
+      await submit.mutateAsync({ rating, comment });
       Alert.alert('Pacergo', t('review.thanks'));
       router.back();
     } catch {

@@ -1,10 +1,6 @@
-export type BookingStatus =
-  | 'requested'
-  | 'accepted'
-  | 'declined'
-  | 'cancelled'
-  | 'completed'
-  | 'expired';
+import type { BookingStatus } from '@pacergo/shared';
+
+export type { BookingStatus };
 
 export type BookingRole = 'seeker' | 'companion';
 export type BookingAction = 'accept' | 'decline' | 'cancel' | 'complete';

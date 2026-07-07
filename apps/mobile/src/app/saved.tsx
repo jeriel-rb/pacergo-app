@@ -1,15 +1,17 @@
-import { FlatList } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { AppText } from '@/components/ui/AppText';
-import { useSavedIds } from '@/features/discovery/useSaved';
+import { Avatar } from '@/components/ui/Avatar';
+import { TierBadge } from '@/components/ui/TierBadge';
+import { PriceTag } from '@/components/ui/PriceTag';
+import { useSavedFeed } from '@/features/discovery/useSaved';
 
 export default function SavedScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const saved = useSavedIds();
-  const ids = saved.data ?? [];
+  const feed = useSavedFeed();
 
   return (
     <ScreenContainer>
@@ -17,16 +19,21 @@ export default function SavedScreen() {
         {t('discover.saved')}
       </AppText>
       <FlatList
-        data={ids}
-        keyExtractor={(id) => id}
+        data={feed.data ?? []}
+        keyExtractor={(c) => c.id}
         renderItem={({ item }) => (
-          <AppText
-            variant="body"
-            className="mb-2 rounded-lg bg-dark-surface p-4"
-            onPress={() => router.push(`/companion/${item}`)}
+          <Pressable
+            onPress={() => router.push(`/companion/${item.id}`)}
+            className="mb-3 flex-row items-center gap-3 rounded-lg bg-dark-surface p-4"
           >
-            {item}
-          </AppText>
+            <Avatar name={item.display_name ?? ''} photoUrl={item.photo_url} size={48} />
+            <View className="flex-1 gap-0.5">
+              <AppText variant="h3">{item.display_name ?? ''}</AppText>
+              {item.home_area ? <AppText variant="caption">{item.home_area}</AppText> : null}
+            </View>
+            {item.tier ? <TierBadge tier={item.tier} /> : null}
+            <PriceTag amount={item.is_free ? 0 : item.price_ntd} />
+          </Pressable>
         )}
         ListEmptyComponent={<AppText variant="caption">{t('discover.empty')}</AppText>}
       />

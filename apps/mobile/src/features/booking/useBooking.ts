@@ -7,13 +7,9 @@ export function useBooking(id: string) {
     queryKey: ['booking', id],
     enabled: Boolean(id),
     queryFn: async (): Promise<Booking | null> => {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('booking_detail', { p_id: id });
       if (error) throw error;
-      return data as Booking | null;
+      return (data ?? null) as Booking | null;
     },
   });
 }

@@ -17,12 +17,7 @@ export function useNotifications() {
     queryKey: ['notifications', uid],
     enabled: Boolean(uid),
     queryFn: async (): Promise<AppNotification[]> => {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('id, type, payload, read_at, created_at')
-        .eq('user_id', uid)
-        .order('created_at', { ascending: false })
-        .limit(100);
+      const { data, error } = await supabase.rpc('my_notifications');
       if (error) throw error;
       return (data ?? []) as AppNotification[];
     },
@@ -35,11 +30,7 @@ export function useMarkNotificationsRead() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read_at: new Date().toISOString() })
-        .eq('user_id', uid)
-        .is('read_at', null);
+      const { error } = await supabase.rpc('mark_notifications_read');
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications', uid] }),

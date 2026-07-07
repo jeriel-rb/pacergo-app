@@ -48,14 +48,7 @@ export default function BookingDetailScreen() {
   async function openChat() {
     if (!booking) return;
     const otherId = amSeeker ? booking.companion_id : booking.seeker_id;
-    const otherName = amSeeker ? booking.companion_name : booking.seeker_name;
-    const otherPhoto = amSeeker ? booking.companion_photo : booking.seeker_photo;
-    const convoId = await ensure.mutateAsync({
-      otherId,
-      otherName,
-      otherPhoto,
-      bookingId: booking.id,
-    });
+    const convoId = await ensure.mutateAsync({ otherId });
     router.push(`/chat/${convoId}`);
   }
 

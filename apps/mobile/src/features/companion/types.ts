@@ -1,8 +1,8 @@
-import type { Tier } from '@/features/discovery/types';
+import type { Tier } from '@pacergo/shared';
 
 export type Listing = {
   id: string;
-  user_id: string;
+  user_id?: string;
   headline: string | null;
   bio_long: string | null;
   served_area: string | null;
@@ -27,9 +27,10 @@ export type AvailabilitySlot = {
   end_minute: number;
 };
 
-export type Verification = {
-  id: string;
-  doc_type: 'certification' | 'id';
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-};
+export type VerificationStatus = 'pending' | 'approved' | 'rejected';
+
+/** Per-activity verification status map from my_listing() (keyed by slug). */
+export type VerificationMap = Record<
+  string,
+  { status: VerificationStatus; label: string | null } | undefined
+>;

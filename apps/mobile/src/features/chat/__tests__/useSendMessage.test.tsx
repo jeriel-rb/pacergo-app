@@ -1,14 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const mockInsert = jest.fn().mockResolvedValue({ error: null });
+const mockRpc = jest.fn().mockResolvedValue({ data: 'm1', error: null });
 jest.mock('@/lib/supabase/client', () => ({
   __esModule: true,
-  supabase: { from: jest.fn(() => ({ insert: mockInsert })) },
-}));
-jest.mock('@/features/auth/useSession', () => ({
-  __esModule: true,
-  useSession: () => ({ session: { user: { id: 'me' } }, loading: false }),
+  supabase: { rpc: (...args: unknown[]) => mockRpc(...args) },
 }));
 
 import { useSendMessage } from '../useSendMessage';
@@ -19,14 +15,13 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe('useSendMessage', () => {
-  it('inserts a message from the current user', async () => {
+  it('sends via the send_message RPC', async () => {
     const { result } = renderHook(() => useSendMessage('c1'), { wrapper });
     result.current.mutate('hello');
-    await waitFor(() => expect(mockInsert).toHaveBeenCalled());
-    expect(mockInsert.mock.calls[0][0]).toMatchObject({
-      conversation_id: 'c1',
-      sender_id: 'me',
-      body: 'hello',
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+    expect(mockRpc).toHaveBeenCalledWith('send_message', {
+      p_conversation_id: 'c1',
+      p_body: 'hello',
     });
   });
 });

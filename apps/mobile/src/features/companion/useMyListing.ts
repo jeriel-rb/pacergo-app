@@ -1,8 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
+import type { CompanionOffering } from '@pacergo/shared';
 import { supabase } from '@/lib/supabase/client';
 import { useSession } from '@/features/auth/useSession';
-import type { Listing } from './types';
-import type { Offering } from '@/features/discovery/useCompanion';
+import type { AvailabilitySlot, Listing, VerificationMap } from './types';
+
+export type MyListingBundle = {
+  is_companion: boolean;
+  listing: Listing | null;
+  offerings: CompanionOffering[];
+  availability: AvailabilitySlot[];
+  /** Approved/pending certifications per activity slug. */
+  verifications: VerificationMap;
+  /** Approved/pending competition experience per activity slug (Tier A). */
+  competitions: VerificationMap;
+};
 
 export function useMyListing() {
   const { session } = useSession();
@@ -10,23 +21,18 @@ export function useMyListing() {
   return useQuery({
     queryKey: ['myListing', uid],
     enabled: Boolean(uid),
-    queryFn: async (): Promise<{ listing: Listing | null; offerings: Offering[] }> => {
-      const { data: listing, error } = await supabase
-        .from('companion_listings')
-        .select('*')
-        .eq('user_id', uid)
-        .maybeSingle();
+    queryFn: async (): Promise<MyListingBundle> => {
+      const { data, error } = await supabase.rpc('my_listing');
       if (error) throw error;
-      let offerings: Offering[] = [];
-      if (listing?.id) {
-        const { data: offs, error: e2 } = await supabase
-          .from('listing_offerings')
-          .select('id, activity_id, tier, price_ntd, is_free, session_minutes, description')
-          .eq('listing_id', listing.id);
-        if (e2) throw e2;
-        offerings = (offs ?? []) as Offering[];
-      }
-      return { listing: (listing ?? null) as Listing | null, offerings };
+      const b = (data ?? {}) as Partial<MyListingBundle>;
+      return {
+        is_companion: b.is_companion ?? false,
+        listing: b.listing ?? null,
+        offerings: b.offerings ?? [],
+        availability: b.availability ?? [],
+        verifications: b.verifications ?? {},
+        competitions: b.competitions ?? {},
+      };
     },
   });
 }

@@ -9,12 +9,9 @@ export function useBlockedIds() {
     queryKey: ['blocks', uid],
     enabled: Boolean(uid),
     queryFn: async (): Promise<string[]> => {
-      const { data, error } = await supabase
-        .from('blocks')
-        .select('blocked_id')
-        .eq('blocker_id', uid);
+      const { data, error } = await supabase.rpc('my_blocked_ids');
       if (error) throw error;
-      return (data ?? []).map((r: { blocked_id: string }) => r.blocked_id);
+      return (data ?? []) as string[];
     },
   });
 }
@@ -25,9 +22,7 @@ export function useBlock() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (blockedId: string) => {
-      const { error } = await supabase
-        .from('blocks')
-        .insert({ blocker_id: uid, blocked_id: blockedId });
+      const { error } = await supabase.rpc('block_user', { p_user_id: blockedId });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -43,11 +38,7 @@ export function useUnblock() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (blockedId: string) => {
-      const { error } = await supabase
-        .from('blocks')
-        .delete()
-        .eq('blocker_id', uid)
-        .eq('blocked_id', blockedId);
+      const { error } = await supabase.rpc('unblock_user', { p_user_id: blockedId });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['blocks', uid] }),

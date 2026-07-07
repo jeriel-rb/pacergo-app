@@ -1,16 +1,14 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-jest.mock('@/lib/supabase/client', () => {
-  const maybeSingle = jest.fn().mockResolvedValue({
-    data: { id: 'u1', display_name: 'Lee', onboarding_completed: true },
-    error: null,
-  });
-  const eq = jest.fn(() => ({ maybeSingle }));
-  const select = jest.fn(() => ({ eq }));
-  const from = jest.fn(() => ({ select }));
-  return { __esModule: true, supabase: { from } };
+const mockRpc = jest.fn().mockResolvedValue({
+  data: { display_name: 'Lee', onboarding_completed: true, is_admin: false },
+  error: null,
 });
+jest.mock('@/lib/supabase/client', () => ({
+  __esModule: true,
+  supabase: { rpc: (...args: unknown[]) => mockRpc(...args) },
+}));
 
 jest.mock('@/features/auth/useSession', () => ({
   __esModule: true,
@@ -18,7 +16,6 @@ jest.mock('@/features/auth/useSession', () => ({
 }));
 
 import { useProfile } from '../useProfile';
-import { supabase } from '@/lib/supabase/client';
 
 function wrapper({ children }: { children: React.ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -26,9 +23,10 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe('useProfile', () => {
-  it('loads the current user profile', async () => {
+  it('loads the profile via get_my_profile, keyed to the session id', async () => {
     const { result } = renderHook(() => useProfile(), { wrapper });
     await waitFor(() => expect(result.current.data?.display_name).toBe('Lee'));
-    expect(supabase.from as jest.Mock).toHaveBeenCalledWith('users');
+    expect(result.current.data?.id).toBe('u1');
+    expect(mockRpc).toHaveBeenCalledWith('get_my_profile');
   });
 });

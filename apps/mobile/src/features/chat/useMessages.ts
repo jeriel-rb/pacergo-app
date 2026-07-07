@@ -12,12 +12,12 @@ export function useMessages(conversationId: string) {
     queryKey: key,
     enabled: Boolean(conversationId),
     queryFn: async (): Promise<Message[]> => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
+      const { data, error } = await supabase.rpc('conversation_messages', {
+        p_conversation_id: conversationId,
+      });
       if (error) throw error;
+      // Opening the thread clears the unread badge (fire and forget).
+      void supabase.rpc('mark_conversation_read', { p_conversation_id: conversationId });
       return (data ?? []) as Message[];
     },
   });

@@ -1,23 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const mockListingSingle = jest.fn().mockResolvedValue({ data: { id: 'l1' }, error: null });
-const mockProfileEq = jest.fn().mockResolvedValue({ error: null });
-
+const mockRpc = jest.fn().mockResolvedValue({ data: 'l1', error: null });
 jest.mock('@/lib/supabase/client', () => ({
   __esModule: true,
-  supabase: {
-    from: jest.fn((table: string) => {
-      if (table === 'companion_listings') {
-        return {
-          upsert: jest.fn(() => ({
-            select: jest.fn(() => ({ single: mockListingSingle })),
-          })),
-        };
-      }
-      return { update: jest.fn(() => ({ eq: mockProfileEq })) };
-    }),
-  },
+  supabase: { rpc: (...args: unknown[]) => mockRpc(...args) },
 }));
 jest.mock('@/features/auth/useSession', () => ({
   __esModule: true,
@@ -32,7 +19,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe('useSaveListing', () => {
-  it('upserts the listing and flags the profile as a companion', async () => {
+  it('saves the listing via the upsert_my_listing RPC', async () => {
     const { result } = renderHook(() => useSaveListing(), { wrapper });
     result.current.mutate({
       headline: 'Coach',
@@ -40,6 +27,12 @@ describe('useSaveListing', () => {
       served_area: 'Da’an',
       status: 'active',
     });
-    await waitFor(() => expect(mockProfileEq).toHaveBeenCalled());
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+    expect(mockRpc).toHaveBeenCalledWith('upsert_my_listing', {
+      p_headline: 'Coach',
+      p_bio_long: null,
+      p_served_area: 'Da’an',
+      p_status: 'active',
+    });
   });
 });

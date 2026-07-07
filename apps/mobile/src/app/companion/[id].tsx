@@ -1,4 +1,4 @@
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
@@ -26,7 +26,14 @@ export default function CompanionDetailScreen() {
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={{ paddingTop: 16, gap: 16 }}>
-        <View className="items-center gap-2">
+        {detail?.banner_url ? (
+          <Image
+            source={{ uri: detail.banner_url }}
+            className="h-36 w-full rounded-lg"
+            resizeMode="cover"
+          />
+        ) : null}
+        <View className={`items-center gap-2 ${detail?.banner_url ? '-mt-14' : ''}`}>
           <Avatar name={detail?.display_name ?? ''} photoUrl={detail?.photo_url} size={88} />
           <AppText variant="h1">{detail?.display_name ?? ''}</AppText>
           {detail?.home_area ? <AppText variant="caption">{detail.home_area}</AppText> : null}
@@ -55,7 +62,7 @@ export default function CompanionDetailScreen() {
           <Button
             label={isSaved ? t('companion.saved') : t('companion.save')}
             variant="secondary"
-            onPress={() => toggle.mutate({ companionId: id, saved: isSaved })}
+            onPress={() => toggle.mutate(id)}
           />
           <Button
             label={t('companion.request')}

@@ -7,11 +7,9 @@ import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useActivities } from '@/features/profile/useActivities';
-import { useUpdateProfile } from '@/features/profile/useProfile';
+import { useCompleteOnboarding } from '@/features/profile/useProfile';
 import { useOnboardingStore } from '@/features/profile/onboardingStore';
 import { onboardingSchema, experienceLevels } from '@/features/profile/profileSchema';
-import { supabase } from '@/lib/supabase/client';
-import { useSession } from '@/features/auth/useSession';
 
 export default function OnboardingScreen() {
   const { t, i18n } = useTranslation();
@@ -19,8 +17,7 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
   const store = useOnboardingStore();
   const activities = useActivities();
-  const update = useUpdateProfile();
-  const { session } = useSession();
+  const complete = useCompleteOnboarding();
 
   async function finish() {
     const parsed = onboardingSchema.safeParse({
@@ -34,18 +31,12 @@ export default function OnboardingScreen() {
       return;
     }
     try {
-      await update.mutateAsync({
-        display_name: parsed.data.displayName,
-        experience_level: parsed.data.experienceLevel,
-        home_area: store.homeArea || null,
-        onboarding_completed: true,
+      await complete.mutateAsync({
+        displayName: parsed.data.displayName,
+        experienceLevel: parsed.data.experienceLevel,
+        homeArea: store.homeArea || null,
+        activityIds: parsed.data.activityIds,
       });
-      const userId = session?.user.id;
-      if (userId) {
-        await supabase.from('user_activities').insert(
-          parsed.data.activityIds.map((activity_id) => ({ user_id: userId, activity_id }))
-        );
-      }
       store.reset();
       router.replace('/(tabs)');
     } catch {
@@ -130,7 +121,7 @@ export default function OnboardingScreen() {
           {step < 2 ? (
             <Button label={t('onboarding.next')} onPress={() => setStep(step + 1)} />
           ) : (
-            <Button label={t('onboarding.finish')} onPress={finish} disabled={update.isPending} />
+            <Button label={t('onboarding.finish')} onPress={finish} disabled={complete.isPending} />
           )}
         </View>
       </View>

@@ -10,11 +10,7 @@ export function useBookings() {
     queryKey: ['bookings', uid],
     enabled: Boolean(uid),
     queryFn: async (): Promise<Booking[]> => {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .or(`seeker_id.eq.${uid},companion_id.eq.${uid}`)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('my_bookings');
       if (error) throw error;
       return (data ?? []) as Booking[];
     },

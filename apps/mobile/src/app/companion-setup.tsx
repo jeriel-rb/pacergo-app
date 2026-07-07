@@ -2,12 +2,18 @@ import { useState } from 'react';
 import { View, TextInput, Pressable, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { TIER_PRICE_FLOORS, TIER_REQUIRES_CERT, type Tier } from '@pacergo/shared';
+import {
+  TIER_PRICE_FLOORS,
+  TIER_REQUIRES_CERT,
+  TIER_REQUIRES_COMPETITION,
+  type Tier,
+} from '@pacergo/shared';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { TierBadge } from '@/components/ui/TierBadge';
 import { useActivities } from '@/features/profile/useActivities';
+import { useMyListing } from '@/features/companion/useMyListing';
 import { useSaveListing } from '@/features/companion/useSaveListing';
 import { useSaveOfferings } from '@/features/companion/useSaveOfferings';
 import { useCompanionStore } from '@/features/companion/companionStore';
@@ -19,6 +25,7 @@ export default function CompanionSetup() {
   const { t } = useTranslation();
   const router = useRouter();
   const activities = useActivities();
+  const { data: bundle } = useMyListing();
   const store = useCompanionStore();
   const saveListing = useSaveListing();
   const saveOfferings = useSaveOfferings();
@@ -28,6 +35,15 @@ export default function CompanionSetup() {
   const [minutes, setMinutes] = useState('60');
   const [price, setPrice] = useState(String(TIER_PRICE_FLOORS.C));
 
+  const selectedActivity = (activities.data ?? []).find(
+    (a) => a.id === (activityId ?? activities.data?.[0]?.id),
+  );
+  const certStatus = selectedActivity ? bundle?.verifications?.[selectedActivity.slug]?.status : undefined;
+  const compStatus = selectedActivity ? bundle?.competitions?.[selectedActivity.slug]?.status : undefined;
+  const certMissing = TIER_REQUIRES_CERT[tier] && certStatus !== 'approved';
+  const compMissing = TIER_REQUIRES_COMPETITION[tier] && compStatus !== 'approved';
+  const gated = certMissing || compMissing;
+
   function selectTier(next: Tier) {
     setTier(next);
     // Reset to the tier's floor so the draft starts valid.
@@ -35,10 +51,8 @@ export default function CompanionSetup() {
   }
 
   function addOffering() {
-    const activity = (activities.data ?? []).find(
-      (a) => a.id === (activityId ?? activities.data?.[0]?.id),
-    );
-    if (!activity) return;
+    const activity = selectedActivity;
+    if (!activity || gated) return;
     const draft = {
       activity_id: activity.id,
       activity_slug: activity.slug,
@@ -130,8 +144,30 @@ export default function CompanionSetup() {
             </Pressable>
           ))}
         </View>
-        {TIER_REQUIRES_CERT[tier] ? (
-          <AppText variant="caption">{t('companionSetup.certHint')}</AppText>
+        {gated ? (
+          <View className="gap-2 rounded-lg bg-dark-surface p-4">
+            <AppText variant="body">
+              {certMissing
+                ? certStatus === 'pending'
+                  ? t('companionSetup.certPending')
+                  : t('companionSetup.certNeeded', { tier })
+                : compStatus === 'pending'
+                  ? t('companionSetup.compPending')
+                  : t('companionSetup.compNeeded')}
+            </AppText>
+            {(certMissing && certStatus !== 'pending') ||
+            (!certMissing && compMissing && compStatus !== 'pending') ? (
+              <Button
+                label={t('companionSetup.uploadDoc')}
+                variant="secondary"
+                onPress={() =>
+                  router.push(
+                    `/verification?docType=${certMissing ? 'certification' : 'competition'}&activity=${selectedActivity?.slug ?? ''}`,
+                  )
+                }
+              />
+            ) : null}
+          </View>
         ) : null}
         <TextInput
           placeholder={t('companionSetup.minutes')}
@@ -152,7 +188,7 @@ export default function CompanionSetup() {
         <AppText variant="caption">
           {t('companionSetup.floorHint', { tier, min: TIER_PRICE_FLOORS[tier] })}
         </AppText>
-        <Button label={t('companionSetup.add')} variant="secondary" onPress={addOffering} />
+        <Button label={t('companionSetup.add')} variant="secondary" onPress={addOffering} disabled={gated} />
 
         {store.offerings.map((o, i) => (
           <Pressable

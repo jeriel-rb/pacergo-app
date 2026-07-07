@@ -50,6 +50,7 @@ function Guarded() {
       <Stack.Screen name="report/[id]" options={{ presentation: 'modal' }} />
       <Stack.Screen name="safety" />
       <Stack.Screen name="ai-plan" />
+      <Stack.Screen name="admin" />
       <Stack.Screen name="notifications" />
     </Stack>
   );

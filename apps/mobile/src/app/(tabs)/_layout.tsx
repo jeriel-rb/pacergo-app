@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Compass, CalendarCheck, MessageCircle, User } from 'lucide-react-native';
+import { Home, Compass, CalendarCheck, MessageCircle, User } from 'lucide-react-native';
 import { useTheme } from '@/lib/theme/ThemeProvider';
 
 export default function TabsLayout() {
@@ -9,6 +9,7 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      initialRouteName="home"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.brand,
@@ -19,6 +20,13 @@ export default function TabsLayout() {
         },
       }}
     >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: t('tabs.home'),
+          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{

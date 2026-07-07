@@ -3,7 +3,8 @@
     "discover": "Discover",
     "bookings": "Bookings",
     "chat": "Chat",
-    "profile": "Profile"
+    "profile": "Profile",
+    "home": "Home"
   },
   "common": {
     "free": "Free",
@@ -108,7 +109,10 @@
     "becomeCompanion": "Become a companion",
     "settings": "Settings",
     "noName": "Set up your profile",
-    "aiPlan": "AI Training Menu"
+    "aiPlan": "AI Training Menu",
+    "admin": "Admin review",
+    "uploadError": "Couldn't upload the image. Try again.",
+    "addBanner": "Add a cover photo"
   },
   "companionSetup": {
     "title": "Become a companion",
@@ -125,7 +129,11 @@
     "error": "Couldn't save. Try again.",
     "floorHint": "Tier {{tier}} starts at NT${{min}} — no upper limit",
     "belowFloor": "Tier {{tier}} price must be at least NT${{min}}.",
-    "certHint": "Tiers B & A need an approved certification for this activity (Tier A also needs approved competition experience)."
+    "certPending": "Your certification for this activity is being reviewed.",
+    "certNeeded": "Tier {{tier}} requires an approved certification for this activity.",
+    "compPending": "Your competition experience for this activity is being reviewed.",
+    "compNeeded": "Tier A also requires approved competition experience for this activity.",
+    "uploadDoc": "Upload for review"
   },
   "dashboard": {
     "title": "Companion dashboard",
@@ -164,7 +172,12 @@
     "approved": "You're verified!",
     "rejected": "Your verification was rejected. You can resubmit.",
     "submitted": "Submitted for review.",
-    "error": "Upload failed. Try again."
+    "error": "Upload failed. Try again.",
+    "docType": "Document type",
+    "activity": "Activity",
+    "certification": "Certification",
+    "competition": "Competition experience",
+    "pickDoc": "Upload document"
   },
   "settings": {
     "title": "Settings",
@@ -269,5 +282,34 @@
     },
     "generate": "Generate menu",
     "empty": "Pick a goal, age group and level to generate your menu"
+  },
+  "home": {
+    "guest": "there",
+    "greeting": "Hi, {{name}} 👋",
+    "prompt": "Ready to train together today?",
+    "heroKicker": "FIND YOUR TRAINING PARTNER",
+    "heroTitle": "Find your training partner",
+    "heroCta": "Explore now",
+    "find": "Find partner",
+    "aiPlan": "AI menu",
+    "sessions": "Sessions",
+    "savedList": "Saved",
+    "weekly": "Weekly progress",
+    "perWeek": "{{count}}/wk"
+  },
+  "admin": {
+    "title": "Verification review",
+    "forbidden": "Admins only.",
+    "empty": "No submissions yet.",
+    "viewDoc": "View document",
+    "approved": "Approve",
+    "rejected": "Reject",
+    "approvedConfirm": "Approve this submission?",
+    "rejectedConfirm": "Reject this submission?",
+    "doc": {
+      "certification": "Certification",
+      "competition": "Competition experience",
+      "id": "ID"
+    }
   }
 }

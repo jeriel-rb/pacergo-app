@@ -3,7 +3,8 @@
     "discover": "探索",
     "bookings": "預約",
     "chat": "訊息",
-    "profile": "個人檔案"
+    "profile": "個人檔案",
+    "home": "首頁"
   },
   "common": {
     "free": "免費",
@@ -108,7 +109,10 @@
     "becomeCompanion": "成為夥伴",
     "settings": "設定",
     "noName": "設定你的個人檔案",
-    "aiPlan": "AI 訓練菜單"
+    "aiPlan": "AI 訓練菜單",
+    "admin": "管理後台",
+    "uploadError": "圖片上傳失敗，請再試一次。",
+    "addBanner": "新增封面照片"
   },
   "companionSetup": {
     "title": "成為夥伴",
@@ -125,7 +129,11 @@
     "error": "無法儲存，請再試一次。",
     "floorHint": "{{tier}} 級 NT${{min}} 起，無上限",
     "belowFloor": "{{tier}} 級價格不得低於 NT${{min}}。",
-    "certHint": "B、A 級需先通過該項目的證照審核（A 級另需通過比賽經歷審核）。"
+    "certPending": "此項目的證照正在審核中。",
+    "certNeeded": "{{tier}} 級需要先通過此項目的證照審核。",
+    "compPending": "此項目的比賽經歷正在審核中。",
+    "compNeeded": "A 級還需要通過此項目的比賽經歷審核。",
+    "uploadDoc": "上傳審核"
   },
   "dashboard": {
     "title": "夥伴中心",
@@ -164,7 +172,12 @@
     "approved": "你已通過認證！",
     "rejected": "你的認證未通過，可以重新提交。",
     "submitted": "已送出審核。",
-    "error": "上傳失敗，請再試一次。"
+    "error": "上傳失敗，請再試一次。",
+    "docType": "文件類型",
+    "activity": "項目",
+    "certification": "證照",
+    "competition": "比賽經歷",
+    "pickDoc": "上傳文件"
   },
   "settings": {
     "title": "設定",
@@ -269,5 +282,34 @@
     },
     "generate": "生成訓練菜單",
     "empty": "選擇目標、年齡層與程度後即可生成菜單"
+  },
+  "home": {
+    "guest": "朋友",
+    "greeting": "嗨，{{name}} 👋",
+    "prompt": "今天想一起訓練嗎？",
+    "heroKicker": "FIND YOUR TRAINING PARTNER",
+    "heroTitle": "找到你的訓練夥伴",
+    "heroCta": "立即探索",
+    "find": "找夥伴",
+    "aiPlan": "AI 菜單",
+    "sessions": "預約",
+    "savedList": "收藏",
+    "weekly": "本週訓練進度",
+    "perWeek": "{{count}} 天/週"
+  },
+  "admin": {
+    "title": "審核申請",
+    "forbidden": "僅限管理員。",
+    "empty": "目前沒有申請。",
+    "viewDoc": "查看文件",
+    "approved": "通過",
+    "rejected": "退回",
+    "approvedConfirm": "確定通過這筆申請？",
+    "rejectedConfirm": "確定退回這筆申請？",
+    "doc": {
+      "certification": "證照",
+      "competition": "比賽經歷",
+      "id": "身分證件"
+    }
   }
 }

@@ -12,9 +12,10 @@ const CATEGORIES: { key: string; value: TrainerCategory; slug?: ActivitySlug }[]
   { key: "gym", value: "gym", slug: "gym" },
   { key: "running", value: "running", slug: "running" },
   { key: "hiking", value: "hiking", slug: "hiking" },
+  { key: "hyrox", value: "hyrox", slug: "hyrox" },
 ];
 
-/** Segmented activity filter (全部 / 健身 / 陪跑 / 陪爬). */
+/** Segmented activity filter (全部 / 健身 / 陪跑 / 陪爬 / Hyrox). */
 export function CategoryFilter({
   value,
   onChange,

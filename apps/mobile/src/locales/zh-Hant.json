@@ -110,6 +110,9 @@
     "settings": "設定",
     "noName": "設定你的個人檔案",
     "aiPlan": "AI 訓練菜單",
+    "support": "客服中心",
+    "supportSubject": "Pacergo 客服諮詢",
+    "supportError": "無法開啟郵件，請直接寄信至客服信箱。",
     "admin": "管理後台",
     "uploadError": "圖片上傳失敗，請再試一次。",
     "addBanner": "新增封面照片"

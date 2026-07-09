@@ -4,13 +4,12 @@ import {
   Dumbbell,
   MessageCircle,
   User,
-  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 
 export interface NavItem {
   /** Matches a key in the `nav` i18n namespace. */
-  key: "home" | "community" | "trainers" | "messages" | "profile" | "admin";
+  key: "home" | "community" | "trainers" | "messages" | "profile";
   /** Unprefixed route (locale is applied at render time). */
   href: string;
   icon: LucideIcon;
@@ -20,6 +19,12 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
+/**
+ * The five primary tabs. Kept at an odd count so the raised center action
+ * (`trainers`) sits at the true midpoint of the bottom bar. Secondary
+ * destinations (support, admin review) live under the "Me" tab instead of
+ * crowding the bar — admin is not a top-level tab.
+ */
 export const NAV_ITEMS: NavItem[] = [
   { key: "home", href: "/", icon: Home },
   { key: "community", href: "/community", icon: Users, comingSoon: true },
@@ -27,13 +32,6 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "messages", href: "/messages", icon: MessageCircle },
   { key: "profile", href: "/profile", icon: User },
 ];
-
-/** Appended to the nav only for platform admins (Tier A review queue). */
-export const ADMIN_NAV_ITEM: NavItem = {
-  key: "admin",
-  href: "/admin",
-  icon: ShieldCheck,
-};
 
 /** Whether `href` is the active route given the locale-stripped pathname. */
 export function isNavItemActive(strippedPath: string, href: string): boolean {

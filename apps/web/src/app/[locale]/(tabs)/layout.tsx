@@ -23,7 +23,7 @@ export default async function TabsLayout({
       <main className="mx-auto w-full max-w-md px-4 pb-28 pt-4 lg:max-w-6xl lg:px-10 lg:pb-16 lg:pt-10">
         {children}
       </main>
-      <BottomNav isAdmin={user?.is_admin ?? false} />
+      <BottomNav />
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import { View, Pressable, Image, Alert } from 'react-native';
+import { View, Pressable, Image, Alert, Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { supportMailto } from '@pacergo/shared';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
@@ -23,6 +24,14 @@ export default function ProfileScreen() {
       await (kind === 'avatar' ? setAvatar : setBanner).mutateAsync(uri);
     } catch {
       Alert.alert('Pacergo', t('profile.uploadError'));
+    }
+  }
+
+  async function contactSupport() {
+    try {
+      await Linking.openURL(supportMailto(t('profile.supportSubject')));
+    } catch {
+      Alert.alert('Pacergo', t('profile.supportError'));
     }
   }
 
@@ -62,6 +71,10 @@ export default function ProfileScreen() {
 
         <Pressable onPress={() => router.push('/ai-plan')} className="rounded-lg bg-dark-surface p-4">
           <AppText variant="body">{t('profile.aiPlan')}</AppText>
+        </Pressable>
+
+        <Pressable onPress={contactSupport} className="rounded-lg bg-dark-surface p-4">
+          <AppText variant="body">{t('profile.support')}</AppText>
         </Pressable>
 
         {profile?.is_admin ? (

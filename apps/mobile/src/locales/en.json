@@ -110,6 +110,9 @@
     "settings": "Settings",
     "noName": "Set up your profile",
     "aiPlan": "AI Training Menu",
+    "support": "Support",
+    "supportSubject": "Pacergo support request",
+    "supportError": "Couldn't open your mail app. Please email support directly.",
     "admin": "Admin review",
     "uploadError": "Couldn't upload the image. Try again.",
     "addBanner": "Add a cover photo"

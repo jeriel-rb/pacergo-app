@@ -10,6 +10,8 @@ import {
   TIER_REQUIRES_COMPETITION,
   ACTIVITY_META,
   ACTIVITY_SLUGS,
+  SUPPORT_EMAIL,
+  supportMailto,
 } from '../index';
 
 describe('shared domain constants', () => {
@@ -65,5 +67,12 @@ describe('shared domain constants', () => {
       expect(ACTIVITY_META[s].zh.length).toBeGreaterThan(0);
       expect(ACTIVITY_META[s].en.length).toBeGreaterThan(0);
     }
+  });
+
+  it('points the support channel at the real inbox with an encoded mailto', () => {
+    expect(SUPPORT_EMAIL).toBe('pacergov1@gmail.com');
+    expect(supportMailto('Pacergo 客服')).toBe(
+      'mailto:pacergov1@gmail.com?subject=Pacergo%20%E5%AE%A2%E6%9C%8D',
+    );
   });
 });

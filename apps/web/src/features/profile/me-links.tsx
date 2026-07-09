@@ -5,6 +5,8 @@ import {
   Star,
   CalendarClock,
   Dumbbell,
+  Headset,
+  ShieldCheck,
   ChevronRight,
   type LucideIcon,
 } from "lucide-react";
@@ -14,9 +16,17 @@ import { getLocalizedPath } from "@/lib/locale-path";
 import { Card } from "@/shared/components/ui/card";
 
 /** Navigation links surfaced under the "Me" tab (Saved, Sessions, trainer
- *  backend …). The trainer entry reads "Become a trainer" until the user has a
- *  listing, then "Trainer Studio". */
-export function MeLinks({ isCompanion = false }: { isCompanion?: boolean }) {
+ *  backend, customer support, and — for platform admins — the review queue).
+ *  The trainer entry reads "Become a trainer" until the user has a listing,
+ *  then "Trainer Studio". Support and admin live here rather than in the
+ *  bottom bar, keeping the bar at five centered tabs. */
+export function MeLinks({
+  isCompanion = false,
+  isAdmin = false,
+}: {
+  isCompanion?: boolean;
+  isAdmin?: boolean;
+}) {
   const { t } = useTranslation("profile");
   const locale = useLocale();
 
@@ -39,6 +49,22 @@ export function MeLinks({ isCompanion = false }: { isCompanion?: boolean }) {
       tint: "text-primary",
       label: isCompanion ? t("studioLink") : t("becomeTrainerLink"),
     },
+    {
+      href: getLocalizedPath("/support", locale),
+      icon: Headset,
+      tint: "text-primary",
+      label: t("supportLink"),
+    },
+    ...(isAdmin
+      ? [
+          {
+            href: getLocalizedPath("/admin", locale),
+            icon: ShieldCheck,
+            tint: "text-emerald-600 dark:text-emerald-400",
+            label: t("adminLink"),
+          },
+        ]
+      : []),
   ];
 
   return (

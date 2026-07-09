@@ -1,14 +1,19 @@
 {
   "title": "陪練師審核",
-  "subtitle": "審核教練證與比賽經驗申請",
+  "subtitle": "審核教練證／資格證明與比賽經驗申請",
   "pendingTitle": "待審核",
   "historyTitle": "已審核",
   "empty": "目前沒有待審核的申請。",
   "submitted": "{{date}} 送出",
   "noLabel": "（未填名稱）",
   "docType": {
-    "certification": "教練證",
+    "certification": "教練證／資格證明",
     "competition": "比賽經驗"
+  },
+  "expected": {
+    "coachCert": "審核標準：此項目需教練證照，台灣認可的教練證照皆可（例如：NASM-CPT、ACE……等）。",
+    "experience": "審核標準：此項目不需教練證照——可接受校隊證明、賽事完賽證明（如：ITRA 分數、百岳完攀紀錄）或社團帶領經驗。",
+    "competition": "審核標準：需比賽得獎或成績證明（獎狀、名次證明、完賽成績）。"
   },
   "viewDoc": "檢視文件（PDF）",
   "notesPlaceholder": "備註（選填，未通過時會顯示給陪練師）…",

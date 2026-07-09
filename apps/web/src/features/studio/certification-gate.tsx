@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Clock, FileUp, Loader2, ShieldAlert } from "lucide-react";
-import type { ActivitySlug } from "@pacergo/shared";
+import { isExperienceQualified, type ActivitySlug, type Tier } from "@pacergo/shared";
 import type { VerificationStatus } from "@/lib/studio";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -14,20 +14,26 @@ import { submitVerificationDoc } from "./studio-actions";
 /**
  * Per-activity verification gate for the certified tiers. Handles both document
  * kinds via `docType`: a `certification` (unlocks Tiers B & A) and a
- * `competition` experience proof (additionally required for Tier A). Copy is
- * driven by the matching i18n namespace (`cert.*` / `comp.*`); the trainer
- * uploads a PDF for admin review and the tier unlocks once approved.
+ * `competition` experience proof (additionally required for Tier A). The
+ * certification copy is qualification-aware (ACTIVITY_QUALIFICATION): gym-style
+ * activities ask for a coaching licence (`cert.*`), accompaniment activities
+ * (running/hiking/Hyrox…) accept experience proof instead (`certExp.*`);
+ * upload mechanics always come from `cert.*` / `comp.*`. When Tier A is
+ * selected, the certification card also notes the extra competition-proof
+ * requirement so A doesn't read identically to B.
  */
 export function VerificationGate({
   docType,
   activity,
   activityLabel,
   status,
+  tier,
 }: {
   docType: VerificationDocType;
   activity: ActivitySlug;
   activityLabel: string;
   status: VerificationStatus | undefined;
+  tier?: Tier;
 }) {
   const { t } = useTranslation("studio");
   const router = useRouter();
@@ -37,14 +43,25 @@ export function VerificationGate({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // i18n key prefix: certifications live under `cert.*`, competitions `comp.*`.
-  const k = docType === "competition" ? "comp" : "cert";
+  // Copy prefix: competitions `comp.*`; certifications `cert.*`, or `certExp.*`
+  // for experience-qualified activities. Mechanics (file picker/submit/hints)
+  // stay under `cert.*`/`comp.*`.
+  const isExperience =
+    docType === "certification" && isExperienceQualified(activity);
+  const k = docType === "competition" ? "comp" : isExperience ? "certExp" : "cert";
+  const m = docType === "competition" ? "comp" : "cert";
+  const showTierANote = docType === "certification" && tier === "A";
 
   if (status === "pending") {
     return (
-      <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
-        <Clock size={16} className="mt-0.5 shrink-0" />
-        <span>{t(`${k}.pending`, { activity: activityLabel })}</span>
+      <div className="space-y-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+        <div className="flex items-start gap-2">
+          <Clock size={16} className="mt-0.5 shrink-0" />
+          <span>{t(`${k}.pending`, { activity: activityLabel })}</span>
+        </div>
+        {showTierANote && (
+          <p className="pl-6 text-xs">{t("cert.tierANote")}</p>
+        )}
       </div>
     );
   }
@@ -55,7 +72,7 @@ export function VerificationGate({
     if (!f) return;
     const invalid = validateCertFile(f);
     if (invalid) {
-      setError(t(invalid === "type" ? `${k}.hintType` : `${k}.hintSize`));
+      setError(t(invalid === "type" ? `${m}.hintType` : `${m}.hintSize`));
       setFile(null);
       return;
     }
@@ -65,7 +82,7 @@ export function VerificationGate({
 
   async function submit() {
     if (!file) {
-      setError(t(`${k}.needFile`));
+      setError(t(`${m}.needFile`));
       return;
     }
     setBusy(true);
@@ -91,6 +108,11 @@ export function VerificationGate({
             {t(`${k}.title`, { activity: activityLabel })}
           </p>
           <p className="text-xs text-muted-foreground">{t(`${k}.body`)}</p>
+          {showTierANote && (
+            <p className="text-xs font-medium text-primary">
+              {t("cert.tierANote")}
+            </p>
+          )}
         </div>
       </div>
 
@@ -121,7 +143,7 @@ export function VerificationGate({
         className="w-full justify-start gap-2 font-normal"
       >
         <FileUp size={16} />
-        <span className="truncate">{file ? file.name : t(`${k}.choose`)}</span>
+        <span className="truncate">{file ? file.name : t(`${m}.choose`)}</span>
       </Button>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -133,7 +155,7 @@ export function VerificationGate({
         className="w-full gap-2"
       >
         {busy && <Loader2 size={16} className="animate-spin" />}
-        {t(`${k}.submit`)}
+        {t(`${m}.submit`)}
       </Button>
     </div>
   );

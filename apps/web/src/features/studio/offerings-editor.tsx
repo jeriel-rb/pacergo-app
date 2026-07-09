@@ -191,6 +191,7 @@ export function OfferingsEditor({
                   activity={activity}
                   activityLabel={ACTIVITY_META[activity][locale]}
                   status={activityCertStatus}
+                  tier={tier}
                 />
               ) : competitionRequired ? (
                 <VerificationGate

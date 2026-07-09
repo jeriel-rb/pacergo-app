@@ -1,14 +1,19 @@
 {
   "title": "Trainer verification",
-  "subtitle": "Review certification and competition-experience requests",
+  "subtitle": "Review certification / qualification-proof and competition-experience requests",
   "pendingTitle": "Pending review",
   "historyTitle": "Reviewed",
   "empty": "No pending requests. You're all caught up.",
   "submitted": "Submitted {{date}}",
   "noLabel": "(no name given)",
   "docType": {
-    "certification": "Certification",
+    "certification": "Certification / qualification proof",
     "competition": "Competition"
+  },
+  "expected": {
+    "coachCert": "Review bar: this activity requires a coaching licence — any Taiwan-recognized certification (e.g. NASM-CPT, ACE, etc.).",
+    "experience": "Review bar: no coaching licence needed for this activity — varsity records, race finishes (e.g. ITRA score, 百岳 summit log), or club-leading experience are acceptable.",
+    "competition": "Review bar: competition result proof required (award certificate, placement record, or race result)."
   },
   "viewDoc": "View document (PDF)",
   "notesPlaceholder": "Optional note (shown to the trainer if rejected)…",

@@ -1,4 +1,5 @@
 import type { Tier } from '../enums/tier';
+import type { ActivitySlug } from '../enums/activity';
 
 /**
  * Platform-wide price floor (NT$ per session). No offering may be listed below
@@ -44,3 +45,39 @@ export const TIER_REQUIRES_COMPETITION: Record<Tier, boolean> = {
   B: false,
   C: false,
 };
+
+/**
+ * What kind of document unlocks the certified tiers (B/A) for an activity.
+ *   'coach-cert'  — a recognized coaching licence (any Taiwan-recognized
+ *                   certification qualifies, e.g. NASM-CPT, ACE, …).
+ *   'experience'  — accompaniment-style activities where demanding a coaching
+ *                   licence would filter out the experienced athletes who are
+ *                   the actual supply. Accepts athletic proof (varsity records,
+ *                   race finishes such as ITRA scores or 百岳 summits) or
+ *                   leadership experience (club leading, Pacergo reviews).
+ * Tier A always additionally requires competition-award proof, regardless of
+ * kind. Review stays manual (admin queue); this only drives the requested
+ * document type and the copy shown to trainers.
+ */
+export type QualificationKind = 'coach-cert' | 'experience';
+
+export const ACTIVITY_QUALIFICATION: Record<ActivitySlug, QualificationKind> = {
+  gym: 'coach-cert',
+  running: 'experience',
+  hiking: 'experience',
+  hyrox: 'experience',
+  cycling: 'experience',
+  yoga: 'coach-cert',
+  swimming: 'coach-cert',
+  boxing: 'coach-cert',
+  basketball: 'experience',
+};
+
+/**
+ * True when Tier B/A for `slug` accepts experience proof instead of a coaching
+ * licence. Accepts any string (activity slugs reach the apps from the DB, not
+ * just the enum); unknown slugs fall back to the stricter coach-cert copy.
+ */
+export function isExperienceQualified(slug: string): boolean {
+  return ACTIVITY_QUALIFICATION[slug as ActivitySlug] === 'experience';
+}

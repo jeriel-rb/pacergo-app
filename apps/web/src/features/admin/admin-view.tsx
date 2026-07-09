@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Check, FileText, Loader2, X } from "lucide-react";
-import { ACTIVITY_META, type ActivitySlug } from "@pacergo/shared";
+import {
+  ACTIVITY_META,
+  isExperienceQualified,
+  type ActivitySlug,
+} from "@pacergo/shared";
 import type { AdminVerification } from "@/lib/admin";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -64,6 +68,18 @@ function Row({ v }: { v: AdminVerification }) {
 
   const isPending = v.status === "pending";
 
+  // Review is the only enforcement point for document kind, so spell out the
+  // per-activity bar: gym-style activities need a coaching licence, while
+  // accompaniment activities accept experience proof instead.
+  const reviewBarKey =
+    v.doc_type === "competition"
+      ? "expected.competition"
+      : v.doc_type === "certification" && v.activity
+        ? isExperienceQualified(v.activity)
+          ? "expected.experience"
+          : "expected.coachCert"
+        : null;
+
   async function openDoc() {
     setBusy("doc");
     setError(null);
@@ -117,6 +133,12 @@ function Row({ v }: { v: AdminVerification }) {
           date: new Date(v.created_at).toLocaleDateString(),
         })}
       </p>
+
+      {isPending && reviewBarKey && (
+        <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+          {t(reviewBarKey)}
+        </p>
+      )}
 
       <Button
         type="button"

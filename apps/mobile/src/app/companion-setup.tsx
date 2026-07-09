@@ -3,6 +3,7 @@ import { View, TextInput, Pressable, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
+  isExperienceQualified,
   TIER_PRICE_FLOORS,
   TIER_REQUIRES_CERT,
   TIER_REQUIRES_COMPETITION,
@@ -43,6 +44,10 @@ export default function CompanionSetup() {
   const certMissing = TIER_REQUIRES_CERT[tier] && certStatus !== 'approved';
   const compMissing = TIER_REQUIRES_COMPETITION[tier] && compStatus !== 'approved';
   const gated = certMissing || compMissing;
+  // Copy variant: gym-style activities need a coaching licence; accompaniment
+  // activities (running/hiking/Hyrox…) accept experience proof instead.
+  const isExperience =
+    selectedActivity != null && isExperienceQualified(selectedActivity.slug);
 
   function selectTier(next: Tier) {
     setTier(next);
@@ -150,11 +155,21 @@ export default function CompanionSetup() {
               {certMissing
                 ? certStatus === 'pending'
                   ? t('companionSetup.certPending')
-                  : t('companionSetup.certNeeded', { tier })
+                  : t(
+                      isExperience
+                        ? 'companionSetup.certNeededExp'
+                        : 'companionSetup.certNeeded',
+                      { tier },
+                    )
                 : compStatus === 'pending'
                   ? t('companionSetup.compPending')
                   : t('companionSetup.compNeeded')}
             </AppText>
+            {certMissing && tier === 'A' ? (
+              <AppText variant="caption" className="text-dark-text-secondary">
+                {t('companionSetup.tierANote')}
+              </AppText>
+            ) : null}
             {(certMissing && certStatus !== 'pending') ||
             (!certMissing && compMissing && compStatus !== 'pending') ? (
               <Button

@@ -129,10 +129,12 @@
     "error": "無法儲存，請再試一次。",
     "floorHint": "{{tier}} 級 NT${{min}} 起，無上限",
     "belowFloor": "{{tier}} 級價格不得低於 NT${{min}}。",
-    "certPending": "此項目的證照正在審核中。",
-    "certNeeded": "{{tier}} 級需要先通過此項目的證照審核。",
-    "compPending": "此項目的比賽經歷正在審核中。",
-    "compNeeded": "A 級還需要通過此項目的比賽經歷審核。",
+    "certPending": "此項目的證照／資格證明正在審核中。",
+    "certNeeded": "{{tier}} 級需要先通過此項目的教練證照審核——台灣認可的教練證照皆可（例如：NASM-CPT、ACE……等）。",
+    "certNeededExp": "{{tier}} 級需要先通過此項目的資格證明審核——不需教練證照，可用校隊證明、賽事完賽證明（如：ITRA 分數、百岳完攀紀錄）或社團帶領經驗……等。",
+    "tierANote": "A 級（附加比賽經驗證明）：此項審核通過後，還需通過比賽得獎證明審核。",
+    "compPending": "此項目的比賽經驗證明正在審核中。",
+    "compNeeded": "A 級還需要通過此項目的比賽得獎證明審核。",
     "uploadDoc": "上傳審核"
   },
   "dashboard": {
@@ -143,7 +145,7 @@
     "earningsPlaceholder": "付款功能將於後續更新推出。",
     "editListing": "編輯檔案",
     "editAvailability": "編輯可預約時間",
-    "verify": "申請認證（A 級）",
+    "verify": "申請認證（B／A 級）",
     "none": "目前沒有內容。"
   },
   "editor": {
@@ -165,7 +167,7 @@
   },
   "verification": {
     "title": "申請認證",
-    "intro": "A 級教練可上傳證照或身分證件，我們審核後會加上認證標章。",
+    "intro": "B 級與 A 級需通過審核：健身類請上傳教練證照（台灣認可皆可）；陪跑、陪爬、Hyrox 可上傳賽事完賽證明、校隊證明或社團帶領經驗……等。A 級另需比賽得獎證明。",
     "pickCert": "上傳證照",
     "pickId": "上傳身分證件",
     "pending": "你的認證正在審核中。",
@@ -175,8 +177,8 @@
     "error": "上傳失敗，請再試一次。",
     "docType": "文件類型",
     "activity": "項目",
-    "certification": "證照",
-    "competition": "比賽經歷",
+    "certification": "證照／資格證明",
+    "competition": "比賽得獎證明",
     "pickDoc": "上傳文件"
   },
   "settings": {
@@ -307,8 +309,8 @@
     "approvedConfirm": "確定通過這筆申請？",
     "rejectedConfirm": "確定退回這筆申請？",
     "doc": {
-      "certification": "證照",
-      "competition": "比賽經歷",
+      "certification": "證照／資格證明",
+      "competition": "比賽得獎證明",
       "id": "身分證件"
     }
   }

@@ -129,10 +129,12 @@
     "error": "Couldn't save. Try again.",
     "floorHint": "Tier {{tier}} starts at NT${{min}} — no upper limit",
     "belowFloor": "Tier {{tier}} price must be at least NT${{min}}.",
-    "certPending": "Your certification for this activity is being reviewed.",
-    "certNeeded": "Tier {{tier}} requires an approved certification for this activity.",
-    "compPending": "Your competition experience for this activity is being reviewed.",
-    "compNeeded": "Tier A also requires approved competition experience for this activity.",
+    "certPending": "Your certification / qualification proof for this activity is being reviewed.",
+    "certNeeded": "Tier {{tier}} requires an approved coaching certification for this activity — any Taiwan-recognized certification qualifies (e.g. NASM-CPT, ACE, etc.).",
+    "certNeededExp": "Tier {{tier}} requires approved qualification proof for this activity — no coaching licence needed: varsity records, race finishes (e.g. ITRA score, 百岳 summit log), or club-leading experience, etc.",
+    "tierANote": "Tier A (plus competition proof): once this is approved, competition-award proof is also required.",
+    "compPending": "Your competition proof for this activity is being reviewed.",
+    "compNeeded": "Tier A also requires approved competition-award proof for this activity.",
     "uploadDoc": "Upload for review"
   },
   "dashboard": {
@@ -143,7 +145,7 @@
     "earningsPlaceholder": "Payments arrive in a later update.",
     "editListing": "Edit listing",
     "editAvailability": "Edit availability",
-    "verify": "Get verified (Tier A)",
+    "verify": "Get verified (Tiers B & A)",
     "none": "Nothing yet."
   },
   "editor": {
@@ -165,7 +167,7 @@
   },
   "verification": {
     "title": "Get verified",
-    "intro": "Tier A coaches upload a certification or ID. We review it and add a verified badge.",
+    "intro": "Tiers B and A need review: for gym, upload a coaching certification (any Taiwan-recognized licence); for running, hiking, and Hyrox, athletic or leadership proof works (race finishes, varsity records, club leading, etc.). Tier A additionally needs competition-award proof.",
     "pickCert": "Upload certification",
     "pickId": "Upload ID",
     "pending": "Your verification is under review.",
@@ -175,8 +177,8 @@
     "error": "Upload failed. Try again.",
     "docType": "Document type",
     "activity": "Activity",
-    "certification": "Certification",
-    "competition": "Competition experience",
+    "certification": "Certification / qualification proof",
+    "competition": "Competition proof",
     "pickDoc": "Upload document"
   },
   "settings": {
@@ -307,8 +309,8 @@
     "approvedConfirm": "Approve this submission?",
     "rejectedConfirm": "Reject this submission?",
     "doc": {
-      "certification": "Certification",
-      "competition": "Competition experience",
+      "certification": "Certification / qualification proof",
+      "competition": "Competition proof",
       "id": "ID"
     }
   }

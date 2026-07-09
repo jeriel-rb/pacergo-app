@@ -46,21 +46,30 @@
   },
   "cert": {
     "title": "{{activity}} certification required",
-    "body": "Tiers B and A are for certified trainers. Upload a certification PDF (e.g. a gym instructor licence) for review — it unlocks these tiers for this activity once approved.",
+    "body": "Tiers B and A are for certified trainers. Upload a coaching certification PDF for review — any Taiwan-recognized coaching certification qualifies. Tier B unlocks for this activity once approved.",
     "label": "Certification name",
-    "labelPlaceholder": "e.g. NASM-CPT, ACE Personal Trainer",
+    "labelPlaceholder": "e.g. NASM-CPT, ACE Personal Trainer, etc.",
     "choose": "Choose PDF",
     "submit": "Submit for review",
-    "pending": "Your {{activity}} certification is under review — Tiers B and A unlock for {{activity}} once it's approved.",
+    "pending": "Your {{activity}} certification is under review — Tier B unlocks for {{activity}} once it's approved.",
     "approved": "Verified — Tiers B and A are unlocked.",
     "rejected": "Your last submission was rejected. Please upload a valid certification.",
     "needFile": "Please choose a PDF to upload.",
     "hintType": "Certification must be a PDF file.",
-    "hintSize": "PDF must be under 8 MB."
+    "hintSize": "PDF must be under 8 MB.",
+    "tierANote": "Tier A (plus competition proof): once this is approved, you'll also upload proof of a competition result to unlock Tier A."
+  },
+  "certExp": {
+    "title": "{{activity}} qualification proof required",
+    "body": "Tiers B and A don't require a coaching licence — upload relevant proof instead. Athletic: varsity records or race finishes (e.g. ITRA score, Taiwan 百岳 summit log); Experience: running/hiking club leadership, or positive Pacergo reviews. Tier B unlocks for this activity once approved.",
+    "label": "Proof name",
+    "labelPlaceholder": "e.g. ITRA score, 百岳 summit log, club leadership, etc.",
+    "pending": "Your {{activity}} qualification proof is under review — Tier B unlocks for {{activity}} once it's approved.",
+    "rejected": "Your last submission was rejected. Please upload valid qualification proof."
   },
   "comp": {
     "title": "{{activity}} competition experience required",
-    "body": "Tier A also needs proof of competition experience. Upload a PDF (e.g. a race result, medal certificate, or event record) for review — it unlocks Tier A for this activity once approved.",
+    "body": "Tier A also needs proof of a competition result. Upload a PDF (e.g. an award certificate, placement record, or race result) for review — it unlocks Tier A for this activity once approved.",
     "label": "Competition / result",
     "labelPlaceholder": "e.g. 2024 Taipei Marathon — 3rd place",
     "choose": "Choose PDF",

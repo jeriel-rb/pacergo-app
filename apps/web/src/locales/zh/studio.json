@@ -46,21 +46,30 @@
   },
   "cert": {
     "title": "需要 {{activity}} 的認證",
-    "body": "B 級與 A 級為認證教練等級。請上傳該項目的認證（PDF，例如健身教練證照）以供審核，通過後即可解鎖此項目的 B 級與 A 級。",
+    "body": "B 級與 A 級為認證教練等級。請上傳該項目的教練證照（PDF）以供審核——台灣認可的教練證照皆可，通過後即可解鎖此項目的 B 級。",
     "label": "認證名稱",
-    "labelPlaceholder": "例如：NASM-CPT、ACE 私人教練",
+    "labelPlaceholder": "例如：NASM-CPT、ACE 私人教練……等",
     "choose": "選擇 PDF",
     "submit": "送出審核",
-    "pending": "你的 {{activity}} 認證審核中，通過後即可解鎖 {{activity}} 的 B 級與 A 級。",
+    "pending": "你的 {{activity}} 認證審核中，通過後即可解鎖 {{activity}} 的 B 級。",
     "approved": "已驗證 — B 級與 A 級已解鎖。",
     "rejected": "上次送出的認證未通過，請上傳有效的認證文件。",
     "needFile": "請選擇要上傳的 PDF。",
     "hintType": "認證文件必須為 PDF 檔。",
-    "hintSize": "PDF 需小於 8MB。"
+    "hintSize": "PDF 需小於 8MB。",
+    "tierANote": "A 級（附加比賽經驗證明）：此項審核通過後，還需上傳比賽得獎證明，才會解鎖 A 級。"
+  },
+  "certExp": {
+    "title": "需要 {{activity}} 的資格證明",
+    "body": "B 級與 A 級不需要教練證照，上傳相關資格證明即可。體育類：校隊證明、賽事完賽證明（如：ITRA 分數、百岳完攀紀錄）；經歷類：跑步、爬山等社團帶領經驗，或過去在 Pacergo 的正面評價紀錄。通過審核後即可解鎖此項目的 B 級。",
+    "label": "證明名稱",
+    "labelPlaceholder": "例如：ITRA 分數、百岳完攀紀錄、社團帶領經驗……等",
+    "pending": "你的 {{activity}} 資格證明審核中，通過後即可解鎖 {{activity}} 的 B 級。",
+    "rejected": "上次送出的證明未通過，請上傳有效的資格證明。"
   },
   "comp": {
     "title": "需要 {{activity}} 的比賽經驗證明",
-    "body": "A 級還需要比賽經驗證明。請上傳該項目的證明（PDF，例如比賽成績、獎狀或參賽紀錄）以供審核，通過後即可解鎖此項目的 A 級。",
+    "body": "A 級還需要比賽得獎證明。請上傳該項目的得獎或成績證明（PDF，例如：獎狀、名次證明、完賽成績）以供審核，通過後即可解鎖此項目的 A 級。",
     "label": "比賽 / 成績",
     "labelPlaceholder": "例如：2024 台北馬拉松 — 第三名",
     "choose": "選擇 PDF",

@@ -3,15 +3,30 @@
   "columns": {
     "product": {
       "heading": "產品",
-      "links": ["運作方式", "分級與定價", "信任與安全", "成為夥伴"]
+      "links": [
+        { "label": "運作方式", "href": "/#how" },
+        { "label": "分級與定價", "href": "/#tiers" },
+        { "label": "信任與安全", "href": "/#safety" },
+        { "label": "成為夥伴", "href": "/earn" }
+      ]
     },
     "company": {
       "heading": "公司",
-      "links": ["關於我們", "加入我們", "媒體報導", "聯絡我們"]
+      "links": [
+        { "label": "關於我們" },
+        { "label": "加入我們" },
+        { "label": "媒體報導" },
+        { "label": "聯絡我們", "href": "/contact" }
+      ]
     },
     "legal": {
       "heading": "法律",
-      "links": ["隱私權", "服務條款", "社群守則", "Cookie"]
+      "links": [
+        { "label": "隱私權" },
+        { "label": "服務條款" },
+        { "label": "社群守則" },
+        { "label": "Cookie" }
+      ]
     }
   },
   "rights": "© {{year}} Pacergo. 台灣製造。",

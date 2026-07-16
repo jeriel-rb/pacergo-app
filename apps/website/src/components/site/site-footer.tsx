@@ -1,12 +1,17 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { getCurrentLocale, getLocalizedHref } from "@/lib/locale-path";
 import { Wordmark } from "./wordmark";
 
-type Column = { heading: string; links: string[] };
+type FooterLink = { label: string; href?: string };
+type Column = { heading: string; links: FooterLink[] };
 
 export function SiteFooter() {
   const { t } = useTranslation("footer");
+  const locale = getCurrentLocale(usePathname());
   const columns = t("columns", { returnObjects: true }) as Record<string, Column>;
 
   return (
@@ -25,10 +30,18 @@ export function SiteFooter() {
               </h3>
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm text-ink/65 transition-colors hover:text-brand">
-                      {link}
-                    </a>
+                  <li key={link.label}>
+                    {link.href ? (
+                      <Link
+                        href={getLocalizedHref(link.href, locale)}
+                        className="text-sm text-ink/65 transition-colors hover:text-brand"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      // Page doesn't exist yet — render as quiet text, not a dead link.
+                      <span className="text-sm text-ink/40">{link.label}</span>
+                    )}
                   </li>
                 ))}
               </ul>

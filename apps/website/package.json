@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@pacergo/shared": "workspace:*",
     "clsx": "^2.1.1",
     "i18next": "^24.2.2",
     "i18next-resources-to-backend": "^1.2.1",

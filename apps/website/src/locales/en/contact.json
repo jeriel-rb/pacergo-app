@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "title": "Contact",
+    "description": "Questions? Write to Pacergo support — we reply within 1–2 business days."
+  },
+  "hero": {
+    "eyebrow": "Support",
+    "title_1": "Questions?",
+    "title_highlight": "Write to us.",
+    "sub": "Bookings, accounts, becoming a companion, safety concerns — email us about anything. We reply within 1–2 business days.",
+    "email_label": "Support inbox",
+    "write_cta": "Email support",
+    "copy": "Copy address",
+    "copied": "Copied"
+  },
+  "topics": {
+    "eyebrow": "Topics",
+    "title": "Tell us what it's about",
+    "sub": "Pick a topic and we'll pre-fill the subject line — your email reaches the right person and gets answered faster.",
+    "items": {
+      "booking": {
+        "label": "Bookings & payments",
+        "desc": "Sessions, cancellations, rescheduling, or fees.",
+        "subject": "[Pacergo] Booking & payment question"
+      },
+      "account": {
+        "label": "Account & sign-in",
+        "desc": "Can't sign in, update details, or delete your account.",
+        "subject": "[Pacergo] Account & sign-in question"
+      },
+      "companion": {
+        "label": "Becoming a companion",
+        "desc": "Tiers, certification review, or taking bookings.",
+        "subject": "[Pacergo] Companion / review question"
+      },
+      "safety": {
+        "label": "Report a safety concern",
+        "desc": "Report behavior or content that made you feel unsafe.",
+        "subject": "[Pacergo] Safety report"
+      },
+      "partner": {
+        "label": "Partnerships & press",
+        "desc": "Gym alliances, brand partnerships, or interviews.",
+        "subject": "[Pacergo] Partnership & press inquiry"
+      },
+      "other": {
+        "label": "Something else",
+        "desc": "None of the above? Write anyway — we read everything.",
+        "subject": "[Pacergo] Support"
+      }
+    },
+    "action": "Write"
+  },
+  "notes": {
+    "reply_title": "Response time",
+    "reply_body": "We're a small team in Taiwan. Every email gets a reply within 1–2 business days (Taipei time, Mon–Fri).",
+    "safety_title": "In an emergency",
+    "safety_body": "If something urgent happens during a session, call 110 (police) or 119 (ambulance) first — then tell us by email."
+  }
+}

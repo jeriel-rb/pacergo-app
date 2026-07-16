@@ -20,6 +20,7 @@ export function SiteNav() {
   const find = getLocalizedPath("/find", locale);
   const earn = getLocalizedPath("/earn", locale);
   const waitlist = getLocalizedPath("/waitlist", locale);
+  const contact = getLocalizedPath("/contact", locale);
 
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
@@ -28,6 +29,7 @@ export function SiteNav() {
   const sectionLinks = [
     { href: `${home}#how`, label: t("how") },
     { href: `${home}#safety`, label: t("safety") },
+    { href: contact, label: t("contact") },
   ];
 
   const audience = [
@@ -38,12 +40,19 @@ export function SiteNav() {
   return (
     <header className="sticky top-0 z-50">
       <div className="border-b border-ink/8 bg-paper/80 backdrop-blur-md">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href={home} className="text-lg text-ink" aria-label="Pacergo" onClick={close}>
+        {/* 3-column grid keeps the middle links optically centered regardless of
+            how wide the wordmark and the right-hand controls are. */}
+        <nav className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6">
+          <Link
+            href={home}
+            className="justify-self-start text-lg text-ink"
+            aria-label="Pacergo"
+            onClick={close}
+          >
             <Wordmark />
           </Link>
 
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="hidden items-center gap-8 justify-self-center md:flex">
             <ProductMenu />
             {sectionLinks.map((link) => (
               <Link
@@ -56,7 +65,7 @@ export function SiteNav() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="col-start-3 flex items-center gap-2 justify-self-end sm:gap-3">
             <LanguageSwitcher className="hidden md:inline-flex" />
             <Link
               href={waitlist}

@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "title": "聯絡我們",
+    "description": "有問題嗎？寫信給 Pacergo 客服，我們會在 1–2 個工作天內回覆。"
+  },
+  "hero": {
+    "eyebrow": "客服中心",
+    "title_1": "有問題？",
+    "title_highlight": "寫信給我們。",
+    "sub": "預約、帳號、成為夥伴、安全疑慮——任何事都可以直接寄信。我們會在 1–2 個工作天內回覆。",
+    "email_label": "客服信箱",
+    "write_cta": "寫信給客服",
+    "copy": "複製信箱",
+    "copied": "已複製"
+  },
+  "topics": {
+    "eyebrow": "主題",
+    "title": "告訴我們是哪方面的事",
+    "sub": "選一個主題，我們會幫你把主旨填好——信件會分到對的人手上，回覆更快。",
+    "items": {
+      "booking": {
+        "label": "預約與付款",
+        "desc": "時段、取消、改期或費用問題。",
+        "subject": "[Pacergo] 預約與付款問題"
+      },
+      "account": {
+        "label": "帳號與登入",
+        "desc": "無法登入、改資料或刪除帳號。",
+        "subject": "[Pacergo] 帳號與登入問題"
+      },
+      "companion": {
+        "label": "成為夥伴",
+        "desc": "分級、證照審核或接案相關問題。",
+        "subject": "[Pacergo] 成為夥伴／審核問題"
+      },
+      "safety": {
+        "label": "安全回報",
+        "desc": "回報讓你感到不安全的行為或內容。",
+        "subject": "[Pacergo] 安全回報"
+      },
+      "partner": {
+        "label": "合作與媒體",
+        "desc": "場館合作、品牌合作或採訪邀約。",
+        "subject": "[Pacergo] 合作與媒體洽詢"
+      },
+      "other": {
+        "label": "其他",
+        "desc": "以上都不是？直接寫，我們會看。",
+        "subject": "[Pacergo] 客服"
+      }
+    },
+    "action": "寫信"
+  },
+  "notes": {
+    "reply_title": "回覆時間",
+    "reply_body": "我們是台灣的小團隊，會在 1–2 個工作天內回覆每一封信（台北時間，週一至週五）。",
+    "safety_title": "緊急狀況",
+    "safety_body": "如果訓練途中發生緊急事件，請先撥打 110（警察）或 119（救護），再寫信告訴我們。"
+  }
+}

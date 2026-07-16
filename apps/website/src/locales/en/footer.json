@@ -3,15 +3,30 @@
   "columns": {
     "product": {
       "heading": "Product",
-      "links": ["How it works", "Tiers & pricing", "Trust & safety", "For companions"]
+      "links": [
+        { "label": "How it works", "href": "/#how" },
+        { "label": "Tiers & pricing", "href": "/#tiers" },
+        { "label": "Trust & safety", "href": "/#safety" },
+        { "label": "For companions", "href": "/earn" }
+      ]
     },
     "company": {
       "heading": "Company",
-      "links": ["About", "Careers", "Press", "Contact"]
+      "links": [
+        { "label": "About" },
+        { "label": "Careers" },
+        { "label": "Press" },
+        { "label": "Contact", "href": "/contact" }
+      ]
     },
     "legal": {
       "heading": "Legal",
-      "links": ["Privacy", "Terms", "Community guidelines", "Cookies"]
+      "links": [
+        { "label": "Privacy" },
+        { "label": "Terms" },
+        { "label": "Community guidelines" },
+        { "label": "Cookies" }
+      ]
     }
   },
   "rights": "© {{year}} Pacergo. Made in Taiwan.",

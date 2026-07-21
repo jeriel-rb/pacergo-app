@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Contact",
-    "description": "Questions? Write to Pacergo support — we reply within 1–2 business days."
+    "description": "Questions? Write to PacerGo support — we reply within 1–2 business days."
   },
   "hero": {
     "eyebrow": "Support",
@@ -21,32 +21,32 @@
       "booking": {
         "label": "Bookings & payments",
         "desc": "Sessions, cancellations, rescheduling, or fees.",
-        "subject": "[Pacergo] Booking & payment question"
+        "subject": "[PacerGo] Booking & payment question"
       },
       "account": {
         "label": "Account & sign-in",
         "desc": "Can't sign in, update details, or delete your account.",
-        "subject": "[Pacergo] Account & sign-in question"
+        "subject": "[PacerGo] Account & sign-in question"
       },
       "companion": {
         "label": "Becoming a companion",
         "desc": "Tiers, certification review, or taking bookings.",
-        "subject": "[Pacergo] Companion / review question"
+        "subject": "[PacerGo] Companion / review question"
       },
       "safety": {
         "label": "Report a safety concern",
         "desc": "Report behavior or content that made you feel unsafe.",
-        "subject": "[Pacergo] Safety report"
+        "subject": "[PacerGo] Safety report"
       },
       "partner": {
         "label": "Partnerships & press",
         "desc": "Gym alliances, brand partnerships, or interviews.",
-        "subject": "[Pacergo] Partnership & press inquiry"
+        "subject": "[PacerGo] Partnership & press inquiry"
       },
       "other": {
         "label": "Something else",
         "desc": "None of the above? Write anyway — we read everything.",
-        "subject": "[Pacergo] Support"
+        "subject": "[PacerGo] Support"
       }
     },
     "action": "Write"

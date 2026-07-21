@@ -6,10 +6,25 @@ type LocaleParams = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
   const { locale } = await params;
-  const { t } = await initTranslations({ locale, namespaces: ["nav", "earn"] });
+  const { t } = await initTranslations({ locale, namespaces: ["earn"] });
+  const title = t("metadata.title");
+  const description = t("metadata.description");
+
   return {
-    title: t("menu.earn_label"),
-    description: t("hero.sub", { ns: "earn" }),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      siteName: "PacerGo",
+      locale: locale === "zh" ? "zh_TW" : "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 

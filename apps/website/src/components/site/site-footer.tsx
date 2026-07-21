@@ -9,6 +9,10 @@ import { Wordmark } from "./wordmark";
 type FooterLink = { label: string; href?: string };
 type Column = { heading: string; links: FooterLink[] };
 
+function isExternalHref(href: string) {
+  return /^https?:\/\//.test(href);
+}
+
 export function SiteFooter() {
   const { t } = useTranslation("footer");
   const locale = getCurrentLocale(usePathname());
@@ -31,10 +35,17 @@ export function SiteFooter() {
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    {link.href ? (
+                    {link.href && isExternalHref(link.href) ? (
+                      <a
+                        href={link.href}
+                        className="text-sm text-ink/65 transition-colors hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
+                      >
+                        {link.label}
+                      </a>
+                    ) : link.href ? (
                       <Link
                         href={getLocalizedHref(link.href, locale)}
-                        className="text-sm text-ink/65 transition-colors hover:text-brand"
+                        className="text-sm text-ink/65 transition-colors hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
                       >
                         {link.label}
                       </Link>

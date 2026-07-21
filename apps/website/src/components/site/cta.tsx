@@ -1,18 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { getWebAppSignInUrl } from "@/lib/web-app-links";
 import { SectionLabel } from "./section-label";
 
 export function Cta() {
   const { t } = useTranslation("home");
-  const waitlist = getLocalizedPath("/waitlist", getCurrentLocale(usePathname()));
+  const startFree = getWebAppSignInUrl("final_cta");
 
   return (
-    <section id="waitlist" className="relative overflow-hidden bg-ink text-paper">
+    <section id="start" className="relative overflow-hidden bg-ink text-paper">
       <div className="absolute left-1/2 top-0 -z-0 size-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/15 blur-[140px]" />
 
       <div className="relative mx-auto max-w-3xl px-6 py-24 text-center lg:py-32">
@@ -27,13 +25,13 @@ export function Cta() {
         </p>
 
         <div className="mt-9 flex justify-center">
-          <Link
-            href={waitlist}
-            className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-7 text-sm font-semibold text-paper transition-transform hover:-translate-y-px"
+          <a
+            href={startFree}
+            className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-7 text-sm font-semibold text-paper transition-transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-ink"
           >
             {t("cta.submit")}
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+          </a>
         </div>
 
         <p className="mt-6 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-paper/40">

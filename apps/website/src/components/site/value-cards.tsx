@@ -21,12 +21,14 @@ export function ValueCards({
   icons,
   columns = 3,
   surface = "white",
+  id,
 }: {
   ns: string;
   k: string;
   icons?: IconType[];
   columns?: 3 | 4;
   surface?: "paper" | "white";
+  id?: string;
 }) {
   const { t } = useTranslation(ns);
   const items = t(`${k}.items`, { returnObjects: true }) as Card[];
@@ -36,7 +38,7 @@ export function ValueCards({
   const cardBg = surface === "white" ? "bg-paper" : "bg-white";
 
   return (
-    <section className={sectionBg}>
+    <section id={id} className={sectionBg}>
       <div className="mx-auto max-w-6xl px-6 py-24 lg:py-32">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">

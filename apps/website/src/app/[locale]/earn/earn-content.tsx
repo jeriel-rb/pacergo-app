@@ -1,6 +1,19 @@
 "use client";
 
-import { Dumbbell, HandHeart, ListPlus, Tag, Wallet, Clock, Compass, ShieldCheck } from "lucide-react";
+import {
+  BadgeCheck,
+  CalendarClock,
+  ClipboardList,
+  Dumbbell,
+  FileCheck2,
+  HandHeart,
+  ListPlus,
+  MessageCircle,
+  ShieldCheck,
+  SlidersHorizontal,
+  UserCheck,
+  Users,
+} from "lucide-react";
 import { SiteNav } from "@/components/site/site-nav";
 import { SiteFooter } from "@/components/site/site-footer";
 import { AudienceHero } from "@/components/site/audience-hero";
@@ -20,18 +33,37 @@ export function EarnContent() {
         />
         <ValueCards
           ns="earn"
-          k="who"
+          k="role"
           columns={3}
           surface="white"
-          icons={[LifterGlyph, Dumbbell, HandHeart]}
+          icons={[LifterGlyph, HandHeart, Dumbbell]}
         />
-        <FlowSteps ns="earn" icons={[ListPlus, Tag, Wallet]} surface="paper" />
         <ValueCards
           ns="earn"
-          k="benefits"
+          k="who"
+          columns={4}
+          surface="paper"
+          icons={[Users, MessageCircle, Dumbbell, ShieldCheck]}
+        />
+        <ValueCards
+          ns="earn"
+          k="levels"
+          columns={3}
+          surface="white"
+          icons={[UserCheck, FileCheck2, BadgeCheck]}
+        />
+        <FlowSteps
+          ns="earn"
+          id="partner-process"
+          icons={[ListPlus, ClipboardList, BadgeCheck, CalendarClock]}
+          surface="paper"
+        />
+        <ValueCards
+          ns="earn"
+          k="standards"
           columns={4}
           surface="white"
-          icons={[Tag, Clock, Compass, ShieldCheck]}
+          icons={[ShieldCheck, SlidersHorizontal, MessageCircle, FileCheck2]}
         />
         <AudienceCta ns="earn" />
       </main>

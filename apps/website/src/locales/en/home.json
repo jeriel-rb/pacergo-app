@@ -1,20 +1,28 @@
 {
   "hero": {
-    "eyebrow": "In-person fitness · Taiwan",
-    "title_1": "Find your",
-    "title_2": "workout ",
-    "title_highlight": "companion.",
-    "sub": "Book someone to train with by the session — and just show up. No contracts, no lock-in.",
-    "cta_primary": "Join the waitlist",
-    "cta_secondary": "How it works"
-  },
-  "mockup": {
-    "discover": "Discover",
-    "tier_a": "Certified",
-    "meta": "Strength · 1.2km",
-    "available": "Available today",
-    "book": "Request session",
-    "flow": ["Discover", "Book", "Train"]
+    "eyebrow": "AI Training Plans × Real Workout Partners",
+    "headline": "AI Plans. We Train Together.",
+    "sub": "From personalized training plans and partner matching to real workout execution, PacerGo helps every session feel clearer and easier to sustain.",
+    "cta_primary": "Start Free",
+    "cta_secondary": "See How It Works",
+    "trust": "Free to join. Explore first. Upgrade AI when you need it.",
+    "visual_label": "PacerGo Web App screenshots",
+    "visual_sequence": "AI Plan → Find Partner → Train",
+    "visual_note": "Approved product screenshots will be placed here.",
+    "visual_steps": [
+      {
+        "label": "AI Plan",
+        "caption": "Personalized training direction"
+      },
+      {
+        "label": "Find Partner",
+        "caption": "Real people to help you follow through"
+      },
+      {
+        "label": "Train",
+        "caption": "Session execution and progress"
+      }
+    ]
   },
   "activities_label": "Supported activities",
   "activities_more": "& more",
@@ -33,87 +41,143 @@
     "CrossFit"
   ],
   "steps": {
-    "eyebrow": "How it works",
-    "title_1": "Three steps from solo to ",
-    "title_highlight": "side by side.",
+    "eyebrow": "How It Works",
+    "title_1": "Plan, support, train, ",
+    "title_highlight": "review.",
+    "intro": "PacerGo connects AI planning with optional human support, then keeps the training loop moving in the Web App.",
     "items": [
       {
         "no": "01",
-        "title": "Discover",
-        "body": "Browse companions near you, filtered by activity and what you're after. Every profile shows distance, rating, and how they train."
+        "title": "AI plan",
+        "body": "Set a goal and create a practical training direction in the Web App."
       },
       {
         "no": "02",
-        "title": "Book",
-        "body": "Request a session — pick a time and place. They accept, you meet. Reschedule or cancel anytime, no awkwardness."
+        "title": "Human support",
+        "body": "Find a workout partner when accountability or in-person support would help."
       },
       {
         "no": "03",
         "title": "Train",
-        "body": "Show up and train together in person. Rate each other afterwards so the community stays strong and accountable."
+        "body": "Use the plan, meet when it helps, and complete the session at your pace."
+      },
+      {
+        "no": "04",
+        "title": "Review progress",
+        "body": "Record training activity and review progress so the next session is clearer."
       }
     ]
   },
+  "ai_coach": {
+    "eyebrow": "AI Personal Coach",
+    "title_1": "Training structure before ",
+    "title_highlight": "you start.",
+    "intro": "PacerGo helps turn your goal and training conditions into a structured workout menu, so you know what to do next.",
+    "items": [
+      {
+        "title": "Personalized planning",
+        "body": "Choose your goal, age group, level, frequency, and training place."
+      },
+      {
+        "title": "Workout structure",
+        "body": "Build a session format with warm-up, main training, and cool-down."
+      },
+      {
+        "title": "Next-step guidance",
+        "body": "Use the plan as a starting point before training alone or with a partner."
+      }
+    ],
+    "visual_label": "Web App screen",
+    "visual_title": "AI Training Menu",
+    "visual_points": ["Goal", "Level", "Frequency", "Training place"],
+    "visual_note": "Approved AI plan screenshots will be placed here when available."
+  },
   "tiers": {
-    "eyebrow": "Who you'll meet",
-    "title_1": "From certified pros to ",
-    "title_highlight": "training buddies.",
-    "intro": "However you like to train, there's someone for it — and the kinds of companions keep growing.",
-    "rate_note": "Each companion sets their own rate",
+    "eyebrow": "Workout Partner",
+    "title_1": "Real people help you ",
+    "title_highlight": "follow through.",
+    "intro": "When you want accountability, find workout support that fits the plan, the activity, and the pace you want.",
+    "cta": "Find a Partner",
+    "rate_note": "Each partner sets their own rate",
     "items": [
       {
         "code": "A",
         "name": "Certified Pros",
-        "blurb": "Licensed, verified trainers for structured, goal-driven coaching.",
-        "features": ["Document-verified credentials", "Structured programming", "Built for specific goals"]
+        "blurb": "Certified trainers and coaches can offer structured, goal-driven support after verification.",
+        "features": ["Credential review for Tier A", "Structured support", "Goal-based sessions"]
       },
       {
         "code": "B",
         "name": "Experienced Peers",
-        "blurb": "Seasoned athletes who train alongside you and share what works.",
-        "features": ["Real training experience", "Hands-on, not hands-off", "Push past your plateau"]
+        "blurb": "Skilled athletes who train alongside you and share practical experience.",
+        "features": ["Real training experience", "Hands-on support", "Peer accountability"]
       },
       {
         "code": "C",
         "name": "Training Buddies",
-        "blurb": "Someone to show up with. Low-stakes accountability to build the habit.",
-        "features": ["Accountability partner", "Casual & flexible", "Whatever pace suits you"]
+        "blurb": "Peers who want to show up and train together, free or at a small fee when they choose.",
+        "features": ["Casual accountability", "Flexible pace", "Workout companionship"]
       }
     ]
   },
-  "safety": {
-    "eyebrow": "Trust & safety",
-    "title_1": "Built to keep",
-    "title_2": "meetups ",
-    "title_highlight": "safe.",
-    "intro": "Meeting strangers to work out should feel safe by default. Safety isn't a setting in Pacergo — it's wired into every booking.",
+  "progress": {
+    "eyebrow": "Training & Progress",
+    "title_1": "Complete the session, then ",
+    "title_highlight": "keep track.",
+    "intro": "PacerGo connects planning with execution: view your plan, complete workouts, record activity, and review progress.",
     "items": [
       {
-        "title": "Verified profiles",
-        "body": "Certified pros submit credentials to a private review before they can list. You always know who you're meeting."
+        "title": "View the plan",
+        "body": "Keep the training direction visible before the session starts."
+      },
+      {
+        "title": "Complete workouts",
+        "body": "Train alone or with support, depending on what helps you follow through."
+      },
+      {
+        "title": "Record activity",
+        "body": "Use the Web App to keep track of completed training."
+      },
+      {
+        "title": "Review progress",
+        "body": "Check weekly progress and use it to shape the next session."
+      }
+    ],
+    "visual_label": "Web App screen",
+    "visual_title": "Training progress",
+    "visual_note": "Approved training and progress screenshots will be placed here when available."
+  },
+  "safety": {
+    "eyebrow": "Trust & safety",
+    "title_1": "Support for digital use",
+    "title_2": "and ",
+    "title_highlight": "meetups.",
+    "intro": "PacerGo combines profile information, reporting, blocking, and in-person safety guidance. These tools support safer decisions, but they are not a guarantee.",
+    "items": [
+      {
+        "title": "Tier A verification",
+        "body": "Certified pros submit credentials for review before verified status appears."
       },
       {
         "title": "Report & block",
-        "body": "One tap to report or block. Blocks are enforced both ways — blocked users disappear from each other's discovery entirely."
+        "body": "Report concerns for moderation and block users you do not want to see or contact."
       },
       {
         "title": "Share your session",
-        "body": "Send session details — who, where, when — to a trusted contact before you head out, straight from the app."
+        "body": "Share who, where, and when with a trusted contact before heading out."
       },
       {
         "title": "Meet in public",
-        "body": "A built-in safety center with first-meet guidance and public-venue suggestions keeps early sessions low-risk."
+        "body": "First-meet guidance and public-venue suggestions help early sessions stay lower-risk."
       }
     ]
   },
   "cta": {
-    "eyebrow": "Early access",
-    "title_1": "Ready to find your ",
-    "title_highlight": "pace?",
-    "sub": "Join the waitlist and be first to train with a companion when Pacergo opens in your city.",
-    "email_placeholder": "you@example.com",
-    "submit": "Join the waitlist",
-    "success": "You're on the list — we'll be in touch at {{email}}.",
-    "launching": "Launching in Taiwan · 繁體中文 & English"
+    "eyebrow": "Start in the Web App",
+    "title_1": "Plan with AI. ",
+    "title_highlight": "Train with people.",
+    "sub": "AI helps you plan, and real people help you follow through.",
+    "submit": "Start Free",
+    "launching": "Available in Taiwan · 繁體中文 & English"
   }
 }

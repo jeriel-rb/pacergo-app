@@ -1,7 +1,10 @@
 "use client";
 
-import { Check } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ArrowRight, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 import { SectionLabel } from "./section-label";
 import { Reveal } from "./reveal";
@@ -15,10 +18,12 @@ type Tier = {
 
 export function Tiers() {
   const { t } = useTranslation("home");
+  const locale = getCurrentLocale(usePathname());
   const items = t("tiers.items", { returnObjects: true }) as Tier[];
+  const findHref = getLocalizedPath("/find", locale);
 
   return (
-    <section id="tiers" className="border-y border-ink/10 bg-white">
+    <section id="workout-partner" className="scroll-mt-24 border-y border-ink/10 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-24 lg:py-32">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl">
@@ -28,7 +33,16 @@ export function Tiers() {
               <span className="text-brand">{t("tiers.title_highlight")}</span>
             </h2>
           </div>
-          <p className="max-w-sm text-[0.95rem] leading-relaxed text-ink/60">{t("tiers.intro")}</p>
+          <div className="max-w-sm">
+            <p className="text-[0.95rem] leading-relaxed text-ink/60">{t("tiers.intro")}</p>
+            <Link
+              href={findHref}
+              className="mt-5 inline-flex h-11 items-center gap-2 rounded-(--radius) border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
+            >
+              {t("tiers.cta")}
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
         </div>
 
         <div className="mt-16 grid gap-5 lg:grid-cols-3">

@@ -1,13 +1,14 @@
 {
   "product": "Product",
-  "how": "How it works",
+  "how": "How It Works",
   "safety": "Safety",
-  "contact": "Contact",
-  "waitlist": "Join the waitlist",
+  "become_partner": "Become a Partner",
+  "open_menu": "Open navigation menu",
+  "close_menu": "Close navigation menu",
+  "start_free": "Start Free",
   "menu": {
-    "find_label": "For members",
-    "find_desc": "Find a companion or certified pro — book by the session, no contracts.",
-    "earn_label": "For companions",
-    "earn_desc": "Monetize your time, company, or skill. Set your own rates."
+    "ai_coach": "AI Personal Coach",
+    "find_partner": "Find a Partner",
+    "progress": "Training & Progress"
   }
 }

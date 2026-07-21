@@ -1,6 +1,6 @@
 # @pacergo/website
 
-Pacergo's **public marketing site** — Next.js 15 (App Router) + Tailwind v4.
+PacerGo's **public marketing site** — Next.js 15 (App Router) + Tailwind v4.
 
 ## Develop
 
@@ -42,7 +42,6 @@ src/
 
 ## Notes
 
-- The waitlist form is front-end only (shows a success state). Wire it to a real
-  endpoint or `@pacergo/api` when the backend is ready.
-- English copy for now; the app ships en + zh-Hant, so locale routing is a natural
-  next step.
+- Primary conversion CTAs link to the PacerGo Web App sign-in page with
+  website UTM attribution.
+- English and Traditional Chinese copy live in locale files.

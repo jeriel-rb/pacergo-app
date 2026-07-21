@@ -1,17 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { getWebAppSignInUrl, type WebAppSignInMedium } from "@/lib/web-app-links";
 import { SectionLabel } from "./section-label";
 
-/** Dark closing CTA for an audience page. Reads `${ns}.cta`; links to /waitlist. */
+/** Dark closing CTA for an audience page. Reads `${ns}.cta`. */
 export function AudienceCta({ ns }: { ns: string }) {
   const { t } = useTranslation(ns);
   const { t: tn } = useTranslation("nav");
-  const waitlist = getLocalizedPath("/waitlist", getCurrentLocale(usePathname()));
+  const medium: WebAppSignInMedium = ns === "earn" ? "earn_page" : "find_page";
+  const startFree = getWebAppSignInUrl(medium);
+  const label = t("cta.primary", { defaultValue: tn("start_free") });
 
   return (
     <section id="join" className="relative overflow-hidden bg-ink text-paper">
@@ -30,13 +30,13 @@ export function AudienceCta({ ns }: { ns: string }) {
         </p>
 
         <div className="mt-9 flex justify-center">
-          <Link
-            href={waitlist}
-            className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-7 text-sm font-semibold text-paper transition-transform hover:-translate-y-px"
+          <a
+            href={startFree}
+            className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-7 text-sm font-semibold text-paper transition-transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-ink"
           >
-            {tn("waitlist")}
+            {label}
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+          </a>
         </div>
       </div>
     </section>

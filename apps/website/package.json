@@ -2,7 +2,7 @@
   "name": "@pacergo/website",
   "version": "0.1.0",
   "private": true,
-  "description": "Pacergo public marketing site (Next.js 15, App Router, Tailwind v4).",
+  "description": "PacerGo public marketing site (Next.js 15, App Router, Tailwind v4).",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

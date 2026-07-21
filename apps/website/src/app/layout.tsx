@@ -6,8 +6,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://pacergo.app"),
   title: {
-    default: "Pacergo — Find your workout companion",
-    template: "%s · Pacergo",
+    default: "PacerGo — Find your workout companion",
+    template: "%s · PacerGo",
   },
   robots: { index: true, follow: true },
 };

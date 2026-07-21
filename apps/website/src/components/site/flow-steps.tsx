@@ -13,18 +13,23 @@ export function FlowSteps({
   ns,
   icons,
   surface = "paper",
+  id = "how",
 }: {
   ns: string;
   icons: LucideIcon[];
   surface?: "paper" | "white";
+  id?: string;
 }) {
   const { t } = useTranslation(ns);
   const items = t("how.items", { returnObjects: true }) as Step[];
 
   return (
     <section
-      id="how"
-      className={cn(surface === "white" ? "border-y border-ink/10 bg-white" : "bg-paper")}
+      id={id}
+      className={cn(
+        "scroll-mt-24",
+        surface === "white" ? "border-y border-ink/10 bg-white" : "bg-paper",
+      )}
     >
       <div className="mx-auto max-w-6xl px-6 py-24 lg:py-32">
         <div className="max-w-2xl">
@@ -35,7 +40,12 @@ export function FlowSteps({
           </h2>
         </div>
 
-        <div className="mt-16 grid gap-px overflow-hidden rounded-(--radius) border border-ink/10 bg-ink/10 md:grid-cols-3">
+        <div
+          className={cn(
+            "mt-16 grid gap-px overflow-hidden rounded-(--radius) border border-ink/10 bg-ink/10 md:grid-cols-2",
+            items.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3",
+          )}
+        >
           {items.map((step, i) => {
             const Icon = icons[i] ?? icons[0];
             return (

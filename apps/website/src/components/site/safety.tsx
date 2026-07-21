@@ -14,7 +14,7 @@ export function Safety() {
   const items = t("safety.items", { returnObjects: true }) as SafetyItem[];
 
   return (
-    <section id="safety" className="bg-ink text-paper">
+    <section id="safety" className="scroll-mt-24 bg-ink text-paper">
       <div className="mx-auto max-w-6xl px-6 py-24 lg:py-32">
         <div className="grid gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
           <div className="lg:sticky lg:top-28 lg:self-start">

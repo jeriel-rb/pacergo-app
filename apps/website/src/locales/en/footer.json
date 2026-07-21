@@ -1,34 +1,30 @@
 {
-  "tagline": "Find an in-person workout companion in Taiwan — from certified pros to training buddies.",
+  "tagline": "AI training plans and real workout partner support, built for training that is easier to start and sustain.",
   "columns": {
     "product": {
       "heading": "Product",
       "links": [
-        { "label": "How it works", "href": "/#how" },
-        { "label": "Tiers & pricing", "href": "/#tiers" },
-        { "label": "Trust & safety", "href": "/#safety" },
-        { "label": "For companions", "href": "/earn" }
+        { "label": "Start Free", "href": "https://app.pacergo.app/sign-in?utm_source=website&utm_medium=footer&utm_campaign=mvp_launch" },
+        { "label": "How It Works", "href": "/#how-it-works" },
+        { "label": "AI Personal Coach", "href": "/#ai-coach" },
+        { "label": "Find a Partner", "href": "/find" },
+        { "label": "Training & Progress", "href": "/#progress" },
+        { "label": "Safety", "href": "/#safety" }
       ]
     },
-    "company": {
-      "heading": "Company",
+    "partners": {
+      "heading": "Partners",
       "links": [
-        { "label": "About" },
-        { "label": "Careers" },
-        { "label": "Press" },
+        { "label": "Become a Partner", "href": "/earn" }
+      ]
+    },
+    "support": {
+      "heading": "Support",
+      "links": [
         { "label": "Contact", "href": "/contact" }
-      ]
-    },
-    "legal": {
-      "heading": "Legal",
-      "links": [
-        { "label": "Privacy" },
-        { "label": "Terms" },
-        { "label": "Community guidelines" },
-        { "label": "Cookies" }
       ]
     }
   },
-  "rights": "© {{year}} Pacergo. Made in Taiwan.",
-  "motto": "Set the pace · Never train alone"
+  "rights": "© {{year}} PacerGo. Made in Taiwan.",
+  "motto": "AI plans · Real people · Progress you can track"
 }

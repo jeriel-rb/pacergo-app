@@ -1,11 +1,16 @@
 import type { Metadata, Viewport } from "next";
+import { notFound } from "next/navigation";
 import initTranslations from "@/app/i18n";
 import i18nConfig from "@/i18nConfig";
 import { TranslationsProvider } from "@/components/translations-provider";
 
-const NAMESPACES = ["common", "nav", "home", "footer", "find", "earn", "waitlist", "contact"];
+const NAMESPACES = ["common", "nav", "home", "footer", "find", "earn", "contact"];
 
 type LocaleParams = { params: Promise<{ locale: string }> };
+
+function isSupportedLocale(locale: string) {
+  return i18nConfig.locales.includes(locale);
+}
 
 export function generateStaticParams() {
   return i18nConfig.locales.map((locale) => ({ locale }));
@@ -17,6 +22,10 @@ export const viewport: Viewport = {
 
 export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
   const { locale } = await params;
+  if (!isSupportedLocale(locale)) {
+    return {};
+  }
+
   const { t } = await initTranslations({ locale, namespaces: ["common"] });
 
   const title = t("metadata.title");
@@ -29,7 +38,7 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
       title,
       description,
       type: "website",
-      siteName: "Pacergo",
+      siteName: "PacerGo",
       locale: locale === "zh" ? "zh_TW" : "en_US",
     },
     twitter: {
@@ -45,6 +54,10 @@ export default async function LocaleLayout({
   params,
 }: LocaleParams & { children: React.ReactNode }) {
   const { locale } = await params;
+  if (!isSupportedLocale(locale)) {
+    notFound();
+  }
+
   const htmlLang = locale === "zh" ? "zh-Hant-TW" : "en";
 
   const { resources } = await initTranslations({ locale, namespaces: NAMESPACES });

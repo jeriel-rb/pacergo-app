@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Pacergo wordmark. The mark is a minimal "pace node" — a route dot with a
+ * PacerGo wordmark. The mark is a minimal "pace node" — a route dot with a
  * forward tick — rendered in the brand blue. Inherits text color otherwise.
  */
 export function Wordmark({
@@ -28,7 +28,7 @@ export function Wordmark({
           strokeLinejoin="round"
         />
       </svg>
-      <span className="font-semibold tracking-[-0.03em]">Pacergo</span>
+      <span className="font-semibold tracking-[-0.03em]">PacerGo</span>
     </span>
   );
 }

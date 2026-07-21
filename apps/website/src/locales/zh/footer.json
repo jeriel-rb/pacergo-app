@@ -1,34 +1,30 @@
 {
-  "tagline": "在台灣找到面對面的健身夥伴——從合格教練到一起練的夥伴。",
+  "tagline": "AI 訓練規劃加上真人陪練支援，讓訓練更容易開始，也更容易持續。",
   "columns": {
     "product": {
       "heading": "產品",
       "links": [
-        { "label": "運作方式", "href": "/#how" },
-        { "label": "分級與定價", "href": "/#tiers" },
-        { "label": "信任與安全", "href": "/#safety" },
-        { "label": "成為夥伴", "href": "/earn" }
+        { "label": "免費開始", "href": "https://app.pacergo.app/sign-in?utm_source=website&utm_medium=footer&utm_campaign=mvp_launch" },
+        { "label": "運作方式", "href": "/#how-it-works" },
+        { "label": "AI 個人教練", "href": "/#ai-coach" },
+        { "label": "尋找陪練", "href": "/find" },
+        { "label": "訓練與進度", "href": "/#progress" },
+        { "label": "安全機制", "href": "/#safety" }
       ]
     },
-    "company": {
-      "heading": "公司",
+    "partners": {
+      "heading": "陪練",
       "links": [
-        { "label": "關於我們" },
-        { "label": "加入我們" },
-        { "label": "媒體報導" },
+        { "label": "成為陪練", "href": "/earn" }
+      ]
+    },
+    "support": {
+      "heading": "支援",
+      "links": [
         { "label": "聯絡我們", "href": "/contact" }
-      ]
-    },
-    "legal": {
-      "heading": "法律",
-      "links": [
-        { "label": "隱私權" },
-        { "label": "服務條款" },
-        { "label": "社群守則" },
-        { "label": "Cookie" }
       ]
     }
   },
-  "rights": "© {{year}} Pacergo. 台灣製造。",
-  "motto": "設定你的節奏 · 不再獨自訓練"
+  "rights": "© {{year}} PacerGo. 台灣製造。",
+  "motto": "AI 規劃 · 真人陪練 · 累積進度"
 }

@@ -1,16 +1,19 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { getWebAppSignInUrl, type WebAppSignInMedium } from "@/lib/web-app-links";
 import { SectionLabel } from "./section-label";
 
 /** Type-led hero shared by the audience pages (/find, /earn), with an illustration. */
 export function AudienceHero({ ns, illustration }: { ns: string; illustration?: React.ReactNode }) {
   const { t } = useTranslation(ns);
-  const waitlist = getLocalizedPath("/waitlist", getCurrentLocale(usePathname()));
+  const locale = getCurrentLocale(usePathname());
+  const medium: WebAppSignInMedium = ns === "earn" ? "earn_page" : "find_page";
+  const startFree = getWebAppSignInUrl(medium);
+  const secondaryHref = ns === "find" ? `${getLocalizedPath("/", locale)}#how-it-works` : "#partner-process";
 
   return (
     <section id="top" className="relative overflow-hidden">
@@ -44,16 +47,16 @@ export function AudienceHero({ ns, illustration }: { ns: string; illustration?: 
             className="animate-rise mt-9 flex flex-wrap items-center gap-3"
             style={{ animationDelay: "320ms" }}
           >
-            <Link
-              href={waitlist}
-              className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-6 text-sm font-semibold text-paper transition-transform hover:-translate-y-px"
+            <a
+              href={startFree}
+              className="group inline-flex h-12 items-center gap-2 rounded-(--radius) bg-brand px-6 text-sm font-semibold text-paper transition-transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
             >
               {t("hero.cta_primary")}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+            </a>
             <a
-              href="#how"
-              className="inline-flex h-12 items-center rounded-(--radius) border border-ink/15 px-6 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-paper"
+              href={secondaryHref}
+              className="inline-flex h-12 items-center rounded-(--radius) border border-ink/15 px-6 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
             >
               {t("hero.cta_secondary")}
             </a>

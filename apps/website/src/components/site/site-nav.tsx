@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, UserSearch } from "lucide-react";
+import { Activity, Menu, Sparkles, UserSearch, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { getWebAppSignInUrl } from "@/lib/web-app-links";
 import { Wordmark } from "./wordmark";
 import { LanguageSwitcher } from "./language-switcher";
 import { ProductMenu } from "./product-menu";
-import { LifterGlyph } from "./illustrations";
 
 export function SiteNav() {
   const { t } = useTranslation("nav");
@@ -19,23 +19,47 @@ export function SiteNav() {
   const home = getLocalizedPath("/", locale);
   const find = getLocalizedPath("/find", locale);
   const earn = getLocalizedPath("/earn", locale);
-  const waitlist = getLocalizedPath("/waitlist", locale);
-  const contact = getLocalizedPath("/contact", locale);
+  const startFree = getWebAppSignInUrl("header");
 
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
   // Section anchors live on the homepage, so link back to it from any page.
-  const sectionLinks = [
-    { href: `${home}#how`, label: t("how") },
-    { href: `${home}#safety`, label: t("safety") },
-    { href: contact, label: t("contact") },
+  const productLinks = [
+    { href: `${home}#ai-coach`, label: t("menu.ai_coach"), Icon: Sparkles },
+    { href: find, label: t("menu.find_partner"), Icon: UserSearch },
+    { href: `${home}#progress`, label: t("menu.progress"), Icon: Activity },
   ];
 
-  const audience = [
-    { href: find, label: t("menu.find_label"), desc: t("menu.find_desc"), Icon: UserSearch },
-    { href: earn, label: t("menu.earn_label"), desc: t("menu.earn_desc"), Icon: LifterGlyph },
+  const primaryLinks = [
+    { href: `${home}#how-it-works`, label: t("how") },
+    { href: `${home}#safety`, label: t("safety") },
+    { href: earn, label: t("become_partner") },
   ];
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  const menuButtonLabel = useMemo(() => (open ? t("close_menu") : t("open_menu")), [open, t]);
 
   return (
     <header className="sticky top-0 z-50">
@@ -46,7 +70,7 @@ export function SiteNav() {
           <Link
             href={home}
             className="justify-self-start text-lg text-ink"
-            aria-label="Pacergo"
+            aria-label="PacerGo"
             onClick={close}
           >
             <Wordmark />
@@ -54,7 +78,7 @@ export function SiteNav() {
 
           <div className="hidden items-center gap-8 justify-self-center md:flex">
             <ProductMenu />
-            {sectionLinks.map((link) => (
+            {primaryLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -67,17 +91,18 @@ export function SiteNav() {
 
           <div className="col-start-3 flex items-center gap-2 justify-self-end sm:gap-3">
             <LanguageSwitcher className="hidden md:inline-flex" />
-            <Link
-              href={waitlist}
+            <a
+              href={startFree}
               className="hidden h-9 items-center rounded-(--radius) bg-ink px-4 text-sm font-semibold text-paper transition-transform hover:-translate-y-px md:inline-flex"
             >
-              {t("waitlist")}
-            </Link>
+              {t("start_free")}
+            </a>
             <button
               type="button"
               onClick={() => setOpen((o) => !o)}
-              aria-label={t("product")}
+              aria-label={menuButtonLabel}
               aria-expanded={open}
+              aria-controls="mobile-navigation"
               className="inline-flex size-9 items-center justify-center rounded-(--radius) border border-ink/12 text-ink md:hidden"
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -88,14 +113,17 @@ export function SiteNav() {
 
       {/* mobile menu */}
       {open && (
-        <div className="animate-rise border-b border-ink/10 bg-paper shadow-[0_24px_40px_-24px_rgba(10,10,10,0.25)] md:hidden">
+        <div
+          id="mobile-navigation"
+          className="animate-rise max-h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden border-b border-ink/10 bg-paper shadow-[0_24px_40px_-24px_rgba(10,10,10,0.25)] md:hidden"
+        >
           <div className="mx-auto max-w-6xl space-y-6 px-6 py-6">
             <div>
               <p className="font-mono text-[0.66rem] uppercase tracking-[0.18em] text-ink/45">
                 {t("product")}
               </p>
               <div className="mt-3 grid gap-2">
-                {audience.map(({ href, label, desc, Icon }) => (
+                {productLinks.map(({ href, label, Icon }) => (
                   <Link
                     key={href}
                     href={href}
@@ -107,7 +135,6 @@ export function SiteNav() {
                     </span>
                     <span>
                       <span className="block text-sm font-semibold text-ink">{label}</span>
-                      <span className="mt-0.5 block text-xs leading-relaxed text-ink/55">{desc}</span>
                     </span>
                   </Link>
                 ))}
@@ -115,7 +142,7 @@ export function SiteNav() {
             </div>
 
             <div className="grid gap-1 border-t border-ink/10 pt-4">
-              {sectionLinks.map((link) => (
+              {primaryLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -134,13 +161,13 @@ export function SiteNav() {
               <LanguageSwitcher />
             </div>
 
-            <Link
-              href={waitlist}
+            <a
+              href={startFree}
               onClick={close}
               className="flex h-11 items-center justify-center rounded-(--radius) bg-ink text-sm font-semibold text-paper"
             >
-              {t("waitlist")}
-            </Link>
+              {t("start_free")}
+            </a>
           </div>
         </div>
       )}

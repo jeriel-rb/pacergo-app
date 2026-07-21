@@ -1,82 +1,137 @@
 {
-  "hero": {
-    "eyebrow": "For companions",
-    "title_1": "Get paid for your",
-    "title_2": "time, company, or ",
-    "title_highlight": "skill.",
-    "sub": "Coach, train alongside, or just be the reason someone shows up. List what you offer, set your own rates, and earn on your own schedule.",
-    "cta_primary": "Become a companion",
-    "cta_secondary": "How earning works"
+  "metadata": {
+    "title": "Become a Workout Partner",
+    "description": "Become a PacerGo workout partner and help people follow their training direction with human support."
   },
-  "who": {
-    "eyebrow": "Who earns",
-    "title_1": "If people train better with you, ",
-    "title_highlight": "you can earn.",
-    "intro": "Pacergo isn't only for trainers. Whatever you bring, you set your own rate.",
+  "hero": {
+    "eyebrow": "Become a Partner",
+    "title_1": "Help people show up,",
+    "title_2": "train, and ",
+    "title_highlight": "keep going.",
+    "sub": "PacerGo workout partners help users stay accountable, follow their training direction, and complete workouts with real human support.",
+    "cta_primary": "Become a Partner",
+    "cta_secondary": "See How It Works"
+  },
+  "role": {
+    "eyebrow": "What partners do",
+    "title_1": "Support the session, ",
+    "title_highlight": "not every profession.",
+    "intro": "AI planning, workout partner support, professional coaching, and medical care are separate roles. A general workout partner helps with follow-through.",
     "items": [
       {
-        "name": "Certified trainers",
-        "body": "Verify your credentials and coach clients with structured programming."
+        "name": "Train alongside users",
+        "body": "Show up for the workout, help the session feel less isolated, and keep the effort moving."
       },
       {
-        "name": "Experienced athletes",
-        "body": "Turn experience into sessions — train alongside people and share what works."
+        "name": "Provide accountability",
+        "body": "Be a reliable person who helps users follow the training direction they already have."
       },
       {
-        "name": "Motivating buddies",
-        "body": "Be the accountability that gets people to show up. Start free or low-cost."
+        "name": "Support execution",
+        "body": "Offer practical workout support while staying within your actual experience and qualifications."
+      }
+    ]
+  },
+  "who": {
+    "eyebrow": "Who can apply",
+    "title_1": "You do not have to be a ",
+    "title_highlight": "professional.",
+    "intro": "The current partner model supports different levels. Certification is not mandatory for every level, but any credential claim must be accurate.",
+    "items": [
+      {
+        "title": "Reliable people",
+        "body": "Applicants should be able to communicate clearly, show up responsibly, and respect platform rules."
+      },
+      {
+        "title": "Experienced supporters",
+        "body": "Relevant training experience can help users feel supported during workouts."
+      },
+      {
+        "title": "Qualified specialists",
+        "body": "Some activities or levels require submitted proof before they can be listed."
+      },
+      {
+        "title": "Respectful partners",
+        "body": "Partners should support users without making medical, rehabilitation, or unsupported professional claims."
+      }
+    ]
+  },
+  "levels": {
+    "eyebrow": "Levels and credentials",
+    "title_1": "Level, service, and credential ",
+    "title_highlight": "stay separate.",
+    "intro": "PacerGo uses A, B, and C levels. A level badge is not automatically a professional certification.",
+    "items": [
+      {
+        "name": "C · Buddy",
+        "body": "Open partner support for showing up, training alongside users, and helping with accountability."
+      },
+      {
+        "name": "B · Senior Pro",
+        "body": "Requires approved proof for the selected activity before listing at this level."
+      },
+      {
+        "name": "A · Top Tier",
+        "body": "Requires approved proof for the selected activity and additional competition proof before listing at this level."
       }
     ]
   },
   "how": {
-    "eyebrow": "How earning works",
-    "title_1": "List it. Set your rate. ",
-    "title_highlight": "Get booked.",
+    "eyebrow": "How becoming a partner works",
+    "title_1": "Create your profile, then ",
+    "title_highlight": "set up your listing.",
     "items": [
       {
         "no": "01",
-        "title": "Create your listing",
-        "body": "Add your activities and offerings. Verify credentials if you're a certified pro."
+        "title": "Sign in",
+        "body": "Create or sign in to a PacerGo account before opening the partner studio."
       },
       {
         "no": "02",
-        "title": "Set your own rates",
-        "body": "You decide what each session costs and when you're available. No fixed pricing."
+        "title": "Save your listing",
+        "body": "Add a headline, introduction, service area, and listing status."
       },
       {
         "no": "03",
-        "title": "Accept & get paid",
-        "body": "Approve the booking requests that fit, train, and get paid — on your schedule."
+        "title": "Add offerings",
+        "body": "Choose activities, levels, session details, and submit proof when a level requires review."
+      },
+      {
+        "no": "04",
+        "title": "Set availability",
+        "body": "Add weekly bookable times and keep your listing accurate before users discover it."
       }
     ]
   },
-  "benefits": {
-    "eyebrow": "Why companions choose Pacergo",
-    "title_1": "Your time, ",
-    "title_highlight": "your terms.",
+  "standards": {
+    "eyebrow": "Standards and safety",
+    "title_1": "Be clear about what ",
+    "title_highlight": "you can offer.",
+    "intro": "Partner responsibilities should support respectful, safer workouts without creating false promises.",
     "items": [
       {
-        "title": "You set the price",
-        "body": "Every offering is priced by you. Pacergo never sets your rates."
+        "title": "Accurate profile information",
+        "body": "Describe your experience, area, services, and status truthfully."
       },
       {
-        "title": "You choose the hours",
-        "body": "Accept only the sessions and times that work for you. No quotas."
+        "title": "Stay within your qualifications",
+        "body": "Do not present professional credentials unless they have been submitted and approved where required."
       },
       {
-        "title": "Keep your independence",
-        "body": "No exclusivity and no chair to rent. Bring your own clients or find new ones."
+        "title": "Respectful communication",
+        "body": "Coordinate clearly, protect user privacy, and keep interactions appropriate."
       },
       {
-        "title": "Safety built in",
-        "body": "Verified members, two-way reviews, and reporting protect every session."
+        "title": "Use safety tools",
+        "body": "Follow platform rules and report safety concerns when they arise."
       }
     ]
   },
   "cta": {
-    "eyebrow": "Early access",
-    "title_1": "Start earning with ",
-    "title_highlight": "Pacergo.",
-    "sub": "Join the waitlist to set up your companion profile before launch."
+    "eyebrow": "Start in the Web App",
+    "title_1": "Set up your ",
+    "title_highlight": "partner profile.",
+    "sub": "Open PacerGo, sign in, and continue to the partner studio when you are ready.",
+    "primary": "Become a Partner"
   }
 }

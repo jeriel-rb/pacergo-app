@@ -5,9 +5,9 @@ import "./globals.css";
 // the locale segment at static-build time.
 export const metadata: Metadata = {
   metadataBase: new URL("https://pacergo.app"),
-  title: {
-    default: "PacerGo — Find your workout companion",
-    template: "%s · PacerGo",
+  title: "PacerGo",
+  icons: {
+    icon: "/icon.svg",
   },
   robots: { index: true, follow: true },
 };

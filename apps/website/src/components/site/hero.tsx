@@ -18,7 +18,8 @@ export function Hero() {
   const locale = getCurrentLocale(pathname);
   const startFree = getWebAppSignInUrl("hero");
   const howItWorks = `${getLocalizedPath("/", locale)}#how-it-works`;
-  const visualSteps = t("hero.visual_steps", { returnObjects: true }) as HeroVisualStep[];
+  const rawVisualSteps = t("hero.visual_steps", { returnObjects: true });
+  const visualSteps = Array.isArray(rawVisualSteps) ? (rawVisualSteps as HeroVisualStep[]) : [];
 
   return (
     <section id="top" className="relative overflow-hidden bg-paper">
@@ -87,30 +88,32 @@ export function Hero() {
               </span>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              {visualSteps.map((step, index) => (
-                <div
-                  key={step.label}
-                  className="min-h-[150px] rounded-2xl border border-dashed border-ink/18 bg-paper p-4 sm:min-h-[260px]"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[0.64rem] font-medium tracking-[0.14em] text-ink/45">
-                      0{index + 1}
-                    </span>
-                    <CheckCircle2 className="size-4 text-brand" strokeWidth={1.8} />
+            {visualSteps.length > 0 && (
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {visualSteps.map((step, index) => (
+                  <div
+                    key={step.label}
+                    className="min-h-[150px] rounded-2xl border border-dashed border-ink/18 bg-paper p-4 sm:min-h-[260px]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[0.64rem] font-medium tracking-[0.14em] text-ink/45">
+                        0{index + 1}
+                      </span>
+                      <CheckCircle2 className="size-4 text-brand" strokeWidth={1.8} />
+                    </div>
+                    <div className="flex h-[92px] items-center justify-center sm:h-[172px]">
+                      <span className="flex size-12 items-center justify-center rounded-full bg-white text-brand shadow-[0_16px_36px_-24px_rgba(10,10,10,0.35)]">
+                        <Camera className="size-5" strokeWidth={1.8} />
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-ink">{step.label}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-ink/55">{step.caption}</p>
+                    </div>
                   </div>
-                  <div className="flex h-[92px] items-center justify-center sm:h-[172px]">
-                    <span className="flex size-12 items-center justify-center rounded-full bg-white text-brand shadow-[0_16px_36px_-24px_rgba(10,10,10,0.35)]">
-                      <Camera className="size-5" strokeWidth={1.8} />
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-ink">{step.label}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-ink/55">{step.caption}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <p className="mt-4 text-xs leading-relaxed text-ink/45">{t("hero.visual_note")}</p>
           </div>

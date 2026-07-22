@@ -1,13 +1,13 @@
 {
   "meta": {
     "title": "Contact",
-    "description": "Questions? Write to PacerGo support — we reply within 1–2 business days."
+    "description": "Questions? Write to PacerGo support and our Taiwan team will reply as soon as we can."
   },
   "hero": {
     "eyebrow": "Support",
     "title_1": "Questions?",
     "title_highlight": "Write to us.",
-    "sub": "Bookings, accounts, becoming a companion, safety concerns — email us about anything. We reply within 1–2 business days.",
+    "sub": "Bookings, accounts, becoming a workout partner, safety concerns - email us about anything. Our Taiwan team will reply as soon as we can.",
     "email_label": "Support inbox",
     "write_cta": "Email support",
     "copy": "Copy address",
@@ -16,7 +16,7 @@
   "topics": {
     "eyebrow": "Topics",
     "title": "Tell us what it's about",
-    "sub": "Pick a topic and we'll pre-fill the subject line — your email reaches the right person and gets answered faster.",
+    "sub": "Pick a topic and we'll pre-fill the subject line so your email reaches the right person.",
     "items": {
       "booking": {
         "label": "Bookings & payments",
@@ -29,9 +29,9 @@
         "subject": "[PacerGo] Account & sign-in question"
       },
       "companion": {
-        "label": "Becoming a companion",
-        "desc": "Tiers, certification review, or taking bookings.",
-        "subject": "[PacerGo] Companion / review question"
+        "label": "Becoming a workout partner",
+        "desc": "Partner levels, proof review, or setting up your listing.",
+        "subject": "[PacerGo] Workout partner / review question"
       },
       "safety": {
         "label": "Report a safety concern",
@@ -45,7 +45,7 @@
       },
       "other": {
         "label": "Something else",
-        "desc": "None of the above? Write anyway — we read everything.",
+        "desc": "None of the above? Write anyway - we read every message.",
         "subject": "[PacerGo] Support"
       }
     },
@@ -53,8 +53,8 @@
   },
   "notes": {
     "reply_title": "Response time",
-    "reply_body": "We're a small team in Taiwan. Every email gets a reply within 1–2 business days (Taipei time, Mon–Fri).",
+    "reply_body": "We're a small team in Taiwan and aim to reply within 1-2 business days (Taipei time, Mon-Fri).",
     "safety_title": "In an emergency",
-    "safety_body": "If something urgent happens during a session, call 110 (police) or 119 (ambulance) first — then tell us by email."
+    "safety_body": "If something urgent happens during a session, call 110 (police) or 119 (ambulance) first - then tell us by email."
   }
 }

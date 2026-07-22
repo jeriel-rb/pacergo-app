@@ -3,8 +3,7 @@ export type WebAppSignInMedium =
   | "hero"
   | "final_cta"
   | "find_page"
-  | "earn_page"
-  | "legacy_waitlist";
+  | "earn_page";
 
 export function getWebAppSignInUrl(utmMedium: WebAppSignInMedium) {
   const url = new URL("https://app.pacergo.app/sign-in");

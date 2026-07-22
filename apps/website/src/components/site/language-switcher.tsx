@@ -56,7 +56,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t("language.label")}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink/12 px-3 text-xs font-semibold text-ink transition-colors hover:border-ink/30"
+        className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink/12 px-3 text-xs font-semibold text-ink transition-colors hover:border-ink/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
       >
         <Globe className="size-3.5 text-ink/55" />
         {SHORT_LABEL[current] ?? current.toUpperCase()}
@@ -81,7 +81,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                   aria-selected={active}
                   onClick={() => switchTo(locale)}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                    "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
                     active ? "font-semibold text-ink" : "text-ink/65 hover:bg-ink/5 hover:text-ink",
                   )}
                 >

@@ -10,7 +10,9 @@ export function middleware(request: NextRequest) {
   if (pathname === traditionalChinesePath || pathname.startsWith(`${traditionalChinesePath}/`)) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.slice(traditionalChinesePath.length) || "/";
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    response.cookies.set(i18nConfig.localeCookie, i18nConfig.defaultLocale);
+    return response;
   }
 
   if (

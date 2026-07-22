@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import initTranslations from "@/app/i18n";
 import i18nConfig from "@/i18nConfig";
 import { TranslationsProvider } from "@/components/translations-provider";
+import { getSeoAlternates } from "@/lib/seo";
 
 const NAMESPACES = ["common", "nav", "home", "footer", "find", "earn", "contact"];
 
@@ -30,16 +31,22 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
 
   const title = t("metadata.title");
   const description = t("metadata.description");
+  const alternates = getSeoAlternates("/", locale);
 
   return {
-    title,
+    title: {
+      default: title,
+      template: "%s - PacerGo",
+    },
     description,
+    alternates,
     openGraph: {
       title,
       description,
       type: "website",
       siteName: "PacerGo",
       locale: locale === "zh" ? "zh_TW" : "en_US",
+      url: alternates.canonical,
     },
     twitter: {
       card: "summary_large_image",
@@ -63,7 +70,7 @@ export default async function LocaleLayout({
   const { resources } = await initTranslations({ locale, namespaces: NAMESPACES });
 
   return (
-    <html lang={htmlLang} suppressHydrationWarning>
+    <html lang={htmlLang} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
         <TranslationsProvider locale={locale} namespaces={NAMESPACES} resources={resources}>
           {children}

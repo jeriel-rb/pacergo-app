@@ -93,7 +93,7 @@ export function ContactContent() {
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <a
                   href={supportMailto()}
-                  className="group inline-flex h-11 items-center gap-2 rounded-(--radius) bg-brand px-5 text-sm font-semibold text-paper transition-transform hover:-translate-y-px"
+                  className="group inline-flex h-11 items-center gap-2 rounded-(--radius) bg-brand px-5 text-sm font-semibold text-paper transition-transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-white"
                 >
                   <Mail className="size-4" />
                   {t("hero.write_cta")}
@@ -101,7 +101,7 @@ export function ContactContent() {
                 <button
                   type="button"
                   onClick={copyEmail}
-                  className="inline-flex h-11 items-center gap-2 rounded-(--radius) border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-paper"
+                  className="inline-flex h-11 items-center gap-2 rounded-(--radius) border border-ink/15 px-5 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-white"
                 >
                   {copied ? <Check className="size-4 text-brand" /> : <Copy className="size-4" />}
                   {copied ? t("hero.copied") : t("hero.copy")}
@@ -127,7 +127,7 @@ export function ContactContent() {
                 <Reveal key={key} delay={i * 60}>
                   <a
                     href={supportMailto(t(`topics.items.${key}.subject`))}
-                    className="group flex h-full flex-col rounded-2xl border border-ink/10 bg-paper p-6 transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_20px_40px_-28px_rgba(21,101,255,0.45)]"
+                    className="group flex h-full flex-col rounded-2xl border border-ink/10 bg-paper p-6 transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-[0_20px_40px_-28px_rgba(21,101,255,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-white"
                   >
                     <span className="flex size-10 items-center justify-center rounded-lg bg-brand/10 text-brand">
                       <Icon className="size-5" strokeWidth={2} />

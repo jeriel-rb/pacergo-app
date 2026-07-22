@@ -69,7 +69,7 @@ export function CompanionsIllustration({ className }: { className?: string }) {
       className={className}
       fill="none"
       role="img"
-      aria-label="Two workout companions training together"
+      aria-label="Two workout partners training together"
     >
       <ellipse cx="150" cy="296" rx="112" ry="13" fill={INK} opacity="0.06" />
 

@@ -93,7 +93,7 @@ export function SiteNav() {
             <LanguageSwitcher className="hidden md:inline-flex" />
             <a
               href={startFree}
-              className="hidden h-9 items-center rounded-(--radius) bg-ink px-4 text-sm font-semibold text-paper transition-transform hover:-translate-y-px md:inline-flex"
+              className="hidden h-9 items-center rounded-(--radius) bg-ink px-4 text-sm font-semibold text-paper transition-transform hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper md:inline-flex"
             >
               {t("start_free")}
             </a>
@@ -103,7 +103,7 @@ export function SiteNav() {
               aria-label={menuButtonLabel}
               aria-expanded={open}
               aria-controls="mobile-navigation"
-              className="inline-flex size-9 items-center justify-center rounded-(--radius) border border-ink/12 text-ink md:hidden"
+              className="inline-flex size-9 items-center justify-center rounded-(--radius) border border-ink/12 text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper md:hidden"
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
@@ -128,7 +128,7 @@ export function SiteNav() {
                     key={href}
                     href={href}
                     onClick={close}
-                    className="flex items-start gap-3 rounded-xl border border-ink/10 p-3 transition-colors hover:border-ink/25"
+                    className="flex items-start gap-3 rounded-xl border border-ink/10 p-3 transition-colors hover:border-ink/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
                   >
                     <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
                       <Icon className="size-4" strokeWidth={2} />
@@ -147,7 +147,7 @@ export function SiteNav() {
                   key={link.href}
                   href={link.href}
                   onClick={close}
-                  className="py-2 text-sm font-medium text-ink/70 transition-colors hover:text-ink"
+                  className="rounded-(--radius) py-2 text-sm font-medium text-ink/70 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
                 >
                   {link.label}
                 </Link>
@@ -164,7 +164,7 @@ export function SiteNav() {
             <a
               href={startFree}
               onClick={close}
-              className="flex h-11 items-center justify-center rounded-(--radius) bg-ink text-sm font-semibold text-paper"
+              className="flex h-11 items-center justify-center rounded-(--radius) bg-ink text-sm font-semibold text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
             >
               {t("start_free")}
             </a>

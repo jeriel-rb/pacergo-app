@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 
 const STATUS_STYLE: Record<BookingStatus, string> = {
   requested: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  pending_payment: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  payment_processing: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  payment_failed: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
   accepted: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
   completed: "bg-primary/15 text-primary",
   declined: "bg-muted text-muted-foreground",

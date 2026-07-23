@@ -12,9 +12,11 @@ const PUBLIC_PATHS = [
   "/sign-in",
   "/sign-up",
   "/auth/callback",
+  "/auth/recovery",
   "/verify",
   "/verify-pending",
   "/forgot-password",
+  "/new-password",
 ];
 const AUTH_ENTRY_PATHS = ["/sign-in", "/sign-up", "/forgot-password"];
 

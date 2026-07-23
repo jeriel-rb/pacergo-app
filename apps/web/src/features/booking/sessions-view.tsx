@@ -29,7 +29,11 @@ export function SessionsView({
   const groups = [
     {
       key: "requests",
-      items: bookings.filter((b) => b.status === "requested"),
+      items: bookings.filter((b) =>
+        ["requested", "pending_payment", "payment_processing", "payment_failed"].includes(
+          b.status,
+        ),
+      ),
     },
     { key: "upcoming", items: bookings.filter((b) => b.status === "accepted") },
     { key: "past", items: bookings.filter((b) => PAST.includes(b.status)) },

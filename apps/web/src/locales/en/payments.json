@@ -1,0 +1,83 @@
+{
+  "unknown": "Unknown",
+  "flexible": "Time to be confirmed",
+  "paySecurely": "Pay securely",
+  "starting": "Starting payment...",
+  "redirecting": "Redirecting to secure payment...",
+  "manualContinue": "If the secure payment page does not open, press the button again.",
+  "refreshStatus": "Refresh status",
+  "viewBooking": "View booking",
+  "returnToBookings": "Return to bookings",
+  "review": {
+    "title": "Review payment",
+    "notice": "Confirm your booking and total before going to NewebPay.",
+    "partner": "Partner",
+    "service": "Service",
+    "time": "Time",
+    "duration": "Duration",
+    "location": "Location",
+    "total": "Total",
+    "paymentNotice": "You will pay on NewebPay's secure hosted page. PacerGo will confirm the transaction with the payment provider before marking the booking paid."
+  },
+  "result": {
+    "processing": {
+      "title": "Confirming your payment",
+      "body": "We're confirming the transaction with the payment provider."
+    },
+    "pending": {
+      "title": "Payment pending",
+      "body": "Follow the payment instructions and return here to check the latest status."
+    },
+    "paid": {
+      "title": "Payment successful",
+      "body": "Your booking payment has been verified."
+    },
+    "failed": {
+      "title": "Payment was not completed",
+      "body": "The payment provider did not confirm this transaction as paid."
+    },
+    "cancelled": {
+      "title": "Payment was cancelled",
+      "body": "This payment attempt did not complete."
+    },
+    "expired": {
+      "title": "Payment expired",
+      "body": "The payment deadline for this attempt has passed."
+    },
+    "unknown": {
+      "title": "Payment status unavailable",
+      "body": "We could not find a payment that belongs to your account."
+    },
+    "booking": "Booking",
+    "amount": "Paid amount",
+    "reference": "Payment reference",
+    "providerReference": "Provider reference",
+    "paymentDate": "Payment date"
+  },
+  "instructions": {
+    "title": "Payment instructions",
+    "Amt": "Amount",
+    "BankCode": "Bank code",
+    "CodeNo": "Payment code",
+    "ExpireDate": "Deadline date",
+    "ExpireTime": "Deadline time",
+    "PaymentMethod": "Payment method",
+    "PaymentType": "Payment type",
+    "Barcode_1": "Barcode 1",
+    "Barcode_2": "Barcode 2",
+    "Barcode_3": "Barcode 3"
+  },
+  "errors": {
+    "payment_booking_not_found": "This booking is unavailable.",
+    "payment_booking_not_owned": "You can only pay for your own booking.",
+    "payment_booking_not_payable": "This booking is not payable.",
+    "payment_already_paid": "This booking has already been paid.",
+    "payment_attempt_in_progress": "A payment attempt is already in progress.",
+    "payment_configuration_missing": "Payment configuration is unavailable.",
+    "payment_configuration_invalid": "Payment configuration is unavailable.",
+    "payment_invalid_amount": "The payment amount is unavailable.",
+    "payment_request_failed": "Unable to start payment. Please try again.",
+    "payment_gateway_unavailable": "The payment gateway is unavailable.",
+    "payment_invalid_response": "The payment response could not be verified."
+  }
+}

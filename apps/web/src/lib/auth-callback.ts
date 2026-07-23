@@ -31,20 +31,49 @@ export function isSupportedOtpType(type: string | null): type is EmailOtpType {
   return Boolean(type && SUPPORTED_OTP_TYPES.has(type as EmailOtpType));
 }
 
+export function isRecoveryAuthRequest(searchParams: URLSearchParams): boolean {
+  return (
+    searchParams.get("type") === "recovery" ||
+    searchParams.get("flow") === "recovery"
+  );
+}
+
 export function safeHomePath(locale: string): string {
   return getLocalizedPath("/", normalizeLocale(locale));
 }
 
 export function getTrustedAppOrigin(fallbackOrigin?: string): string | null {
-  const candidate = APP_URL || fallbackOrigin || "";
+  const configuredOrigin = normalizeAppOrigin(APP_URL);
+  if (configuredOrigin && !isSupabaseProjectOrigin(configuredOrigin)) {
+    return configuredOrigin;
+  }
+  return normalizeAppOrigin(fallbackOrigin);
+}
+
+export function normalizeAppOrigin(
+  value: string | null | undefined,
+): string | null {
+  const candidate = value?.trim() ?? "";
   if (!candidate) return null;
 
+  const candidateWithProtocol = /^[a-z][a-z\d+\-.]*:\/\//i.test(candidate)
+    ? candidate
+    : `http://${candidate}`;
+
   try {
-    const url = new URL(candidate);
+    const url = new URL(candidateWithProtocol);
     if (url.protocol !== "https:" && url.protocol !== "http:") return null;
     return url.origin;
   } catch {
     return null;
+  }
+}
+
+function isSupabaseProjectOrigin(origin: string): boolean {
+  try {
+    return new URL(origin).hostname.endsWith(".supabase.co");
+  } catch {
+    return false;
   }
 }
 
@@ -89,6 +118,12 @@ export function sanitizeInternalRedirect(
     return fallback;
   }
   if (stripped === "/verify" || stripped.startsWith("/verify/")) {
+    return fallback;
+  }
+  if (stripped === "/auth/recovery" || stripped.startsWith("/auth/recovery/")) {
+    return fallback;
+  }
+  if (stripped === "/new-password" || stripped.startsWith("/new-password/")) {
     return fallback;
   }
 

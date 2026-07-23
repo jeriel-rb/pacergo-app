@@ -17,6 +17,7 @@ export type AuthErrorCode =
   | "auth_email_not_verified"
   | "auth_rate_limited"
   | "auth_account_exists_or_unverified"
+  | "auth_service_unavailable"
   | "auth_network_error"
   | "auth_unknown";
 
@@ -85,6 +86,30 @@ export function firstInvalidAuthField(errors: FieldErrors): AuthFormField | null
   if (errors.password) return "password";
   if (errors.confirmPassword) return "confirmPassword";
   return null;
+}
+
+export function validatePasswordUpdateFields({
+  password,
+  confirmPassword,
+}: {
+  password: string;
+  confirmPassword: string;
+}): FieldErrors {
+  const errors: FieldErrors = {};
+
+  if (!password) {
+    errors.password = "field_password_required";
+  } else if (password.length < MIN_PASSWORD_LENGTH) {
+    errors.password = "field_password_too_short";
+  }
+
+  if (!confirmPassword) {
+    errors.confirmPassword = "field_confirm_password_required";
+  } else if (password && confirmPassword !== password) {
+    errors.confirmPassword = "field_password_mismatch";
+  }
+
+  return errors;
 }
 
 export function mapAuthError(error: unknown): AuthErrorCode {

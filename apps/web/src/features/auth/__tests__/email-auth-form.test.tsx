@@ -35,6 +35,13 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
+vi.mock("@/lib/supabase/env", () => ({
+  APP_URL: "",
+  SUPABASE_CONFIGURED: true,
+  SUPABASE_KEY: "test-key",
+  SUPABASE_URL: "https://project-ref.supabase.co",
+}));
+
 describe("EmailAuthForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();

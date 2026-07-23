@@ -8,6 +8,7 @@ import { Loader2, MailCheck } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { buildAuthCallbackUrl, getTrustedAppOrigin } from "@/lib/auth-callback";
 import {
@@ -89,13 +90,19 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     setLoading(true);
 
     const normalizedEmail = normalizeEmail(email);
-    const supabase = createSupabaseBrowserClient();
     const home = getLocalizedPath("/", locale);
     const appOrigin = getTrustedAppOrigin(
       typeof window !== "undefined" ? window.location.origin : undefined,
     );
 
     try {
+      if (!SUPABASE_CONFIGURED) {
+        setFormError("auth_service_unavailable");
+        return;
+      }
+
+      const supabase = createSupabaseBrowserClient();
+
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({
           email: normalizedEmail,

@@ -37,7 +37,10 @@ export async function getRecommendedTrainers(opts?: {
   const { data, error } = await getSupabase().rpc("recommended_companions", {
     p_activity: opts?.activity ?? null,
   });
-  if (error) throw error;
+  if (error) {
+    console.warn(safeTrainerQueryLog("recommended_companions", error));
+    return fallbackRecommendedTrainers(opts?.activity);
+  }
   return (data ?? []) as TrainerSummary[];
 }
 
@@ -52,6 +55,28 @@ export async function getTrainerById(
   const { data, error } = await getSupabase().rpc("companion_profile", {
     p_id: id,
   });
-  if (error) throw error;
+  if (error) {
+    console.warn(safeTrainerQueryLog("companion_profile", error));
+    return MOCK_TRAINERS.find((t) => t.id === id) ?? null;
+  }
   return (data ?? null) as TrainerProfile | null;
+}
+
+function fallbackRecommendedTrainers(activity?: ActivitySlug): TrainerSummary[] {
+  const feed = RECOMMENDED_IDS.map(
+    (id) => MOCK_TRAINERS.find((t) => t.id === id)!,
+  ).map(toSummary);
+  return activity ? feed.filter((t) => t.activities.includes(activity)) : feed;
+}
+
+function safeTrainerQueryLog(
+  rpc: "recommended_companions" | "companion_profile",
+  error: { code?: string; hint?: string | null },
+) {
+  return {
+    event: "trainer_query_failed",
+    rpc,
+    provider_error_code: error.code ?? null,
+    has_hint: Boolean(error.hint),
+  };
 }

@@ -2,12 +2,24 @@ import { describe, expect, it } from "vitest";
 import type { AuthError } from "@supabase/supabase-js";
 import {
   buildAuthCallbackUrl,
+  isRecoveryAuthRequest,
   isSupportedOtpType,
   mapAuthCallbackError,
+  normalizeAppOrigin,
   sanitizeInternalRedirect,
 } from "../auth-callback";
 
 describe("auth callback redirect safety", () => {
+  it("normalizes configured app origins", () => {
+    expect(normalizeAppOrigin("app.pacergo.app")).toBe(
+      "http://app.pacergo.app",
+    );
+    expect(normalizeAppOrigin("http://app.pacergo.app/path")).toBe(
+      "http://app.pacergo.app",
+    );
+    expect(normalizeAppOrigin("javascript:alert(1)")).toBeNull();
+  });
+
   it("accepts a valid relative redirect", () => {
     expect(sanitizeInternalRedirect("/", "zh")).toBe("/");
     expect(sanitizeInternalRedirect("/en/profile", "en")).toBe("/en/profile");
@@ -21,6 +33,8 @@ describe("auth callback redirect safety", () => {
   it("rejects callback/result loops and malformed locale duplication", () => {
     expect(sanitizeInternalRedirect("/auth/callback?code=abc", "zh")).toBe("/");
     expect(sanitizeInternalRedirect("/verify?status=success", "zh")).toBe("/");
+    expect(sanitizeInternalRedirect("/auth/recovery?code=abc", "zh")).toBe("/");
+    expect(sanitizeInternalRedirect("/new-password", "zh")).toBe("/");
     expect(sanitizeInternalRedirect("/en/en/profile", "en")).toBe("/en");
   });
 
@@ -40,6 +54,12 @@ describe("auth callback verification format", () => {
     expect(isSupportedOtpType("signup")).toBe(true);
     expect(isSupportedOtpType("email_change")).toBe(true);
     expect(isSupportedOtpType("not-real")).toBe(false);
+  });
+
+  it("detects password recovery callback markers", () => {
+    expect(isRecoveryAuthRequest(new URLSearchParams("flow=recovery"))).toBe(true);
+    expect(isRecoveryAuthRequest(new URLSearchParams("type=recovery"))).toBe(true);
+    expect(isRecoveryAuthRequest(new URLSearchParams("type=signup"))).toBe(false);
   });
 });
 

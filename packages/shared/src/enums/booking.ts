@@ -1,5 +1,8 @@
 export type BookingStatus =
   | 'requested'
+  | 'pending_payment'
+  | 'payment_processing'
+  | 'payment_failed'
   | 'accepted'
   | 'declined'
   | 'cancelled'
@@ -8,6 +11,9 @@ export type BookingStatus =
 
 export const BOOKING_STATUSES: readonly BookingStatus[] = [
   'requested',
+  'pending_payment',
+  'payment_processing',
+  'payment_failed',
   'accepted',
   'declined',
   'cancelled',

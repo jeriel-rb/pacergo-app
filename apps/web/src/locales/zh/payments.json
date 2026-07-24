@@ -1,0 +1,85 @@
+{
+  "unknown": "未知",
+  "flexible": "時間待確認",
+  "paySecurely": "安全付款",
+  "starting": "正在建立付款...",
+  "redirecting": "正在前往安全付款頁面...",
+  "manualContinue": "若付款頁面沒有自動開啟，請再按一次按鈕。",
+  "refreshStatus": "刷新狀態",
+  "viewBooking": "查看預約",
+  "returnToBookings": "返回預約列表",
+  "review": {
+    "title": "確認付款",
+    "notice": "前往藍新金流前，請確認預約內容與金額。",
+    "partner": "陪練師",
+    "service": "服務",
+    "time": "時間",
+    "duration": "時長",
+    "location": "地點",
+    "total": "總計",
+    "paymentNotice": "你將在藍新金流的安全付款頁面完成付款。PacerGo 會向付款服務確認交易狀態後，才會將預約標記為已付款。"
+  },
+  "result": {
+    "processing": {
+      "title": "正在確認付款結果",
+      "body": "我們正在向付款服務確認交易狀態，請稍候。"
+    },
+    "pending": {
+      "title": "付款待完成",
+      "body": "請依付款指示完成繳費，之後可回到此頁查看最新狀態。"
+    },
+    "paid": {
+      "title": "付款成功",
+      "body": "你的預約付款已完成驗證。"
+    },
+    "failed": {
+      "title": "付款未完成",
+      "body": "付款服務未確認這筆交易已付款。"
+    },
+    "cancelled": {
+      "title": "付款已取消",
+      "body": "這筆付款嘗試未完成。"
+    },
+    "expired": {
+      "title": "付款已逾期",
+      "body": "這筆付款嘗試的繳費期限已過。"
+    },
+    "unknown": {
+      "title": "無法取得付款狀態",
+      "body": "找不到屬於你帳號的付款紀錄。"
+    },
+    "booking": "預約",
+    "amount": "付款金額",
+    "reference": "付款編號",
+    "providerReference": "金流交易編號",
+    "paymentDate": "付款時間"
+  },
+  "instructions": {
+    "title": "付款指示",
+    "Amt": "金額",
+    "BankCode": "銀行代碼",
+    "CodeNo": "繳費代碼",
+    "ExpireDate": "繳費期限日期",
+    "ExpireTime": "繳費期限時間",
+    "PaymentMethod": "付款方式",
+    "PaymentType": "付款類型",
+    "Barcode_1": "條碼 1",
+    "Barcode_2": "條碼 2",
+    "Barcode_3": "條碼 3"
+  },
+  "errors": {
+    "payment_booking_not_found": "找不到這筆預約。",
+    "payment_booking_not_owned": "你只能為自己的預約付款。",
+    "payment_booking_not_payable": "這筆預約目前不能付款。",
+    "payment_already_paid": "這筆預約已付款。",
+    "payment_attempt_in_progress": "已有一筆付款正在處理中。",
+    "payment_configuration_missing": "付款設定暫時不可用。",
+    "payment_configuration_invalid": "付款設定暫時不可用。",
+    "payment_invalid_amount": "無法確認付款金額。",
+    "payment_request_failed": "無法建立付款，請稍後再試。",
+    "payment_gateway_unavailable": "付款閘道暫時不可用。",
+    "payment_invalid_response": "無法驗證付款回應。",
+    "payment_redirect_not_allowed": "這筆付款嘗試目前無法再次前往付款頁。",
+    "payment_migrations_missing": "付款設定尚未完成，請套用最新資料庫 migration。"
+  }
+}

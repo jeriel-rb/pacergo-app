@@ -11,6 +11,9 @@
   },
   "status": {
     "requested": "Pending",
+    "pending_payment": "Pending payment",
+    "payment_processing": "Payment processing",
+    "payment_failed": "Payment failed",
     "accepted": "Confirmed",
     "declined": "Declined",
     "cancelled": "Cancelled",
@@ -33,7 +36,9 @@
     "accept": "Accept",
     "decline": "Decline",
     "cancel": "Cancel",
-    "complete": "Mark complete"
+    "complete": "Mark complete",
+    "pay": "Pay securely",
+    "viewPayment": "View payment"
   },
   "book": {
     "title": "Book a session",

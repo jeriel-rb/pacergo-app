@@ -8,6 +8,7 @@ import {
   Clock,
   MapPin,
   Dumbbell,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -120,6 +121,30 @@ export function BookingDetailView({
       </Card>
 
       <BookingActionsBar booking={booking} currentUserId={currentUserId} />
+
+      {currentUserId === booking.seeker_id &&
+        !booking.is_free &&
+        booking.agreed_price > 0 &&
+        [
+          "requested",
+          "pending_payment",
+          "payment_processing",
+          "payment_failed",
+          "accepted",
+        ].includes(booking.status) && (
+          <Link
+            href={getLocalizedPath(
+              `/payments/newebpay/review?booking=${booking.id}`,
+              locale,
+            )}
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <CreditCard size={16} />
+            {booking.status === "payment_processing"
+              ? t("actions.viewPayment")
+              : t("actions.pay")}
+          </Link>
+        )}
 
       <MessageButton otherId={otherId} className="w-full" />
 

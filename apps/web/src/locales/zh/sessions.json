@@ -11,6 +11,9 @@
   },
   "status": {
     "requested": "待確認",
+    "pending_payment": "待付款",
+    "payment_processing": "付款確認中",
+    "payment_failed": "付款未完成",
     "accepted": "已確認",
     "declined": "已婉拒",
     "cancelled": "已取消",
@@ -33,7 +36,9 @@
     "accept": "接受",
     "decline": "婉拒",
     "cancel": "取消預約",
-    "complete": "標記完成"
+    "complete": "標記完成",
+    "pay": "安全付款",
+    "viewPayment": "查看付款"
   },
   "book": {
     "title": "預約訓練",

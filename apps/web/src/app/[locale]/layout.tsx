@@ -19,6 +19,7 @@ const NAMESPACES = [
   "studio",
   "admin",
   "support",
+  "payments",
 ];
 
 type LocaleParams = { params: Promise<{ locale: string }> };

@@ -21,8 +21,8 @@ export function AuthCard({ mode }: { mode: "sign-in" | "sign-up" }) {
   );
 
   return (
-    <div className="w-full max-w-sm">
-      <div className="mb-8 flex items-center justify-end gap-1">
+    <div className="w-full max-w-[25rem]">
+      <div className="mb-7 flex items-center justify-end gap-1">
         <ThemeToggle />
         <LanguageSwitcher className="ml-1" />
       </div>
@@ -31,21 +31,29 @@ export function AuthCard({ mode }: { mode: "sign-in" | "sign-up" }) {
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground">
           P
         </span>
-        <h1 className="mt-4 text-2xl font-bold">
+        <p className="mt-3 text-xs font-semibold uppercase text-primary">
+          {t("brand")}
+        </p>
+        <h1 className="mt-2 text-2xl font-bold">
           {isSignIn ? t("signInTitle") : t("signUpTitle")}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm font-medium text-foreground">
+          {t("promise")}
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {isSignIn ? t("signInSubtitle") : t("signUpSubtitle")}
         </p>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-7">
         <EmailAuthForm mode={mode} />
       </div>
 
-      <p className="mx-auto mt-6 max-w-xs text-center text-xs leading-relaxed text-muted-foreground">
-        {t("terms")}
-      </p>
+      {!isSignIn && (
+        <p className="mx-auto mt-5 max-w-xs text-center text-xs leading-relaxed text-muted-foreground">
+          {t("terms")}
+        </p>
+      )}
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {isSignIn ? t("noAccount") : t("haveAccount")}{" "}

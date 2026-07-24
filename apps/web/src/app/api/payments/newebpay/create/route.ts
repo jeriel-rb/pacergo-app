@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   buildPaymentForm,
@@ -61,13 +62,21 @@ export async function POST(request: Request) {
     const { error: redirectError } = await supabase.rpc("mark_newebpay_payment_redirected", {
       p_payment_id: attempt.id,
     });
-    if (redirectError) return error("payment_request_failed", 409);
+    if (redirectError) return error(mapDatabaseError(redirectError.message), 409);
 
     console.info("newebpay_redirect_generated", {
       paymentId: attempt.id,
       merchantOrderNo: attempt.merchant_order_no,
       amount: attempt.amount,
       environment: config.env,
+      gateway: form.action,
+      version: form.fields.Version,
+      encryptType: form.fields.EncryptType ?? "missing",
+      merchantId: config.merchantId,
+      hashKeyFingerprint: fingerprint(config.hashKey),
+      hashIvFingerprint: fingerprint(config.hashIv),
+      tradeInfoLength: form.fields.TradeInfo.length,
+      tradeShaPrefix: form.fields.TradeSha.slice(0, 8),
     });
 
     return NextResponse.json({
@@ -81,6 +90,9 @@ export async function POST(request: Request) {
     if (err instanceof NewebPayConfigurationError) {
       return error(err.message, 503);
     }
+    console.warn("newebpay_create_failed", {
+      error: err instanceof Error ? mapDatabaseError(err.message) : "payment_request_failed",
+    });
     return error("payment_request_failed", 500);
   }
 }
@@ -89,7 +101,8 @@ async function loadPaymentReview(
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   bookingId: string,
 ) {
-  const { data } = await supabase.rpc("payment_review", { p_booking_id: bookingId });
+  const { data, error } = await supabase.rpc("payment_review", { p_booking_id: bookingId });
+  if (error) throw new Error(error.message);
   return data as
     | {
         id: string;
@@ -107,12 +120,26 @@ function mapDatabaseError(message: string) {
     "payment_booking_not_payable",
     "payment_already_paid",
     "payment_attempt_in_progress",
+    "payment_redirect_not_allowed",
     "payment_invalid_amount",
     "payment_amount_mismatch",
   ];
-  return known.find((code) => message.includes(code)) ?? "payment_request_failed";
+  const matched = known.find((code) => message.includes(code));
+  if (matched) return matched;
+  if (
+    message.includes("Could not find the function") ||
+    message.includes("function") ||
+    message.includes("schema cache")
+  ) {
+    return "payment_migrations_missing";
+  }
+  return "payment_request_failed";
 }
 
 function error(code: string, status: number) {
   return NextResponse.json({ error: code }, { status });
+}
+
+function fingerprint(value: string) {
+  return crypto.createHash("sha256").update(value).digest("hex").slice(0, 10);
 }

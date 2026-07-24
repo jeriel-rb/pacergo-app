@@ -73,6 +73,8 @@
     "payment_booking_not_payable": "This booking is not payable.",
     "payment_already_paid": "This booking has already been paid.",
     "payment_attempt_in_progress": "A payment attempt is already in progress.",
+    "payment_redirect_not_allowed": "This payment attempt cannot be redirected again yet.",
+    "payment_migrations_missing": "Payment setup is incomplete. Please apply the latest database migrations.",
     "payment_configuration_missing": "Payment configuration is unavailable.",
     "payment_configuration_invalid": "Payment configuration is unavailable.",
     "payment_invalid_amount": "The payment amount is unavailable.",

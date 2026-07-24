@@ -37,7 +37,8 @@
     "decline": "婉拒",
     "cancel": "取消預約",
     "complete": "標記完成",
-    "pay": "安全付款"
+    "pay": "安全付款",
+    "viewPayment": "查看付款"
   },
   "book": {
     "title": "預約訓練",

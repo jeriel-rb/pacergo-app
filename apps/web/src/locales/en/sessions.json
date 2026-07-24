@@ -37,7 +37,8 @@
     "decline": "Decline",
     "cancel": "Cancel",
     "complete": "Mark complete",
-    "pay": "Pay securely"
+    "pay": "Pay securely",
+    "viewPayment": "View payment"
   },
   "book": {
     "title": "Book a session",

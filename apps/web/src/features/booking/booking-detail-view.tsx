@@ -125,9 +125,13 @@ export function BookingDetailView({
       {currentUserId === booking.seeker_id &&
         !booking.is_free &&
         booking.agreed_price > 0 &&
-        ["requested", "pending_payment", "payment_failed", "accepted"].includes(
-          booking.status,
-        ) && (
+        [
+          "requested",
+          "pending_payment",
+          "payment_processing",
+          "payment_failed",
+          "accepted",
+        ].includes(booking.status) && (
           <Link
             href={getLocalizedPath(
               `/payments/newebpay/review?booking=${booking.id}`,
@@ -136,7 +140,9 @@ export function BookingDetailView({
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <CreditCard size={16} />
-            {t("actions.pay")}
+            {booking.status === "payment_processing"
+              ? t("actions.viewPayment")
+              : t("actions.pay")}
           </Link>
         )}
 

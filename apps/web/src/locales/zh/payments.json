@@ -78,6 +78,8 @@
     "payment_invalid_amount": "無法確認付款金額。",
     "payment_request_failed": "無法建立付款，請稍後再試。",
     "payment_gateway_unavailable": "付款閘道暫時不可用。",
-    "payment_invalid_response": "無法驗證付款回應。"
+    "payment_invalid_response": "無法驗證付款回應。",
+    "payment_redirect_not_allowed": "這筆付款嘗試目前無法再次前往付款頁。",
+    "payment_migrations_missing": "付款設定尚未完成，請套用最新資料庫 migration。"
   }
 }

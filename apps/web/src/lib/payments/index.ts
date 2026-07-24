@@ -81,6 +81,12 @@ export function isBookingPayable(booking: Pick<BookingRecord, "status" | "is_fre
   return (
     !booking.is_free &&
     booking.agreed_price > 0 &&
-    ["requested", "pending_payment", "payment_failed", "accepted"].includes(booking.status)
+    [
+      "requested",
+      "pending_payment",
+      "payment_processing",
+      "payment_failed",
+      "accepted",
+    ].includes(booking.status)
   );
 }

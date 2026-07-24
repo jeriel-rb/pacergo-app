@@ -21,12 +21,7 @@ export interface NewebPayConfig {
 
 export interface NewebPayForm {
   action: string;
-  fields: {
-    MerchantID: string;
-    TradeInfo: string;
-    TradeSha: string;
-    Version: string;
-  };
+  fields: Record<string, string>;
 }
 
 export interface ParsedNewebPayCallback {
@@ -82,9 +77,9 @@ export function getNewebPayConfig(): NewebPayConfig {
   }
 
   const merchantId = process.env.NEWEBPAY_MERCHANT_ID ?? "";
-  const hashKey = process.env.NEWEBPAY_HASH_KEY ?? "";
-  const hashIv = process.env.NEWEBPAY_HASH_IV ?? "";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const hashKey = (process.env.NEWEBPAY_HASH_KEY ?? "").trim();
+  const hashIv = (process.env.NEWEBPAY_HASH_IV ?? "").trim();
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").trim();
 
   if (!merchantId || !hashKey || !hashIv || !appUrl) {
     throw new NewebPayConfigurationError();
@@ -214,6 +209,7 @@ export function buildPaymentForm(input: {
       TradeInfo: tradeInfo,
       TradeSha: createTradeSha(tradeInfo, input.config.hashKey, input.config.hashIv),
       Version: NEWEBPAY_VERSION,
+      EncryptType: "0",
     },
   };
 }

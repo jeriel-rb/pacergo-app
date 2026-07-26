@@ -44,7 +44,7 @@ export function safeHomePath(locale: string): string {
 
 export function getTrustedAppOrigin(fallbackOrigin?: string): string | null {
   const fallback = normalizeAppOrigin(fallbackOrigin);
-  if (fallback && isLocalAppOrigin(fallback)) {
+  if (fallback && !isSupabaseProjectOrigin(fallback)) {
     return fallback;
   }
 

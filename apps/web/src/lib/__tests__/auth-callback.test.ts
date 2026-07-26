@@ -55,6 +55,12 @@ describe("auth callback redirect safety", () => {
       "http://localhost:3000",
     );
   });
+
+  it("uses the current app origin for auth email redirects", () => {
+    expect(getTrustedAppOrigin("https://pacergo-preview.vercel.app")).toBe(
+      "https://pacergo-preview.vercel.app",
+    );
+  });
 });
 
 describe("auth callback verification format", () => {

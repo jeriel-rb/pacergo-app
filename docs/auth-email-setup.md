@@ -25,10 +25,10 @@ In Supabase Dashboard > Authentication > URL Configuration:
 
 ```text
 Site URL:
-http://app.pacergo.app
+https://app.pacergo.app
 
 Redirect URLs:
-http://app.pacergo.app/**
+https://app.pacergo.app/**
 ```
 
 For local development only:
@@ -37,7 +37,8 @@ For local development only:
 http://localhost:3000/**
 ```
 
-Do not use a bare domain like `app.pacergo.app`. It must include `http://` or `https://`.
+Do not use a bare domain like `app.pacergo.app`. It must include `https://`
+for production, or `http://` for local development.
 
 Do not use Supabase API URLs as the app URL:
 

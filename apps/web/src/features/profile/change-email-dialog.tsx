@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import {
@@ -14,6 +15,8 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { buildAuthCallbackUrl, getTrustedAppOrigin } from "@/lib/auth-callback";
+import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { changeEmail } from "./profile-actions";
 
 export function ChangeEmailDialog({
@@ -28,6 +31,8 @@ export function ChangeEmailDialog({
   onSuccess: (message: string) => void;
 }) {
   const { t } = useTranslation("profile");
+  const pathname = usePathname();
+  const locale = getCurrentLocale(pathname);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +53,16 @@ export function ChangeEmailDialog({
     setError(null);
     setLoading(true);
     try {
-      const redirectTo =
-        typeof window !== "undefined" ? window.location.origin : undefined;
+      const origin = getTrustedAppOrigin(
+        typeof window !== "undefined" ? window.location.origin : undefined,
+      );
+      const redirectTo = origin
+        ? buildAuthCallbackUrl({
+            origin,
+            locale,
+            next: getLocalizedPath("/profile", locale),
+          })
+        : undefined;
       await changeEmail(email.trim(), redirectTo);
       setLoading(false);
       reset();

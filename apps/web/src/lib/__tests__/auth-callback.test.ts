@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AuthError } from "@supabase/supabase-js";
 import {
   buildAuthCallbackUrl,
+  getTrustedAppOrigin,
   isRecoveryAuthRequest,
   isSupportedOtpType,
   mapAuthCallbackError,
@@ -12,8 +13,9 @@ import {
 describe("auth callback redirect safety", () => {
   it("normalizes configured app origins", () => {
     expect(normalizeAppOrigin("app.pacergo.app")).toBe(
-      "http://app.pacergo.app",
+      "https://app.pacergo.app",
     );
+    expect(normalizeAppOrigin("localhost:3000")).toBe("http://localhost:3000");
     expect(normalizeAppOrigin("http://app.pacergo.app/path")).toBe(
       "http://app.pacergo.app",
     );
@@ -46,6 +48,12 @@ describe("auth callback redirect safety", () => {
         next: "https://malicious.example",
       }),
     ).toBe("https://app.pacergo.app/en/auth/callback?next=%2Fen");
+  });
+
+  it("prefers localhost while testing locally", () => {
+    expect(getTrustedAppOrigin("http://localhost:3000")).toBe(
+      "http://localhost:3000",
+    );
   });
 });
 

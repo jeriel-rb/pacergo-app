@@ -43,11 +43,16 @@ export function safeHomePath(locale: string): string {
 }
 
 export function getTrustedAppOrigin(fallbackOrigin?: string): string | null {
+  const fallback = normalizeAppOrigin(fallbackOrigin);
+  if (fallback && isLocalAppOrigin(fallback)) {
+    return fallback;
+  }
+
   const configuredOrigin = normalizeAppOrigin(APP_URL);
   if (configuredOrigin && !isSupabaseProjectOrigin(configuredOrigin)) {
     return configuredOrigin;
   }
-  return normalizeAppOrigin(fallbackOrigin);
+  return fallback;
 }
 
 export function normalizeAppOrigin(
@@ -56,9 +61,10 @@ export function normalizeAppOrigin(
   const candidate = value?.trim() ?? "";
   if (!candidate) return null;
 
-  const candidateWithProtocol = /^[a-z][a-z\d+\-.]*:\/\//i.test(candidate)
+  const hasProtocol = /^[a-z][a-z\d+\-.]*:\/\//i.test(candidate);
+  const candidateWithProtocol = hasProtocol
     ? candidate
-    : `http://${candidate}`;
+    : `${defaultProtocolForBareOrigin(candidate)}://${candidate}`;
 
   try {
     const url = new URL(candidateWithProtocol);
@@ -75,6 +81,24 @@ function isSupabaseProjectOrigin(origin: string): boolean {
   } catch {
     return false;
   }
+}
+
+function isLocalAppOrigin(origin: string): boolean {
+  try {
+    const hostname = new URL(origin).hostname;
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+  } catch {
+    return false;
+  }
+}
+
+function defaultProtocolForBareOrigin(candidate: string): "http" | "https" {
+  const host = candidate.split("/")[0]?.split("?")[0]?.split("#")[0] ?? "";
+  const hostname = host.split(":")[0]?.replace(/^\[|\]$/g, "") ?? "";
+  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1") {
+    return "http";
+  }
+  return "https";
 }
 
 export function buildAuthCallbackUrl({

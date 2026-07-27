@@ -1,28 +1,11 @@
 {
   "hero": {
     "eyebrow": "AI Training Plans × Real Workout Partners",
-    "headline": "AI Plans. We Train Together.",
+    "headline": "AI plans. We train together.",
     "sub": "From personalized training plans and partner matching to real workout execution, PacerGo helps every session feel clearer and easier to sustain.",
     "cta_primary": "Start Free",
     "cta_secondary": "See How It Works",
-    "trust": "Free to join. Explore first. Upgrade AI when you need it.",
-    "visual_label": "PacerGo Web App screenshots",
-    "visual_sequence": "AI Plan → Find Partner → Train",
-    "visual_note": "Approved product screenshots will be placed here.",
-    "visual_steps": [
-      {
-        "label": "AI Plan",
-        "caption": "Personalized training direction"
-      },
-      {
-        "label": "Find Partner",
-        "caption": "Real people to help you follow through"
-      },
-      {
-        "label": "Train",
-        "caption": "Session execution and progress"
-      }
-    ]
+    "trust": "Free to join. Explore first. Upgrade AI when you need it."
   },
   "activities_label": "Supported activities",
   "activities_more": "& more",

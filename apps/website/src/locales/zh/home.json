@@ -5,24 +5,7 @@
     "sub": "從個人化訓練計畫、陪練媒合到訓練執行，PacerGo 讓每一次訓練更有方向，也更容易持續。",
     "cta_primary": "免費開始",
     "cta_secondary": "看看怎麼運作",
-    "trust": "免費註冊・先探索再決定・需要時再升級 AI",
-    "visual_label": "PacerGo Web App 截圖",
-    "visual_sequence": "AI 計畫 → 尋找陪練 → 訓練",
-    "visual_note": "核准後的產品截圖會放在這裡。",
-    "visual_steps": [
-      {
-        "label": "AI 計畫",
-        "caption": "個人化訓練方向"
-      },
-      {
-        "label": "尋找陪練",
-        "caption": "真人陪你持續完成"
-      },
-      {
-        "label": "訓練",
-        "caption": "執行訓練並累積進度"
-      }
-    ]
+    "trust": "免費註冊・先探索再決定・需要時再升級 AI"
   },
   "activities_label": "支援的運動項目",
   "activities_more": "還有更多",

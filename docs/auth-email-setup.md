@@ -35,6 +35,7 @@ For local development only:
 
 ```text
 http://localhost:3000/**
+http://127.0.0.1:3000/**
 ```
 
 Do not use a bare domain like `app.pacergo.app`. It must include `https://`
@@ -89,6 +90,14 @@ Use the `token_hash` link above instead of `{{ .ConfirmationURL }}`. The app's
 password reset route supports `token_hash` directly, which avoids browser-specific
 PKCE verifier issues when a reset email is opened from a mail app, another
 browser, or a preview URL.
+
+The same template works for localhost. When you request the reset from
+`http://localhost:3000`, `{{ .RedirectTo }}` becomes the local recovery callback,
+for example:
+
+```text
+http://localhost:3000/en/auth/recovery?flow=recovery&token_hash=TOKEN&type=recovery
+```
 
 ## Testing
 

@@ -18,6 +18,15 @@ describe("password reset callback URLs", () => {
     ).toBe("https://app.pacergo.app/en/auth/recovery?flow=recovery");
   });
 
+  it("builds a localhost recovery callback URL", () => {
+    expect(
+      buildPasswordRecoveryCallbackUrl({
+        origin: "http://localhost:3000",
+        locale: "en",
+      }),
+    ).toBe("http://localhost:3000/en/auth/recovery?flow=recovery");
+  });
+
   it("keeps password reset redirects fixed to sign-in", () => {
     expect(sanitizePasswordResetRedirect("/sign-in", "zh")).toBe("/sign-in");
     expect(sanitizePasswordResetRedirect("https://evil.example", "zh")).toBe(

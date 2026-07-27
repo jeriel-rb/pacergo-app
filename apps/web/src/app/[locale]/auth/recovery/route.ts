@@ -39,17 +39,65 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     });
   }
 
+  const result = await verifyRecoveryRequest({ code, tokenHash });
+  if (!result.success) {
+    return redirectToNewPassword(request, locale, { error: result.error });
+  }
+
+  return redirectToNewPassword(request, locale, { recoveryReady: true });
+}
+
+export async function POST(request: NextRequest, { params }: RouteContext) {
+  const { locale: routeLocale } = await params;
+  const locale = normalizeLocale(routeLocale);
+
+  let body: { tokenHash?: unknown; type?: unknown };
+  try {
+    body = (await request.json()) as { tokenHash?: unknown; type?: unknown };
+  } catch {
+    return passwordRecoveryJsonFailure("password_update_session_missing", 400);
+  }
+
+  const tokenHash = typeof body.tokenHash === "string" ? body.tokenHash : null;
+  const type = typeof body.type === "string" ? body.type : null;
+
+  if (!tokenHash) {
+    return passwordRecoveryJsonFailure("password_update_session_missing", 400);
+  }
+
+  if (!isSupportedOtpType(type) || type !== "recovery") {
+    return passwordRecoveryJsonFailure("password_update_link_invalid", 400);
+  }
+
+  const result = await verifyRecoveryRequest({ tokenHash });
+  if (!result.success) {
+    return passwordRecoveryJsonFailure(result.error, 400);
+  }
+
+  const response = NextResponse.json({
+    success: true,
+    redirectTo: safeNewPasswordPath(locale),
+  });
+  setRecoveryReadyCookie(response, request);
+  return response;
+}
+
+async function verifyRecoveryRequest({
+  code,
+  tokenHash,
+}: {
+  code?: string | null;
+  tokenHash?: string | null;
+}): Promise<
+  { success: true } | { success: false; error: PasswordUpdateErrorCode }
+> {
   try {
     const supabase = await createSupabaseServerClient();
 
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (error) {
-        const reason = mapPasswordRecoveryCallbackError(error);
-        console.warn(
-          passwordResetLogPayload("auth_password_recovery_failed", reason, error),
-        );
-        return redirectToNewPassword(request, locale, { error: reason });
+        return recoveryFailureFromProvider(error);
       }
     } else if (tokenHash) {
       const { error } = await supabase.auth.verifyOtp({
@@ -57,11 +105,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         type: "recovery",
       });
       if (error) {
-        const reason = mapPasswordRecoveryCallbackError(error);
-        console.warn(
-          passwordResetLogPayload("auth_password_recovery_failed", reason, error),
-        );
-        return redirectToNewPassword(request, locale, { error: reason });
+        return recoveryFailureFromProvider(error);
       }
     }
 
@@ -70,12 +114,10 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return redirectToNewPassword(request, locale, {
-        error: "password_update_session_missing",
-      });
+      return { success: false, error: "password_update_session_missing" };
     }
 
-    return redirectToNewPassword(request, locale, { recoveryReady: true });
+    return { success: true };
   } catch {
     console.warn(
       passwordResetLogPayload(
@@ -83,10 +125,35 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         "password_update_unknown",
       ),
     );
-    return redirectToNewPassword(request, locale, {
-      error: "password_update_unknown",
-    });
+    return { success: false, error: "password_update_unknown" };
   }
+}
+
+function recoveryFailureFromProvider(
+  error: Parameters<typeof mapPasswordRecoveryCallbackError>[0],
+) {
+  const reason = mapPasswordRecoveryCallbackError(error);
+  console.warn(
+    passwordResetLogPayload("auth_password_recovery_failed", reason, error),
+  );
+  return { success: false, error: reason } as const;
+}
+
+function passwordRecoveryJsonFailure(
+  error: PasswordUpdateErrorCode,
+  status: number,
+) {
+  return NextResponse.json({ success: false, error }, { status });
+}
+
+function setRecoveryReadyCookie(response: NextResponse, request: NextRequest) {
+  response.cookies.set(RECOVERY_SESSION_COOKIE, "1", {
+    httpOnly: true,
+    secure: request.nextUrl.protocol === "https:",
+    sameSite: "lax",
+    path: "/",
+    maxAge: RECOVERY_SESSION_MAX_AGE_SECONDS,
+  });
 }
 
 function providerErrorFromQuery(
@@ -116,13 +183,7 @@ function redirectToNewPassword(
 
   const response = NextResponse.redirect(url);
   if (params.recoveryReady) {
-    response.cookies.set(RECOVERY_SESSION_COOKIE, "1", {
-      httpOnly: true,
-      secure: request.nextUrl.protocol === "https:",
-      sameSite: "lax",
-      path: "/",
-      maxAge: RECOVERY_SESSION_MAX_AGE_SECONDS,
-    });
+    setRecoveryReadyCookie(response, request);
   }
 
   return response;

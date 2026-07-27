@@ -45,7 +45,7 @@ export function buildPasswordRecoveryCallbackUrl({
 }): string {
   const trustedOrigin = getTrustedAppOrigin(origin);
   const url = new URL(
-    getLocalizedPath("/auth/recovery", normalizeLocale(locale)),
+    getLocalizedPath("/auth/recovery/confirm", normalizeLocale(locale)),
     trustedOrigin ?? origin,
   );
   url.searchParams.set("flow", "recovery");

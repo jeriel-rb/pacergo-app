@@ -91,12 +91,15 @@ password reset route supports `token_hash` directly, which avoids browser-specif
 PKCE verifier issues when a reset email is opened from a mail app, another
 browser, or a preview URL.
 
+The reset link opens a confirmation page first. That protects the token from
+email security scanners that prefetch links before the user clicks them.
+
 The same template works for localhost. When you request the reset from
 `http://localhost:3000`, `{{ .RedirectTo }}` becomes the local recovery callback,
 for example:
 
 ```text
-http://localhost:3000/en/auth/recovery?flow=recovery&token_hash=TOKEN&type=recovery
+http://localhost:3000/en/auth/recovery/confirm?flow=recovery&token_hash=TOKEN&type=recovery
 ```
 
 ## Testing

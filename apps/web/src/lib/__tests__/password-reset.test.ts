@@ -15,7 +15,7 @@ describe("password reset callback URLs", () => {
         origin: "https://app.pacergo.app",
         locale: "en",
       }),
-    ).toBe("https://app.pacergo.app/en/auth/recovery?flow=recovery");
+    ).toBe("https://app.pacergo.app/en/auth/recovery/confirm?flow=recovery");
   });
 
   it("builds a localhost recovery callback URL", () => {
@@ -24,7 +24,7 @@ describe("password reset callback URLs", () => {
         origin: "http://localhost:3000",
         locale: "en",
       }),
-    ).toBe("http://localhost:3000/en/auth/recovery?flow=recovery");
+    ).toBe("http://localhost:3000/en/auth/recovery/confirm?flow=recovery");
   });
 
   it("keeps password reset redirects fixed to sign-in", () => {

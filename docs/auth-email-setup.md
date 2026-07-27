@@ -80,10 +80,15 @@ HTML:
 <h2>Reset your PacerGo password</h2>
 <p>Use the link below to choose a new password for your PacerGo account.</p>
 <p>
-  <a href="{{ .ConfirmationURL }}">Reset password</a>
+  <a href="{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=recovery">Reset password</a>
 </p>
 <p>If you did not request a password reset, you can ignore this email.</p>
 ```
+
+Use the `token_hash` link above instead of `{{ .ConfirmationURL }}`. The app's
+password reset route supports `token_hash` directly, which avoids browser-specific
+PKCE verifier issues when a reset email is opened from a mail app, another
+browser, or a preview URL.
 
 ## Testing
 

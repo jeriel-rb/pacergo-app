@@ -22,5 +22,8 @@ dist/
 # supabase CLI link state
 supabase/.temp/
 
+# local MCP server config (contains personal access tokens)
+.mcp.json
+
 # macOS
 .DS_Store

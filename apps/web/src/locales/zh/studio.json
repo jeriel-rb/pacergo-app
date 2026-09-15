@@ -28,7 +28,8 @@
     "bioPlaceholder": "你的專長、訓練風格、經歷…",
     "area": "服務區域",
     "areaPlaceholder": "例如：台北市信義區",
-    "status": "上架狀態"
+    "status": "上架狀態",
+    "conductRequired": "請先同意夥伴合作與行為準則，才能發佈您的第一筆刊登。"
   },
   "offerings": {
     "title": "方案與價格",

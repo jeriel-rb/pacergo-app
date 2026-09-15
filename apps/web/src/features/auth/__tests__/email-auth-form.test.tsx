@@ -91,4 +91,50 @@ describe("EmailAuthForm", () => {
       screen.queryByText(/Raw provider message/i),
     ).not.toBeInTheDocument();
   });
+
+  it("blocks sign-up when consent is not checked, even with valid fields", () => {
+    render(<EmailAuthForm mode="sign-up" />);
+
+    fireEvent.change(screen.getByLabelText("email"), {
+      target: { value: "runner@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("password"), {
+      target: { value: "secret1" },
+    });
+    fireEvent.change(screen.getByLabelText("confirmPassword"), {
+      target: { value: "secret1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "signUpCta" }));
+
+    expect(screen.getByText("errors.auth_consent_required")).toBeInTheDocument();
+    expect(signUp).not.toHaveBeenCalled();
+  });
+
+  it("allows sign-up once checked, passing consent versions as signUp metadata", async () => {
+    signUp.mockResolvedValueOnce({ data: { session: null }, error: null });
+
+    render(<EmailAuthForm mode="sign-up" />);
+
+    fireEvent.change(screen.getByLabelText("email"), {
+      target: { value: "runner@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("password"), {
+      target: { value: "secret1" },
+    });
+    fireEvent.change(screen.getByLabelText("confirmPassword"), {
+      target: { value: "secret1" },
+    });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "signUpCta" }));
+
+    await waitFor(() => {
+      expect(signUp).toHaveBeenCalled();
+    });
+    const call = signUp.mock.calls[0][0];
+    expect(call.options.data).toEqual({
+      consent_terms_of_service: expect.any(String),
+      consent_privacy_policy: expect.any(String),
+      consent_risk_disclosure: expect.any(String),
+    });
+  });
 });

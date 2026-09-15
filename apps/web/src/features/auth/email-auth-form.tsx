@@ -28,8 +28,10 @@ import { cn } from "@/lib/utils";
 import {
   rememberPendingVerificationEmail,
   resendVerificationEmail,
+  signUpConsentMetadata,
 } from "./auth-actions";
 import { PasswordField } from "./password-field";
+import { ConsentCheckboxRow } from "@/features/legal/consent-checkbox-row";
 
 type ResendState =
   | { status: "idle" }
@@ -48,6 +50,9 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // A10: sign-up requires accepting Terms/Privacy/Risk-Disclosure. Not
+  // relevant to sign-in, so this never blocks that mode.
+  const [consentChecked, setConsentChecked] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<AuthErrorCode | null>(null);
   const [loading, setLoading] = useState(false);
@@ -86,6 +91,13 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       return;
     }
 
+    // A10: sign-up is blocked until Terms/Privacy/Risk Disclosure are
+    // accepted. Not applicable to sign-in.
+    if (isSignUp && !consentChecked) {
+      setFormError("auth_consent_required");
+      return;
+    }
+
     setFieldErrors({});
     setLoading(true);
 
@@ -111,6 +123,11 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
             emailRedirectTo: appOrigin
               ? buildAuthCallbackUrl({ origin: appOrigin, locale, next: home })
               : undefined,
+            // A10: consent version labels, written to auth.users.raw_user_meta_data
+            // and read back by handle_new_user() to write consent_records — see
+            // signUpConsentMetadata()'s comment for why this isn't a separate
+            // post-signup RPC call.
+            data: signUpConsentMetadata(),
           },
         });
         if (error) throw error;
@@ -262,6 +279,23 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <p className="text-xs leading-relaxed text-muted-foreground">
           {t("passwordRequirement")}
         </p>
+      )}
+
+      {isSignUp && (
+        <ConsentCheckboxRow
+          id="sign-up-consent"
+          checked={consentChecked}
+          onChange={(checked) => {
+            setConsentChecked(checked);
+            setFormError(null);
+          }}
+          label="signUpAgreement"
+          documents={[
+            { slug: "terms_of_service", labelKey: "terms_of_service.linkLabel" },
+            { slug: "privacy_policy", labelKey: "privacy_policy.linkLabel" },
+            { slug: "risk_disclosure", labelKey: "risk_disclosure.linkLabel" },
+          ]}
+        />
       )}
 
       {formError && (

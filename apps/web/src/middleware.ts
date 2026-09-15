@@ -17,6 +17,10 @@ const PUBLIC_PATHS = [
   "/verify-pending",
   "/forgot-password",
   "/new-password",
+  // A10: legal/consent pages (Terms, Privacy, Risk Disclosure, Partner Conduct
+  // Rules) must be readable before sign-up, not just after — this is what the
+  // sign-up checkbox links to.
+  "/legal",
 ];
 const AUTH_ENTRY_PATHS = ["/sign-in", "/sign-up", "/forgot-password"];
 

@@ -1,0 +1,27 @@
+{
+  "version": "Version {{version}}",
+  "and": "and",
+  "listSeparator": ", ",
+  "signUpAgreement": "I agree to the",
+  "partnerAgreement": "I agree to the",
+  "terms_of_service": {
+    "title": "Terms of Service (placeholder — pending final text)",
+    "linkLabel": "Terms of Service",
+    "body": "This is placeholder Terms of Service content. Final wording will be supplied by the client; update this key directly and bump CONSENT_VERSIONS in src/lib/consent.ts when it lands."
+  },
+  "privacy_policy": {
+    "title": "Privacy Policy (placeholder — pending final text)",
+    "linkLabel": "Privacy Policy",
+    "body": "This is placeholder Privacy Policy content. Final wording will be supplied by the client; update this key directly and bump CONSENT_VERSIONS in src/lib/consent.ts when it lands."
+  },
+  "risk_disclosure": {
+    "title": "Exercise & Service Risk Disclosure (placeholder — pending final text)",
+    "linkLabel": "Risk Disclosure",
+    "body": "This is placeholder risk disclosure content. Final wording will be supplied by the client; update this key directly and bump CONSENT_VERSIONS in src/lib/consent.ts when it lands."
+  },
+  "partner_conduct_rules": {
+    "title": "Partner Cooperation & Conduct Rules (placeholder — pending final text)",
+    "linkLabel": "Partner Conduct Rules",
+    "body": "This is placeholder partner conduct rules content. Final wording will be supplied by the client; update this key directly and bump CONSENT_VERSIONS in src/lib/consent.ts when it lands."
+  }
+}

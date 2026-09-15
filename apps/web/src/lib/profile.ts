@@ -12,6 +12,7 @@ interface MyProfileRow {
   home_area: string | null;
   gender: Gender | null;
   is_companion: boolean | null;
+  is_admin: boolean | null;
 }
 
 /**
@@ -43,5 +44,7 @@ export async function getCurrentProfile(): Promise<UserProfile | null> {
     home_area: row?.home_area ?? null,
     gender: row?.gender ?? null,
     is_companion: row?.is_companion ?? false,
+    // get_my_profile already returns is_admin; MeLinks needs this to surface /admin.
+    is_admin: row?.is_admin === true,
   };
 }

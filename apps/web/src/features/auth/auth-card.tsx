@@ -49,12 +49,6 @@ export function AuthCard({ mode }: { mode: "sign-in" | "sign-up" }) {
         <EmailAuthForm mode={mode} />
       </div>
 
-      {!isSignIn && (
-        <p className="mx-auto mt-5 max-w-xs text-center text-xs leading-relaxed text-muted-foreground">
-          {t("terms")}
-        </p>
-      )}
-
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {isSignIn ? t("noAccount") : t("haveAccount")}{" "}
         <Link

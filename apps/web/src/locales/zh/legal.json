@@ -1,0 +1,27 @@
+{
+  "version": "版本 {{version}}",
+  "and": "和",
+  "listSeparator": "、",
+  "signUpAgreement": "我同意",
+  "partnerAgreement": "我同意",
+  "terms_of_service": {
+    "title": "服務條款（草稿，待補正式文字）",
+    "linkLabel": "服務條款",
+    "body": "本頁為服務條款佔位內容，正式文字由客戶提供後請直接更新此欄位，並同步更新 src/lib/consent.ts 的 CONSENT_VERSIONS。"
+  },
+  "privacy_policy": {
+    "title": "隱私權政策（草稿，待補正式文字）",
+    "linkLabel": "隱私權政策",
+    "body": "本頁為隱私權政策佔位內容，正式文字由客戶提供後請直接更新此欄位，並同步更新 src/lib/consent.ts 的 CONSENT_VERSIONS。"
+  },
+  "risk_disclosure": {
+    "title": "運動╱服務風險告知（草稿，待補正式文字）",
+    "linkLabel": "風險告知",
+    "body": "本頁為風險告知佔位內容，正式文字由客戶提供後請直接更新此欄位，並同步更新 src/lib/consent.ts 的 CONSENT_VERSIONS。"
+  },
+  "partner_conduct_rules": {
+    "title": "夥伴合作與行為準則（草稿，待補正式文字）",
+    "linkLabel": "夥伴合作與行為準則",
+    "body": "本頁為夥伴合作與行為準則佔位內容，正式文字由客戶提供後請直接更新此欄位，並同步更新 src/lib/consent.ts 的 CONSENT_VERSIONS。"
+  }
+}

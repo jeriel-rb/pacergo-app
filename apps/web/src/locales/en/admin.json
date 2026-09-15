@@ -24,5 +24,20 @@
   "pending": "Pending",
   "notAdmin": "You don't have access to this page.",
   "error": "Something went wrong. Please try again.",
-  "docError": "Could not open the document."
+  "docError": "Could not open the document.",
+  "exports": {
+    "title": "Data export (CSV)",
+    "notice": "Download users, trainers, order/payment details, and withdrawal requests as CSV (opens in Excel). Bank accounts show last 4 digits only. Empty sheets still include headers when there is no data yet.",
+    "download": "Download",
+    "users": "Users",
+    "trainers": "Trainers",
+    "orders": "Orders / payments",
+    "withdrawals": "Withdrawal requests",
+    "errors": {
+      "forbidden": "You don't have permission to export.",
+      "export_failed": "Export failed. Please try again.",
+      "export_unknown_resource": "Unknown export type.",
+      "supabase_unconfigured": "Exports are unavailable in this environment."
+    }
+  }
 }

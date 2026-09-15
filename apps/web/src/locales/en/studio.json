@@ -28,7 +28,8 @@
     "bioPlaceholder": "Your specialties, style, experience…",
     "area": "Service area",
     "areaPlaceholder": "e.g. Xinyi, Taipei",
-    "status": "Status"
+    "status": "Status",
+    "conductRequired": "Please agree to the Partner Conduct Rules to publish your first listing."
   },
   "offerings": {
     "title": "Plans & pricing",

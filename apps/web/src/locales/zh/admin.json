@@ -24,5 +24,20 @@
   "pending": "待審核",
   "notAdmin": "你沒有權限存取此頁面。",
   "error": "發生錯誤，請再試一次。",
-  "docError": "無法開啟文件。"
+  "docError": "無法開啟文件。",
+  "exports": {
+    "title": "資料匯出 (CSV)",
+    "notice": "下載使用者、trainer、訂單/支付明細與提領申請清單（CSV，可用 Excel 開啟）。銀行帳號僅顯示末四碼。尚無資料時仍會匯出表頭。",
+    "download": "下載",
+    "users": "使用者名單",
+    "trainers": "Trainer 名單",
+    "orders": "訂單 / 支付明細",
+    "withdrawals": "提領申請",
+    "errors": {
+      "forbidden": "你沒有權限匯出資料。",
+      "export_failed": "匯出失敗，請再試一次。",
+      "export_unknown_resource": "未知的匯出類型。",
+      "supabase_unconfigured": "此環境無法使用匯出功能。"
+    }
+  }
 }

@@ -19,6 +19,7 @@ export type AuthErrorCode =
   | "auth_account_exists_or_unverified"
   | "auth_service_unavailable"
   | "auth_network_error"
+  | "auth_consent_required"
   | "auth_unknown";
 
 export type ResendVerificationErrorCode =

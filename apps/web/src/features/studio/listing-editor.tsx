@@ -11,6 +11,9 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
 import { upsertMyListing } from "./studio-actions";
+import { ConsentCheckboxRow } from "@/features/legal/consent-checkbox-row";
+import { CONSENT_VERSIONS } from "@/lib/consent";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const STATUSES: ListingStatus[] = ["draft", "active", "paused"];
 
@@ -27,8 +30,18 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // A10: partner conduct rules only apply once someone becomes a trainer —
+  // gate the FIRST listing creation only (an existing listing means they
+  // already agreed on an earlier save; don't re-ask on every edit).
+  const isFirstListing = listing === null;
+  const [conductChecked, setConductChecked] = useState(false);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isFirstListing && !conductChecked) {
+      setError(t("listing.conductRequired"));
+      return;
+    }
     setSaving(true);
     setError(null);
     setSaved(false);
@@ -44,8 +57,29 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
       window.setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
+      return;
     } finally {
       setSaving(false);
+    }
+
+    // Record consent AFTER the listing save has already succeeded, in its
+    // own try/catch — a consent-bookkeeping failure here must never look
+    // like the listing save itself failed (the save already went through).
+    // Best-effort: if this RPC call fails, the user isn't blocked, and
+    // conductChecked stays true so a retry on the next save attempt (there
+    // won't be one, since isFirstListing flips false after listing !== null
+    // on the next render) isn't required — this is logged for follow-up
+    // instead of surfaced as a user-facing error.
+    if (isFirstListing) {
+      try {
+        const supabase = createSupabaseBrowserClient();
+        await supabase.rpc("accept_consent", {
+          p_document_slug: "partner_conduct_rules",
+          p_version_label: CONSENT_VERSIONS.partner_conduct_rules,
+        });
+      } catch (err) {
+        console.warn("accept_consent_failed", { slug: "partner_conduct_rules", err });
+      }
     }
   }
 
@@ -101,6 +135,24 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
           </div>
           <p className="text-xs text-muted-foreground">{t(`statusHint.${status}`)}</p>
         </div>
+
+        {isFirstListing && (
+          <ConsentCheckboxRow
+            id="studio-conduct-consent"
+            checked={conductChecked}
+            onChange={(checked) => {
+              setConductChecked(checked);
+              setError(null);
+            }}
+            label="partnerAgreement"
+            documents={[
+              {
+                slug: "partner_conduct_rules",
+                labelKey: "partner_conduct_rules.linkLabel",
+              },
+            ]}
+          />
+        )}
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 

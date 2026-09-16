@@ -27,7 +27,7 @@ Run from the repo root:
 
 ## Database
 
-The schema lives in [`supabase/migrations/`](supabase/migrations/):
+The schema lives in [`backend/migrations/`](backend/migrations/):
 `0001_foundation.sql` (profiles, activities, profile_activities, RLS, `handle_new_user`
 trigger) and `0002_onboarding.sql` (adds `profiles.onboarding_completed`).
 
@@ -127,10 +127,11 @@ package.json            # root: Yarn 4 workspaces (apps/*, packages/*)
 tsconfig.base.json      # shared compiler options for the packages
 .yarnrc.yml             # nodeLinker: node-modules (required for RN/Metro)
 
-supabase/
-  migrations/           # SQL migrations (0001–0007)
+backend/                # Supabase schema (CLI may use a local `supabase` → `backend` junction)
+  migrations/           # SQL migrations (0001–…)
   functions/            # edge functions (empty for now)
   seed.sql              # local seed data (empty for now)
+  config.toml           # local Supabase CLI config
 
 packages/               # scaffolds — real code extracted incrementally
   shared/               # @pacergo/shared — enums, types, helpers, constants, schemas

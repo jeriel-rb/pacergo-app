@@ -19,8 +19,11 @@ dist/
 .env
 .env*.local
 
-# supabase CLI link state
-supabase/.temp/
+# Backend (Supabase) CLI link state. The real project lives in `backend/`.
+# A local `supabase` directory junction → `backend` is optional so the
+# Supabase CLI (which hard-requires a folder named `supabase`) keeps working.
+backend/.temp/
+supabase/
 
 # local MCP server config (contains personal access tokens)
 .mcp.json

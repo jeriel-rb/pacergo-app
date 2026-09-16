@@ -35,6 +35,7 @@ import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Switch } from "@/shared/components/ui/switch";
 import { GradientHeader } from "@/shared/components/atoms/gradient-header";
+import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
 import { PlanMarkdown } from "./plan-markdown";
@@ -48,13 +49,78 @@ const GOAL_META: Record<TrainingGoal, { icon: LucideIcon; tint: string }> = {
   functional: { icon: Timer, tint: "bg-orange-500/10 text-orange-500" },
 };
 
-/** Example presets shown at the bottom — each fills goal + level and scrolls up. */
-const EXAMPLES: { key: string; goal: TrainingGoal; level: ExperienceLevel }[] = [
-  { key: "muscleBeginner", goal: "muscle_gain", level: "beginner" },
-  { key: "endurance", goal: "endurance", level: "intermediate" },
-  { key: "fatLoss", goal: "fat_loss", level: "intermediate" },
-  { key: "flexibility", goal: "flexibility", level: "beginner" },
-  { key: "functional", goal: "functional", level: "intermediate" },
+/** Example presets shown at the bottom — each fills every field (goal
+ *  through diet mode) so the generated plan actually matches the example's
+ *  description, not just its goal/level. Gender is never included here —
+ *  it stays whatever the user (or their profile) already has selected. */
+interface PlanExample {
+  key: string;
+  goal: TrainingGoal;
+  level: ExperienceLevel;
+  ageBand: AgeBand;
+  weightClass: WeightClass;
+  frequency: TrainingFrequency;
+  location: TrainingLocation;
+  nutrition: boolean;
+  dietMode: DietMode;
+}
+
+const EXAMPLES: PlanExample[] = [
+  {
+    key: "muscleBeginner",
+    goal: "muscle_gain",
+    level: "beginner",
+    ageBand: "adult",
+    weightClass: "medium",
+    frequency: "mid",
+    location: "home",
+    nutrition: true,
+    dietMode: "muscle_gain",
+  },
+  {
+    key: "endurance",
+    goal: "endurance",
+    level: "intermediate",
+    ageBand: "adult",
+    weightClass: "medium",
+    frequency: "mid",
+    location: "full_gym",
+    nutrition: true,
+    dietMode: "none",
+  },
+  {
+    key: "fatLoss",
+    goal: "fat_loss",
+    level: "intermediate",
+    ageBand: "adult",
+    weightClass: "medium",
+    frequency: "high",
+    location: "full_gym",
+    nutrition: true,
+    dietMode: "fat_loss",
+  },
+  {
+    key: "flexibility",
+    goal: "flexibility",
+    level: "beginner",
+    ageBand: "adult",
+    weightClass: "medium",
+    frequency: "low",
+    location: "home",
+    nutrition: false,
+    dietMode: "none",
+  },
+  {
+    key: "functional",
+    goal: "functional",
+    level: "intermediate",
+    ageBand: "adult",
+    weightClass: "medium",
+    frequency: "high",
+    location: "full_gym",
+    nutrition: true,
+    dietMode: "none",
+  },
 ];
 
 export function AiPlanView({
@@ -115,10 +181,17 @@ export function AiPlanView({
     }
   }
 
-  function applyExample(ex: (typeof EXAMPLES)[number]) {
+  function applyExample(ex: PlanExample) {
     setGoal(ex.goal);
     setLevel(ex.level);
-    if (!ageBand) setAgeBand("adult");
+    setAgeBand(ex.ageBand);
+    setWeightClass(ex.weightClass);
+    setFrequency(ex.frequency);
+    setLocation(ex.location);
+    setNutrition(ex.nutrition);
+    setDietMode(ex.dietMode);
+    // Gender is intentionally left untouched — it's a personal attribute,
+    // not part of the example, and defaults to the user's saved profile.
     setPlan(null);
     setError(false);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -126,14 +199,34 @@ export function AiPlanView({
 
   return (
     <div className="space-y-5">
-      <GradientHeader className="rounded-[24px] p-6 text-center shadow-lg shadow-primary/20">
-        <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-          <Sparkles size={24} />
-        </span>
-        <h1 className="mt-3 text-2xl font-bold">{t("title")}</h1>
-        <p className="mx-auto mt-1.5 max-w-md text-sm text-white/85">
-          {t("subtitle")}
-        </p>
+      <GradientHeader className="rounded-[24px] p-6 shadow-lg shadow-primary/20 lg:p-8">
+        {/* Same atmospheric treatment as the Home hero banner: soft glows +
+            an oversized watermark icon (Sparkles here, matching this
+            feature's icon everywhere else on the page). */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-12 -top-14 h-48 w-48 rounded-full bg-white/15 blur-2xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-20 -left-10 h-44 w-44 rounded-full bg-white/10 blur-2xl"
+        />
+        <Sparkles
+          aria-hidden
+          className="pointer-events-none absolute -bottom-3 right-2 h-28 w-28 rotate-12 text-white/10 lg:h-40 lg:w-40"
+        />
+
+        <div className="relative min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold leading-tight lg:text-[32px]">
+              {t("title")}
+            </h1>
+            <BetaBadge className="border-white/30 bg-white/15 text-white/90" />
+          </div>
+          <p className="mt-1.5 max-w-md text-sm text-white/85 lg:text-base">
+            {t("subtitle")}
+          </p>
+        </div>
       </GradientHeader>
 
       {/* Training goal */}
@@ -176,7 +269,7 @@ export function AiPlanView({
       </Card>
 
       {/* Age band + level + gender */}
-      <Card className="space-y-4 p-4 sm:p-5">
+      <Card className="space-y-5 p-4 sm:p-5">
         <Segmented
           label={t("ageLabel")}
           options={AGE_BANDS.map((a) => ({ value: a, label: t(`age.${a}`) }))}
@@ -216,7 +309,7 @@ export function AiPlanView({
       </Card>
 
       {/* Training frequency + location */}
-      <Card className="space-y-4 p-4 sm:p-5">
+      <Card className="space-y-5 p-4 sm:p-5">
         <Segmented
           label={t("freqLabel")}
           options={TRAINING_FREQUENCIES.map((f) => ({
@@ -244,7 +337,7 @@ export function AiPlanView({
       </Card>
 
       {/* Nutrition toggle + diet mode */}
-      <Card className="space-y-4 p-4 sm:p-5">
+      <Card className="space-y-5 p-4 sm:p-5">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2 text-sm font-medium">
             <Leaf size={18} className="text-emerald-500" />
@@ -339,7 +432,7 @@ function Segmented<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-3">
       <span className="text-sm font-medium">{label}</span>
       <div className="grid grid-flow-col auto-cols-fr gap-2">
         {options.map((opt) => {

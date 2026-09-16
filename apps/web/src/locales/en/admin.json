@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "console": "Admin console",
+    "menu": "Admin menu",
+    "verifications": "Trainer requests",
+    "payouts": "Payouts",
+    "exports": "CSV export",
+    "backToApp": "Back to Pacergo"
+  },
   "title": "Trainer verification",
   "subtitle": "Review certification / qualification-proof and competition-experience requests",
   "pendingTitle": "Pending review",
@@ -25,6 +33,51 @@
   "notAdmin": "You don't have access to this page.",
   "error": "Something went wrong. Please try again.",
   "docError": "Could not open the document.",
+  "payouts": {
+    "title": "Trainer payouts",
+    "subtitle": "Review withdrawal requests; the actual transfer happens off-platform by bank transfer",
+    "totals": {
+      "requested": "Requested",
+      "processing": "Processing"
+    },
+    "filter": {
+      "all": "All",
+      "requested": "Requested",
+      "processing": "Processing",
+      "paid": "Paid",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "status": {
+      "requested": "Requested",
+      "processing": "Processing",
+      "paid": "Paid",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "empty": "No withdrawal requests match this filter.",
+    "bankMasked": "Bank account (last 4)",
+    "amount": "Requested amount",
+    "bankDetails": "Bank account details (admin-only, full reveal)",
+    "bankName": "Bank",
+    "bankCode": "Bank code",
+    "branchName": "Branch",
+    "accountNumber": "Account number",
+    "accountHolder": "Account holder",
+    "actions": "Actions",
+    "reasonPlaceholder": "Reason note (required for reject/cancel/correction)…",
+    "reasonRequired": "This action requires a reason note.",
+    "action": {
+      "processing": "Mark Processing",
+      "paid": "Mark Paid",
+      "rejected": "Reject",
+      "cancelled": "Cancel",
+      "requested": "Revert to Requested"
+    },
+    "history": "Status history",
+    "noHistory": "No status changes yet.",
+    "systemActor": "System"
+  },
   "exports": {
     "title": "Data export (CSV)",
     "notice": "Download users, trainers, order/payment details, and withdrawal requests as CSV (opens in Excel). Bank accounts show last 4 digits only. Empty sheets still include headers when there is no data yet.",

@@ -54,6 +54,14 @@
     "providerReference": "Provider reference",
     "paymentDate": "Payment date"
   },
+  "simulated": {
+    "badge": "Test payment",
+    "title": "Simulated payment",
+    "notice": "Phase 1 test mode — no real payment provider or card data is involved. Approve or decline to simulate the outcome.",
+    "approve": "Approve (simulate success)",
+    "decline": "Decline (simulate failure)",
+    "alreadyResolved": "This payment has already been resolved."
+  },
   "instructions": {
     "title": "Payment instructions",
     "Amt": "Amount",

@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { NAV_ITEMS, isNavItemActive } from "./nav-items";
+import type { UserProfile } from "@pacergo/shared";
+import { NAV_ITEMS, isNavItemActive, type NavItem } from "./nav-items";
+import {
+  ADMIN_NAV_ITEMS,
+  isAdminNavItemActive,
+} from "./admin-nav-items";
+import type { ShellNavItem } from "./shell-nav-item";
+import { SettingsSheet } from "@/features/settings/settings-sheet";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
   getCurrentLocale,
@@ -12,21 +19,58 @@ import {
 } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 
-/** Mobile/tablet bottom tab bar. Hidden on desktop (nav moves into the header). */
-export function BottomNav() {
+/** Mobile/tablet bottom tab bar. Hidden on desktop (nav moves into the sidebar). */
+export function BottomNav({
+  variant = "app",
+  user = null,
+}: {
+  variant?: "app" | "admin";
+  user?: UserProfile | null;
+} = {}) {
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const stripped = pathWithoutLeadingLocale(pathname);
-  const { t } = useTranslation("nav");
-  const items = NAV_ITEMS;
+  const isAdmin = variant === "admin";
+
+  const { t } = useTranslation(isAdmin ? "admin" : "nav");
+  const items: ShellNavItem[] = isAdmin ? ADMIN_NAV_ITEMS : NAV_ITEMS;
+  const isItemActive = isAdmin ? isAdminNavItemActive : isNavItemActive;
+  const labelFor = (key: string) =>
+    isAdmin ? t(`nav.${key}`) : t(key);
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur lg:hidden">
       <ul className="mx-auto flex max-w-md items-end justify-around px-2 py-2">
         {items.map((item) => {
-          const active = isNavItemActive(stripped, item.href);
-          const href = getLocalizedPath(item.href, locale);
           const Icon = item.icon;
+          const label = labelFor(item.key);
+
+          if (!isAdmin && (item as NavItem).sheet === "settings") {
+            return (
+              <li key={item.key}>
+                <SettingsSheet
+                  user={user}
+                  trigger={
+                    <button
+                      type="button"
+                      className="group flex flex-col items-center gap-1 px-2 py-1 transition-opacity hover:opacity-80"
+                    >
+                      <Icon
+                        size={22}
+                        className="text-muted-foreground group-data-[state=open]:text-primary"
+                      />
+                      <span className="text-[10px] font-medium text-muted-foreground group-data-[state=open]:text-primary">
+                        {label}
+                      </span>
+                    </button>
+                  }
+                />
+              </li>
+            );
+          }
+
+          const active = isItemActive(stripped, item.href);
+          const href = getLocalizedPath(item.href, locale);
 
           if (item.comingSoon) {
             return (
@@ -40,7 +84,7 @@ export function BottomNav() {
                     <SoonBadge className="absolute -right-3 -top-2 scale-90" />
                   </span>
                   <span className="text-[10px] font-medium text-muted-foreground">
-                    {t(item.key)}
+                    {label}
                   </span>
                 </div>
               </li>
@@ -63,7 +107,7 @@ export function BottomNav() {
                       active ? "text-primary" : "text-muted-foreground",
                     )}
                   >
-                    {t(item.key)}
+                    {label}
                   </span>
                 </Link>
               </li>
@@ -86,7 +130,7 @@ export function BottomNav() {
                     active ? "text-primary" : "text-muted-foreground",
                   )}
                 >
-                  {t(item.key)}
+                  {label}
                 </span>
               </Link>
             </li>
@@ -96,3 +140,4 @@ export function BottomNav() {
     </nav>
   );
 }
+

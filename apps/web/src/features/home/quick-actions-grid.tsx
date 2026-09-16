@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
+import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { cn } from "@/lib/utils";
 
 export interface QuickAction {
@@ -12,6 +13,8 @@ export interface QuickAction {
   href?: string;
   /** Not built yet → rendered disabled with a "Soon" badge. */
   soon?: boolean;
+  /** Live but still Beta (A-8 naming rule) → rendered with a "Beta" badge. */
+  beta?: boolean;
 }
 
 /** Four-up grid of action tiles. Live actions link out; unbuilt ones are disabled. */
@@ -81,6 +84,7 @@ function QuickActionTile({ item }: { item: QuickAction }) {
     >
       {tile}
       {label}
+      {item.beta && <BetaBadge className="absolute -top-1.5 right-0" />}
     </Link>
   );
 }

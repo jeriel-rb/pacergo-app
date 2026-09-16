@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Star } from "lucide-react";
+import { ChevronRight, Star, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MyListing } from "@/lib/studio";
 import { Card } from "@/shared/components/ui/card";
@@ -16,6 +16,7 @@ export function StudioView({ data }: { data: MyListing }) {
   const { t } = useTranslation("studio");
   const pathname = usePathname();
   const sessionsHref = getLocalizedPath("/sessions", getCurrentLocale(pathname));
+  const earningsHref = getLocalizedPath("/studio/earnings", getCurrentLocale(pathname));
   const hasListing = data.listing !== null;
 
   return (
@@ -52,6 +53,16 @@ export function StudioView({ data }: { data: MyListing }) {
           </Link>
         </Card>
       )}
+
+      <Link href={earningsHref}>
+        <Card className="flex items-center justify-between gap-3 p-5 transition-colors hover:bg-accent">
+          <span className="flex items-center gap-2 font-semibold">
+            <Wallet size={18} className="text-primary" />
+            {t("earnings.cta")}
+          </span>
+          <ChevronRight size={16} className="text-muted-foreground" />
+        </Card>
+      </Link>
 
       <ListingEditor listing={data.listing} />
       <OfferingsEditor

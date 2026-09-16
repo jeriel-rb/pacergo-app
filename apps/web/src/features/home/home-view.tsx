@@ -41,14 +41,10 @@ function formatHeaderDate(
   }).format(date);
 }
 
-/** Section heading with a small uppercase English sublabel. */
-function SectionLabel({ title, sub }: { title: string; sub: string }) {
+function SectionLabel({ title }: { title: string }) {
   return (
     <div className="flex items-end justify-between gap-3">
       <h2 className="text-sm font-semibold">{title}</h2>
-      <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-        {sub}
-      </p>
     </div>
   );
 }
@@ -93,6 +89,7 @@ export function HomeView({
       label: t("actions.aiPlan"),
       tint: "bg-violet-500/10 text-violet-500",
       href: getLocalizedPath("/ai-plan", locale),
+      beta: true,
     },
     { icon: Ticket, label: t("actions.hours"), tint: "bg-emerald-500/10 text-emerald-500", soon: true },
   ];
@@ -136,14 +133,13 @@ export function HomeView({
         <div className="space-y-6 lg:col-span-2 lg:col-start-1 lg:row-start-1">
           <HeroBanner
             href={trainersHref}
-            kicker={t("hero.kicker")}
             title={t("hero.title")}
             subtitle={t("hero.subtitle")}
             cta={t("hero.cta")}
           />
 
           <Card className="p-4 sm:p-5">
-            <SectionLabel title={t("quickActions")} sub={t("quickActionsEn")} />
+            <SectionLabel title={t("quickActions")} />
             <QuickActionsGrid items={primaryActions} className="mt-4" />
           </Card>
         </div>
@@ -151,13 +147,12 @@ export function HomeView({
         <aside className="space-y-6 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:self-start lg:sticky lg:top-8">
           <WeeklyProgressCard
             title={t("weeklyProgress")}
-            subtitleEn={t("weeklyProgressEn")}
             target={weeklyProgress.target}
             done={weeklyProgress.done}
           />
 
           <Card className="p-4 sm:p-5">
-            <SectionLabel title={t("tools")} sub={t("toolsEn")} />
+            <SectionLabel title={t("tools")} />
             <ToolsList items={tools} />
           </Card>
 

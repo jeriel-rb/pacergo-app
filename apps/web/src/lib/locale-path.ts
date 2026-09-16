@@ -19,6 +19,13 @@ export function pathWithoutLeadingLocale(pathname: string): string {
   return pathname;
 }
 
+/** Localize an href that may carry a hash fragment (`"/#how"` → `"/en#how"`). */
+export function getLocalizedHref(href: string, locale: string): string {
+  const [path, hash] = href.split("#");
+  const localized = getLocalizedPath(path || "/", locale);
+  return hash ? `${localized}#${hash}` : localized;
+}
+
 /** Same route in another locale (matches next-i18n-router + i18nConfig prefix rules). */
 export function getLocalizedPath(pathname: string, locale: string): string {
   const stripped = pathWithoutLeadingLocale(pathname);

@@ -1,6 +1,6 @@
 {
-  "title": "AI Training Menu",
-  "subtitle": "AI builds a 60-minute training menu for your goal: 10 min warm-up + 40 min training + 10 min cool-down",
+  "title": "Personalized Training Menu",
+  "subtitle": "Based on your goal, get a 60-minute training menu: 10 min warm-up + 40 min training + 10 min cool-down",
   "goalLabel": "Choose your goal",
   "goal": {
     "fat_loss": "Fat Loss",
@@ -56,7 +56,7 @@
   "generating": "Generating…",
   "empty": {
     "title": "Choose a goal and age group",
-    "sub": "AI will generate a personalized plan for you"
+    "sub": "A personalized plan will be generated from your choices"
   },
   "error": "Something went wrong. Please try again.",
   "examplesTitle": "Example plans",

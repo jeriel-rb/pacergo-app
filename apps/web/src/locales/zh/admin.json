@@ -1,4 +1,12 @@
 {
+  "nav": {
+    "console": "管理後台",
+    "menu": "管理選單",
+    "verifications": "陪練師申請",
+    "payouts": "撥款管理",
+    "exports": "CSV 匯出",
+    "backToApp": "返回 Pacergo"
+  },
   "title": "陪練師審核",
   "subtitle": "審核教練證／資格證明與比賽經驗申請",
   "pendingTitle": "待審核",
@@ -25,6 +33,51 @@
   "notAdmin": "你沒有權限存取此頁面。",
   "error": "發生錯誤，請再試一次。",
   "docError": "無法開啟文件。",
+  "payouts": {
+    "title": "陪練師撥款管理",
+    "subtitle": "審核提領申請，並於平台外以銀行轉帳完成撥款",
+    "totals": {
+      "requested": "待審核",
+      "processing": "處理中"
+    },
+    "filter": {
+      "all": "全部",
+      "requested": "已申請",
+      "processing": "處理中",
+      "paid": "已撥款",
+      "rejected": "已拒絕",
+      "cancelled": "已取消"
+    },
+    "status": {
+      "requested": "已申請",
+      "processing": "處理中",
+      "paid": "已撥款",
+      "rejected": "已拒絕",
+      "cancelled": "已取消"
+    },
+    "empty": "目前沒有符合條件的提領申請。",
+    "bankMasked": "銀行帳號（末四碼）",
+    "amount": "申請金額",
+    "bankDetails": "銀行帳戶資料（僅管理員可見完整資料）",
+    "bankName": "銀行",
+    "bankCode": "銀行代碼",
+    "branchName": "分行",
+    "accountNumber": "帳號",
+    "accountHolder": "戶名",
+    "actions": "處理",
+    "reasonPlaceholder": "備註（拒絕／取消／更正狀態時必填）…",
+    "reasonRequired": "此操作需要填寫備註。",
+    "action": {
+      "processing": "標記為處理中",
+      "paid": "標記為已撥款",
+      "rejected": "拒絕",
+      "cancelled": "取消",
+      "requested": "回復為已申請"
+    },
+    "history": "狀態歷程",
+    "noHistory": "尚無狀態變更紀錄。",
+    "systemActor": "系統"
+  },
   "exports": {
     "title": "資料匯出 (CSV)",
     "notice": "下載使用者、trainer、訂單/支付明細與提領申請清單（CSV，可用 Excel 開啟）。銀行帳號僅顯示末四碼。尚無資料時仍會匯出表頭。",

@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import crypto from "node:crypto";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createMerchantOrderNo } from "@/lib/payments/newebpay";
 import {
-  buildPaymentForm,
-  createMerchantOrderNo,
-  getNewebPayConfig,
+  getPaymentProvider,
   NewebPayConfigurationError,
-} from "@/lib/payments/newebpay";
+  ProviderRpcError,
+} from "@/lib/payments/provider";
 
 export const runtime = "nodejs";
 
@@ -22,7 +21,6 @@ export async function POST(request: Request) {
       return error("payment_booking_not_found", 400);
     }
 
-    const config = getNewebPayConfig();
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
@@ -36,61 +34,58 @@ export async function POST(request: Request) {
       return error("payment_invalid_amount", 400);
     }
 
+    const provider = getPaymentProvider();
     const merchantOrderNo = createMerchantOrderNo();
-    const { data, error: rpcError } = await supabase.rpc("create_newebpay_payment_attempt", {
-      p_booking_id: body.bookingId,
-      p_merchant_order_no: merchantOrderNo,
-      p_amount: review.agreed_price,
-    });
-    if (rpcError) return error(mapDatabaseError(rpcError.message), 409);
-
-    const attempt = data as {
-      id: string;
-      merchant_order_no: string;
-      amount: number;
-      currency: string;
-    };
-    const form = buildPaymentForm({
-      config,
-      merchantOrderNo: attempt.merchant_order_no,
-      amount: attempt.amount,
-      itemDesc: "PacerGo booking",
-      email: user.email,
+    const result = await provider.createAttempt({
+      supabase,
+      bookingId: body.bookingId,
+      merchantOrderNo,
+      amount: review.agreed_price,
+      email: user.email ?? null,
       locale: body.locale === "en" ? "en" : "zh",
     });
 
-    const { error: redirectError } = await supabase.rpc("mark_newebpay_payment_redirected", {
-      p_payment_id: attempt.id,
-    });
-    if (redirectError) return error(mapDatabaseError(redirectError.message), 409);
-
-    console.info("newebpay_redirect_generated", {
-      paymentId: attempt.id,
-      merchantOrderNo: attempt.merchant_order_no,
-      amount: attempt.amount,
-      environment: config.env,
-      gateway: form.action,
-      version: form.fields.Version,
-      encryptType: form.fields.EncryptType ?? "missing",
-      merchantId: config.merchantId,
-      hashKeyFingerprint: fingerprint(config.hashKey),
-      hashIvFingerprint: fingerprint(config.hashIv),
-      tradeInfoLength: form.fields.TradeInfo.length,
-      tradeShaPrefix: form.fields.TradeSha.slice(0, 8),
+    console.info("payment_attempt_created", {
+      provider: provider.type,
+      paymentId: result.paymentId,
+      merchantOrderNo: result.merchantOrderNo,
+      amount: result.amount,
+      ...(result.next === "redirect_form"
+        ? {
+            gateway: result.form.action,
+            tradeInfoLength: result.form.fields.TradeInfo?.length,
+            tradeShaPrefix: result.form.fields.TradeSha?.slice(0, 8),
+          }
+        : {}),
     });
 
-    return NextResponse.json({
-      paymentId: attempt.id,
-      merchantOrderNo: attempt.merchant_order_no,
-      amount: attempt.amount,
-      currency: attempt.currency,
-      form,
-    });
+    return NextResponse.json(
+      result.next === "redirect_form"
+        ? {
+            paymentId: result.paymentId,
+            merchantOrderNo: result.merchantOrderNo,
+            amount: result.amount,
+            currency: result.currency,
+            provider: provider.type,
+            form: result.form,
+          }
+        : {
+            paymentId: result.paymentId,
+            merchantOrderNo: result.merchantOrderNo,
+            amount: result.amount,
+            currency: result.currency,
+            provider: provider.type,
+            simulated: true,
+          },
+    );
   } catch (err) {
     if (err instanceof NewebPayConfigurationError) {
       return error(err.message, 503);
     }
-    console.warn("newebpay_create_failed", {
+    if (err instanceof ProviderRpcError) {
+      return error(mapDatabaseError(err.message), 409);
+    }
+    console.warn("payment_create_failed", {
       error: err instanceof Error ? mapDatabaseError(err.message) : "payment_request_failed",
     });
     return error("payment_request_failed", 500);
@@ -138,8 +133,4 @@ function mapDatabaseError(message: string) {
 
 function error(code: string, status: number) {
   return NextResponse.json({ error: code }, { status });
-}
-
-function fingerprint(value: string) {
-  return crypto.createHash("sha256").update(value).digest("hex").slice(0, 10);
 }

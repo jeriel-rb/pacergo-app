@@ -28,8 +28,6 @@ export interface UserExportRow {
   display_name: unknown;
   home_area: unknown;
   experience_level: unknown;
-  is_companion: unknown;
-  is_admin: unknown;
   created_at: unknown;
 }
 
@@ -41,10 +39,8 @@ export interface TrainerExportRow {
   experience_level: unknown;
   tier: unknown;
   price_ntd: unknown;
-  is_free: unknown;
   rating_avg: unknown;
   rating_count: unknown;
-  is_companion: unknown;
   created_at: unknown;
 }
 
@@ -61,7 +57,6 @@ export interface OrderExportRow {
   duration_min: unknown;
   location_name: unknown;
   agreed_price: unknown;
-  is_free: unknown;
   payment_id: unknown;
   merchant_order_no: unknown;
   provider_trade_no: unknown;
@@ -140,8 +135,6 @@ export const USERS_EXPORT: CsvExport<UnknownRow> = {
     { header: "Display Name", cell: (r) => text(r.display_name) },
     { header: "Home Area", cell: (r) => text(r.home_area) },
     { header: "Experience Level", cell: (r) => text(r.experience_level) },
-    { header: "Is Companion", cell: (r) => text(r.is_companion) },
-    { header: "Is Admin", cell: (r) => text(r.is_admin) },
     { header: "Created At", cell: (r) => dateTime(r.created_at) },
   ],
 };
@@ -155,10 +148,8 @@ export const TRAINERS_EXPORT: CsvExport<UnknownRow> = {
     { header: "Experience Level", cell: (r) => text(r.experience_level) },
     { header: "Tier", cell: (r) => text(r.tier) },
     { header: "Price NTD", cell: (r) => num(r.price_ntd) },
-    { header: "Free", cell: (r) => text(r.is_free) },
     { header: "Rating Avg", cell: (r) => num(r.rating_avg) },
     { header: "Rating Count", cell: (r) => num(r.rating_count) },
-    { header: "Is Companion", cell: (r) => text(r.is_companion) },
     { header: "Created At", cell: (r) => dateTime(r.created_at) },
   ],
 };
@@ -177,7 +168,6 @@ export const ORDERS_EXPORT: CsvExport<UnknownRow> = {
     { header: "Duration (min)", cell: (r) => num(r.duration_min) },
     { header: "Location", cell: (r) => text(r.location_name) },
     { header: "Agreed Price", cell: (r) => num(r.agreed_price) },
-    { header: "Free", cell: (r) => text(r.is_free) },
     { header: "Merchant Order No", cell: (r) => text(r.merchant_order_no) },
     { header: "Provider Trade No", cell: (r) => text(r.provider_trade_no) },
     { header: "Provider", cell: (r) => text(r.provider) },

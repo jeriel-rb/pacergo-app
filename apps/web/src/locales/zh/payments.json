@@ -54,6 +54,14 @@
     "providerReference": "金流交易編號",
     "paymentDate": "付款時間"
   },
+  "simulated": {
+    "badge": "測試付款",
+    "title": "模擬付款",
+    "notice": "第一階段測試模式——不涉及真實付款服務或卡片資料。請選擇核准或拒絕以模擬結果。",
+    "approve": "核准（模擬成功）",
+    "decline": "拒絕（模擬失敗）",
+    "alreadyResolved": "這筆付款已處理完成。"
+  },
   "instructions": {
     "title": "付款指示",
     "Amt": "金額",

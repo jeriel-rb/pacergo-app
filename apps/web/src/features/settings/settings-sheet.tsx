@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -28,9 +28,20 @@ import { ThemeSettingRow } from "./theme-setting-row";
 import { Button } from "@/shared/components/ui/button";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 /** Gear button → slide-in settings sheet (profile + settings list). */
-export function SettingsSheet({ user }: { user: UserProfile | null }) {
+export function SettingsSheet({
+  user,
+  trigger,
+  triggerClassName,
+}: {
+  user: UserProfile | null;
+  /** Custom trigger (e.g. bottom-nav tab). Defaults to the gear icon button. */
+  trigger?: ReactElement;
+  /** Extra classes merged onto the default gear button. */
+  triggerClassName?: string;
+}) {
   const { t } = useTranslation("settings");
   const pathname = usePathname();
   const router = useRouter();
@@ -49,13 +60,18 @@ export function SettingsSheet({ user }: { user: UserProfile | null }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button
-          type="button"
-          aria-label={t("title")}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <Settings size={18} />
-        </button>
+        {trigger ?? (
+          <button
+            type="button"
+            aria-label={t("title")}
+            className={cn(
+              "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-foreground/70 transition-colors hover:bg-accent hover:text-foreground",
+              triggerClassName,
+            )}
+          >
+            <Settings size={18} />
+          </button>
+        )}
       </SheetTrigger>
 
       <SheetContent side="right" className="w-full p-0 sm:max-w-sm">

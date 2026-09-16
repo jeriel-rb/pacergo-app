@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/components/ui/button";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { getLocalizedPath } from "@/lib/locale-path";
 
 interface GatewayForm {
   action: string;
@@ -14,6 +16,7 @@ interface GatewayForm {
 export function NewebPayButton({ bookingId }: { bookingId: string }) {
   const { t } = useTranslation("payments");
   const locale = useLocale();
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [gatewayForm, setGatewayForm] = useState<GatewayForm | null>(null);
@@ -36,9 +39,20 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
       });
       const payload = (await response.json()) as {
         form?: GatewayForm;
+        paymentId?: string;
+        simulated?: boolean;
         error?: string;
       };
-      if (!response.ok || !payload.form) {
+      if (!response.ok) {
+        throw new Error(payload.error ?? "payment_request_failed");
+      }
+      if (payload.simulated && payload.paymentId) {
+        router.push(
+          getLocalizedPath(`/payments/simulated/${payload.paymentId}`, locale),
+        );
+        return;
+      }
+      if (!payload.form) {
         throw new Error(payload.error ?? "payment_request_failed");
       }
       setGatewayForm(payload.form);

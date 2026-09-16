@@ -62,11 +62,12 @@ export function AdminExportsView() {
   }
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-muted-foreground">
-        {t("exports.title")}
-      </h2>
-      <p className="text-xs text-muted-foreground">{t("exports.notice")}</p>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold lg:text-3xl">{t("exports.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("exports.notice")}</p>
+      </header>
+      <section className="space-y-3">
       {error && (
         <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
@@ -94,6 +95,7 @@ export function AdminExportsView() {
           </Card>
         ))}
       </div>
-    </section>
+      </section>
+    </div>
   );
 }

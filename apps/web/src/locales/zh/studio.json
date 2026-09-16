@@ -92,5 +92,34 @@
     "add": "新增時段",
     "remove": "移除",
     "badRange": "結束時間需晚於開始時間。"
+  },
+  "earnings": {
+    "cta": "查看收益",
+    "title": "收益總覽",
+    "subtitle": "查看訂單收款、結算狀態與提領紀錄",
+    "balance": "可提領餘額",
+    "requestWithdrawal": "申請提領",
+    "confirmWithdrawal": "確認申請",
+    "withdrawDesc": "目前可提領餘額為 {{balance}}，請輸入欲提領金額。",
+    "error": "發生錯誤，請再試一次。",
+    "ordersTitle": "訂單收款",
+    "ordersEmpty": "目前沒有訂單收款紀錄。",
+    "unknownSeeker": "學員",
+    "eligible": "可提領",
+    "pendingHold": "結算保留中",
+    "settled": "已結算",
+    "refundStatus": {
+      "refund_requested": "已申請退款",
+      "refunded": "已退款"
+    },
+    "withdrawalsTitle": "提領紀錄",
+    "withdrawalsEmpty": "尚未申請過提領。",
+    "withdrawalStatus": {
+      "requested": "已申請",
+      "processing": "處理中",
+      "paid": "已撥款",
+      "rejected": "已拒絕",
+      "cancelled": "已取消"
+    }
   }
 }

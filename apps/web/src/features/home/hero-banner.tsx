@@ -5,13 +5,11 @@ import { GradientHeader } from "@/shared/components/atoms/gradient-header";
 /** Blue gradient hero promoting trainer discovery. Links to the trainers list. */
 export function HeroBanner({
   href,
-  kicker,
   title,
   subtitle,
   cta,
 }: {
   href: string;
-  kicker: string;
   title: string;
   subtitle: string;
   cta: string;
@@ -35,10 +33,7 @@ export function HeroBanner({
 
         <div className="relative flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur">
-              {kicker}
-            </span>
-            <h2 className="mt-3 text-2xl font-bold leading-tight lg:text-[32px]">
+            <h2 className="text-2xl font-bold leading-tight lg:text-[32px]">
               {title}
             </h2>
             <p className="mt-1.5 max-w-md text-sm text-white/85 lg:text-base">

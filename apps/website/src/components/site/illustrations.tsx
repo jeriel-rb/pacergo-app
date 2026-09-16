@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
+
 /**
  * On-brand line-art illustrations. Strictly ink + brand + paper — drawn with
  * thick rounded strokes so figures read as bold and "athletic". The CSS color
@@ -9,13 +13,14 @@ const BRAND = "var(--color-brand)";
 
 /** Hero illustration for /earn — a muscular athlete pressing a barbell overhead. */
 export function LifterIllustration({ className }: { className?: string }) {
+  const { t } = useTranslation("common");
   return (
     <svg
       viewBox="0 0 300 330"
       className={className}
       fill="none"
       role="img"
-      aria-label="Athlete pressing a barbell overhead"
+      aria-label={t("illustrations.lifter")}
     >
       {/* ground shadow */}
       <ellipse cx="150" cy="306" rx="92" ry="13" fill={INK} opacity="0.06" />
@@ -63,13 +68,14 @@ export function LifterIllustration({ className }: { className?: string }) {
 
 /** Hero illustration for /find — two companions meeting for a session (high five). */
 export function CompanionsIllustration({ className }: { className?: string }) {
+  const { t } = useTranslation("common");
   return (
     <svg
       viewBox="0 0 300 320"
       className={className}
       fill="none"
       role="img"
-      aria-label="Two workout partners training together"
+      aria-label={t("illustrations.companions")}
     >
       <ellipse cx="150" cy="296" rx="112" ry="13" fill={INK} opacity="0.06" />
 

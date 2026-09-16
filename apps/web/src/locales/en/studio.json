@@ -92,5 +92,34 @@
     "add": "Add slot",
     "remove": "Remove",
     "badRange": "End time must be after start time."
+  },
+  "earnings": {
+    "cta": "View earnings",
+    "title": "Earnings",
+    "subtitle": "Orders, settlement status, and withdrawal history",
+    "balance": "Available balance",
+    "requestWithdrawal": "Request withdrawal",
+    "confirmWithdrawal": "Confirm request",
+    "withdrawDesc": "Your available balance is {{balance}}. Enter the amount to withdraw.",
+    "error": "Something went wrong. Please try again.",
+    "ordersTitle": "Orders",
+    "ordersEmpty": "No orders yet.",
+    "unknownSeeker": "Trainee",
+    "eligible": "Eligible",
+    "pendingHold": "Pending hold",
+    "settled": "Settled",
+    "refundStatus": {
+      "refund_requested": "Refund requested",
+      "refunded": "Refunded"
+    },
+    "withdrawalsTitle": "Withdrawal history",
+    "withdrawalsEmpty": "No withdrawal requests yet.",
+    "withdrawalStatus": {
+      "requested": "Requested",
+      "processing": "Processing",
+      "paid": "Paid",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    }
   }
 }

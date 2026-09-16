@@ -1,0 +1,14 @@
+-- Demo trainer seed — NEUTRALIZED (2026-06-28).
+--
+-- This migration originally seeded 6 demo trainer accounts (@demo.pacergo.app,
+-- UUIDs a0000000-0000-4000-8000-00000000000{1-6}) plus their listings,
+-- offerings, and availability so the apps showed content before real signups.
+--
+-- The demo data has been removed from the live database now that real users
+-- exist, and this seed is intentionally emptied so a fresh `supabase db reset`
+-- / clean push does not recreate it. Left as a no-op (rather than deleted) to
+-- preserve the migration history/numbering already applied remotely.
+--
+-- To re-introduce demo data in the future, add a NEW, higher-numbered migration.
+
+-- no-op

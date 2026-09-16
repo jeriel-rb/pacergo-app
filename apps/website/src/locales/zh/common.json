@@ -7,5 +7,9 @@
     "label": "語言",
     "zh": "繁體中文",
     "en": "English"
+  },
+  "illustrations": {
+    "lifter": "健胖者舉起槓鈴",
+    "companions": "兩位陪練一起訓練"
   }
 }

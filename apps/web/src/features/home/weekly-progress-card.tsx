@@ -20,12 +20,10 @@ import { setWeeklyTarget } from "./goal-actions";
  *  with an inline editor for the target. */
 export function WeeklyProgressCard({
   title,
-  subtitleEn,
   target,
   done,
 }: {
   title: string;
-  subtitleEn: string;
   target: number;
   done: number;
 }) {
@@ -62,9 +60,6 @@ export function WeeklyProgressCard({
 
         <div className="min-w-0">
           <p className="font-semibold">{title}</p>
-          <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            {subtitleEn}
-          </p>
           <p className="mt-2 text-sm text-muted-foreground">
             {t("weeklyCount", { done, total: target })}
           </p>

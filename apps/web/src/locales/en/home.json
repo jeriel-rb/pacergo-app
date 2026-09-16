@@ -4,7 +4,6 @@
   "prompt": "Ready to train together today?",
   "switchTrainer": "Switch trainer",
   "hero": {
-    "kicker": "FIND YOUR TRAINING PARTNER",
     "title": "Find your training partner",
     "subtitle": "6+ pro trainers waiting for you",
     "cta": "Browse trainers"
@@ -16,7 +15,6 @@
     "hours": "Hour pack"
   },
   "quickActions": "Quick actions",
-  "quickActionsEn": "QUICK ACTIONS",
   "quick": {
     "record": "Log workout",
     "body": "Body data",
@@ -24,7 +22,6 @@
     "diet": "Diet log"
   },
   "weeklyProgress": "This week's progress",
-  "weeklyProgressEn": "WEEKLY PROGRESS",
   "weeklyCount": "{{done}}/{{total}} workouts done",
   "weeklyTarget": {
     "title": "Set weekly goal",
@@ -33,7 +30,6 @@
     "save": "Save goal"
   },
   "tools": "Your tools",
-  "toolsEn": "PERSONAL TOOLS",
   "myTrainer": "Your partner",
   "myTrainerHint": "Once you connect, your regular training partner shows up here.",
   "recommended": "Recommended trainers",

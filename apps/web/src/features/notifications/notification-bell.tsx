@@ -5,9 +5,16 @@ import { Bell } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { cn } from "@/lib/utils";
 
 /** Header bell linking to /notifications, with an unread badge. */
-export function NotificationBell({ count = 0 }: { count?: number }) {
+export function NotificationBell({
+  count = 0,
+  className,
+}: {
+  count?: number;
+  className?: string;
+}) {
   const pathname = usePathname();
   const { t } = useTranslation("notifications");
   const href = getLocalizedPath("/notifications", getCurrentLocale(pathname));
@@ -16,7 +23,10 @@ export function NotificationBell({ count = 0 }: { count?: number }) {
     <Link
       href={href}
       aria-label={t("title")}
-      className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className={cn(
+        "relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+        className,
+      )}
     >
       <Bell size={20} />
       {count > 0 && (

@@ -28,12 +28,15 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
   `authenticated`-only RLS. Real auth/sessions are not wired yet.
 - Native uses the authenticated client + `nearby_companions` / table queries.
 
-## Supabase
+## Backend (Supabase)
 
 - Project ref `kezkrcyfnjlugkrcbwmy` (Tokyo). The repo is CLI-linked.
-- Apply migrations: `supabase db push` (the Claude.ai Supabase MCP is connected to
-  a different account and can't reach this project — use the CLI).
-- Migrations live in `supabase/migrations/`. `0009` seeds 6 demo trainers.
+- Schema / migrations live in `backend/` (renamed from `supabase/`).
+- Apply migrations: `supabase db push` from the repo root.
+- The Supabase CLI hard-requires a folder named `supabase`. On Windows, create a
+  junction once: `cmd /c mklink /J supabase backend` (gitignored). On macOS/Linux:
+  `ln -s backend supabase`.
+- `0009` seeds 6 demo trainers (neutralized / no-op on fresh resets).
 
 ## Conventions / gotchas
 

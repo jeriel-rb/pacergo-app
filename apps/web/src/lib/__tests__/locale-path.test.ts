@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getCurrentLocale,
+  getLocalizedHref,
   getLocalizedPath,
   pathWithoutLeadingLocale,
 } from "@/lib/locale-path";
@@ -33,5 +34,11 @@ describe("locale-path", () => {
   it("handles the root path in both directions", () => {
     expect(getLocalizedPath("/", "en")).toBe("/en");
     expect(getLocalizedPath("/en", "zh")).toBe("/");
+  });
+
+  it("localizes hrefs with hash fragments", () => {
+    expect(getLocalizedHref("/#how-it-works", "en")).toBe("/en#how-it-works");
+    expect(getLocalizedHref("/#how-it-works", "zh")).toBe("/#how-it-works");
+    expect(getLocalizedHref("/legal/terms", "en")).toBe("/en/legal/terms");
   });
 });

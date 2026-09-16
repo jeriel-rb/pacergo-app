@@ -20,8 +20,9 @@ describe("export column sets match spec §5.2 B-9", () => {
   it("users export has name columns and no ID columns", () => {
     const headers = USERS_EXPORT.columns.map((c) => c.header);
     expect(headers).toContain("Display Name");
-    expect(headers).toContain("Is Admin");
     expect(headers).toContain("Created At");
+    expect(headers).not.toContain("Is Admin");
+    expect(headers).not.toContain("Is Companion");
     expect(hasIdColumn(headers)).toBe(false);
     expect(USERS_EXPORT.resource).toBe("users");
   });
@@ -32,6 +33,8 @@ describe("export column sets match spec §5.2 B-9", () => {
     expect(headers).toContain("Price NTD");
     expect(headers).toContain("Rating Avg");
     expect(headers).toContain("Created At");
+    expect(headers).not.toContain("Free");
+    expect(headers).not.toContain("Is Companion");
     expect(hasIdColumn(headers)).toBe(false);
     expect(TRAINERS_EXPORT.resource).toBe("trainers");
   });
@@ -55,6 +58,7 @@ describe("export column sets match spec §5.2 B-9", () => {
     ]) {
       expect(headers).toContain(required);
     }
+    expect(headers).not.toContain("Free");
     expect(hasIdColumn(headers)).toBe(false);
     expect(ORDERS_EXPORT.resource).toBe("orders");
   });
@@ -74,6 +78,71 @@ describe("export column sets match spec §5.2 B-9", () => {
       (c) => c.header === "Bank Account (masked)",
     )!;
     expect(col.cell(row)).not.toBe("807-1234567-89");
+  });
+});
+
+describe("boolean flags are omitted from all exports", () => {
+  const allExports = [
+    USERS_EXPORT,
+    TRAINERS_EXPORT,
+    ORDERS_EXPORT,
+    WITHDRAWALS_EXPORT,
+  ];
+
+  it("never serialises true/false boolean fields", () => {
+    const row = {
+      display_name: "Test User",
+      home_area: "Taipei",
+      experience_level: "intermediate",
+      is_companion: true,
+      is_admin: false,
+      is_free: false,
+      tier: "A",
+      price_ntd: 1000,
+      rating_avg: 4.5,
+      rating_count: 10,
+      created_at: "2026-10-01T09:55:00Z",
+      seeker_name: "Alice",
+      companion_name: "Trainer",
+      activity_slug: "gym",
+      scheduled_start: "2026-10-01T10:00:00Z",
+      duration_min: 60,
+      location_name: "Taipei",
+      agreed_price: 1000,
+      merchant_order_no: "PG1",
+      provider_trade_no: "NP1",
+      provider: "simulated",
+      provider_type: "simulated",
+      gross_amount: 1000,
+      platform_fee_rate: 0.05,
+      platform_fee_amount: 50,
+      processing_fee_rate: 0,
+      processing_fee_amount: 0,
+      trainer_payable: 950,
+      payment_status: "paid",
+      refund_status: "none",
+      service_completed_at: null,
+      settlement_hold_until: null,
+      settlement_eligibility_status: "eligible",
+      settlement_status: "unsettled",
+      paid_at: "2026-10-01T10:05:00Z",
+      failed_at: null,
+      expired_at: null,
+      trainer_name: "Trainer",
+      amount: 950,
+      bank_account_mask: "****6789",
+      status: "requested",
+      reason_note: null,
+      requested_at: "2026-10-01T10:00:00Z",
+      updated_at: "2026-10-01T10:00:00Z",
+      settled_at: null,
+    } as unknown as UnknownRow;
+
+    for (const def of allExports) {
+      const csv = toCsv(def, [row]);
+      expect(csv).not.toMatch(/\btrue\b/i);
+      expect(csv).not.toMatch(/\bfalse\b/i);
+    }
   });
 });
 

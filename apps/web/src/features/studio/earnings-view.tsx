@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatInAppTimeZone } from "@pacergo/shared";
 import type { EarningsData, WithdrawalStatus } from "@/lib/earnings";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -15,6 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/shared/components/ui/dialog";
+import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
 import { requestWithdrawal } from "./earnings-actions";
 
@@ -22,9 +24,18 @@ function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
 }
 
+function formatStamp(iso: string, locale: "zh" | "en"): string {
+  return formatInAppTimeZone(iso, locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZoneName: "short",
+  });
+}
+
 /** B-4: trainer's own orders, available balance, and withdrawal request flow. */
 export function EarningsView({ data }: { data: EarningsData }) {
   const { t } = useTranslation("studio");
+  const locale = useLocale();
   const router = useRouter();
 
   return (
@@ -70,7 +81,7 @@ export function EarningsView({ data }: { data: EarningsData }) {
               </div>
               <p className="text-xs text-muted-foreground">
                 {o.scheduled_start
-                  ? new Date(o.scheduled_start).toLocaleString()
+                  ? formatStamp(o.scheduled_start, locale)
                   : "—"}
               </p>
               <div className="flex flex-wrap gap-1.5 pt-1">
@@ -101,7 +112,7 @@ export function EarningsView({ data }: { data: EarningsData }) {
               <div className="min-w-0">
                 <p className="font-medium">{ntd(w.amount)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(w.requested_at).toLocaleString()}
+                  {formatStamp(w.requested_at, locale)}
                 </p>
               </div>
               <WithdrawalStatusBadge status={w.status} />

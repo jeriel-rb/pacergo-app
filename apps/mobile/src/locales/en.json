@@ -237,17 +237,10 @@
     "subtitle": "A 60-minute menu built for you: 10 min warm-up + 40 min training + 10 min cool-down",
     "goalLabel": "Goal",
     "goal": {
-      "fat_loss": "Fat Loss",
       "muscle_gain": "Build Muscle",
-      "endurance": "Endurance",
-      "flexibility": "Flexibility",
-      "functional": "Functional"
-    },
-    "ageLabel": "Age group",
-    "age": {
-      "youth": "Youth 15-25",
-      "adult": "Adult 26-45",
-      "senior": "Senior 46+"
+      "fat_loss": "Fat Loss",
+      "functional": "Functional",
+      "general_fitness": "General Fitness"
     },
     "levelLabel": "Level",
     "level": {
@@ -268,25 +261,28 @@
     },
     "freqLabel": "Training frequency",
     "freq": {
-      "low": "1–2 days/wk",
-      "mid": "3–4 days/wk",
-      "high": "5+ days/wk"
+      "every_day": "Every day",
+      "every_2_days": "Every 2 days",
+      "3x": "3x a week",
+      "2x": "2x a week",
+      "1x": "1x a week"
     },
     "locationLabel": "Training place",
     "location": {
-      "home": "Home (no gear)",
-      "full_gym": "Full gym",
-      "limited_gym": "Limited-gear gym"
+      "gym": "Gym (Full Equipment)",
+      "home": "Home (Dumbbells + Bands)",
+      "bodyweight": "Bodyweight Only",
+      "outdoor": "Outdoor"
     },
     "dietLabel": "Diet mode",
     "diet": {
-      "none": "No specific",
+      "none": "Balanced",
       "muscle_gain": "Muscle gain",
       "fat_loss": "Fat loss",
       "intermittent_fasting": "Fasting (IF)"
     },
     "generate": "Generate menu",
-    "empty": "Pick a goal, age group and level to generate your menu"
+    "empty": "Pick a goal and level to generate your menu"
   },
   "home": {
     "guest": "there",

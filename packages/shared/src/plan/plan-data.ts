@@ -1,5 +1,4 @@
 import type {
-  AgeBand,
   DietMode,
   TrainingFrequency,
   TrainingGoal,
@@ -8,51 +7,43 @@ import type {
 } from "../enums/training";
 import type { ExperienceLevel } from "../enums/experience";
 import type { PlanGender } from "../enums/gender";
+import type { Bi, DietGuidance } from "./plan-types";
 
 /**
- * Authored content for the AI training-menu composer. Everything here is
- * written in plain, beginner-safe language (no pro jargon), authored in
- * zh-TW first with an English pair for every string — the composer picks
- * `sel.locale` at render time. Assembled into a fixed 60-minute session:
- * warm-up 10 min + main training 40 min + cool-down 10 min.
+ * Authored content for the Personalized Workout Plan Generator (Beta).
+ * Plain, beginner-safe language, authored zh-TW first with an English pair
+ * for every string. This is curated content, not the full ≥80-exercise
+ * database (A-7) — that's a separate, larger content-authoring pass; this
+ * gives every goal×location combination in the current 4×4 matrix a
+ * complete, non-empty session so the structured data model (A-2) has real
+ * content to assemble into weeks.
  */
-
-/** A bilingual string pair. `pick(bi, locale)` in plan-composer.ts selects one. */
-export interface Bi {
-  zh: string;
-  en: string;
-}
 
 /* ---------------------------------------------------------------- labels */
 
 export const GOAL_TITLE: Record<TrainingGoal, Bi> = {
-  fat_loss: { zh: "減脂塑形", en: "Fat Loss" },
   muscle_gain: { zh: "增肌訓練", en: "Muscle Gain" },
-  endurance: { zh: "耐力提升", en: "Endurance" },
-  flexibility: { zh: "柔韌伸展", en: "Flexibility" },
+  fat_loss: { zh: "減脂塑形", en: "Fat Loss" },
   functional: { zh: "功能性表現", en: "Functional Performance" },
+  general_fitness: { zh: "綜合體能", en: "General Fitness" },
 };
 
 export const GOAL_INTRO: Record<TrainingGoal, Bi> = {
-  fat_loss: {
-    zh: "有氧與肌力交替，提高心跳、多消耗熱量，同時保住肌肉",
-    en: "alternating cardio and strength work to raise your heart rate and burn more calories while keeping your muscle",
-  },
   muscle_gain: {
     zh: "以基本肌力動作為主，循序加重，穩穩把肌肉練起來",
     en: "core strength moves with steady, gradual overload to build muscle the safe way",
   },
-  endurance: {
-    zh: "用間歇與穩定配速練心肺，讓你越動越不容易喘",
-    en: "intervals and steady-pace work to train your cardio so you get less winded over time",
-  },
-  flexibility: {
-    zh: "全身伸展與放鬆，改善緊繃、增加活動度",
-    en: "full-body stretching and release to ease tightness and improve your range of motion",
+  fat_loss: {
+    zh: "有氧與肌力交替，提高心跳、多消耗熱量，同時保住肌肉",
+    en: "alternating cardio and strength work to raise your heart rate and burn more calories while keeping your muscle",
   },
   functional: {
     zh: "Hyrox / CrossFit 式混合訓練，心肺與爆發力一起練",
     en: "Hyrox / CrossFit-style mixed training combining cardio and explosive power",
+  },
+  general_fitness: {
+    zh: "均衡訓練心肺、肌力與柔軟度，全面提升日常體能",
+    en: "a balanced mix of cardio, strength, and mobility work to build well-rounded everyday fitness",
   },
 };
 
@@ -68,32 +59,16 @@ export const LEVEL_LABEL: Record<ExperienceLevel, Bi> = {
 };
 
 export const LOCATION_LABEL: Record<TrainingLocation, Bi> = {
-  home: { zh: "居家徒手", en: "Home (Bodyweight)" },
-  full_gym: { zh: "全功能健身房", en: "Full Gym" },
-  limited_gym: { zh: "有限器材健身房", en: "Limited-Equipment Gym" },
-};
-
-/* ------------------------------------------------------------- age notes */
-
-/** Short age-band framing prepended to every plan (locale follows the UI). */
-export const AGE_NOTE: Record<AgeBand, Bi> = {
-  youth: {
-    zh: "**年齡層提醒（青少年 15–25）：** 身體恢復快，重點放在學會正確姿勢與建立規律運動習慣，避免過度訓練與比較重量。",
-    en: "**Age note (Youth 15–25):** You recover fast — focus on learning proper form and building a consistent habit rather than chasing heavy loads.",
-  },
-  adult: {
-    zh: "**年齡層提醒（成人 26–45）：** 時間有限，重視訓練效率與作息平衡，安排好工作、訓練與恢復的節奏。",
-    en: "**Age note (Adult 26–45):** Time is tight — prioritize training efficiency and balance work, training, and recovery.",
-  },
-  senior: {
-    zh: "**年齡層提醒（熟齡 46+）：** 關節與恢復需多留意，加強暖身、循序漸進，必要時先諮詢專業教練或醫師。",
-    en: "**Age note (Senior 46+):** Mind your joints and recovery — warm up thoroughly, progress gradually, and check with a coach or doctor when in doubt.",
-  },
+  gym: { zh: "健身房（全功能器材）", en: "Gym (Full Equipment)" },
+  home: { zh: "居家（啞鈴＋彈力帶）", en: "Home (Dumbbells + Bands)" },
+  bodyweight: { zh: "純徒手", en: "Bodyweight Only" },
+  outdoor: { zh: "戶外", en: "Outdoor" },
 };
 
 /* ----------------------------------------------- weight-class guidance */
 
-/** Body-type guidance, interpreted per gender. */
+/** Body-type guidance, interpreted per gender. Unchanged by the A-1 re-scope
+ *  — weight class is still input #5, paired with gender. */
 export const WEIGHT_NOTE: Record<PlanGender, Record<WeightClass, Bi>> = {
   male: {
     slim: {
@@ -128,71 +103,57 @@ export const WEIGHT_NOTE: Record<PlanGender, Record<WeightClass, Bi>> = {
 /* -------------------------------------------------- weekly schedule */
 
 export const FREQUENCY_LABEL: Record<TrainingFrequency, Bi> = {
-  low: { zh: "一週 1–2 天", en: "1–2 days a week" },
-  mid: { zh: "一週 3–4 天", en: "3–4 days a week" },
-  high: { zh: "一週 5 天以上", en: "5+ days a week" },
+  every_day: { zh: "每天", en: "Every day" },
+  every_2_days: { zh: "每 2 天", en: "Every 2 days" },
+  "3x": { zh: "一週 3 次", en: "3x a week" },
+  "2x": { zh: "一週 2 次", en: "2x a week" },
+  "1x": { zh: "一週 1 次", en: "1x a week" },
 };
 
-const WEEKDAY: [Bi, Bi, Bi, Bi, Bi, Bi, Bi] = [
-  { zh: "週一", en: "Mon" },
-  { zh: "週二", en: "Tue" },
-  { zh: "週三", en: "Wed" },
-  { zh: "週四", en: "Thu" },
-  { zh: "週五", en: "Fri" },
-  { zh: "週六", en: "Sat" },
-  { zh: "週日", en: "Sun" },
-];
-
-interface WeeklySchedule {
-  /** Rows of [day, arrangement] for the weekly table. */
-  rows: [Bi, Bi][];
+interface WeeklyScheduleDef {
+  /** true = training day, at each of the 7 weekday positions. */
+  trainingDays: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
   note: Bi;
 }
 
-export const WEEKLY_SCHEDULE: Record<TrainingFrequency, WeeklySchedule> = {
-  low: {
-    rows: [
-      [WEEKDAY[0], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[1], { zh: "休息", en: "Rest" }],
-      [WEEKDAY[2], { zh: "休息 / 散步 20 分鐘", en: "Rest / 20-min walk" }],
-      [WEEKDAY[3], { zh: "本菜單（60 分鐘，可省略）", en: "This menu (60 min, optional)" }],
-      [WEEKDAY[4], { zh: "休息", en: "Rest" }],
-      [WEEKDAY[5], { zh: "休息 / 戶外活動", en: "Rest / outdoor activity" }],
-      [WEEKDAY[6], { zh: "完全休息", en: "Full rest" }],
-    ],
+/** Which weekdays are training days for each frequency, and the framing
+ *  note shown under the weekly table. Same pattern repeats for all 4 weeks
+ *  — the spec has no requirement that content vary week to week, only that
+ *  all 4 weeks are generated and visible (A-2/A-3). */
+export const WEEKLY_SCHEDULE: Record<TrainingFrequency, WeeklyScheduleDef> = {
+  every_day: {
+    trainingDays: [true, true, true, true, true, true, true],
     note: {
-      zh: "訓練天數較少時，每次請完整做完 60 分鐘，平日多走路、爬樓梯，把日常活動量補起來。",
-      en: "With fewer training days, complete the full 60 minutes each time — walk more and take the stairs on off days to keep your daily activity up.",
+      zh: "每天都排了菜單，但身體需要恢復——任一天感覺特別疲勞時，把當天改成散步或伸展也沒關係。",
+      en: "Every day has a session, but your body still needs recovery — if any day feels especially rough, swap it for a walk or a stretch instead.",
     },
   },
-  mid: {
-    rows: [
-      [WEEKDAY[0], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[1], { zh: "休息 / 輕鬆走路", en: "Rest / easy walk" }],
-      [WEEKDAY[2], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[3], { zh: "休息", en: "Rest" }],
-      [WEEKDAY[4], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[5], { zh: "輕鬆有氧或伸展 30 分鐘（可選）", en: "Easy cardio or 30-min stretch (optional)" }],
-      [WEEKDAY[6], { zh: "完全休息", en: "Full rest" }],
-    ],
+  every_2_days: {
+    trainingDays: [true, false, true, false, true, false, true],
     note: {
-      zh: "隔天訓練、隔天恢復是最穩的節奏；睡眠充足時進步最快。",
-      en: "Alternating a training day with a recovery day is the steadiest rhythm — progress is fastest when you're sleeping enough.",
+      zh: "訓練與休息交替是最穩的節奏；下週會從休息日接續，讓訓練與恢復持續交替。",
+      en: "Alternating a training day with a rest day is the steadiest rhythm — next week picks up from a rest day so the alternation keeps going.",
     },
   },
-  high: {
-    rows: [
-      [WEEKDAY[0], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[1], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[2], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[3], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[4], { zh: "本菜單（60 分鐘）", en: "This menu (60 min)" }],
-      [WEEKDAY[5], { zh: "輕鬆有氧 30 分鐘", en: "Easy cardio, 30 min" }],
-      [WEEKDAY[6], { zh: "完全休息", en: "Full rest" }],
-    ],
+  "3x": {
+    trainingDays: [true, false, true, false, true, false, false],
     note: {
-      zh: "連續訓練日請避免同一部位連續高強度——可以和其他目標的菜單交替，並確保每晚睡足 7 小時。",
-      en: "On back-to-back training days, avoid hitting the same muscle group hard two days running — alternate with a different goal's menu, and get a full 7 hours of sleep each night.",
+      zh: "訓練日之間至少間隔一天，讓身體有時間恢復；週末完全休息。",
+      en: "Leave at least a day between training days so your body has time to recover; take the weekend fully off.",
+    },
+  },
+  "2x": {
+    trainingDays: [false, true, false, false, true, false, false],
+    note: {
+      zh: "一週 2 次也能穩定進步，重點是每次都完整做完 60 分鐘，並在非訓練日多走動。",
+      en: "Twice a week is still enough to make steady progress — the key is completing the full 60 minutes each time, and staying active on off days.",
+    },
+  },
+  "1x": {
+    trainingDays: [false, false, true, false, false, false, false],
+    note: {
+      zh: "一週僅 1 次時，請務必完整做完全部 60 分鐘；其餘時間盡量增加日常活動量（走路、爬樓梯）補足。",
+      en: "With just 1 session a week, make sure to complete the full 60 minutes every time — fill the rest of the week with daily activity like walking and taking the stairs.",
     },
   },
 };
@@ -201,7 +162,30 @@ export const WEEKLY_SCHEDULE: Record<TrainingFrequency, WeeklySchedule> = {
 
 /** 10-minute warm-up, constrained by where the user trains. */
 export const WARMUP: Record<TrainingLocation, Bi[]> = {
+  gym: [
+    {
+      zh: "固定式單車或跑步機快走 — 4 分鐘（輕鬆、能聊天的強度）",
+      en: "Stationary bike or brisk treadmill walk — 4 min (easy, conversational pace)",
+    },
+    {
+      zh: "動態伸展：手臂繞環、髖部畫圈、腿部擺動 — 3 分鐘",
+      en: "Dynamic stretches: arm circles, hip circles, leg swings — 3 min",
+    },
+    { zh: "今天第一個動作的輕重量練習 1～2 組 — 3 分鐘", en: "1–2 light warm-up sets of today's first exercise — 3 min" },
+  ],
   home: [
+    {
+      zh: "跳繩或原地開合跳（膝蓋不適改踏步）— 3 分鐘",
+      en: "Jump rope or jumping jacks (step in place if your knees are sensitive) — 3 min",
+    },
+    {
+      zh: "動態伸展：手臂繞環、髖部畫圈、腿部擺動 — 3 分鐘",
+      en: "Dynamic stretches: arm circles, hip circles, leg swings — 3 min",
+    },
+    { zh: "彈力帶或輕啞鈴肩膀啟動 — 2 分鐘", en: "Resistance band or light dumbbell shoulder activation — 2 min" },
+    { zh: "今天第一個動作的輕重量練習 1 組 — 2 分鐘", en: "1 light warm-up set of today's first exercise — 2 min" },
+  ],
+  bodyweight: [
     {
       zh: "原地快走或輕鬆踏步 — 3 分鐘（讓身體熱起來、微微出汗）",
       en: "Brisk marching in place — 3 min (warm up until you break a light sweat)",
@@ -214,34 +198,22 @@ export const WARMUP: Record<TrainingLocation, Bi[]> = {
     },
     { zh: "手腕、腳踝繞環 — 1 分鐘", en: "Wrist and ankle circles — 1 min" },
   ],
-  full_gym: [
+  outdoor: [
     {
-      zh: "固定式單車或跑步機快走 — 4 分鐘（輕鬆、能聊天的強度）",
-      en: "Stationary bike or brisk treadmill walk — 4 min (easy, conversational pace)",
+      zh: "輕鬆慢走或原地小跳 — 4 分鐘（讓身體熱起來、微微出汗）",
+      en: "Easy walk or light jogging in place — 4 min (warm up until you break a light sweat)",
     },
     {
       zh: "動態伸展：手臂繞環、髖部畫圈、腿部擺動 — 3 分鐘",
       en: "Dynamic stretches: arm circles, hip circles, leg swings — 3 min",
     },
-    { zh: "今天第一個動作的輕重量練習 1～2 組 — 3 分鐘", en: "1–2 light warm-up sets of today's first exercise — 3 min" },
-  ],
-  limited_gym: [
-    {
-      zh: "跳繩或原地開合跳（膝蓋不適改踏步）— 3 分鐘",
-      en: "Jump rope or jumping jacks (step in place if your knees are sensitive) — 3 min",
-    },
-    {
-      zh: "動態伸展：手臂繞環、髖部畫圈、腿部擺動 — 3 分鐘",
-      en: "Dynamic stretches: arm circles, hip circles, leg swings — 3 min",
-    },
-    { zh: "彈力帶或輕啞鈴肩膀啟動 — 2 分鐘", en: "Resistance band or light dumbbell shoulder activation — 2 min" },
-    { zh: "今天第一個動作的輕重量練習 1 組 — 2 分鐘", en: "1 light warm-up set of today's first exercise — 2 min" },
+    { zh: "原地開合跳或高抬腿 — 3 分鐘", en: "Jumping jacks or high knees — 3 min" },
   ],
 };
 
 /* -------------------------------------------------------- cool-down */
 
-/** 10-minute cool-down, shared across goals. */
+/** 10-minute cool-down, shared across goals and locations. */
 export const COOLDOWN: Bi[] = [
   {
     zh: "原地緩和走動＋深呼吸 — 2 分鐘（讓心跳慢慢降下來）",
@@ -285,18 +257,6 @@ const CIRCUIT: Scheme = {
   advanced: { zh: "共 5 輪，每輪之間休息 60 秒。", en: "5 rounds total, resting 60 seconds between rounds." },
 };
 
-const FLEX_SCHEME: Scheme = {
-  beginner: {
-    zh: "由上到下依序完成為一輪，共 2 輪。伸展到「有點緊但不痛」的程度就好，全程保持呼吸。",
-    en: "Work through the moves top to bottom for one round, 2 rounds total. Stretch to \"a bit tight but not painful,\" and keep breathing throughout.",
-  },
-  intermediate: { zh: "共 3 輪，每個停留時間可以加長 15 秒。", en: "3 rounds total — hold each stretch 15 seconds longer." },
-  advanced: {
-    zh: "共 3 輪，配合深呼吸慢慢加深幅度，不要彈震。",
-    en: "3 rounds total — deepen each stretch gradually with your breath, no bouncing.",
-  },
-};
-
 const FUNCTIONAL_SCHEME: Scheme = {
   beginner: {
     zh: "站式循環：由上到下依序完成為一輪，共 3 輪，每輪之間休息 2 分鐘。動作不熟就用括號內的簡化版本。",
@@ -312,8 +272,20 @@ const FUNCTIONAL_SCHEME: Scheme = {
   },
 };
 
+/** General-fitness runs as an easier, balanced circuit — a bit of cardio,
+ *  a bit of strength, a bit of mobility, nothing maximal. */
+const GENERAL_SCHEME: Scheme = {
+  beginner: {
+    zh: "由上到下依序完成為一輪，共 3 輪，每輪之間休息 90 秒。強度以「有點喘但能聊天」為準。",
+    en: "Work through the moves top to bottom for one round, 3 rounds total, resting 90 seconds between rounds. Keep intensity at \"a bit breathless but still able to chat.\"",
+  },
+  intermediate: { zh: "共 4 輪，每輪之間休息 75 秒。", en: "4 rounds total, resting 75 seconds between rounds." },
+  advanced: { zh: "共 5 輪，每輪之間休息 60 秒。", en: "5 rounds total, resting 60 seconds between rounds." },
+};
+
 interface MainBlock {
   scheme: Scheme;
+  focus: Bi;
   /** Exercise name + a single, level-independent prescription. */
   exercises: { name: Bi; rx: Bi }[];
 }
@@ -322,25 +294,62 @@ export const MAIN_BLOCK: Record<
   TrainingGoal,
   Record<TrainingLocation, MainBlock>
 > = {
-  fat_loss: {
-    home: {
-      scheme: CIRCUIT,
+  muscle_gain: {
+    gym: {
+      scheme: STRENGTH,
+      focus: { zh: "全身肌力", en: "Full-body strength" },
       exercises: [
-        { name: { zh: "徒手深蹲", en: "Bodyweight squat" }, rx: { zh: "12 下", en: "12 reps" } },
-        { name: { zh: "伏地挺身（可跪姿）", en: "Push-up (kneeling okay)" }, rx: { zh: "8～10 下", en: "8–10 reps" } },
+        { name: { zh: "史密斯機臥推", en: "Smith machine bench press" }, rx: { zh: "10 下", en: "10 reps" } },
+        { name: { zh: "腿推機（Leg Press）", en: "Leg press" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "滑輪下拉", en: "Lat pulldown" }, rx: { zh: "10 下", en: "10 reps" } },
+        { name: { zh: "啞鈴肩推", en: "Dumbbell shoulder press" }, rx: { zh: "10 下", en: "10 reps" } },
+        { name: { zh: "坐姿划船機", en: "Seated cable row" }, rx: { zh: "12 下", en: "12 reps" } },
+      ],
+    },
+    home: {
+      scheme: STRENGTH,
+      focus: { zh: "全身肌力（啞鈴）", en: "Full-body strength (dumbbells)" },
+      exercises: [
+        { name: { zh: "啞鈴臥推（或地板臥推）", en: "Dumbbell bench press (or floor press)" }, rx: { zh: "10 下", en: "10 reps" } },
+        { name: { zh: "啞鈴酒杯深蹲", en: "Dumbbell goblet squat" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "啞鈴單臂划船", en: "Single-arm dumbbell row" }, rx: { zh: "左右各 10 下", en: "10 reps each side" } },
+        { name: { zh: "啞鈴肩推", en: "Dumbbell shoulder press" }, rx: { zh: "10 下", en: "10 reps" } },
         {
-          name: { zh: "登山者（手撐地交替抬膝）", en: "Mountain climbers" },
-          rx: { zh: "30 秒", en: "30 sec" },
-        },
-        { name: { zh: "臀橋（躺姿抬臀）", en: "Glute bridge" }, rx: { zh: "15 下", en: "15 reps" } },
-        {
-          name: { zh: "原地高抬腿（可改快速踏步）", en: "High knees (or fast marching)" },
-          rx: { zh: "30 秒", en: "30 sec" },
+          name: { zh: "啞鈴羅馬尼亞硬舉（屁股往後推、背打直）", en: "Dumbbell Romanian deadlift (hinge back, keep your back flat)" },
+          rx: { zh: "12 下", en: "12 reps" },
         },
       ],
     },
-    full_gym: {
+    bodyweight: {
+      scheme: STRENGTH,
+      focus: { zh: "全身肌力（徒手）", en: "Full-body strength (bodyweight)" },
+      exercises: [
+        {
+          name: { zh: "徒手深蹲（進階可放慢下蹲 3 秒）", en: "Bodyweight squat (advanced: 3-sec slow descent)" },
+          rx: { zh: "15 下", en: "15 reps" },
+        },
+        { name: { zh: "弓步蹲（扶牆保持平衡）", en: "Lunge (hold a wall for balance)" }, rx: { zh: "左右各 10 下", en: "10 reps each side" } },
+        { name: { zh: "伏地挺身（可跪姿或推牆）", en: "Push-up (kneeling or wall push-up okay)" }, rx: { zh: "8～12 下", en: "8–12 reps" } },
+        { name: { zh: "臀橋（進階可單腳）", en: "Glute bridge (advanced: single-leg)" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "棒式（Plank）", en: "Plank" }, rx: { zh: "30～45 秒", en: "30–45 sec" } },
+      ],
+    },
+    outdoor: {
+      scheme: STRENGTH,
+      focus: { zh: "全身肌力（戶外）", en: "Full-body strength (outdoor)" },
+      exercises: [
+        { name: { zh: "公園長椅深蹲", en: "Park bench squat" }, rx: { zh: "15 下", en: "15 reps" } },
+        { name: { zh: "長椅抬升伏地挺身", en: "Incline push-up on a bench" }, rx: { zh: "10～12 下", en: "10–12 reps" } },
+        { name: { zh: "階梯或路緣弓步蹲", en: "Step or curb lunge" }, rx: { zh: "左右各 10 下", en: "10 reps each side" } },
+        { name: { zh: "長椅撐體臀橋", en: "Bench-supported hip thrust" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "棒式（Plank）", en: "Plank" }, rx: { zh: "30～45 秒", en: "30–45 sec" } },
+      ],
+    },
+  },
+  fat_loss: {
+    gym: {
       scheme: CIRCUIT,
+      focus: { zh: "全身循環（燃脂）", en: "Full-body circuit (fat burning)" },
       exercises: [
         { name: { zh: "腿推機（Leg Press）", en: "Leg press" }, rx: { zh: "12 下", en: "12 reps" } },
         { name: { zh: "坐姿划船機", en: "Seated cable row" }, rx: { zh: "12 下", en: "12 reps" } },
@@ -352,8 +361,9 @@ export const MAIN_BLOCK: Record<
         },
       ],
     },
-    limited_gym: {
+    home: {
       scheme: CIRCUIT,
+      focus: { zh: "全身循環（啞鈴）", en: "Full-body circuit (dumbbells)" },
       exercises: [
         {
           name: { zh: "啞鈴酒杯深蹲（胸前抱啞鈴）", en: "Dumbbell goblet squat" },
@@ -368,173 +378,39 @@ export const MAIN_BLOCK: Record<
         },
       ],
     },
-  },
-  muscle_gain: {
-    home: {
-      scheme: STRENGTH,
-      exercises: [
-        {
-          name: { zh: "徒手深蹲（進階可放慢下蹲 3 秒）", en: "Bodyweight squat (advanced: 3-sec slow descent)" },
-          rx: { zh: "15 下", en: "15 reps" },
-        },
-        { name: { zh: "弓步蹲（扶牆保持平衡）", en: "Lunge (hold a wall for balance)" }, rx: { zh: "左右各 10 下", en: "10 reps each side" } },
-        { name: { zh: "伏地挺身（可跪姿或推牆）", en: "Push-up (kneeling or wall push-up okay)" }, rx: { zh: "8～12 下", en: "8–12 reps" } },
-        { name: { zh: "臀橋（進階可單腳）", en: "Glute bridge (advanced: single-leg)" }, rx: { zh: "12 下", en: "12 reps" } },
-        { name: { zh: "棒式（Plank）", en: "Plank" }, rx: { zh: "30～45 秒", en: "30–45 sec" } },
-      ],
-    },
-    full_gym: {
-      scheme: STRENGTH,
-      exercises: [
-        { name: { zh: "史密斯機臥推", en: "Smith machine bench press" }, rx: { zh: "10 下", en: "10 reps" } },
-        { name: { zh: "腿推機（Leg Press）", en: "Leg press" }, rx: { zh: "12 下", en: "12 reps" } },
-        { name: { zh: "滑輪下拉", en: "Lat pulldown" }, rx: { zh: "10 下", en: "10 reps" } },
-        { name: { zh: "啞鈴肩推", en: "Dumbbell shoulder press" }, rx: { zh: "10 下", en: "10 reps" } },
-        { name: { zh: "坐姿划船機", en: "Seated cable row" }, rx: { zh: "12 下", en: "12 reps" } },
-      ],
-    },
-    limited_gym: {
-      scheme: STRENGTH,
-      exercises: [
-        { name: { zh: "啞鈴臥推（或地板臥推）", en: "Dumbbell bench press (or floor press)" }, rx: { zh: "10 下", en: "10 reps" } },
-        { name: { zh: "啞鈴酒杯深蹲", en: "Dumbbell goblet squat" }, rx: { zh: "12 下", en: "12 reps" } },
-        { name: { zh: "啞鈴單臂划船", en: "Single-arm dumbbell row" }, rx: { zh: "左右各 10 下", en: "10 reps each side" } },
-        { name: { zh: "啞鈴肩推", en: "Dumbbell shoulder press" }, rx: { zh: "10 下", en: "10 reps" } },
-        {
-          name: { zh: "啞鈴羅馬尼亞硬舉（屁股往後推、背打直）", en: "Dumbbell Romanian deadlift (hinge back, keep your back flat)" },
-          rx: { zh: "12 下", en: "12 reps" },
-        },
-      ],
-    },
-  },
-  endurance: {
-    home: {
+    bodyweight: {
       scheme: CIRCUIT,
+      focus: { zh: "全身循環（徒手）", en: "Full-body circuit (bodyweight)" },
       exercises: [
-        { name: { zh: "原地高抬腿", en: "High knees" }, rx: { zh: "45 秒", en: "45 sec" } },
+        { name: { zh: "徒手深蹲", en: "Bodyweight squat" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "伏地挺身（可跪姿）", en: "Push-up (kneeling okay)" }, rx: { zh: "8～10 下", en: "8–10 reps" } },
         {
-          name: { zh: "開合跳（膝蓋不適改踏步開合）", en: "Jumping jacks (step version if knees are sensitive)" },
-          rx: { zh: "45 秒", en: "45 sec" },
+          name: { zh: "登山者（手撐地交替抬膝）", en: "Mountain climbers" },
+          rx: { zh: "30 秒", en: "30 sec" },
         },
-        { name: { zh: "登山者", en: "Mountain climbers" }, rx: { zh: "30 秒", en: "30 sec" } },
+        { name: { zh: "臀橋（躺姿抬臀）", en: "Glute bridge" }, rx: { zh: "15 下", en: "15 reps" } },
         {
-          name: { zh: "波比跳（簡化版：不做伏地挺身）", en: "Burpee (simplified: skip the push-up)" },
-          rx: { zh: "8 下", en: "8 reps" },
-        },
-        {
-          name: { zh: "原地慢跑或踏步恢復", en: "Easy jog or march in place (recovery)" },
-          rx: { zh: "90 秒（調整呼吸）", en: "90 sec (catch your breath)" },
+          name: { zh: "原地高抬腿（可改快速踏步）", en: "High knees (or fast marching)" },
+          rx: { zh: "30 秒", en: "30 sec" },
         },
       ],
     },
-    full_gym: {
-      scheme: {
-        beginner: {
-          zh: "跑步機、飛輪或划船機擇一。「快」= 微喘、勉強能講短句；「慢」= 輕鬆能聊天。快慢段共做 6 回合。",
-          en: "Pick treadmill, bike, or rowing machine. \"Fast\" = slightly breathless, can only manage short phrases; \"slow\" = easy, conversational. 6 fast/slow rounds total.",
-        },
-        intermediate: {
-          zh: "快慢段共做 8 回合，「快」段可以再快一點。",
-          en: "8 fast/slow rounds total — push the \"fast\" segments a bit harder.",
-        },
-        advanced: {
-          zh: "快慢段共做 10 回合，最後 2 回合挑戰維持速度不掉。",
-          en: "10 fast/slow rounds total — try to hold your pace on the last 2 rounds.",
-        },
-      },
-      exercises: [
-        { name: { zh: "輕鬆配速起步", en: "Easy-pace start" }, rx: { zh: "5 分鐘", en: "5 min" } },
-        { name: { zh: "快段", en: "Fast segment" }, rx: { zh: "1 分鐘", en: "1 min" } },
-        { name: { zh: "慢段（恢復）", en: "Slow segment (recovery)" }, rx: { zh: "2 分鐘", en: "2 min" } },
-        {
-          name: { zh: "穩定配速收尾", en: "Steady-pace finish" },
-          rx: { zh: "8 分鐘（能講話的強度）", en: "8 min (conversational intensity)" },
-        },
-      ],
-    },
-    limited_gym: {
+    outdoor: {
       scheme: CIRCUIT,
+      focus: { zh: "戶外循環（燃脂）", en: "Outdoor circuit (fat burning)" },
       exercises: [
-        { name: { zh: "跳繩", en: "Jump rope" }, rx: { zh: "1 分鐘", en: "1 min" } },
-        {
-          name: { zh: "啞鈴擺盪（屁股往後推再往前甩）", en: "Dumbbell swing (hinge back, then swing forward)" },
-          rx: { zh: "15 下", en: "15 reps" },
-        },
+        { name: { zh: "快走或慢跑", en: "Brisk walk or jog" }, rx: { zh: "3 分鐘", en: "3 min" } },
+        { name: { zh: "階梯或路緣上下踏步", en: "Step-ups on a curb or steps" }, rx: { zh: "1 分鐘", en: "1 min" } },
+        { name: { zh: "公園長椅深蹲跳（簡化版：徒手深蹲）", en: "Bench squat jump (simplified: bodyweight squat)" }, rx: { zh: "12 下", en: "12 reps" } },
         { name: { zh: "登山者", en: "Mountain climbers" }, rx: { zh: "30 秒", en: "30 sec" } },
-        { name: { zh: "踏箱或階梯踏步", en: "Box or stair step-up" }, rx: { zh: "左右各 10 下", en: "10 reps each side" } },
-        { name: { zh: "走動恢復", en: "Walking recovery" }, rx: { zh: "1 分鐘", en: "1 min" } },
-      ],
-    },
-  },
-  flexibility: {
-    home: {
-      scheme: FLEX_SCHEME,
-      exercises: [
-        {
-          name: { zh: "貓牛式（四足跪姿拱背、塌背交替）", en: "Cat-cow (on all fours, alternate arching and dropping your back)" },
-          rx: { zh: "10 次", en: "10 reps" },
-        },
-        { name: { zh: "下犬式停留", en: "Downward dog hold" }, rx: { zh: "30 秒", en: "30 sec" } },
-        {
-          name: { zh: "弓步髖部伸展（前腿弓、後腿跪）", en: "Lunge hip stretch (front leg bent, back knee down)" },
-          rx: { zh: "左右各 45 秒", en: "45 sec each side" },
-        },
-        {
-          name: { zh: "坐姿前彎（摸向腳尖，不用碰到）", en: "Seated forward fold (reach for your toes, no need to touch)" },
-          rx: { zh: "45 秒", en: "45 sec" },
-        },
-        { name: { zh: "嬰兒式放鬆", en: "Child's pose release" }, rx: { zh: "1 分鐘", en: "1 min" } },
-      ],
-    },
-    full_gym: {
-      scheme: FLEX_SCHEME,
-      exercises: [
-        {
-          name: { zh: "滾筒放鬆大腿前側與外側", en: "Foam-roll front and outer thigh" },
-          rx: { zh: "各 1 分鐘", en: "1 min each" },
-        },
-        { name: { zh: "滾筒放鬆上背", en: "Foam-roll upper back" }, rx: { zh: "1 分鐘", en: "1 min" } },
-        { name: { zh: "貓牛式", en: "Cat-cow" }, rx: { zh: "10 次", en: "10 reps" } },
-        { name: { zh: "弓步髖部伸展", en: "Lunge hip stretch" }, rx: { zh: "左右各 45 秒", en: "45 sec each side" } },
-        { name: { zh: "坐姿前彎", en: "Seated forward fold" }, rx: { zh: "45 秒", en: "45 sec" } },
-      ],
-    },
-    limited_gym: {
-      scheme: FLEX_SCHEME,
-      exercises: [
-        {
-          name: { zh: "彈力帶腿後側伸展（躺姿勾腳拉帶）", en: "Band hamstring stretch (lying down, hook the band around your foot)" },
-          rx: { zh: "左右各 45 秒", en: "45 sec each side" },
-        },
-        { name: { zh: "貓牛式", en: "Cat-cow" }, rx: { zh: "10 次", en: "10 reps" } },
-        { name: { zh: "下犬式停留", en: "Downward dog hold" }, rx: { zh: "30 秒", en: "30 sec" } },
-        { name: { zh: "弓步髖部伸展", en: "Lunge hip stretch" }, rx: { zh: "左右各 45 秒", en: "45 sec each side" } },
-        { name: { zh: "嬰兒式放鬆", en: "Child's pose release" }, rx: { zh: "1 分鐘", en: "1 min" } },
+        { name: { zh: "短距離衝刺（30～50 公尺）", en: "Short sprint (30–50 m)" }, rx: { zh: "1 趟", en: "1 rep" } },
       ],
     },
   },
   functional: {
-    home: {
+    gym: {
       scheme: FUNCTIONAL_SCHEME,
-      exercises: [
-        {
-          name: { zh: "波比跳（簡化版：分解成蹲、後踩、站起）", en: "Burpee (simplified: break it into squat, step-back, stand)" },
-          rx: { zh: "8 下", en: "8 reps" },
-        },
-        { name: { zh: "深蹲跳（簡化版：徒手深蹲）", en: "Jump squat (simplified: bodyweight squat)" }, rx: { zh: "10 下", en: "10 reps" } },
-        { name: { zh: "登山者", en: "Mountain climbers" }, rx: { zh: "40 秒", en: "40 sec" } },
-        {
-          name: { zh: "弓步交替（簡化版：原地弓步蹲）", en: "Alternating lunges (simplified: static lunge)" },
-          rx: { zh: "左右各 8 下", en: "8 reps each side" },
-        },
-        {
-          name: { zh: "棒式肩碰（撐地輪流摸對側肩膀）", en: "Plank shoulder taps" },
-          rx: { zh: "20 下", en: "20 reps" },
-        },
-      ],
-    },
-    full_gym: {
-      scheme: FUNCTIONAL_SCHEME,
+      focus: { zh: "混合式訓練（Hyrox / CrossFit）", en: "Mixed training (Hyrox / CrossFit)" },
       exercises: [
         { name: { zh: "划船機", en: "Rowing machine" }, rx: { zh: "250 公尺", en: "250 m" } },
         {
@@ -552,8 +428,9 @@ export const MAIN_BLOCK: Record<
         },
       ],
     },
-    limited_gym: {
+    home: {
       scheme: FUNCTIONAL_SCHEME,
+      focus: { zh: "混合式訓練（啞鈴）", en: "Mixed training (dumbbells)" },
       exercises: [
         { name: { zh: "啞鈴農夫走路", en: "Dumbbell farmer's carry" }, rx: { zh: "30 秒", en: "30 sec" } },
         { name: { zh: "啞鈴擺盪", en: "Dumbbell swing" }, rx: { zh: "15 下", en: "15 reps" } },
@@ -568,6 +445,86 @@ export const MAIN_BLOCK: Record<
         },
       ],
     },
+    bodyweight: {
+      scheme: FUNCTIONAL_SCHEME,
+      focus: { zh: "混合式訓練（徒手）", en: "Mixed training (bodyweight)" },
+      exercises: [
+        {
+          name: { zh: "波比跳（簡化版：分解成蹲、後踩、站起）", en: "Burpee (simplified: break it into squat, step-back, stand)" },
+          rx: { zh: "8 下", en: "8 reps" },
+        },
+        { name: { zh: "深蹲跳（簡化版：徒手深蹲）", en: "Jump squat (simplified: bodyweight squat)" }, rx: { zh: "10 下", en: "10 reps" } },
+        { name: { zh: "登山者", en: "Mountain climbers" }, rx: { zh: "40 秒", en: "40 sec" } },
+        {
+          name: { zh: "弓步交替（簡化版：原地弓步蹲）", en: "Alternating lunges (simplified: static lunge)" },
+          rx: { zh: "左右各 8 下", en: "8 reps each side" },
+        },
+        {
+          name: { zh: "棒式肩碰（撐地輪流摸對側肩膀）", en: "Plank shoulder taps" },
+          rx: { zh: "20 下", en: "20 reps" },
+        },
+      ],
+    },
+    outdoor: {
+      scheme: FUNCTIONAL_SCHEME,
+      focus: { zh: "混合式訓練（戶外）", en: "Mixed training (outdoor)" },
+      exercises: [
+        { name: { zh: "背包負重走路", en: "Weighted backpack carry" }, rx: { zh: "30 公尺", en: "30 m" } },
+        { name: { zh: "階梯衝刺", en: "Stair sprint" }, rx: { zh: "1 趟", en: "1 rep" } },
+        { name: { zh: "公園長椅箱上跳（簡化版：踏步）", en: "Bench step-jump (simplified: step-up)" }, rx: { zh: "10 下", en: "10 reps" } },
+        { name: { zh: "登山者", en: "Mountain climbers" }, rx: { zh: "40 秒", en: "40 sec" } },
+        { name: { zh: "熊爬（手腳並用向前爬行）", en: "Bear crawl" }, rx: { zh: "10 公尺", en: "10 m" } },
+      ],
+    },
+  },
+  general_fitness: {
+    gym: {
+      scheme: GENERAL_SCHEME,
+      focus: { zh: "綜合體能（心肺＋肌力）", en: "General fitness (cardio + strength)" },
+      exercises: [
+        {
+          name: { zh: "飛輪或跑步機穩定配速", en: "Steady-pace bike or treadmill" },
+          rx: { zh: "3 分鐘（能聊天的強度）", en: "3 min (conversational pace)" },
+        },
+        { name: { zh: "腿推機（Leg Press）", en: "Leg press" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "坐姿划船機", en: "Seated cable row" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "滾筒或墊上伸展", en: "Foam-roll or mat stretch" }, rx: { zh: "1 分鐘", en: "1 min" } },
+        { name: { zh: "棒式（Plank）", en: "Plank" }, rx: { zh: "30 秒", en: "30 sec" } },
+      ],
+    },
+    home: {
+      scheme: GENERAL_SCHEME,
+      focus: { zh: "綜合體能（啞鈴）", en: "General fitness (dumbbells)" },
+      exercises: [
+        { name: { zh: "原地開合跳（膝蓋不適改踏步）", en: "Jumping jacks (step version if knees are sensitive)" }, rx: { zh: "45 秒", en: "45 sec" } },
+        { name: { zh: "啞鈴酒杯深蹲", en: "Dumbbell goblet squat" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "啞鈴單臂划船", en: "Single-arm dumbbell row" }, rx: { zh: "左右各 10 下", en: "10 reps each side" } },
+        { name: { zh: "弓步髖部伸展", en: "Lunge hip stretch" }, rx: { zh: "左右各 30 秒", en: "30 sec each side" } },
+        { name: { zh: "棒式（Plank）", en: "Plank" }, rx: { zh: "30 秒", en: "30 sec" } },
+      ],
+    },
+    bodyweight: {
+      scheme: GENERAL_SCHEME,
+      focus: { zh: "綜合體能（徒手）", en: "General fitness (bodyweight)" },
+      exercises: [
+        { name: { zh: "原地高抬腿", en: "High knees" }, rx: { zh: "30 秒", en: "30 sec" } },
+        { name: { zh: "徒手深蹲", en: "Bodyweight squat" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "伏地挺身（可跪姿）", en: "Push-up (kneeling okay)" }, rx: { zh: "8～10 下", en: "8–10 reps" } },
+        { name: { zh: "貓牛式（拱背、塌背交替）", en: "Cat-cow (alternate arching and dropping your back)" }, rx: { zh: "10 次", en: "10 reps" } },
+        { name: { zh: "嬰兒式放鬆", en: "Child's pose release" }, rx: { zh: "1 分鐘", en: "1 min" } },
+      ],
+    },
+    outdoor: {
+      scheme: GENERAL_SCHEME,
+      focus: { zh: "綜合體能（戶外）", en: "General fitness (outdoor)" },
+      exercises: [
+        { name: { zh: "輕鬆慢跑", en: "Easy jog" }, rx: { zh: "5 分鐘", en: "5 min" } },
+        { name: { zh: "公園長椅深蹲", en: "Park bench squat" }, rx: { zh: "12 下", en: "12 reps" } },
+        { name: { zh: "長椅抬升伏地挺身", en: "Incline push-up on a bench" }, rx: { zh: "8～10 下", en: "8–10 reps" } },
+        { name: { zh: "動態腿部擺動伸展", en: "Dynamic leg swing stretch" }, rx: { zh: "左右各 30 秒", en: "30 sec each side" } },
+        { name: { zh: "原地緩走收操", en: "Easy walk to finish" }, rx: { zh: "2 分鐘", en: "2 min" } },
+      ],
+    },
   },
 };
 
@@ -575,16 +532,6 @@ export const MAIN_BLOCK: Record<
 
 /** Goal-specific reminders appended to the notes section. */
 export const GOAL_NOTES: Record<TrainingGoal, Bi[]> = {
-  fat_loss: [
-    {
-      zh: "減脂的關鍵在「每週總量」——寧可每次強度低一點，也要穩定出席。",
-      en: "Fat loss comes down to weekly total volume — showing up consistently beats going all-out once and skipping the rest.",
-    },
-    {
-      zh: "體重不是唯一指標，腰圍、照片與體力進步一樣重要。",
-      en: "The scale isn't the only measure — waist size, progress photos, and how your fitness improves matter just as much.",
-    },
-  ],
   muscle_gain: [
     {
       zh: "同一肌群之間至少間隔 48 小時再練，肌肉是在休息時長大的。",
@@ -595,24 +542,14 @@ export const GOAL_NOTES: Record<TrainingGoal, Bi[]> = {
       en: "Once a rep target feels easy, add a small amount of weight next time (2.5–5 kg, or move to a harder variation).",
     },
   ],
-  endurance: [
+  fat_loss: [
     {
-      zh: "「快」的標準是微喘但不至於說不出話；喘到頭暈就立刻放慢。",
-      en: "\"Fast\" means slightly breathless but still able to speak — if you're gasping or feel dizzy, slow down immediately.",
+      zh: "減脂的關鍵在「每週總量」——寧可每次強度低一點，也要穩定出席。",
+      en: "Fat loss comes down to weekly total volume — showing up consistently beats going all-out once and skipping the rest.",
     },
     {
-      zh: "耐力進步需要 4～6 週的累積，先求完成、再求速度。",
-      en: "Endurance gains take 4–6 weeks to build up — focus on finishing the session first, speed comes later.",
-    },
-  ],
-  flexibility: [
-    {
-      zh: "伸展到「有點緊但不痛」即可，疼痛表示過頭了。",
-      en: "Stretch to \"a bit tight but not painful\" — pain means you've gone too far.",
-    },
-    {
-      zh: "每個停留都配合深呼吸，吐氣時再多沉一點點。",
-      en: "Breathe deeply through every hold, and ease a little deeper each time you exhale.",
+      zh: "體重不是唯一指標，腰圍、照片與體力進步一樣重要。",
+      en: "The scale isn't the only measure — waist size, progress photos, and how your fitness improves matter just as much.",
     },
   ],
   functional: [
@@ -625,26 +562,42 @@ export const GOAL_NOTES: Record<TrainingGoal, Bi[]> = {
       en: "This style of training is intense — schedule it on a day you feel fresh, and avoid other hard sessions the day before or after.",
     },
   ],
+  general_fitness: [
+    {
+      zh: "綜合體能不追求單一極限，重點是心肺、肌力、柔軟度都不偏廢。",
+      en: "General fitness isn't about maxing out one thing — the point is keeping cardio, strength, and mobility all in the mix.",
+    },
+    {
+      zh: "覺得某天特別累，把強度降一階（重量減輕、輪數減少）也完全沒問題。",
+      en: "If a day feels especially tiring, it's completely fine to dial the intensity down a notch — lighter weight, fewer rounds.",
+    },
+  ],
 };
 
 /** Location-specific reminders. */
 export const LOCATION_NOTES: Record<TrainingLocation, Bi[]> = {
-  home: [
-    {
-      zh: "選擇防滑的地面與足夠的活動空間，使用椅子輔助時先確認穩固。",
-      en: "Train on a non-slip surface with enough room to move, and make sure any chair you use for support is stable.",
-    },
-  ],
-  full_gym: [
+  gym: [
     {
       zh: "器材不熟悉時，先請現場教練或陪練師示範一次再上重量。",
       en: "If you're unfamiliar with a machine, ask a gym staff member or your training partner to demonstrate it before adding weight.",
     },
   ],
-  limited_gym: [
+  home: [
     {
-      zh: "器材被占用時，直接換成菜單中其他動作的順序，不要空等。",
-      en: "If a piece of equipment is taken, just move on to another exercise in the menu instead of waiting around.",
+      zh: "空間有限時，動作前先確認四周有足夠揮動半徑，避免撞到家具。",
+      en: "With limited space, check you have enough room to move before each exercise so you don't bump into furniture.",
+    },
+  ],
+  bodyweight: [
+    {
+      zh: "選擇防滑的地面與足夠的活動空間，使用椅子輔助時先確認穩固。",
+      en: "Train on a non-slip surface with enough room to move, and make sure any chair you use for support is stable.",
+    },
+  ],
+  outdoor: [
+    {
+      zh: "選擇平坦防滑的地面，留意天氣與補水，夜間訓練請選擇照明充足的地方。",
+      en: "Pick flat, non-slip ground, watch the weather and stay hydrated, and choose a well-lit spot if training at night.",
     },
   ],
 };
@@ -670,16 +623,9 @@ export const DIET_LABEL: Record<DietMode, Bi> = {
   intermittent_fasting: { zh: "間歇性斷食", en: "Intermittent Fasting" },
 };
 
-interface DietSection {
-  body: Bi[];
-  /** Gender-specific calorie / intake framing. */
-  byGender: Record<PlanGender, Bi>;
-  /** Extra tuning for the heavy weight class (optional). */
-  heavyNote?: Bi;
-}
-
-export const DIET_SECTION: Record<DietMode, DietSection> = {
+export const DIET_SECTION: Record<DietMode, DietGuidance> = {
   none: {
+    label: DIET_LABEL.none,
     body: [
       {
         zh: "沒有特定飲食法也沒關係，把握三個原則：原型食物為主（看得出食材原本樣子的食物）、每餐一掌心大小的蛋白質、蔬菜占餐盤的一半。",
@@ -706,6 +652,7 @@ export const DIET_SECTION: Record<DietMode, DietSection> = {
     },
   },
   muscle_gain: {
+    label: DIET_LABEL.muscle_gain,
     body: [
       {
         zh: "增肌需要熱量盈餘：比平常多吃一點，但以原型食物為主，不是垃圾食物放題。",
@@ -740,6 +687,7 @@ export const DIET_SECTION: Record<DietMode, DietSection> = {
     },
   },
   fat_loss: {
+    label: DIET_LABEL.fat_loss,
     body: [
       {
         zh: "減脂需要熱量赤字：每日比維持熱量少 300～500 大卡就好，砍太兇會掉肌肉、也撐不久。",
@@ -774,6 +722,7 @@ export const DIET_SECTION: Record<DietMode, DietSection> = {
     },
   },
   intermittent_fasting: {
+    label: DIET_LABEL.intermittent_fasting,
     body: [
       {
         zh: "常見做法是 16/8：一天中 8 小時內吃完所有餐點（例如中午 12 點到晚上 8 點），其餘時間只喝水、黑咖啡或無糖茶。",
@@ -807,10 +756,4 @@ export const DIET_SECTION: Record<DietMode, DietSection> = {
       en: "At a higher starting body weight, fasting often shows results quickly early on — but pair it with strength training and enough protein so what you lose is fat, not muscle.",
     },
   },
-};
-
-/** Shown under the diet section for youth users — IF safety caveat. */
-export const IF_YOUTH_CAUTION: Bi = {
-  zh: "**提醒：** 青少年成長期不建議長時間斷食，若未滿 18 歲請改用均衡飲食即可。",
-  en: "**Note:** Extended fasting isn't recommended during teenage growth years — if you're under 18, stick to the balanced diet option instead.",
 };

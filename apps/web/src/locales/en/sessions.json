@@ -45,7 +45,7 @@
     "subtitle": "Send a booking request to {{name}}",
     "offering": "Choose a plan",
     "when": "Preferred time",
-    "whenHint": "Optional — you can agree on a time with the trainer",
+    "whenHint": "Optional — times are Taipei (GMT+8). You can also agree later with the trainer.",
     "location": "Location",
     "locationPlaceholder": "e.g. World Gym, Xinyi, Taipei",
     "note": "Note",

@@ -10,6 +10,7 @@ import {
   type BookingRecord,
 } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   acceptBooking,
   declineBooking,
@@ -20,15 +21,23 @@ import {
 type Action = {
   key: BookingAction;
   run: (id: string) => Promise<void>;
-  variant?: "default" | "outline";
+  variant?: "default" | "outline" | "destructive";
+  /** Extra classes for actions with no dedicated variant (e.g. a green
+   *  "complete" affirmative, distinct from the neutral default). */
+  className?: string;
 };
 
-/** How each FSM action runs + renders; the FSM itself is shared with mobile. */
+/** How each FSM action runs + renders; the FSM itself is shared with mobile.
+ *  Cancel/decline are destructive (red); complete is an affirmative green,
+ *  distinct from the neutral primary color used for accept. */
 const ACTION_META: Record<BookingAction, Omit<Action, "key">> = {
   accept: { run: acceptBooking },
-  decline: { run: declineBooking, variant: "outline" },
-  cancel: { run: cancelBooking, variant: "outline" },
-  complete: { run: completeBooking },
+  decline: { run: declineBooking, variant: "destructive" },
+  cancel: { run: cancelBooking, variant: "destructive" },
+  complete: {
+    run: completeBooking,
+    className: "bg-emerald-600 text-white hover:bg-emerald-700",
+  },
 };
 
 /** Role + status aware booking actions (accept/decline/cancel/complete). */
@@ -77,7 +86,7 @@ export function BookingActionsBar({
             variant={a.variant ?? "default"}
             disabled={busy}
             onClick={() => dispatch(a)}
-            className="flex-1 gap-2"
+            className={cn("flex-1 gap-2", a.className)}
           >
             {busy && <Loader2 size={16} className="animate-spin" />}
             {t(`actions.${a.key}`)}

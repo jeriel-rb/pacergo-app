@@ -41,7 +41,8 @@ export function BookingDetailView({
   const { t } = useTranslation("sessions");
   const locale = useLocale();
   const pathname = usePathname();
-  const backHref = getLocalizedPath("/sessions", getCurrentLocale(pathname));
+  const routeLocale = getCurrentLocale(pathname);
+  const backHref = getLocalizedPath("/sessions", routeLocale);
 
   const other = counterparty(booking, currentUserId);
   const otherId =
@@ -135,7 +136,7 @@ export function BookingDetailView({
           <Link
             href={getLocalizedPath(
               `/payments/newebpay/review?booking=${booking.id}`,
-              locale,
+              routeLocale,
             )}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >

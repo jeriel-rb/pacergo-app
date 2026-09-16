@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw } from "lucide-react";
-import { ACTIVITY_META } from "@pacergo/shared";
+import { ACTIVITY_META, formatInAppTimeZone } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { buttonVariants } from "@/shared/components/ui/button";
 import { getLocalizedPath } from "@/lib/locale-path";
@@ -55,10 +55,11 @@ export function PaymentResultView({
             {payment.paid_at && (
               <Row
                 label={t("result.paymentDate")}
-                value={new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en-US", {
+                value={formatInAppTimeZone(payment.paid_at, locale, {
                   dateStyle: "medium",
                   timeStyle: "short",
-                }).format(new Date(payment.paid_at))}
+                  timeZoneName: "short",
+                })}
               />
             )}
             {Object.entries(payment.payment_instructions ?? {}).length > 0 && state !== "paid" && (

@@ -7,7 +7,7 @@ import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { TierBadge } from '@/components/ui/TierBadge';
 import { PriceTag } from '@/components/ui/PriceTag';
-import { BOOKING_TIME_SLOTS } from '@pacergo/shared';
+import { BOOKING_TIME_SLOTS, wallTimeToUtcIso } from '@pacergo/shared';
 import { useCompanion } from '@/features/discovery/useCompanion';
 import { useCreateBooking } from '@/features/booking/useCreateBooking';
 
@@ -53,7 +53,7 @@ export default function RequestScreen() {
       await create.mutateAsync({
         companion_id: companionId,
         offering_id: offering.id,
-        scheduled_start: day && slot ? new Date(`${day}T${slot}`).toISOString() : null,
+        scheduled_start: day && slot ? wallTimeToUtcIso(day, slot) : null,
         duration_min: offering.session_minutes,
         location_name: where || null,
         seeker_note: note || null,

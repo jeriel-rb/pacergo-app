@@ -4,14 +4,24 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatInAppTimeZone } from "@pacergo/shared";
 import type { PayoutDetail, PayoutStatus } from "@/lib/admin";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
+import { useLocale } from "@/shared/hooks/use-locale";
 import { setWithdrawalStatus } from "./admin-actions";
 import { StatusBadge } from "./admin-payouts-view";
 
 function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
+}
+
+function formatStamp(iso: string, locale: "zh" | "en"): string {
+  return formatInAppTimeZone(iso, locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZoneName: "short",
+  });
 }
 
 /** Transitions from the current status: [forward steps, correction steps].
@@ -32,6 +42,7 @@ const TRANSITIONS: Record<
  *  history. Full bank details render ONLY here — masked everywhere else. */
 export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
   const { t } = useTranslation("admin");
+  const locale = useLocale();
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<PayoutStatus | null>(null);
@@ -63,7 +74,7 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
         <div>
           <h1 className="text-2xl font-bold lg:text-3xl">{detail.trainer_name}</h1>
           <p className="text-sm text-muted-foreground">
-            {new Date(detail.requested_at).toLocaleString()}
+            {formatStamp(detail.requested_at, locale)}
           </p>
         </div>
         <StatusBadge status={detail.status} />
@@ -145,7 +156,7 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
                   {e.from_status ? `${e.from_status} → ${e.to_status}` : e.to_status}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(e.created_at).toLocaleString()}
+                  {formatStamp(e.created_at, locale)}
                 </p>
               </div>
               <p className="text-xs text-muted-foreground">

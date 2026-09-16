@@ -31,6 +31,8 @@ export function AppHeader(props: AppHeaderProps) {
   const stripped = pathWithoutLeadingLocale(pathname);
   const isAdmin = props.variant === "admin";
   const { t } = useTranslation(isAdmin ? "admin" : "nav");
+  const onMessages =
+    stripped === "/messages" || stripped.startsWith("/messages/");
 
   if (isAdmin) {
     return (
@@ -59,7 +61,13 @@ export function AppHeader(props: AppHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
+    <header
+      className={cn(
+        "sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur",
+        // Messages has its own title chrome; skip the global bar on phone only.
+        onMessages && "hidden md:block",
+      )}
+    >
       <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between gap-4 px-4 lg:max-w-5xl lg:px-6">
         <Link
           href={getLocalizedPath("/", locale)}

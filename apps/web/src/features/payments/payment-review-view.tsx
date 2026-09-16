@@ -7,7 +7,7 @@ import {
   ReceiptText,
   type LucideIcon,
 } from "lucide-react";
-import { ACTIVITY_META, TIER_LABELS } from "@pacergo/shared";
+import { ACTIVITY_META, TIER_LABELS, formatInAppTimeZone } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { getLocalizedPath } from "@/lib/locale-path";
@@ -28,10 +28,11 @@ export function PaymentReviewView({
     : t("unknown");
   const tier = booking.tier ? TIER_LABELS[booking.tier][locale] : "";
   const formattedDate = booking.scheduled_start
-    ? new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en-US", {
+    ? formatInAppTimeZone(booking.scheduled_start, locale, {
         dateStyle: "medium",
         timeStyle: "short",
-      }).format(new Date(booking.scheduled_start))
+        timeZoneName: "short",
+      })
     : t("flexible");
 
   return (

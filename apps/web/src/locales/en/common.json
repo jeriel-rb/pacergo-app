@@ -11,5 +11,11 @@
   "comingSoon": "Coming soon",
   "comingSoonNote": "This feature is in the works — stay tuned.",
   "soon": "Soon",
-  "beta": "Beta"
+  "beta": "Beta",
+  "pickDate": "Pick a date",
+  "timePicker": {
+    "placeholder": "Select time",
+    "selectAmPm": "Select AM/PM",
+    "selectAmPmHint": "Choose AM or PM to confirm the time"
+  }
 }

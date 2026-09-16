@@ -6,7 +6,14 @@
   "back": "返回",
   "send": "送出",
   "messageButton": "傳訊息",
+  "selectConversation": "選擇一則對話開始聊天。",
   "composer": {
     "placeholder": "輸入訊息…"
+  },
+  "dock": {
+    "maximize": "全螢幕開啟",
+    "close": "關閉聊天",
+    "loading": "載入對話中…",
+    "loadError": "無法開啟對話，請再試一次。"
   }
 }

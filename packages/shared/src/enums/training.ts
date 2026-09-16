@@ -1,29 +1,27 @@
-/** AI training-menu dimensions. The plan *level* reuses `ExperienceLevel`
- *  (beginner/intermediate/advanced) — see ../enums/experience. */
+/** Personalized Workout Plan Generator (Beta) dimensions — see
+ *  ../plan/plan-types.ts (structured plan) and ../plan/plan-composer.ts.
+ *  The plan *level* reuses `ExperienceLevel` (beginner/intermediate/advanced)
+ *  — see ../enums/experience.
+ *
+ *  Exactly 6 onboarding inputs (spec A-1), no others: goal, experience,
+ *  training frequency, location & equipment, gender + weight class, diet
+ *  mode. No age, no height/weight numbers, no injury flags, no session
+ *  duration, no target areas, no free text.
+ */
 
 /** What the user is training for. */
 export type TrainingGoal =
-  | "fat_loss" // 減脂塑形
   | "muscle_gain" // 增肌訓練
-  | "endurance" // 耐力提升
-  | "flexibility" // 柔韌伸展
-  | "functional"; // 功能性表現（Hyrox / CrossFit 混合式訓練）
+  | "fat_loss" // 減脂塑形
+  | "functional" // 功能性表現（Hyrox / CrossFit 混合式訓練）
+  | "general_fitness"; // 綜合體能
 
 export const TRAINING_GOALS: readonly TrainingGoal[] = [
-  "fat_loss",
   "muscle_gain",
-  "endurance",
-  "flexibility",
+  "fat_loss",
   "functional",
+  "general_fitness",
 ] as const;
-
-/** Age band — refines the plan's framing (warm-up, recovery, intensity). */
-export type AgeBand =
-  | "youth" // 青少年 15-25
-  | "adult" // 成人 26-45
-  | "senior"; // 熟齡 46+
-
-export const AGE_BANDS: readonly AgeBand[] = ["youth", "adult", "senior"] as const;
 
 /** Body-type / weight class — tunes intensity, impact and calorie guidance.
  *  Interpreted per gender (the same class maps to different guidance for
@@ -39,35 +37,42 @@ export const WEIGHT_CLASSES: readonly WeightClass[] = [
   "heavy",
 ] as const;
 
-/** How many days per week the user can train. */
+/** How often the user can train. */
 export type TrainingFrequency =
-  | "low" // 1-2 天
-  | "mid" // 3-4 天
-  | "high"; // 5 天以上
+  | "every_day" // 每天
+  | "every_2_days" // 每 2 天
+  | "3x" // 一週 3 次
+  | "2x" // 一週 2 次
+  | "1x"; // 一週 1 次
 
 export const TRAINING_FREQUENCIES: readonly TrainingFrequency[] = [
-  "low",
-  "mid",
-  "high",
+  "every_day",
+  "every_2_days",
+  "3x",
+  "2x",
+  "1x",
 ] as const;
 
-/** Where the user trains — constrains the exercise pool so the generated
- *  menu is actually executable. */
+/** Where the user trains, and with what equipment — constrains the exercise
+ *  pool so the generated menu is actually executable. */
 export type TrainingLocation =
-  | "home" // 居家徒手
-  | "full_gym" // 全功能健身房
-  | "limited_gym"; // 有限器材健身房
+  | "gym" // 健身房（全功能器材）
+  | "home" // 居家（啞鈴＋彈力帶）
+  | "bodyweight" // 純徒手
+  | "outdoor"; // 戶外
 
 export const TRAINING_LOCATIONS: readonly TrainingLocation[] = [
+  "gym",
   "home",
-  "full_gym",
-  "limited_gym",
+  "bodyweight",
+  "outdoor",
 ] as const;
 
 /** Diet mode — picks the nutrition/supplement logic paired with the menu.
- *  `none` omits the nutrition section entirely. */
+ *  `none` gives generic balanced-diet guidance (the nutrition section is
+ *  always shown — there is no separate on/off toggle). */
 export type DietMode =
-  | "none" // 不需要飲食建議
+  | "none" // 均衡飲食
   | "muscle_gain" // 增肌飲食
   | "fat_loss" // 減脂飲食
   | "intermittent_fasting"; // 間歇性斷食

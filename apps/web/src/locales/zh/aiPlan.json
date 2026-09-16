@@ -3,17 +3,10 @@
   "subtitle": "根據您的目標與條件，系統將產生一份 60 分鐘訓練菜單：暖身 10 分鐘＋主訓練 40 分鐘＋收操 10 分鐘",
   "goalLabel": "選擇訓練目標",
   "goal": {
-    "fat_loss": "減脂塑形",
     "muscle_gain": "增肌訓練",
-    "endurance": "耐力提升",
-    "flexibility": "柔韌伸展",
-    "functional": "功能性表現"
-  },
-  "ageLabel": "年齡層",
-  "age": {
-    "youth": "青少年 15-25",
-    "adult": "成人 26-45",
-    "senior": "熟齡 46+"
+    "fat_loss": "減脂塑形",
+    "functional": "功能性表現",
+    "general_fitness": "綜合體能"
   },
   "levelLabel": "訓練程度",
   "level": {
@@ -34,20 +27,22 @@
   },
   "freqLabel": "訓練頻率",
   "freq": {
-    "low": "1–2 天/週",
-    "mid": "3–4 天/週",
-    "high": "5 天以上"
+    "every_day": "每天",
+    "every_2_days": "每 2 天",
+    "3x": "一週 3 次",
+    "2x": "一週 2 次",
+    "1x": "一週 1 次"
   },
   "locationLabel": "訓練場所",
   "location": {
-    "home": "居家徒手",
-    "full_gym": "全功能健身房",
-    "limited_gym": "有限器材健身房"
+    "gym": "健身房（全功能器材）",
+    "home": "居家（啞鈴＋彈力帶）",
+    "bodyweight": "純徒手",
+    "outdoor": "戶外"
   },
-  "nutrition": "包含營養建議",
   "dietLabel": "飲食模式",
   "diet": {
-    "none": "無特定",
+    "none": "均衡飲食",
     "muscle_gain": "增肌飲食",
     "fat_loss": "減脂飲食",
     "intermittent_fasting": "間歇性斷食"
@@ -55,7 +50,7 @@
   "generate": "生成訓練菜單",
   "generating": "生成中…",
   "empty": {
-    "title": "選擇訓練目標與年齡層",
+    "title": "選擇訓練目標與程度",
     "sub": "系統將依您的選擇產生個人化訓練計劃"
   },
   "error": "發生錯誤，請再試一次。",
@@ -65,21 +60,17 @@
       "title": "初學者增肌計劃",
       "sub": "全身肌群啟動，建立訓練習慣"
     },
-    "endurance": {
-      "title": "耐力提升訓練",
-      "sub": "系統化配速訓練，突破個人極限"
-    },
     "fatLoss": {
-      "title": "減脂塑形 8 週",
+      "title": "減脂塑形計劃",
       "sub": "有氧結合重訓，高效燃脂"
-    },
-    "flexibility": {
-      "title": "柔韌性提升計劃",
-      "sub": "全身伸展與核心穩定訓練"
     },
     "functional": {
       "title": "功能性表現訓練",
       "sub": "Hyrox / CrossFit 式混合訓練，心肺＋爆發力"
+    },
+    "generalFitness": {
+      "title": "綜合體能計劃",
+      "sub": "心肺、肌力、柔軟度均衡訓練"
     }
   }
 }

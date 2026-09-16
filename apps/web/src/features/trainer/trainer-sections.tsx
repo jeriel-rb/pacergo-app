@@ -104,6 +104,7 @@ export function AvailabilityList({ trainer }: { trainer: TrainerProfile }) {
           </span>
         ))}
       </div>
+      <p className="mt-3 text-xs text-muted-foreground">{t("availabilityTz")}</p>
     </SectionCard>
   );
 }

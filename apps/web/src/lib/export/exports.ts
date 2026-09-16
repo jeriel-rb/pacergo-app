@@ -15,6 +15,7 @@
  *  - Withdrawal requests (masked account numbers)
  */
 
+import { formatAppDateTimeCsv } from "@pacergo/shared";
 import { maskBankAccount } from "./mask";
 import type { CsvExport } from "./csv";
 
@@ -104,19 +105,23 @@ const num = (v: unknown): number =>
   v === null || v === undefined ? 0 : Number(v);
 
 /**
- * Excel-friendly UTC timestamp: `YYYY-MM-DD HH:mm:ss` (empty if missing/invalid).
+ * Excel-friendly Asia/Taipei timestamp with an explicit zone label:
+ * `YYYY-MM-DD HH:mm:ss Asia/Taipei` (empty if missing/invalid).
  *
  * Wrapped as an `="..."` text-literal formula so Excel renders it as plain
  * text instead of auto-detecting a date/number and right-aligning it into a
  * column too narrow to show — which displays as `####` — and instead of
  * silently reinterpreting it under the viewer's regional date format.
+ *
+ * Matches in-app display (Asia/Taipei), not UTC, so admins comparing CSV
+ * rows to the booking UI see the same clock times.
  */
 function dateTime(v: unknown): string {
   if (v === null || v === undefined || v === "") return "";
   const d = v instanceof Date ? v : new Date(String(v));
   const formatted = Number.isNaN(d.getTime())
     ? text(v)
-    : d.toISOString().replace("T", " ").replace(/\.\d{3}Z$/, "");
+    : formatAppDateTimeCsv(d);
   return excelTextLiteral(formatted);
 }
 

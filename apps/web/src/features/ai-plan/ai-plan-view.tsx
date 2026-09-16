@@ -7,15 +7,12 @@ import {
   Flame,
   Dumbbell,
   Activity,
-  PersonStanding,
-  Leaf,
   Loader2,
   Timer,
   type LucideIcon,
 } from "lucide-react";
 import {
   TRAINING_GOALS,
-  AGE_BANDS,
   EXPERIENCE_LEVELS,
   PLAN_GENDERS,
   WEIGHT_CLASSES,
@@ -23,7 +20,6 @@ import {
   TRAINING_LOCATIONS,
   DIET_MODES,
   type TrainingGoal,
-  type AgeBand,
   type ExperienceLevel,
   type PlanGender,
   type WeightClass,
@@ -33,7 +29,6 @@ import {
 } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { Switch } from "@/shared/components/ui/switch";
 import { GradientHeader } from "@/shared/components/atoms/gradient-header";
 import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { useLocale } from "@/shared/hooks/use-locale";
@@ -42,11 +37,10 @@ import { PlanMarkdown } from "./plan-markdown";
 import { generateTrainingPlan } from "./actions";
 
 const GOAL_META: Record<TrainingGoal, { icon: LucideIcon; tint: string }> = {
-  fat_loss: { icon: Flame, tint: "bg-red-500/10 text-red-500" },
   muscle_gain: { icon: Dumbbell, tint: "bg-blue-500/10 text-blue-500" },
-  endurance: { icon: Activity, tint: "bg-emerald-500/10 text-emerald-500" },
-  flexibility: { icon: PersonStanding, tint: "bg-violet-500/10 text-violet-500" },
+  fat_loss: { icon: Flame, tint: "bg-red-500/10 text-red-500" },
   functional: { icon: Timer, tint: "bg-orange-500/10 text-orange-500" },
+  general_fitness: { icon: Activity, tint: "bg-emerald-500/10 text-emerald-500" },
 };
 
 /** Example presets shown at the bottom — each fills every field (goal
@@ -57,11 +51,9 @@ interface PlanExample {
   key: string;
   goal: TrainingGoal;
   level: ExperienceLevel;
-  ageBand: AgeBand;
   weightClass: WeightClass;
   frequency: TrainingFrequency;
   location: TrainingLocation;
-  nutrition: boolean;
   dietMode: DietMode;
 }
 
@@ -70,55 +62,36 @@ const EXAMPLES: PlanExample[] = [
     key: "muscleBeginner",
     goal: "muscle_gain",
     level: "beginner",
-    ageBand: "adult",
     weightClass: "medium",
-    frequency: "mid",
+    frequency: "3x",
     location: "home",
-    nutrition: true,
     dietMode: "muscle_gain",
-  },
-  {
-    key: "endurance",
-    goal: "endurance",
-    level: "intermediate",
-    ageBand: "adult",
-    weightClass: "medium",
-    frequency: "mid",
-    location: "full_gym",
-    nutrition: true,
-    dietMode: "none",
   },
   {
     key: "fatLoss",
     goal: "fat_loss",
     level: "intermediate",
-    ageBand: "adult",
     weightClass: "medium",
-    frequency: "high",
-    location: "full_gym",
-    nutrition: true,
+    frequency: "every_2_days",
+    location: "gym",
     dietMode: "fat_loss",
-  },
-  {
-    key: "flexibility",
-    goal: "flexibility",
-    level: "beginner",
-    ageBand: "adult",
-    weightClass: "medium",
-    frequency: "low",
-    location: "home",
-    nutrition: false,
-    dietMode: "none",
   },
   {
     key: "functional",
     goal: "functional",
     level: "intermediate",
-    ageBand: "adult",
     weightClass: "medium",
-    frequency: "high",
-    location: "full_gym",
-    nutrition: true,
+    frequency: "3x",
+    location: "gym",
+    dietMode: "none",
+  },
+  {
+    key: "generalFitness",
+    goal: "general_fitness",
+    level: "beginner",
+    weightClass: "medium",
+    frequency: "2x",
+    location: "bodyweight",
     dietMode: "none",
   },
 ];
@@ -133,22 +106,20 @@ export function AiPlanView({
   const locale = useLocale();
 
   const [goal, setGoal] = useState<TrainingGoal | null>(null);
-  const [ageBand, setAgeBand] = useState<AgeBand | null>(null);
   const [level, setLevel] = useState<ExperienceLevel | null>(null);
   const [gender, setGender] = useState<PlanGender>(initialGender);
-  // The remaining dimensions default to the most common answer so three taps
-  // (goal / age / level) are enough to generate — but each stays adjustable.
+  // The remaining dimensions default to the most common answer so two taps
+  // (goal / level) are enough to generate — but each stays adjustable.
   const [weightClass, setWeightClass] = useState<WeightClass>("medium");
-  const [frequency, setFrequency] = useState<TrainingFrequency>("mid");
-  const [location, setLocation] = useState<TrainingLocation>("full_gym");
-  const [nutrition, setNutrition] = useState(true);
+  const [frequency, setFrequency] = useState<TrainingFrequency>("3x");
+  const [location, setLocation] = useState<TrainingLocation>("gym");
   const [dietMode, setDietMode] = useState<DietMode>("none");
 
   const [generating, setGenerating] = useState(false);
   const [plan, setPlan] = useState<string | null>(null);
   const [error, setError] = useState(false);
 
-  const ready = goal !== null && ageBand !== null && level !== null;
+  const ready = goal !== null && level !== null;
 
   async function onGenerate() {
     if (!ready) return;
@@ -162,11 +133,9 @@ export function AiPlanView({
           goal,
           gender,
           level,
-          ageBand,
           weightClass,
           frequency,
           location,
-          nutrition,
           dietMode,
           locale,
         }),
@@ -184,11 +153,9 @@ export function AiPlanView({
   function applyExample(ex: PlanExample) {
     setGoal(ex.goal);
     setLevel(ex.level);
-    setAgeBand(ex.ageBand);
     setWeightClass(ex.weightClass);
     setFrequency(ex.frequency);
     setLocation(ex.location);
-    setNutrition(ex.nutrition);
     setDietMode(ex.dietMode);
     // Gender is intentionally left untouched — it's a personal attribute,
     // not part of the example, and defaults to the user's saved profile.
@@ -268,17 +235,8 @@ export function AiPlanView({
         </div>
       </Card>
 
-      {/* Age band + level + gender */}
+      {/* Level + gender + weight class */}
       <Card className="space-y-5 p-4 sm:p-5">
-        <Segmented
-          label={t("ageLabel")}
-          options={AGE_BANDS.map((a) => ({ value: a, label: t(`age.${a}`) }))}
-          value={ageBand}
-          onChange={(v) => {
-            setAgeBand(v);
-            setPlan(null);
-          }}
-        />
         <Segmented
           label={t("levelLabel")}
           options={EXPERIENCE_LEVELS.map((l) => ({ value: l, label: t(`level.${l}`) }))}
@@ -336,33 +294,18 @@ export function AiPlanView({
         />
       </Card>
 
-      {/* Nutrition toggle + diet mode */}
-      <Card className="space-y-5 p-4 sm:p-5">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-sm font-medium">
-            <Leaf size={18} className="text-emerald-500" />
-            {t("nutrition")}
-          </span>
-          <Switch
-            checked={nutrition}
-            onChange={(v) => {
-              setNutrition(v);
-              setPlan(null);
-            }}
-            aria-label={t("nutrition")}
-          />
-        </div>
-        {nutrition && (
-          <Segmented
-            label={t("dietLabel")}
-            options={DIET_MODES.map((d) => ({ value: d, label: t(`diet.${d}`) }))}
-            value={dietMode}
-            onChange={(v) => {
-              setDietMode(v);
-              setPlan(null);
-            }}
-          />
-        )}
+      {/* Diet mode — nutrition guidance is always included; "none" gives
+          generic balanced-diet advice rather than omitting the section. */}
+      <Card className="p-4 sm:p-5">
+        <Segmented
+          label={t("dietLabel")}
+          options={DIET_MODES.map((d) => ({ value: d, label: t(`diet.${d}`) }))}
+          value={dietMode}
+          onChange={(v) => {
+            setDietMode(v);
+            setPlan(null);
+          }}
+        />
       </Card>
 
       <Button

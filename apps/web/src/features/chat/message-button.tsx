@@ -1,37 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { MessageCircle, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/components/ui/button";
-import { useLocale } from "@/shared/hooks/use-locale";
-import { getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
-import { startConversation } from "./chat-actions";
+import { useChatDockOptional } from "./chat-dock-context";
 
-/** Opens (or creates) a conversation with another user. Only render when a
- *  booking exists between them — messaging is gated on a booking. */
+/** Opens the floating chat dock with another user (booking-gated entry). */
 export function MessageButton({
   otherId,
   variant = "outline",
+  size = "default",
   className,
 }: {
   otherId: string;
   variant?: "default" | "outline";
+  size?: "default" | "sm" | "lg" | "icon";
   className?: string;
 }) {
   const { t } = useTranslation("chat");
-  const router = useRouter();
-  const locale = useLocale();
+  const dock = useChatDockOptional();
   const [loading, setLoading] = useState(false);
 
   async function open() {
+    if (!dock) return;
     setLoading(true);
     try {
-      const id = await startConversation(otherId);
-      router.push(getLocalizedPath(`/messages/${id}`, locale));
-    } catch {
+      dock.openChatWithUser(otherId);
+    } finally {
       setLoading(false);
     }
   }
@@ -39,8 +36,9 @@ export function MessageButton({
   return (
     <Button
       variant={variant}
+      size={size}
       onClick={open}
-      disabled={loading}
+      disabled={loading || !dock}
       className={cn("gap-2", className)}
     >
       {loading ? (

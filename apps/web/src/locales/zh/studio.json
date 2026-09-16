@@ -84,7 +84,7 @@
   },
   "availability": {
     "title": "可預約時段",
-    "subtitle": "設定你每週固定的可預約時間",
+    "subtitle": "設定每週可預約時段（台北時間 GMT+8）",
     "empty": "尚未設定任何時段。",
     "weekday": "星期",
     "start": "開始時間",

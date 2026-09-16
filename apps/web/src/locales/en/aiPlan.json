@@ -3,17 +3,10 @@
   "subtitle": "Based on your goal, get a 60-minute training menu: 10 min warm-up + 40 min training + 10 min cool-down",
   "goalLabel": "Choose your goal",
   "goal": {
-    "fat_loss": "Fat Loss",
     "muscle_gain": "Build Muscle",
-    "endurance": "Endurance",
-    "flexibility": "Flexibility",
-    "functional": "Functional"
-  },
-  "ageLabel": "Age group",
-  "age": {
-    "youth": "Youth 15-25",
-    "adult": "Adult 26-45",
-    "senior": "Senior 46+"
+    "fat_loss": "Fat Loss",
+    "functional": "Functional",
+    "general_fitness": "General Fitness"
   },
   "levelLabel": "Level",
   "level": {
@@ -34,20 +27,22 @@
   },
   "freqLabel": "Training frequency",
   "freq": {
-    "low": "1–2 days/wk",
-    "mid": "3–4 days/wk",
-    "high": "5+ days/wk"
+    "every_day": "Every day",
+    "every_2_days": "Every 2 days",
+    "3x": "3x a week",
+    "2x": "2x a week",
+    "1x": "1x a week"
   },
   "locationLabel": "Training place",
   "location": {
-    "home": "Home (no gear)",
-    "full_gym": "Full gym",
-    "limited_gym": "Limited-gear gym"
+    "gym": "Gym (Full Equipment)",
+    "home": "Home (Dumbbells + Bands)",
+    "bodyweight": "Bodyweight Only",
+    "outdoor": "Outdoor"
   },
-  "nutrition": "Include nutrition advice",
   "dietLabel": "Diet mode",
   "diet": {
-    "none": "No specific",
+    "none": "Balanced",
     "muscle_gain": "Muscle gain",
     "fat_loss": "Fat loss",
     "intermittent_fasting": "Fasting (IF)"
@@ -55,7 +50,7 @@
   "generate": "Generate plan",
   "generating": "Generating…",
   "empty": {
-    "title": "Choose a goal and age group",
+    "title": "Choose a goal and level",
     "sub": "A personalized plan will be generated from your choices"
   },
   "error": "Something went wrong. Please try again.",
@@ -65,21 +60,17 @@
       "title": "Beginner Muscle Plan",
       "sub": "Full-body activation, build the habit"
     },
-    "endurance": {
-      "title": "Endurance Builder",
-      "sub": "Structured pacing, push your limits"
-    },
     "fatLoss": {
-      "title": "Fat Loss 8 Weeks",
+      "title": "Fat Loss Plan",
       "sub": "Cardio + lifting for efficient fat burn"
-    },
-    "flexibility": {
-      "title": "Flexibility Program",
-      "sub": "Full-body stretch and core stability"
     },
     "functional": {
       "title": "Functional Performance",
       "sub": "Hyrox / CrossFit-style mixed training"
+    },
+    "generalFitness": {
+      "title": "General Fitness Plan",
+      "sub": "A balanced mix of cardio, strength, and mobility"
     }
   }
 }

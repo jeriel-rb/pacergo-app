@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatInAppTimeZone } from "@pacergo/shared";
 import type { PayoutList, PayoutStatus } from "@/lib/admin";
 import { Card } from "@/shared/components/ui/card";
+import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +25,14 @@ function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
 }
 
+function formatStamp(iso: string, locale: "zh" | "en"): string {
+  return formatInAppTimeZone(iso, locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZoneName: "short",
+  });
+}
+
 /** B-7: admin payout list, filterable, with header totals. Bank account is
  *  masked here — full details only render in the B-8 detail view. */
 export function AdminPayoutsView({
@@ -34,7 +44,8 @@ export function AdminPayoutsView({
 }) {
   const { t } = useTranslation("admin");
   const pathname = usePathname();
-  const locale = getCurrentLocale(pathname);
+  const routeLocale = getCurrentLocale(pathname);
+  const locale = useLocale();
   const [filter, setFilter] = useState(initialFilter);
 
   const { totals } = initial;
@@ -65,7 +76,7 @@ export function AdminPayoutsView({
         {FILTERS.map((f) => {
           const href = getLocalizedPath(
             f === "all" ? "/admin/payouts" : `/admin/payouts?status=${f}`,
-            locale,
+            routeLocale,
           );
           return (
             <Link
@@ -90,7 +101,7 @@ export function AdminPayoutsView({
           <Card className="p-5 text-sm text-muted-foreground">{t("payouts.empty")}</Card>
         ) : (
           initial.rows.map((r) => (
-            <Link key={r.id} href={getLocalizedPath(`/admin/payouts/${r.id}`, locale)}>
+            <Link key={r.id} href={getLocalizedPath(`/admin/payouts/${r.id}`, routeLocale)}>
               <Card className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-accent">
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{r.trainer_name}</p>
@@ -98,7 +109,7 @@ export function AdminPayoutsView({
                     {t("payouts.bankMasked")}: {r.bank_account_mask ?? "—"}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(r.requested_at).toLocaleString()}
+                    {formatStamp(r.requested_at, locale)}
                   </p>
                 </div>
                 <span className="shrink-0 font-semibold">{ntd(r.amount)}</span>

@@ -1,7 +1,6 @@
 "use server";
 
 import {
-  AGE_BANDS,
   DIET_MODES,
   EXPERIENCE_LEVELS,
   PLAN_GENDERS,
@@ -9,7 +8,8 @@ import {
   TRAINING_GOALS,
   TRAINING_LOCATIONS,
   WEIGHT_CLASSES,
-  composePlan,
+  composeTrainingPlan,
+  renderPlanMarkdown,
   type PlanSelection,
 } from "@pacergo/shared";
 
@@ -25,14 +25,12 @@ export async function generateTrainingPlan(
     TRAINING_GOALS.includes(sel.goal) &&
     PLAN_GENDERS.includes(sel.gender) &&
     EXPERIENCE_LEVELS.includes(sel.level) &&
-    AGE_BANDS.includes(sel.ageBand) &&
     WEIGHT_CLASSES.includes(sel.weightClass) &&
     TRAINING_FREQUENCIES.includes(sel.frequency) &&
     TRAINING_LOCATIONS.includes(sel.location) &&
     DIET_MODES.includes(sel.dietMode) &&
-    typeof sel.nutrition === "boolean" &&
     (sel.locale === "zh" || sel.locale === "en");
   if (!valid) return { error: "invalid" };
 
-  return { markdown: composePlan(sel) };
+  return { markdown: renderPlanMarkdown(composeTrainingPlan(sel), sel.locale) };
 }

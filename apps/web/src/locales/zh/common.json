@@ -11,5 +11,11 @@
   "comingSoon": "即將推出",
   "comingSoonNote": "這個功能正在開發中，敬請期待。",
   "soon": "即將",
-  "beta": "Beta"
+  "beta": "Beta",
+  "pickDate": "選擇日期",
+  "timePicker": {
+    "placeholder": "選擇時間",
+    "selectAmPm": "請選擇上午／下午",
+    "selectAmPmHint": "請選擇上午或下午以確認時間"
+  }
 }

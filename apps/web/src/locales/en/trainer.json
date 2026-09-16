@@ -16,6 +16,7 @@
   "gyms": "Gym membership",
   "gymsNote": "Sessions available at the gyms above",
   "availability": "Available times",
+  "availabilityTz": "Times shown in Taipei (GMT+8)",
   "reviews": "Reviews",
   "noReviews": "No reviews yet",
   "manager": "Platform manager",

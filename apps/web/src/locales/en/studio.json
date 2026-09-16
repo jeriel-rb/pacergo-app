@@ -84,7 +84,7 @@
   },
   "availability": {
     "title": "Availability",
-    "subtitle": "Set your weekly bookable times",
+    "subtitle": "Set weekly bookable times in Taipei (GMT+8)",
     "empty": "No times set yet.",
     "weekday": "Day",
     "start": "Start",

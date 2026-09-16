@@ -16,6 +16,7 @@
   "gyms": "健身房會籍",
   "gymsNote": "可在以上健身房進行陪練服務",
   "availability": "可預約時段",
+  "availabilityTz": "時段以台北時間（GMT+8）為準",
   "reviews": "用戶評價",
   "noReviews": "尚無評價",
   "manager": "平台特約經理人",

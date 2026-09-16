@@ -209,8 +209,8 @@ describe("no full sensitive data in serialised exports", () => {
     // Wrapped as an Excel text-literal formula (RFC 4180-quoted, so the
     // inner quotes are doubled) so date columns don't render as #### (Excel
     // auto-detecting + right-aligning a narrow date column).
-    expect(csv).toContain('"=""2026-10-01 09:55:00"""'); // Created At
-    expect(csv).toContain('"=""2026-10-01 10:05:00"""'); // Paid At
+    expect(csv).toContain('"=""2026-10-01 17:55:00 Asia/Taipei"""'); // Created At
+    expect(csv).toContain('"=""2026-10-01 18:05:00 Asia/Taipei"""'); // Paid At
     expect(csv).not.toContain("4111111111111111");
     expect(csv).not.toContain("CVV");
     expect(csv).not.toMatch(/,b1,|,s1,|,t1,|,p1,/);
@@ -232,7 +232,7 @@ describe("no full sensitive data in serialised exports", () => {
     const csv = toCsv(WITHDRAWALS_EXPORT, [ROW]);
     expect(csv).not.toContain("807-1234567-89");
     expect(csv).toContain(maskBankAccount("807-1234567-89"));
-    expect(csv).toContain('"=""2026-10-01 10:00:00"""');
+    expect(csv).toContain('"=""2026-10-01 18:00:00 Asia/Taipei"""');
     expect(csv).not.toContain("w1");
     expect(csv).not.toContain("t1");
   });
@@ -242,7 +242,7 @@ describe("date/time columns render as Excel text literals (avoids #### overflow)
   it("wraps a valid timestamp as an ='...' formula so Excel treats it as text", () => {
     const row = { created_at: "2026-09-15T10:23:01Z" } as unknown as UnknownRow;
     const col = USERS_EXPORT.columns.find((c) => c.header === "Created At")!;
-    expect(col.cell(row)).toBe('="2026-09-15 10:23:01"');
+    expect(col.cell(row)).toBe('="2026-09-15 18:23:01 Asia/Taipei"');
   });
 
   it("leaves missing/empty timestamps as a truly empty cell (no formula wrapper)", () => {

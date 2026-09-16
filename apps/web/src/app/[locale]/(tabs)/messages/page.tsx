@@ -1,9 +1,7 @@
-import { getMyConversations } from "@/lib/chat";
-import { MessagesView } from "@/features/chat/messages-view";
+import { MessagesEmptyPane } from "@/features/chat/messages-empty-pane";
 
 export const dynamic = "force-dynamic";
 
-export default async function MessagesPage() {
-  const conversations = await getMyConversations();
-  return <MessagesView conversations={conversations} />;
+export default function MessagesPage() {
+  return <MessagesEmptyPane />;
 }

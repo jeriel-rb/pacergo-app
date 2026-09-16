@@ -12,7 +12,6 @@ import {
 } from "./trainer-sections";
 import { PlatformManagerCard } from "./platform-manager-card";
 import { BookingCTA } from "./booking-cta";
-import { MessageButton } from "@/features/chat/message-button";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 
 export function TrainerDetailView({
@@ -29,10 +28,15 @@ export function TrainerDetailView({
 }) {
   const pathname = usePathname();
   const backHref = getLocalizedPath("/trainers", getCurrentLocale(pathname));
+  const showMessage = canMessage && currentUserId !== trainer.id;
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <TrainerDetailHeader trainer={trainer} backHref={backHref} />
+      <TrainerDetailHeader
+        trainer={trainer}
+        backHref={backHref}
+        canMessage={showMessage}
+      />
       <ServiceTags trainer={trainer} />
       <BioSection trainer={trainer} />
       <GymMemberships trainer={trainer} />
@@ -47,9 +51,6 @@ export function TrainerDetailView({
         isFree={trainer.is_free}
         isSelf={currentUserId === trainer.id}
       />
-      {canMessage && currentUserId !== trainer.id && (
-        <MessageButton otherId={trainer.id} className="w-full" />
-      )}
     </div>
   );
 }

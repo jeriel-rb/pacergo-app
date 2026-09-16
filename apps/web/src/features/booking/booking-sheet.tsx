@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import {
   ACTIVITY_META,
-  BOOKING_TIME_SLOTS,
   TIER_LABELS,
+  calendarDayKeyFromLocalDate,
+  wallTimeToUtcIso,
   type CompanionOffering,
 } from "@pacergo/shared";
 import {
@@ -20,11 +21,15 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Select } from "@/shared/components/ui/select";
+import { DatePicker } from "@/shared/components/ui/date-picker";
+import { TimePicker } from "@/shared/components/ui/time-picker";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
-import { getLocalizedPath } from "@/lib/locale-path";
+import {
+  getCurrentLocale,
+  getLocalizedPath,
+} from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
 import { createBooking } from "./booking-actions";
 
@@ -41,12 +46,14 @@ export function BookingSheet({
   trigger: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const routeLocale = getCurrentLocale(pathname);
   const locale = useLocale();
   const { t } = useTranslation("sessions");
 
   const [open, setOpen] = useState(false);
   const [offeringId, setOfferingId] = useState(offerings[0]?.id ?? "");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [note, setNote] = useState("");
@@ -61,17 +68,19 @@ export function BookingSheet({
     setSubmitting(true);
     setError(null);
     try {
+      const dateKey = date ? calendarDayKeyFromLocalDate(date) : "";
       const id = await createBooking({
         companionId,
         offeringId,
         scheduledStart:
-          date && time ? new Date(`${date}T${time}`).toISOString() : null,
+          dateKey && time ? wallTimeToUtcIso(dateKey, time) : null,
         durationMin: selected?.session_minutes ?? null,
         locationName: location.trim() || null,
         seekerNote: note.trim() || null,
       });
       setOpen(false);
-      router.push(getLocalizedPath(`/sessions/${id}`, locale));
+      // URL locale (pathname), not i18n language — keeps nav consistent after switch.
+      router.push(getLocalizedPath(`/sessions/${id}`, routeLocale));
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
     } finally {
@@ -131,30 +140,25 @@ export function BookingSheet({
           <div className="space-y-1.5">
             <span className="text-sm font-medium">{t("book.when")}</span>
             <div className="grid grid-cols-2 gap-2">
-              <Input
-                type="date"
+              <DatePicker
+                date={date}
+                onChange={(next) => {
+                  setDate(next);
+                  if (!next) setTime("");
+                }}
+                minDate={new Date()}
+                placeholder={t("book.whenDate")}
                 aria-label={t("book.whenDate")}
-                min={new Date().toISOString().slice(0, 10)}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
               />
-              <Select
-                aria-label={t("book.whenTime")}
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
+              <TimePicker
+                value={time || undefined}
+                onChange={setTime}
                 disabled={!date}
-              >
-                <option value="">{t("book.whenTime")}</option>
-                {BOOKING_TIME_SLOTS.map((slot) => (
-                  <option key={slot} value={slot}>
-                    {slot}
-                  </option>
-                ))}
-              </Select>
+                placeholder={t("book.whenTime")}
+                aria-label={t("book.whenTime")}
+              />
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t("book.whenHint")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("book.whenHint")}</p>
           </div>
 
           <Input

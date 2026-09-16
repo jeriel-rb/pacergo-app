@@ -3,16 +3,15 @@ import { View, Pressable, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   TRAINING_GOALS,
-  AGE_BANDS,
   EXPERIENCE_LEVELS,
   PLAN_GENDERS,
   WEIGHT_CLASSES,
   TRAINING_FREQUENCIES,
   TRAINING_LOCATIONS,
   DIET_MODES,
-  composePlan,
+  composeTrainingPlan,
+  renderPlanMarkdown,
   type TrainingGoal,
-  type AgeBand,
   type ExperienceLevel,
   type PlanGender,
   type WeightClass,
@@ -63,34 +62,35 @@ export default function AiPlanScreen() {
   const { data: profile } = useProfile();
 
   const [goal, setGoal] = useState<TrainingGoal | null>(null);
-  const [ageBand, setAgeBand] = useState<AgeBand | null>(null);
   const [level, setLevel] = useState<ExperienceLevel | null>(null);
   const [gender, setGender] = useState<PlanGender>(
     profile?.gender === 'female' ? 'female' : 'male',
   );
   const [weightClass, setWeightClass] = useState<WeightClass>('medium');
-  const [frequency, setFrequency] = useState<TrainingFrequency>('mid');
-  const [location, setLocation] = useState<TrainingLocation>('full_gym');
+  const [frequency, setFrequency] = useState<TrainingFrequency>('3x');
+  const [location, setLocation] = useState<TrainingLocation>('gym');
   const [dietMode, setDietMode] = useState<DietMode>('none');
   const [plan, setPlan] = useState<string | null>(null);
 
-  const ready = goal !== null && ageBand !== null && level !== null;
+  const ready = goal !== null && level !== null;
 
   function generate() {
-    if (!goal || !ageBand || !level) return;
+    if (!goal || !level) return;
+    const locale = i18n.language === 'en' ? 'en' : 'zh';
     setPlan(
-      composePlan({
-        goal,
-        gender,
-        level,
-        ageBand,
-        weightClass,
-        frequency,
-        location,
-        nutrition: true,
-        dietMode,
-        locale: i18n.language === 'en' ? 'en' : 'zh',
-      }),
+      renderPlanMarkdown(
+        composeTrainingPlan({
+          goal,
+          gender,
+          level,
+          weightClass,
+          frequency,
+          location,
+          dietMode,
+          locale,
+        }),
+        locale,
+      ),
     );
   }
 
@@ -110,12 +110,6 @@ export default function AiPlanScreen() {
           options={TRAINING_GOALS.map((g) => ({ value: g, label: t(`aiPlan.goal.${g}`) }))}
           value={goal}
           onChange={pick(setGoal)}
-        />
-        <ChipGroup
-          label={t('aiPlan.ageLabel')}
-          options={AGE_BANDS.map((a) => ({ value: a, label: t(`aiPlan.age.${a}`) }))}
-          value={ageBand}
-          onChange={pick(setAgeBand)}
         />
         <ChipGroup
           label={t('aiPlan.levelLabel')}

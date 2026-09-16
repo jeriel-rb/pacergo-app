@@ -6,7 +6,14 @@
   "back": "Back",
   "send": "Send",
   "messageButton": "Message",
+  "selectConversation": "Select a conversation to start chatting.",
   "composer": {
     "placeholder": "Type a message…"
+  },
+  "dock": {
+    "maximize": "Open full screen",
+    "close": "Close chat",
+    "loading": "Loading chat…",
+    "loadError": "Couldn't open this chat. Please try again."
   }
 }

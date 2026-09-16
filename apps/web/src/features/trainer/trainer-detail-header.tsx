@@ -8,6 +8,7 @@ import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { RatingStars } from "@/shared/components/atoms/rating-stars";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { TierBadge } from "@/shared/components/atoms/tier-badge";
+import { MessageButton } from "@/features/chat/message-button";
 import { useLocale } from "@/shared/hooks/use-locale";
 
 const GRADIENT =
@@ -21,9 +22,12 @@ const GRADIENT =
 export function TrainerDetailHeader({
   trainer,
   backHref,
+  canMessage = false,
 }: {
   trainer: TrainerProfile;
   backHref: string;
+  /** Show Message CTA beside the name when the viewer already has a booking. */
+  canMessage?: boolean;
 }) {
   const { t } = useTranslation("trainer");
   const locale = useLocale();
@@ -74,12 +78,19 @@ export function TrainerDetailHeader({
         </div>
 
         <div className="mt-3 space-y-2">
-          <div>
-            <h1 className="text-2xl font-bold leading-tight">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="min-w-0 truncate text-2xl font-bold leading-tight">
               {trainer.display_name}
             </h1>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            {canMessage && (
+              <MessageButton
+                otherId={trainer.id}
+                size="sm"
+                className="shrink-0 rounded-full"
+              />
+            )}
           </div>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
 
           <RatingStars value={trainer.rating_avg} count={trainer.rating_count} />
 

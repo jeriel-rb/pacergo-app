@@ -1,6 +1,7 @@
 "use client";
 
 import type { BookingRecord, BookingStatus } from "@pacergo/shared";
+import { formatInAppTimeZone } from "@pacergo/shared";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLE: Record<BookingStatus, string> = {
@@ -52,11 +53,12 @@ export function formatWhen(
   fallback: string,
 ): string {
   if (!iso) return fallback;
-  return new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en-US", {
+  return formatInAppTimeZone(iso, locale, {
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(iso));
+    timeZoneName: "short",
+  });
 }

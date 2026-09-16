@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { formatInAppTimeZone } from "@pacergo/shared";
 import type { AppNotification } from "@/lib/notifications";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
@@ -91,10 +92,11 @@ export function NotificationsView({
 }
 
 function formatTime(iso: string, locale: "zh" | "en"): string {
-  return new Intl.DateTimeFormat(locale === "zh" ? "zh-TW" : "en-US", {
+  return formatInAppTimeZone(iso, locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(iso));
+    timeZoneName: "short",
+  });
 }

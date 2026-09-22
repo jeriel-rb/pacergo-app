@@ -18,6 +18,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ConfirmDialog } from "@/shared/components/atoms/confirm-dialog";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { clearOnboardingStorage } from "@/features/ai-plan/onboarding-store";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { ChangeEmailDialog } from "./change-email-dialog";
 import { deleteAccount } from "./profile-actions";
@@ -39,6 +40,7 @@ export function AccountSection({
   const [notice, setNotice] = useState<string | null>(null);
 
   async function signOut() {
+    clearOnboardingStorage();
     await createSupabaseBrowserClient().auth.signOut();
     router.push(getLocalizedPath("/sign-in", locale));
     router.refresh();

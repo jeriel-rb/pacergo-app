@@ -28,6 +28,7 @@ import { ThemeSettingRow } from "./theme-setting-row";
 import { Button } from "@/shared/components/ui/button";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { clearOnboardingStorage } from "@/features/ai-plan/onboarding-store";
 import { cn } from "@/lib/utils";
 
 /** Gear button → slide-in settings sheet (profile + settings list). */
@@ -52,6 +53,7 @@ export function SettingsSheet({
 
   async function signOut() {
     setOpen(false);
+    clearOnboardingStorage();
     await createSupabaseBrowserClient().auth.signOut();
     router.push(getLocalizedPath("/sign-in", locale));
     router.refresh();

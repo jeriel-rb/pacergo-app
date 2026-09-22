@@ -1,5 +1,6 @@
 import type { ExperienceLevel, Gender } from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { clearOnboardingStorage } from "@/features/ai-plan/onboarding-store";
 import { avatarObjectPath } from "./avatar";
 import { bannerObjectPath } from "./banner";
 
@@ -117,5 +118,6 @@ export async function deleteAccount(): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.rpc("delete_current_user");
   if (error) throw new Error(error.message);
+  clearOnboardingStorage();
   await supabase.auth.signOut();
 }

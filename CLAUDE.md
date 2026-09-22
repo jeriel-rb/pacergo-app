@@ -36,7 +36,15 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
 - The Supabase CLI hard-requires a folder named `supabase`. On Windows, create a
   junction once: `cmd /c mklink /J supabase backend` (gitignored). On macOS/Linux:
   `ln -s backend supabase`.
-- `0009` seeds 6 demo trainers (neutralized / no-op on fresh resets).
+- **One init migration:** `backend/migrations/0001_init.sql` is the whole database
+  (schema + RLS). Add new migrations as `YYYYMMDDHHMMSS_name.sql` after it. The
+  live project's history was repaired to that single version (`supabase migration
+  repair`), so `supabase db push` says "up to date" until a new file is added.
+- **Exercises:** `backend/seeds/03_ai_plan_exercises.sql` is GENERATED — one row per
+  catalog exercise (302, kebab-case slugs). Regenerate with
+  `node apps/web/scripts/generate-exercises-seed.mjs`; hand-written steps/tips live in
+  `apps/web/src/shared/assets/exercise-content.json`. Ship changes to a live DB as a
+  new migration containing that SQL (it upserts and deletes stale rows).
 
 ## Conventions / gotchas
 

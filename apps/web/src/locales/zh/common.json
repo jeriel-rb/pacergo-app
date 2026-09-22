@@ -8,11 +8,45 @@
   "retry": "重試",
   "perHour": "/小時",
   "back": "返回",
+  "close": "關閉",
+  "duration": {
+    "long": {
+      "seconds": "{{count}} 秒",
+      "minutes": "{{count}} 分鐘",
+      "minutesSeconds": "{{minutes}} 分 {{seconds}} 秒",
+      "secondsRange": "{{range}} 秒",
+      "minutesRange": "{{range}} 分鐘"
+    },
+    "short": {
+      "seconds": "{{count}} 秒",
+      "minutes": "{{count}} 分",
+      "minutesSeconds": "{{minutes}} 分 {{seconds}} 秒"
+    }
+  },
+  "toggleTheme": "切換主題",
   "comingSoon": "即將推出",
   "comingSoonNote": "這個功能正在開發中，敬請期待。",
   "soon": "即將",
   "beta": "Beta",
   "pickDate": "選擇日期",
+  "credits": {
+    "title": "致謝與授權",
+    "intro": "Pacergo 建立在開源作品之上，感謝以下所有創作者。",
+    "artHeading": "動作與器材插圖",
+    "artBody": "動作與器材線稿插圖來自 Bryl Lim 的 Workout Guide，其原始姿勢插圖出自 Everkinetic。兩者皆以創用 CC 姓名標示－相同方式分享 4.0 國際授權（CC BY-SA 4.0）釋出。",
+    "changesHeading": "我們所做的修改",
+    "footerLink": "開源致謝與授權",
+    "changesBody": "我們以 SVG 檔案形式使用這些插圖，不修改檔案本身，並在畫面上重新上色（淺色模式為品牌藍色，深色模式為白色）。Bryl Lim 的檔案本身亦改編自 Everkinetic 的原作；各圖片的修改內容已記錄於下方的 manifest。",
+    "licenseNote": "這些插圖仍適用 CC BY-SA 4.0。若您要改作，必須標示上述來源，並以相同授權分享您的改作。這不會改變 Pacergo 其他部分的授權。",
+    "linksHeading": "來源與授權條款",
+    "linkWorkoutGuide": "Bryl Lim 的 Workout Guide",
+    "linkEverkinetic": "Everkinetic",
+    "linkLicense": "CC BY-SA 4.0 授權條款",
+    "linkAttribution": "上游來源標示（ATTRIBUTION.md）",
+    "linkManifest": "各圖片的作者與修改紀錄（manifest.json）",
+    "legalHeading": "法律文件",
+    "legalBody": "服務條款與隱私權政策另有獨立頁面。"
+  },
   "timePicker": {
     "placeholder": "選擇時間",
     "selectAmPm": "請選擇上午／下午",

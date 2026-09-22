@@ -1,1 +1,1 @@
--- Seed data for local Supabase. Populated later (supabase db seed).
+-- Seed data lives in ./seeds/*.sql (see config.toml [db.seed] sql_paths).

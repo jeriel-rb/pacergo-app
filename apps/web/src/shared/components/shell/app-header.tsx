@@ -33,6 +33,11 @@ export function AppHeader(props: AppHeaderProps) {
   const { t } = useTranslation(isAdmin ? "admin" : "nav");
   const onMessages =
     stripped === "/messages" || stripped.startsWith("/messages/");
+  // The whole AI-plan flow — the hub ("Let's Get Started") and every
+  // sub-wizard (About You / Training Preferences / Gym & Equipment) — has
+  // its own title chrome (or, on the hub, its own big page heading), so it
+  // skips the global bar on phone the same way Messages does above.
+  const onAiPlanFlow = stripped === "/ai-plan" || stripped.startsWith("/ai-plan/");
 
   if (isAdmin) {
     return (
@@ -64,8 +69,9 @@ export function AppHeader(props: AppHeaderProps) {
     <header
       className={cn(
         "sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur",
-        // Messages has its own title chrome; skip the global bar on phone only.
-        onMessages && "hidden md:block",
+        // Messages / the onboarding flow have their own title chrome; skip
+        // the global bar on phone only.
+        (onMessages || onAiPlanFlow) && "hidden md:block",
       )}
     >
       <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between gap-4 px-4 lg:max-w-5xl lg:px-6">

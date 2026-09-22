@@ -21,6 +21,8 @@ const PUBLIC_PATHS = [
   // Rules) must be readable before sign-up, not just after — this is what the
   // sign-up checkbox links to.
   "/legal",
+  // Open-source credits/attribution (CC BY-SA) — must be viewable by anyone.
+  "/credits",
 ];
 const AUTH_ENTRY_PATHS = ["/sign-in", "/sign-up", "/forgot-password"];
 

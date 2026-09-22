@@ -33,7 +33,10 @@ export function BottomNav({
   const isAdmin = variant === "admin";
 
   const { t } = useTranslation(isAdmin ? "admin" : "nav");
-  const items: ShellNavItem[] = isAdmin ? ADMIN_NAV_ITEMS : NAV_ITEMS;
+  // myPlans is sidebar-only — see nav-items.ts.
+  const items: ShellNavItem[] = isAdmin
+    ? ADMIN_NAV_ITEMS
+    : NAV_ITEMS.filter((item) => item.key !== "myPlans");
   const isItemActive = isAdmin ? isAdminNavItemActive : isNavItemActive;
   const labelFor = (key: string) =>
     isAdmin ? t(`nav.${key}`) : t(key);

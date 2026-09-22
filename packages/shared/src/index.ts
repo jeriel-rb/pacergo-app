@@ -15,6 +15,11 @@ export * from './constants/support';
 
 export * from './plan/plan-types';
 export * from './plan/plan-composer';
+export * from './plan/generated-plan-types';
+export * from './plan/generate-plan';
+
+export * from './onboarding/onboarding-types';
+export * from './onboarding/equipment-catalog';
 
 export * from './booking/state-machine';
 

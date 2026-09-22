@@ -8,11 +8,45 @@
   "retry": "Retry",
   "perHour": "/hr",
   "back": "Back",
+  "close": "Close",
+  "duration": {
+    "long": {
+      "seconds": "{{count}} sec",
+      "minutes": "{{count}} min",
+      "minutesSeconds": "{{minutes}} min {{seconds}} sec",
+      "secondsRange": "{{range}} sec",
+      "minutesRange": "{{range}} min"
+    },
+    "short": {
+      "seconds": "{{count}}s",
+      "minutes": "{{count}}m",
+      "minutesSeconds": "{{minutes}}m {{seconds}}s"
+    }
+  },
+  "toggleTheme": "Toggle theme",
   "comingSoon": "Coming soon",
   "comingSoonNote": "This feature is in the works — stay tuned.",
   "soon": "Soon",
   "beta": "Beta",
   "pickDate": "Pick a date",
+  "credits": {
+    "title": "Credits & licenses",
+    "intro": "Pacergo is built on open-source work. Thank you to everyone below.",
+    "artHeading": "Exercise & equipment illustrations",
+    "artBody": "The line-art exercise and equipment illustrations come from Workout Guide by Bryl Lim, whose original pose artwork is from Everkinetic. Both are licensed under Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0).",
+    "changesHeading": "Changes we made",
+    "footerLink": "Open-source credits & licenses",
+    "changesBody": "We use the illustrations as SVG files, without editing the files themselves, and recolor them on screen (brand blue in light mode, white in dark mode). Bryl Lim's files were themselves adapted from Everkinetic's originals; the changes are recorded per image in the manifest below.",
+    "licenseNote": "The illustrations remain under CC BY-SA 4.0. If you adapt them, you must credit the sources above and share your adaptation under the same license. This does not change the license of the rest of Pacergo.",
+    "linksHeading": "Sources & license texts",
+    "linkWorkoutGuide": "Workout Guide by Bryl Lim",
+    "linkEverkinetic": "Everkinetic",
+    "linkLicense": "CC BY-SA 4.0 license",
+    "linkAttribution": "Upstream attribution (ATTRIBUTION.md)",
+    "linkManifest": "Per-image credits and changes (manifest.json)",
+    "legalHeading": "Legal documents",
+    "legalBody": "Our Terms of Service and Privacy Policy are available separately."
+  },
   "timePicker": {
     "placeholder": "Select time",
     "selectAmPm": "Select AM/PM",

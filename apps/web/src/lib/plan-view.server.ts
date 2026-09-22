@@ -34,7 +34,7 @@ export async function getTrainingPlanServer(
   const prefs = row.onboarding_snapshot?.trainingPreferences;
   return {
     label: row.label,
-    // Promoted column (see 20260922030000_plan_goal_column.sql) — lets the
+    // Promoted column on user_training_plans (see 0001_init.sql) — lets the
     // client re-translate the title live instead of trusting the stored
     // string, which was frozen in whatever locale was active at save time.
     goal: row.goal,

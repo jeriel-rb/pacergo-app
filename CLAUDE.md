@@ -36,15 +36,19 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
 - The Supabase CLI hard-requires a folder named `supabase`. On Windows, create a
   junction once: `cmd /c mklink /J supabase backend` (gitignored). On macOS/Linux:
   `ln -s backend supabase`.
-- **One init migration:** `backend/migrations/0001_init.sql` is the whole database
-  (schema + RLS). Add new migrations as `YYYYMMDDHHMMSS_name.sql` after it. The
-  live project's history was repaired to that single version (`supabase migration
-  repair`), so `supabase db push` says "up to date" until a new file is added.
+- **Core migrations:** `0001_init.sql` (schema/types/functions/RPCs only) then
+  `0002_policies.sql` (all RLS + storage policies, commented). Add further
+  changes as `YYYYMMDDHHMMSS_name.sql` after those. Keep new RLS in
+  `0002_policies.sql` (or a follow-up that updates it) so policies stay
+  centralized — do not scatter CREATE POLICY across feature migrations.
 - **Exercises:** `backend/seeds/03_ai_plan_exercises.sql` is GENERATED — one row per
   catalog exercise (302, kebab-case slugs). Regenerate with
   `node apps/web/scripts/generate-exercises-seed.mjs`; hand-written steps/tips live in
-  `apps/web/src/shared/assets/exercise-content.json`. Ship changes to a live DB as a
-  new migration containing that SQL (it upserts and deletes stale rows).
+  `apps/web/src/shared/assets/exercise-content.json`. Ship to a live DB via the
+  idempotent migration `20260922020000_exercise_catalog_update.sql` (seed body +
+  ON CONFLICT upsert + delete stale + saved-plan slug rewrite). Refresh that file
+  from the regenerated seed when the catalog changes; do not add a second overlapping
+  exercise-catalog migration.
 
 ## Conventions / gotchas
 

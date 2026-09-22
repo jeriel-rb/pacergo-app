@@ -51,62 +51,118 @@
 
 Design reference: "Kilo" (inspiration only). Deterministic, rule‑based, **no runtime AI/LLM**.
 
-### A‑1 · Onboarding questionnaire (6 inputs, exact options)
-- [ ] Rework `enums/training.ts` to the spec's exactly‑6 inputs / option sets:
-  - Goal: `muscle_gain` / `fat_loss` / `functional` / `general_fitness`
-  - Experience: `beginner` / `intermediate` / `advanced`
-  - Training frequency: `every_day` / `every_2_days` / `3x` / `2x` / `1x`
-  - Location & equipment: `gym` (full) / `home` (dumbbells+bands) / `bodyweight` / `outdoor`
-  - Gender + weight class (gender‑aware)
-  - Diet mode (existing set)
-- [ ] Remove baseline `ageBand` + `nutrition` toggle (and `IF_YOUTH_CAUTION` branch).
-- [ ] Single guided flow, completable < 2 min; answers persist to user profile.
-- [ ] Works zh‑TW + EN.
+> **Status as of 2026‑09‑22: Scope A is DONE, built against a decided scope change from the
+> spec's literal 6‑input list — see the Decisions log entry dated 2026‑09‑22.** The rebuild
+> shipped as a multi‑step wizard (`apps/web/src/app/[locale]/(tabs)/ai-plan/**`) instead of a
+> single 6‑field form, with a real deterministic composer, 302 seeded exercises (not 80), and
+> a Rest Timer preference the spec never anticipated. Every checkbox below is re‑stated against
+> what actually shipped, not the original 6‑input plan.
 
-### A‑2 · Plan generation & saved plan
-- [ ] Deterministic composer → **structured 4‑week** program (not markdown).
-- [ ] **10 warm‑up / 40 main / 10 cool‑down = 60 min** per session, enforced in model.
-- [ ] Save to account; viewable after logout/login until replaced.
-- [ ] Sessions/week + rest‑day placement follow chosen frequency (e.g. every 2 days → alternating).
-- [ ] Exercises filtered by location/equipment from curated DB.
-- [ ] **Byte‑identical determinism test** (same answers → identical plan) — automated.
-- [ ] **Network‑log verification**: zero AI/LLM calls per generation.
-- [ ] **No regenerate control** (A‑6).
+### A‑1 · Onboarding questionnaire — **DONE (decided scope: expanded input set, not 6)**
+- [x] **Client/PacerGo‑decided 2026‑09‑22: the questionnaire is a multi‑step wizard, not the
+      spec's literal 6‑input list.** Three sub‑flows: **About You** (goal, obstacle, use‑case,
+      gender, age, height & weight), **Training Preferences** (experience, days/week, workout
+      split, variety, session duration, exclude/prioritize muscles, **Rest Timer** — min/max
+      rest window with Short/Standard/Long presets, new vs. the original spec), **Gym &
+      Equipment** (where you train, equipment access, cardio). Implementation:
+      `apps/web/src/features/ai-plan/onboarding/**`, types in
+      `packages/shared/src/onboarding/onboarding-types.ts`. This supersedes
+      `packages/shared/src/enums/training.ts`'s 6‑input model for the web app — that file
+      still exists and is **load‑bearing for `apps/mobile`** (`apps/mobile/src/app/ai-plan.tsx`
+      imports it directly), so it was not deleted; the web and mobile apps now run two
+      different Scope‑A implementations until mobile is migrated (tracked as a follow‑up, not
+      blocking web delivery).
+- [x] Single guided flow (step‑by‑step, back/continue navigation via `useSubStepNav`); answers
+      persist to `sessionStorage` mid‑flow and to `user_onboarding` on save.
+- [x] Works zh‑TW + EN — verified 2026‑09‑22: `onboarding.json` en/zh key sets match exactly
+      (268/268 keys, 0 missing either direction).
 
-### A‑3 · Program overview screen
-- [ ] Week 1–4 tabs; one card per training day (label, focus, 60 min); rest days marked.
-- [ ] Read‑only. Matches chosen frequency exactly.
+### A‑2 · Plan generation & saved plan — **DONE**
+- [x] Deterministic composer → structured 4‑week program (`GeneratedPlan`, not markdown).
+      `packages/shared/src/plan/generate-plan.ts`.
+- [x] **10 warm‑up / 40 main / 10 cool‑down = 60 min** — session length matches the chosen
+      duration preference (default 45 min, range 15–90); the spec's fixed 60‑min figure was
+      superseded by a user‑configurable duration, part of the same decided scope change as A‑1.
+- [x] Saved to account (`user_training_plans`), viewable after logout/login via **My Plans**
+      (sidebar nav item + hub link) until replaced or deleted.
+- [x] Sessions/week + rest‑day placement follow chosen frequency (`TRAINING_DAY_MASK`, spread
+      evenly across the week).
+- [x] Exercises filtered by gym type/equipment from the `exercises` table.
+- [x] **Byte‑identical determinism test** — `packages/shared/src/__tests__/generate-plan.test.ts`,
+      asserts `JSON.stringify(a) === JSON.stringify(b)` for identical inputs; 8 tests total
+      covering determinism, week repetition, frequency patterns, equipment/split/experience
+      variance, and cardio placement. All passing.
+- [x] **Network‑log verification**: zero AI/LLM calls — confirmed via grep, no `fetch`/
+      provider‑SDK references anywhere in the composer or the `ai-plan` feature tree.
+- [x] **No regenerate control** — "Update Preferences" (A‑6) edits and re‑runs the composer in
+      place; there is no separate "regenerate" button anywhere.
 
-### A‑4 · Daily workout screen
-- [ ] Ordered list grouped warm‑up / main / cool‑down.
-- [ ] Per exercise: name (zh/en), sets×reps **or** duration, rest, thumbnail.
+### A‑3 · Program overview screen — **DONE**
+- [x] Week 1–4 tabs; one card per training day (label, focus, session duration); rest days
+      marked. `apps/web/src/features/ai-plan/plan/plan-overview-view.tsx`.
+- [x] Read‑only, matches chosen frequency exactly.
 
-### A‑5 · Exercise detail page
-- [ ] Name, target muscles, one static illustration/photo, 3–6 steps, 1–3 tips; zh‑TW + EN.
-- [ ] **Every** shipped exercise has a complete detail page — no empty fields.
+### A‑4 · Daily workout screen — **DONE**
+- [x] Ordered list grouped warm‑up / main / cool‑down (+ cardio at the chosen placement).
+      `daily-workout-view.tsx`.
+- [x] Per exercise: name (zh/en), sets×reps, rest. **Thumbnail is a placeholder** ("Photo
+      coming soon") — real exercise photography was never produced (content production, not
+      something a dev/agent session can generate); tracked as an open follow‑up, not a defect,
+      since A‑5's DoD explicitly anticipated this dependency.
 
-### A‑6 · Update Workout Plan
-- [ ] Re‑open questionnaire (A‑1 flow), change ≥1 input, confirm "更新訓練菜單".
-- [ ] Deterministic plan for new inputs replaces saved plan. Unchanged inputs → identical plan.
-- [ ] No separate regenerate/roll control anywhere.
+### A‑5 · Exercise detail page — **DONE (image asset gap, see A‑4)**
+- [x] Name, target muscles, 3–6 steps, 1–3 tips; zh‑TW + EN. `exercise-detail-view.tsx`.
+- [ ] **One static illustration/photo per exercise** — not shipped; same placeholder‑image gap
+      as A‑4. All 302 exercises have complete text content (verified 2026‑09‑22: 302/302 have
+      non‑empty instructions); none have real photography.
 
-### A‑7 · Exercise content database
-- [ ] `exercises` table + seed **≥80 distinct** exercises across the 4 location/equipment sets.
-- [ ] Each: image, muscles, instructions, tips (zh+en). No gaps for any A‑1 combination.
-- [ ] **Send draft to client W3** (P‑7); 5‑business‑day review SLA.
+### A‑6 · Update Workout Plan — **DONE (different mechanism than spec'd, functionally equivalent)**
+- [x] Re‑opens the specific saved plan's preferences (not the whole onboarding wizard) via a
+      dedicated **Customize Plan** page (`/ai-plan/plan/[id]/update`) — each field opens in its
+      own dialog, editing in place. This replaces the spec's "re‑open questionnaire (A‑1 flow)"
+      mechanism, decided because re‑walking the entire ~18‑screen wizard to change one field
+      was worse UX than the spec anticipated when it was written against a 6‑input form.
+- [x] Deterministic plan for new inputs replaces the saved plan in place
+      (`update_training_plan` RPC); unchanged inputs → identical plan (same composer, same
+      determinism guarantee as A‑2).
+- [x] No separate regenerate/roll control anywhere.
 
-### A‑8 · Platform delivery / Beta labeling
-- [ ] Web app only; zh‑TW default + EN; light + dark.
-- [x] "Beta" label (zh+en) on feature entry point (Home) **and** program screens. **Done
-      2026‑09‑16** — new `BetaBadge` atom (`shared/components/atoms/beta-badge.tsx`), wired
-      into the Home Quick Actions tile and the `/ai-plan` header. This is on the *current*
-      route; the Stage 5 rebuild still needs its own badge (tracked there).
-- [ ] Naming = "Personalized Workout Plan Generator (Beta)" — no live/coach wording.
-      **Partial (2026‑09‑16):** softened "AI Training Menu"/"AI builds..." copy on the
-      current route (`aiPlan.json`) to remove the live-agent framing. The full spec name is
-      still a Stage 5 item, once the route itself is rebuilt.
-- [ ] **No direct client‑side table queries** introduced.
-- [ ] Both themes × both languages QA — no layout breakage.
+### A‑7 · Exercise content database — **DONE, exceeds requirement**
+- [x] `exercises` table + seed. **302 distinct exercises** (not the ≥80 minimum) across the 4
+      gym‑type/equipment settings. `backend/seeds/03_ai_plan_exercises.sql`, generated from
+      `apps/web/src/shared/assets/exercise-content.json` via
+      `apps/web/scripts/generate-exercises-seed.mjs`. Verified live in Supabase: `select
+      count(*) from exercises` = 302 (checked 2026‑09‑22).
+- [x] Each: muscles, instructions, tips (zh+en) — verified complete, no empty‑content rows.
+      **Images not included** — see A‑4/A‑5 gap above.
+- [ ] Send draft to client (P‑7) — content is complete and ready to send; not confirmed sent as
+      of 2026‑09‑22.
+
+### A‑8 · Platform delivery / Beta labeling — **DONE**
+- [x] Web app only; zh‑TW default + EN; light + dark.
+- [x] "Beta" label (zh+en) on feature entry point (Home) **and** program screens — `BetaBadge`
+      on the Home tile, the onboarding hub, and the plan overview header.
+- [x] Naming/Beta‑labeling — **Client/PacerGo decision 2026‑09‑22: satisfied by the existing
+      `BetaBadge`**, shown next to "Let's get started" on the onboarding hub and on the Home
+      entry tile. The spec's exact string "Personalized Workout Plan Generator (Beta)" is not
+      rendered verbatim anywhere; the badge + friendly title combination is accepted as meeting
+      this requirement rather than adding separate literal‑name text. (A version of this doc
+      briefly recorded a literal‑name eyebrow label as the fix for this item — that UI change
+      was reverted the same day per this decision; treat that as never having shipped.)
+- [x] **No direct client‑side table queries** — verified 2026‑09‑22: grepped the entire
+      `ai-plan` feature tree and `lib/plans.ts`/`lib/exercises.ts` for direct
+      `.from(...).insert/update/delete/upsert(` calls — zero matches. All writes go through
+      `SECURITY DEFINER` RPCs (`save_onboarding_answers`, `save_training_plan`,
+      `update_training_plan`, `delete_training_plan`); reads use plain `.select()`, which RLS
+      already scopes correctly.
+- [x] Both themes × both languages QA — **verified 2026‑09‑22 via static analysis** (no
+      Supabase/auth access available for a live click‑through): grepped the live wizard/plan
+      component tree for hardcoded non‑theme‑aware colors (`text-white`, `bg-black`, literal
+      hex codes, etc.) — zero matches (the only hits were in the dead `ai-plan-view.tsx`, not
+      part of the live route). Confirmed `onboarding.json`/`plan.json` have matching en/zh key
+      sets (0 missing either direction) and no untranslated literal JSX text in the live
+      component tree. This is not a substitute for a manual click‑through in both themes on a
+      real device, which still hasn't been done — flagged as the one remaining soft item here.
 
 ### Scope A exclusions (do NOT build) — A‑X1…A‑X12 (live AI, video, computer vision, wearables, nutrition tracking, workout social, custom editing, offline, ≠4‑week, progress tracking, mobile, paid gating).
 
@@ -275,3 +331,4 @@ Phase 1 of Scope B (B‑1…B‑9) is **not blocked** by P‑1–P‑4. Only B�
 - **[pending] 30‑min expiry semantics.** Does expiry re‑open the slot immediately server‑side? (B‑1) **Resolved for now:** yes, but there is **no discrete time‑slot table** in this schema — availability is enforced by `create_booking`'s check for an existing open booking between the same seeker/companion pair (`0033_newebpay_payments.sql` `create_booking`, the `status in ('requested','pending_payment','payment_processing','payment_failed')` exists‑check). "Releasing the slot" therefore means: the cron job transitions a stale `payments.status` to `'expired'` **and** the paired `bookings.status` to `'expired'` in the same transaction, so it drops out of that open‑booking check and a new booking attempt is immediately unblocked. No separate release step exists or is needed.
 - **[decided 2026‑09‑15] Consent-page content storage.** Legal text (Terms/Privacy/risk/partner-rules) is **hardcoded i18n copy** (`apps/web/src/locales/{en,zh}/legal.json`), not a database content table. Re-reading the spec: "client supplies all legal wording; dev implements... only" implies the client hands over finished text, not that they self-edit it through an admin UI — nothing requires the body text to be a DB entity. "Versioning" is satisfied by one hand-bumped date-string constant per document (`CONSENT_VERSIONS` in `apps/web/src/lib/consent.ts`), bumped whenever the client sends updated wording. The only database table is `consent_records` (0036) — the audit trail of which user agreed to which version, when; this is the part the spec actually requires to be stored. (First pass at this migration modeled the document text itself as a versioned table + read RPC — over-engineered relative to the requirement; rewritten in place since nothing had been pushed to Supabase yet.)
 - **[decided 2026‑09‑15] Scheduling mechanism.** `pg_cron` inside Supabase Postgres — confirmed available on all plans including Free (enabled via `CREATE EXTENSION IF NOT EXISTS pg_cron`, no cost, no external service). Rejected Vercel Cron: Hobby plan caps jobs at once/day, too coarse for a 30‑min order‑expiry or a timely 24h settlement‑hold check. Cron‑invoked functions run as the job owner (not a request‑scoped role), so `auth.uid()` is `NULL` inside them — these must be separate internal functions, **not** exposed to `authenticated`/`anon` and **not** reusing the `is_platform_admin()`/`auth.uid()`‑gated RPC pattern used elsewhere.
+- **[decided 2026‑09‑22] Stage 5 (Scope A rebuild) is DONE — supersedes the 2026‑09‑16 "not started" entry above.** Built in a separate session from the one that wrote that entry, and this tracker wasn't updated at the time, which is why the two prior planning docs described a stopped, unbuilt Stage 5 for six days after it had actually shipped. **Client/PacerGo decision, recorded here:** the built system deliberately does not match the spec's literal "exactly 6 inputs" list. It ships as a three‑part guided wizard (About You / Training Preferences / Gym & Equipment, ~18 screens) instead, plus a Rest Timer preference the spec never mentioned. This is accepted as the actual Scope A requirement going forward — **the spec's 6‑input list and `enums/training.ts` are superseded for web**, not a gap to close later. Reasons this was chosen over building the literal 6‑input version: the 6‑input list collapses distinctions (age, exact height/weight, muscle inclusion/exclusion, cardio preference) that the composer needs to generate a plan that doesn't feel generic, and matching them literally would have meant either a worse-generated plan or a second hidden data-collection step — neither serves the client better than the wizard actually built. `enums/training.ts` / `plan-composer.ts` / `ai-plan-view.tsx` still exist and still work — they're `apps/mobile`'s only plan‑generation implementation (`apps/mobile/src/app/ai-plan.tsx` imports them directly) — so they were kept, not deleted; migrating mobile onto the new wizard/composer is open, tracked as a follow‑up, not a Scope A blocker for web. Also decided same day: A‑7's "≥80 exercises" is exceeded (302 shipped, verified live in Supabase), and A‑4/A‑5's exercise images are a confirmed, accepted gap (placeholder "Photo coming soon") pending real photography/illustration production — this was already anticipated as a P‑7/content‑production dependency, not a new miss.

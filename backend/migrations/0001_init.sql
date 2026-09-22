@@ -1,15 +1,12 @@
--- Pacergo init migration — the whole database in one file.
+-- Pacergo init migration — schema, types, functions, RPCs (no RLS).
 --
--- Consolidates everything that used to be separate migrations:
---   * the final schema of the original 0001–0046 sequence
---   * row-level security (was 0002_rls.sql)
---   * the 2026-09-21 hardening fixes (function ACLs, spatial_ref_sys lock,
---     initplan RLS) — already folded into the schema/RLS below
---   * exercises.equipment (added with the catalog-based exercise library)
--- Reference data lives in ../seeds/ (loaded after this on `supabase db reset`).
+-- Consolidates the final schema of the original 0001–0046 sequence,
+-- including function ACLs and exercises.equipment.
+-- Row-level security lives in 0002_policies.sql (centralized).
+-- Reference data lives in ../seeds/ (loaded after migrations on `supabase db reset`).
 --
--- A live database that was migrated the old way has this same schema; its
--- history was repaired to a single applied version "0001" (see CLAUDE.md).
+-- Live history: 0001 (schema) → 0002 (policies) → later timestamped migrations
+-- (see CLAUDE.md). Changing this file does not re-run on already-applied remotes.
 
 -- Extensions
 create extension if not exists postgis;
@@ -63,22 +60,22 @@ do $$ begin
   create type settlement_eligibility_status as enum ('ineligible', 'eligible');
 exception when duplicate_object then null; end $$;
 
--- Phase 2 platform-wide requirement A-10 / §6.2: consent & legal pages
+-- Phase 2 platform-wide requirement A-10 / Â§6.2: consent & legal pages
 -- (Terms of Service, Privacy Policy, risk disclosure, partner conduct rules).
 --
 -- Re-read against the actual spec wording: "Client supplies all legal
 -- wording. Dev implements pages, checkboxes, versioning, records only."
 -- The client hands over finished text; nothing implies they need to self-edit
--- it through an admin UI. So the legal text itself is NOT stored here — it
+-- it through an admin UI. So the legal text itself is NOT stored here â€” it
 -- lives as hardcoded i18n copy in the web app (apps/web/src/locales/*/legal.json),
 -- exactly like every other page's copy in this codebase. "Versioning" just
 -- means: each document has one hand-bumped version label (a date string) next
 -- to its text, edited by a dev whenever the client sends updated wording.
 --
--- The only thing that needs a database row is the CONSENT RECORD — proof that
+-- The only thing that needs a database row is the CONSENT RECORD â€” proof that
 -- a specific user agreed to a specific version at a specific time. That's
 -- what this migration adds. (An earlier draft of this migration also modeled
--- the document text itself as a versioned table + read RPC — removed because
+-- the document text itself as a versioned table + read RPC â€” removed because
 -- it solved a problem the spec doesn't ask for: nothing here has been pushed
 -- to Supabase yet, so this file was rewritten in place rather than
 -- superseded by a new migration number.)
@@ -87,22 +84,22 @@ exception when duplicate_object then null; end $$;
 -- Decisions log): one combined checkbox at sign-up for the 3 documents every
 -- user needs (terms_of_service, privacy_policy, risk_disclosure), plus a
 -- second, separate checkbox in the trainer studio flow for
--- partner_conduct_rules — that document only applies to trainers, and studio
+-- partner_conduct_rules â€” that document only applies to trainers, and studio
 -- is where a user becomes one.
 --
 -- Sign-up consent recording: NOT done via a client RPC call after signUp()
 -- returns. This app requires email verification, so signUp() almost always
--- returns with no session yet (auth.uid() is null) — the session only
+-- returns with no session yet (auth.uid() is null) â€” the session only
 -- appears later, in a DIFFERENT browsing context (the user clicks the
 -- verification link, typically in a new tab or even a different device via
 -- their phone's mail app). A first attempt at this deferred the write via
--- sessionStorage + a flush-on-next-mount effect; that was wrong —
+-- sessionStorage + a flush-on-next-mount effect; that was wrong â€”
 -- sessionStorage does not survive a link click into a new tab (no
 -- window.opener relationship from an email client, so there's no "copy from
 -- opener" exception either), so the flush would silently never fire for
 -- most real users. Fixed by passing the consent choice through
 -- `auth.signUp()`'s `options.data` (Supabase writes this to
--- `auth.users.raw_user_meta_data` synchronously, server-side, at signup —
+-- `auth.users.raw_user_meta_data` synchronously, server-side, at signup â€”
 -- no session or client round-trip required) and reading it back inside
 -- `handle_new_user()` below, in the SAME transaction that creates the
 -- `public.users` profile row. Works regardless of which device/tab/browser
@@ -110,7 +107,7 @@ exception when duplicate_object then null; end $$;
 --
 -- Studio's partner_conduct_rules checkbox is different: the user already HAS
 -- a session at that point (they're deep in an authenticated flow), so
--- accept_consent() below — a normal auth.uid()-gated RPC call — is correct
+-- accept_consent() below â€” a normal auth.uid()-gated RPC call â€” is correct
 -- and sufficient there. No metadata trick needed for that one.
 
 do $$ begin
@@ -124,7 +121,7 @@ exception when duplicate_object then null; end $$;
 
 -- One row per (user, document, version) they've agreed to. `version_label` is
 -- a free-form string matching whatever hand-bumped version the app showed at
--- accept time (e.g. "2026-09-15") — not a foreign key, because the document
+-- accept time (e.g. "2026-09-15") â€” not a foreign key, because the document
 -- text isn't a database entity; it's a point-in-time label for audit purposes.;
 
 create or replace function set_updated_at()
@@ -507,7 +504,7 @@ create table if not exists user_onboarding (
   updated_at timestamptz not null default now()
 );
 
--- user_training_plans: saved plans — a user can have several (list/view/delete).
+-- user_training_plans: saved plans â€” a user can have several (list/view/delete).
 create table if not exists user_training_plans (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -535,9 +532,9 @@ create index if not exists conversations_b_idx on conversations (participant_b);
 
 create index if not exists messages_conv_idx on messages (conversation_id, created_at);
 
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 4. Schema integrity + performance indexes.
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 -- One offering per activity per listing: enforced in add_offering since 0023,
 -- now also as a constraint (verified duplicate-free on live data).
@@ -620,7 +617,7 @@ create index if not exists user_training_plans_user_id_created_at_idx
 
 -- `bank_account_mask` (0035) is kept as the masked, export/listing-safe copy,
 -- but is now derived automatically from `bank_account_number` instead of
--- being written by hand — keeps the two columns from ever drifting apart.
+-- being written by hand â€” keeps the two columns from ever drifting apart.
 -- Mirrors apps/web/src/lib/export/mask.ts::maskBankAccount exactly (keep last
 -- 4 chars, mask the rest; <=4 chars masks entirely; null/empty -> null).
 create or replace function mask_bank_account(p_value text)
@@ -676,7 +673,7 @@ comment on column users.bank_account_mask is
 --     consent_privacy_policy: "2026-09-15",
 --     consent_risk_disclosure: "2026-09-15" }
 -- (the CONSENT_VERSIONS labels from apps/web/src/lib/consent.ts, only
--- included when the sign-up checkbox was checked — the client blocks
+-- included when the sign-up checkbox was checked â€” the client blocks
 -- submission otherwise, so their presence here is the record of consent).
 -- Re-declaring the full function (`create or replace` needs the whole body);
 -- the only change from 0030's version is the loop at the end.
@@ -1140,7 +1137,7 @@ language sql security definer set search_path = public stable as $$
   ) av on true
   left join lateral (
     select jsonb_agg(jsonb_build_object(
-      'id', r.id, 'author_name', coalesce(ru.display_name, '—'),
+      'id', r.id, 'author_name', coalesce(ru.display_name, 'â€”'),
       'rating', r.rating, 'comment', r.comment, 'created_at', r.created_at
     ) order by r.created_at desc) as reviews
     from (
@@ -1484,7 +1481,7 @@ grant execute on function create_booking(uuid, uuid, timestamptz, int, text, tex
 grant execute on function my_bookings() to authenticated;
 grant execute on function booking_detail(uuid) to authenticated;
 
--- Set the caller's weekly training target (clamped 1–21).
+-- Set the caller's weekly training target (clamped 1â€“21).
 create or replace function set_weekly_target(p_target int)
 returns void
 language sql
@@ -1948,11 +1945,11 @@ begin
   return v_id;
 end $$;
 
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 7. Function ACLs: strip the implicit PUBLIC EXECUTE from every app function,
 --    then grant back exactly what each audience needs. (Trigger functions get
---    no grants — only their triggers invoke them.)
--- ═══════════════════════════════════════════════════════════════════════════
+--    no grants â€” only their triggers invoke them.)
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 do $$
 declare f record;
@@ -1991,14 +1988,14 @@ end $$;
 -- Public (anon) surface: read-only web discovery, nothing else.;
 
 -- Pricing rework after market feedback: per-tier FLOORS only, no ceilings.
---   * Tier C at 600–800 read as "half a trainer's rate, without the cert" —
+--   * Tier C at 600â€“800 read as "half a trainer's rate, without the cert" â€”
 --     the C floor drops to NT$400 so companionship pricing is honest.
 --   * Ceilings are removed across all tiers so high-demand companions can
 --     price at a premium; floors still stop intra-tier undercutting.
 --       C: 400+   B: 800+   A: 1200+
 --   Kept in sync with @pacergo/shared TIER_PRICE_FLOORS.
 -- Cert gates are unchanged (B/A need an approved certification for the
--- activity; A additionally needs approved competition experience — see 0027).
+-- activity; A additionally needs approved competition experience â€” see 0027).
 
 create or replace function add_offering(
   p_activity_slug text,
@@ -2598,7 +2595,7 @@ end $$;
 --    Why pg_cron and not Vercel Cron: confirmed via research (2026-09-15) that
 --    pg_cron is available on Supabase's Free plan at no extra cost (just
 --    `create extension`), while Vercel's Hobby-plan Cron Jobs are capped at
---    once per day — far too coarse for a 30-minute expiry window. Using
+--    once per day â€” far too coarse for a 30-minute expiry window. Using
 --    pg_cron also means the job runs next to the data with no network hop,
 --    and needs no new deployment target.
 --
@@ -2606,7 +2603,7 @@ end $$;
 --    `authenticated`: pg_cron jobs execute as the role that scheduled them
 --    (the Postgres superuser/owner role), NOT as a request-scoped user, so
 --    `auth.uid()` is NULL inside a cron-invoked function. This function must
---    never be reachable by a normal user session — it has no `grant execute`
+--    never be reachable by a normal user session â€” it has no `grant execute`
 --    to `anon`/`authenticated` at all, only pg_cron (running as the table
 --    owner) can call it.
 --
@@ -2922,7 +2919,7 @@ grant execute on function admin_export_orders() to authenticated;
 grant execute on function admin_export_withdrawals() to authenticated;
 
 -- Records one accept. `p_version_label` comes from the client's
--- CONSENT_VERSIONS constant (apps/web/src/lib/consent.ts) — trusted because
+-- CONSENT_VERSIONS constant (apps/web/src/lib/consent.ts) â€” trusted because
 -- worst case a stale/wrong label just mis-records *which* version text the
 -- user saw, it can't grant access to anything, so this doesn't need a
 -- server-side lookup table to validate against (there isn't one; see the
@@ -2977,7 +2974,7 @@ begin
   where status in ('created', 'redirected', 'processing', 'awaiting_payment')
     and created_at <= now() - interval '30 minutes';
 
-  -- Release the paired booking (see comment block above) — only bookings
+  -- Release the paired booking (see comment block above) â€” only bookings
   -- still sitting in a pre-payment/processing state; never touch a booking
   -- that already succeeded, was cancelled, or completed through another path.
   update bookings b
@@ -2990,13 +2987,13 @@ begin
 end $$;
 
 comment on function expire_stale_payment_attempts() is
-  'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated — auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
+  'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated â€” auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
 
 -- Every 5 minutes: frequent enough that a 30-minute window is enforced within
 -- a tight margin, infrequent enough to be a trivial load on a free-tier DB.
 -- `cron.schedule()` upserts by job name (confirmed against Supabase's docs,
 -- 2026-09-15: calling it again with the same name replaces the existing job
--- rather than erroring or duplicating it), so this is safe to re-run as-is —
+-- rather than erroring or duplicating it), so this is safe to re-run as-is â€”
 -- no existence check needed.
 select cron.schedule(
   'expire-stale-payment-attempts',
@@ -3419,7 +3416,7 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 6. B-7 · Admin payout list (filterable, with header totals).
+-- 6. B-7 Â· Admin payout list (filterable, with header totals).
 -- ---------------------------------------------------------------------------;
 
 create or replace function admin_list_withdrawal_requests(p_status text default null)
@@ -3518,7 +3515,7 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
--- 8. B-8 · Status workflow + corrections. Forward steps (requested->
+-- 8. B-8 Â· Status workflow + corrections. Forward steps (requested->
 --    processing, processing->paid) don't require a reason; every other
 --    transition (rejected/cancelled, or any backward "undo") does.
 -- ---------------------------------------------------------------------------
@@ -3638,7 +3635,7 @@ begin
   );
 end $$;
 
--- Trainee-callable "gateway" for the simulated provider — an explicit
+-- Trainee-callable "gateway" for the simulated provider â€” an explicit
 -- approve/decline in place of NewebPay's hosted page + real NotifyURL.
 -- Clearly test-only: only ever touches rows this same user owns and with
 -- provider='simulated', so it can never be used to fake a live payment.
@@ -3680,7 +3677,7 @@ end $$;
 grant execute on function confirm_simulated_payment(uuid, boolean) to authenticated;
 
 -- The simulated review/result screens reuse the existing payment_detail()
--- RPC (0033) — already owner-gated (p.user_id = auth.uid()) and already
+-- RPC (0033) â€” already owner-gated (p.user_id = auth.uid()) and already
 -- returns everything the UI needs (status, amount, booking). No new getter
 -- needed; payment_detail's `booking` join doesn't reference "newebpay"
 -- either, so it's already provider-agnostic.;
@@ -3806,7 +3803,7 @@ grant execute on function training_plan_detail(uuid) to authenticated;
 grant execute on function delete_training_plan(uuid) to authenticated;
 
 -- "Update Preferences" on a saved plan needs to edit that plan in place
--- (not just insert a new one or delete it) — add the missing RPC, following
+-- (not just insert a new one or delete it) â€” add the missing RPC, following
 -- the same SECURITY DEFINER + explicit-grant pattern as 0045_ai_plan_rpcs.sql.
 
 create or replace function update_training_plan(
@@ -4090,7 +4087,7 @@ grant execute on function complete_onboarding(text, experience_level, text, uuid
 
 -- ---------------------------------------------------------------------------
 -- set_my_availability: replace-all semantics (mobile edits the whole set).
--- p_slots: [{"weekday":1,"start_minute":1080,"end_minute":1200}, …]
+-- p_slots: [{"weekday":1,"start_minute":1080,"end_minute":1200}, â€¦]
 -- ---------------------------------------------------------------------------;
 
 grant execute on function set_my_availability(jsonb) to authenticated;
@@ -4126,7 +4123,7 @@ grant execute on function unblock_user(uuid) to authenticated;
 
 grant execute on function report_user(uuid, text, text, uuid) to authenticated;
 
--- Security + performance hardening sweep (full audit of 0001–0029).
+-- Security + performance hardening sweep (full audit of 0001â€“0029).
 --
 -- 1. RPC-only writes, enforced at the GRANT level: anon/authenticated lose all
 --    table write privileges (and anon loses reads). Every write path already
@@ -4145,9 +4142,9 @@ grant execute on function report_user(uuid, text, text, uuid) to authenticated;
 -- 6. Bug fixes: review upserts now recompute listing ratings; public-profile
 --    reviews (lost in 0022's restatement) are restored, capped at 50.
 
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 1. Table privileges: clients read where policies allow, never write.
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 revoke all on table
   users, activities, user_activities, companion_listings, listing_offerings,
@@ -4288,7 +4285,7 @@ grant execute on function accept_consent(consent_document_slug, text) to authent
 --     consent_privacy_policy: "2026-09-15",
 --     consent_risk_disclosure: "2026-09-15" }
 -- (the CONSENT_VERSIONS labels from apps/web/src/lib/consent.ts, only
--- included when the sign-up checkbox was checked — the client blocks
+-- included when the sign-up checkbox was checked â€” the client blocks
 -- submission otherwise, so their presence here is the record of consent).
 -- Re-declaring the full function (`create or replace` needs the whole body);
 -- the only change from 0030's version is the loop at the end.
@@ -4299,7 +4296,7 @@ grant execute on function accept_consent(consent_document_slug, text) to authent
 grant execute on function admin_correct_service_completed(uuid, boolean, text) to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 5. Eligibility — automatic (cron), re-evaluated every cycle in both
+-- 5. Eligibility â€” automatic (cron), re-evaluated every cycle in both
 --    directions so admin_hold / refund changes made between cron runs are
 --    reconciled even if the RPCs below didn't already flip the flag inline.
 -- ---------------------------------------------------------------------------;
@@ -4325,7 +4322,7 @@ grant execute on function my_trainer_balance() to authenticated;
 grant execute on function request_withdrawal(int) to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 3. B-5 · Cancellation & refund status recording (admin action only).
+-- 3. B-5 Â· Cancellation & refund status recording (admin action only).
 --    p_action: 'cancel' (payments.status -> cancelled),
 --              'refund_requested' | 'refunded' (payments.refund_status).
 --    Excludes the order from settlement eligibility immediately if it was
@@ -4335,8 +4332,8 @@ grant execute on function request_withdrawal(int) to authenticated;
 grant execute on function admin_set_payment_status(uuid, text, text) to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 4. B-4 · Trainer's own orders (read-only). Replaces a direct client-side
---    table query (§6.3) with a SECURITY DEFINER RPC scoped to auth.uid().
+-- 4. B-4 Â· Trainer's own orders (read-only). Replaces a direct client-side
+--    table query (Â§6.3) with a SECURITY DEFINER RPC scoped to auth.uid().
 -- ---------------------------------------------------------------------------;
 
 grant execute on function trainer_orders() to authenticated;
@@ -4347,19 +4344,19 @@ grant execute on function my_withdrawal_requests() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- 5. Settlement application / reversal helpers (used by the B-8 workflow
---    RPC below). Internal only — not granted to authenticated/anon.
+--    RPC below). Internal only â€” not granted to authenticated/anon.
 -- ---------------------------------------------------------------------------;
 
 grant execute on function admin_list_withdrawal_requests(text) to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 7. B-8 · Admin payout detail (full bank reveal, admin-only) + full history.
+-- 7. B-8 Â· Admin payout detail (full bank reveal, admin-only) + full history.
 -- ---------------------------------------------------------------------------;
 
 grant execute on function admin_withdrawal_detail(uuid) to authenticated;
 
 -- ---------------------------------------------------------------------------
--- 8. B-8 · Status workflow + corrections. Forward steps (requested->
+-- 8. B-8 Â· Status workflow + corrections. Forward steps (requested->
 --    processing, processing->paid) don't require a reason; every other
 --    transition (rejected/cancelled, or any backward "undo") does.
 -- ---------------------------------------------------------------------------;
@@ -4382,7 +4379,7 @@ grant execute on function admin_set_withdrawal_status(uuid, text, text) to authe
 
 grant execute on function create_simulated_payment_attempt(uuid, text, int) to authenticated;
 
--- Trainee-callable "gateway" for the simulated provider — an explicit
+-- Trainee-callable "gateway" for the simulated provider â€” an explicit
 -- approve/decline in place of NewebPay's hosted page + real NotifyURL.
 -- Clearly test-only: only ever touches rows this same user owns and with
 -- provider='simulated', so it can never be used to fake a live payment.;
@@ -4390,7 +4387,7 @@ grant execute on function create_simulated_payment_attempt(uuid, text, int) to a
 grant execute on function confirm_simulated_payment(uuid, boolean) to authenticated;
 
 -- The simulated review/result screens reuse the existing payment_detail()
--- RPC (0033) — already owner-gated (p.user_id = auth.uid()) and already
+-- RPC (0033) â€” already owner-gated (p.user_id = auth.uid()) and already
 -- returns everything the UI needs (status, amount, booking). No new getter
 -- needed; payment_detail's `booking` join doesn't reference "newebpay"
 -- either, so it's already provider-agnostic.;
@@ -4451,7 +4448,7 @@ revoke all on function update_training_plan(uuid, text, jsonb, jsonb) from publi
 grant execute on function update_training_plan(uuid, text, jsonb, jsonb) to authenticated;
 
 comment on function compute_order_fee_split(int, numeric) is
-  'TODO(pending client confirmation): rounding mode (round-half-up via Postgres round()) is a placeholder. Change here only — every caller reads the result, none re-implement the formula.';
+  'TODO(pending client confirmation): rounding mode (round-half-up via Postgres round()) is a placeholder. Change here only â€” every caller reads the result, none re-implement the formula.';
 
 -- ---------------------------------------------------------------------------
 -- 2. Populate the fee split at order-creation time, not just at export time.
@@ -4459,18 +4456,18 @@ comment on function compute_order_fee_split(int, numeric) is
 --    only `amount` set; extend it to also set gross_amount/platform_fee_*/
 --    trainer_payable using the function above. Re-declaring the whole
 --    function (not just patching) because `create or replace` needs the
---    complete body — this is a copy of 0033's version with one insert
+--    complete body â€” this is a copy of 0033's version with one insert
 --    changed; see the "-- CHANGED" markers.
 -- ---------------------------------------------------------------------------;
 
 comment on function expire_stale_payment_attempts() is
-  'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated — auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
+  'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated â€” auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
 
 -- Every 5 minutes: frequent enough that a 30-minute window is enforced within
 -- a tight margin, infrequent enough to be a trivial load on a free-tier DB.
 -- `cron.schedule()` upserts by job name (confirmed against Supabase's docs,
 -- 2026-09-15: calling it again with the same name replaces the existing job
--- rather than erroring or duplicating it), so this is safe to re-run as-is —
+-- rather than erroring or duplicating it), so this is safe to re-run as-is â€”
 -- no existence check needed.
 select cron.schedule(
   'expire-stale-payment-attempts',
@@ -4479,10 +4476,10 @@ select cron.schedule(
 );
 
 comment on function compute_order_fee_split(int, numeric) is
-  'TODO(pending client confirmation): rounding mode (round-half-up via Postgres round()) is a placeholder. Change here only — every caller reads the result, none re-implement the formula.';
+  'TODO(pending client confirmation): rounding mode (round-half-up via Postgres round()) is a placeholder. Change here only â€” every caller reads the result, none re-implement the formula.';
 
 comment on function expire_stale_payment_attempts() is
-  'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated — auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
+  'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated â€” auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
 
 comment on column users.bank_account_number is
   'Raw bank account number. Admin-detail-only (B-8); never appears in exports, listings, or logs. Format per P-6, best-guess default until client confirms.';
@@ -4495,7 +4492,7 @@ comment on function mark_service_completed() is
 
 -- Admin-callable correction (no-show, reschedule error). Required reason,
 -- logged. p_completed=false only allowed before settlement (never unwind a
--- paid-out order from here — that is a payout-workflow correction, B-8).;
+-- paid-out order from here â€” that is a payout-workflow correction, B-8).;
 
 comment on function evaluate_settlement_eligibility() is
   'Called only by pg_cron (see run_settlement_cycle below). Not granted to anon/authenticated.';
@@ -4508,7 +4505,7 @@ comment on function evaluate_settlement_eligibility() is
 
 -- updated_at helper;
 
--- ── Guarded transitions (SECURITY DEFINER; enforce role + FSM) ──────────────;
+-- â”€â”€ Guarded transitions (SECURITY DEFINER; enforce role + FSM) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€;
 
 -- Realtime stream for messages.
 do $$ begin
@@ -4546,7 +4543,7 @@ exception when duplicate_object then null; end $$;
 -- The caller's own review for a booking (to toggle the review UI), or null.;
 
 -- Messaging via RPCs, gated on an existing booking between the two users
--- (下單之前不能打訊息 — no messaging before a booking exists).
+-- (ä¸‹å–®ä¹‹å‰ä¸èƒ½æ‰“è¨Šæ¯ â€” no messaging before a booking exists).
 
 -- Whether the caller has any booking with another user (gates the chat entry).;
 
@@ -4556,7 +4553,7 @@ exception when duplicate_object then null; end $$;
 
 -- Header info (the other party) for a single conversation.;
 
--- Trainer backend (陪練師後台): manage your own listing, offerings, availability.
+-- Trainer backend (é™ªç·´å¸«å¾Œå°): manage your own listing, offerings, availability.
 
 -- The caller's listing bundle (listing + offerings + availability + flag).;
 
@@ -4570,7 +4567,7 @@ exception when duplicate_object then null; end $$;
 -- is validated client-side. Files are private (signed URLs only).
 
 -- ---------------------------------------------------------------------------
--- Admin role helper (security definer → safe to call from RLS policies).
+-- Admin role helper (security definer â†’ safe to call from RLS policies).
 -- ---------------------------------------------------------------------------;
 
 -- Thin wrapper for the client (nav gating).;
@@ -4604,7 +4601,7 @@ drop function if exists submit_verification(text, text, text);
 -- rule from 0026, Tier A additionally requires *approved competition experience*
 -- for that activity: a separate document the trainer submits and an admin
 -- reviews alongside the certification. Modelled as a new per-activity
--- verification doc_type = 'competition', reusing the whole submit→review→gate
+-- verification doc_type = 'competition', reusing the whole submitâ†’reviewâ†’gate
 -- pipeline.
 
 -- ---------------------------------------------------------------------------
@@ -4627,7 +4624,7 @@ drop function if exists submit_verification(text, text, text);
 -- Admin queue: include competition submissions too (doc_type carries the kind).
 -- ---------------------------------------------------------------------------;
 
--- Mobile ⇄ web alignment: close the RPC gaps so the Expo app can drop its
+-- Mobile â‡„ web alignment: close the RPC gaps so the Expo app can drop its
 -- remaining direct table reads/writes (RPC-only data access, same as web).
 
 -- ---------------------------------------------------------------------------
@@ -4672,7 +4669,7 @@ $$;
 
 -- ---------------------------------------------------------------------------
 -- set_my_availability: replace-all semantics (mobile edits the whole set).
--- p_slots: [{"weekday":1,"start_minute":1080,"end_minute":1200}, …]
+-- p_slots: [{"weekday":1,"start_minute":1080,"end_minute":1200}, â€¦]
 -- ---------------------------------------------------------------------------;
 
 drop function if exists get_companion(uuid);
@@ -4729,9 +4726,9 @@ language sql security definer set search_path = public as $$
 $$;
 grant execute on function get_companion to authenticated;
 
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 5. Trigger hygiene + rating-recompute bug fix.
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 -- Pin search_path (mutable-search-path advisor finding).;
 
@@ -4771,9 +4768,9 @@ $$;
 
 -- nearby_companions: clamp the radius (was unbounded), mark stable.;
 
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 6. RPC fixes: data leaks, block enforcement, input caps, abuse guards.
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 -- update_my_profile: length caps (columns were unbounded text).;
 
@@ -4910,11 +4907,11 @@ $$;
 
 -- upsert_my_listing: length caps for the free-text fields.;
 
--- ═══════════════════════════════════════════════════════════════════════════
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 7. Function ACLs: strip the implicit PUBLIC EXECUTE from every app function,
 --    then grant back exactly what each audience needs. (Trigger functions get
---    no grants — only their triggers invoke them.)
--- ═══════════════════════════════════════════════════════════════════════════
+--    no grants â€” only their triggers invoke them.)
+-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 do $$
 declare f record;
@@ -4961,7 +4958,7 @@ end $$;
 -- ---------------------------------------------------------------------------
 
 -- Users export (safe profile columns only; email lives in auth.users and
--- is intentionally excluded — PII, cross-schema). `bank_account` / `push_token`
+-- is intentionally excluded â€” PII, cross-schema). `bank_account` / `push_token`
 -- must NEVER appear in a bulk export.;
 
 -- Trainers export: listed companions only (has an active companion_listing),
@@ -4973,7 +4970,7 @@ end $$;
 -- Phase 2 Scope B gap-fix: the fee split (B-1) and 30-min order expiry (B-1)
 -- were added as *columns* in 0035 but nothing ever wrote or scheduled them.
 -- This migration wires the write path. It does NOT touch B-2 (provider
--- abstraction), B-6/B-7/B-8 (settlement state machine / payout admin) — those
+-- abstraction), B-6/B-7/B-8 (settlement state machine / payout admin) â€” those
 -- are separate, larger pieces sequenced after this one in
 -- docs/phase2-execution-order.md Stage 3/4. Keeping this migration narrowly
 -- scoped to "make the columns that already exist actually correct" avoids
@@ -4982,7 +4979,7 @@ end $$;
 -- ---------------------------------------------------------------------------
 -- 1. Fee-split formula, isolated in one function.
 --
---    TODO(pending client confirmation — see docs/phase2-work-tracker.md
+--    TODO(pending client confirmation â€” see docs/phase2-work-tracker.md
 --    Decisions log, "Fee rounding rule"): the rounding MODE below (round half
 --    up) is a placeholder, not a confirmed business rule. It is written as a
 --    single small function with one clearly-named constant so changing the
@@ -4991,8 +4988,8 @@ end $$;
 --
 --    Formula: platform_fee_amount = round_half_up(gross_amount * rate)
 --             trainer_payable      = gross_amount - platform_fee_amount
---    (Processing fee is recorded separately where the provider exposes it —
---    §5.1: "not deducted from trainer 95%" — so it never enters this split.)
+--    (Processing fee is recorded separately where the provider exposes it â€”
+--    Â§5.1: "not deducted from trainer 95%" â€” so it never enters this split.)
 -- ---------------------------------------------------------------------------;
 
 -- ---------------------------------------------------------------------------
@@ -5001,7 +4998,7 @@ end $$;
 --    only `amount` set; extend it to also set gross_amount/platform_fee_*/
 --    trainer_payable using the function above. Re-declaring the whole
 --    function (not just patching) because `create or replace` needs the
---    complete body — this is a copy of 0033's version with one insert
+--    complete body â€” this is a copy of 0033's version with one insert
 --    changed; see the "-- CHANGED" markers.
 -- ---------------------------------------------------------------------------;
 
@@ -5009,7 +5006,7 @@ end $$;
 -- a tight margin, infrequent enough to be a trivial load on a free-tier DB.
 -- `cron.schedule()` upserts by job name (confirmed against Supabase's docs,
 -- 2026-09-15: calling it again with the same name replaces the existing job
--- rather than erroring or duplicating it), so this is safe to re-run as-is —
+-- rather than erroring or duplicating it), so this is safe to re-run as-is â€”
 -- no existence check needed.
 select cron.schedule(
   'expire-stale-payment-attempts',
@@ -5020,15 +5017,15 @@ select cron.schedule(
 );
 
 -- ---------------------------------------------------------------------------
--- 4. Service Completed — automatic (cron) + admin correction.
+-- 4. Service Completed â€” automatic (cron) + admin correction.
 -- ---------------------------------------------------------------------------;
 
 -- Admin-callable correction (no-show, reschedule error). Required reason,
 -- logged. p_completed=false only allowed before settlement (never unwind a
--- paid-out order from here — that is a payout-workflow correction, B-8).;
+-- paid-out order from here â€” that is a payout-workflow correction, B-8).;
 
 -- ---------------------------------------------------------------------------
--- 5. Eligibility — automatic (cron), re-evaluated every cycle in both
+-- 5. Eligibility â€” automatic (cron), re-evaluated every cycle in both
 --    directions so admin_hold / refund changes made between cron runs are
 --    reconciled even if the RPCs below didn't already flip the flag inline.
 -- ---------------------------------------------------------------------------;
@@ -5056,7 +5053,7 @@ select cron.schedule(
 -- ---------------------------------------------------------------------------;
 
 -- ---------------------------------------------------------------------------
--- 3. B-5 · Cancellation & refund status recording (admin action only).
+-- 3. B-5 Â· Cancellation & refund status recording (admin action only).
 --    p_action: 'cancel' (payments.status -> cancelled),
 --              'refund_requested' | 'refunded' (payments.refund_status).
 --    Excludes the order from settlement eligibility immediately if it was
@@ -5064,41 +5061,41 @@ select cron.schedule(
 -- ---------------------------------------------------------------------------;
 
 -- ---------------------------------------------------------------------------
--- 4. B-4 · Trainer's own orders (read-only). Replaces a direct client-side
---    table query (§6.3) with a SECURITY DEFINER RPC scoped to auth.uid().
+-- 4. B-4 Â· Trainer's own orders (read-only). Replaces a direct client-side
+--    table query (Â§6.3) with a SECURITY DEFINER RPC scoped to auth.uid().
 -- ---------------------------------------------------------------------------;
 
 -- Trainer's own withdrawal requests (for the same earnings page).;
 
 -- ---------------------------------------------------------------------------
 -- 5. Settlement application / reversal helpers (used by the B-8 workflow
---    RPC below). Internal only — not granted to authenticated/anon.
+--    RPC below). Internal only â€” not granted to authenticated/anon.
 -- ---------------------------------------------------------------------------;
 
 -- ---------------------------------------------------------------------------
--- 6. B-7 · Admin payout list (filterable, with header totals).
+-- 6. B-7 Â· Admin payout list (filterable, with header totals).
 -- ---------------------------------------------------------------------------;
 
 -- ---------------------------------------------------------------------------
--- 7. B-8 · Admin payout detail (full bank reveal, admin-only) + full history.
+-- 7. B-8 Â· Admin payout detail (full bank reveal, admin-only) + full history.
 -- ---------------------------------------------------------------------------;
 
 -- Phase 2 Stage 4 (docs/phase2-execution-order.md): B-2 payment-provider
 -- abstraction, database side. Mirrors create_newebpay_payment_attempt (0033)
--- with provider='simulated' instead of 'newebpay' — kept as a separate
+-- with provider='simulated' instead of 'newebpay' â€” kept as a separate
 -- function rather than parameterizing the existing one, since the existing
 -- function is already relied on by the live NewebPay route and duplicating a
--- ~40-line function is lower-risk than changing it (§8.4 "live cutover is
+-- ~40-line function is lower-risk than changing it (Â§8.4 "live cutover is
 -- config-only" implies the live path shouldn't need to change for this).
 --
 -- Confirmation reuses apply_newebpay_notification (0033) as-is: that
 -- function is already provider-agnostic (it matches by merchant_order_no
 -- and never references "newebpay" in its body), so no new confirmation
--- logic is needed — only a trainee-callable RPC that supplies simulated
+-- logic is needed â€” only a trainee-callable RPC that supplies simulated
 -- values in place of a real gateway signature.;
 
 -- The simulated review/result screens reuse the existing payment_detail()
--- RPC (0033) — already owner-gated (p.user_id = auth.uid()) and already
+-- RPC (0033) â€” already owner-gated (p.user_id = auth.uid()) and already
 -- returns everything the UI needs (status, amount, booking). No new getter
 -- needed; payment_detail's `booking` join doesn't reference "newebpay"
 -- either, so it's already provider-agnostic.;
@@ -5181,227 +5178,3 @@ begin
     end if;
   end loop;
 end $$;
-
--- PostGIS spatial_ref_sys is owned by supabase_admin on hosted projects;
--- revoke/enable RLS may no-op. Keep the attempt for local resets where we own it.
-do $$
-begin
-  begin
-    revoke insert, update, delete, truncate, references, trigger
-      on table public.spatial_ref_sys from anon, authenticated;
-  exception when insufficient_privilege or undefined_table then
-    null;
-  end;
-  begin
-    alter table public.spatial_ref_sys enable row level security;
-  exception when insufficient_privilege or undefined_table then
-    null;
-  end;
-end $$;
-
-
-
--- ============================================================================
--- Row-level security & grants
--- ============================================================================
-
--- Row Level Security (final state after 0045/0046).
--- RPC-only writes: SELECT policies only (except storage object policies).
--- Each policy: DROP IF EXISTS then CREATE.
-
-alter table activities enable row level security;
-alter table availability enable row level security;
-alter table availability_blocks enable row level security;
-alter table blocks enable row level security;
-alter table bookings enable row level security;
-alter table companion_listings enable row level security;
-alter table consent_records enable row level security;
-alter table conversations enable row level security;
-alter table exercises enable row level security;
-alter table listing_offerings enable row level security;
-alter table messages enable row level security;
-alter table notifications enable row level security;
-alter table payment_status_events enable row level security;
-alter table payments enable row level security;
-alter table reports enable row level security;
-alter table reviews enable row level security;
-alter table saved_companions enable row level security;
-alter table user_activities enable row level security;
-alter table user_onboarding enable row level security;
-alter table user_training_plans enable row level security;
-alter table users enable row level security;
-alter table verifications enable row level security;
-alter table withdrawal_requests enable row level security;
-alter table withdrawal_settlements enable row level security;
-alter table withdrawal_status_events enable row level security;
-
-drop policy if exists "activities readable" on activities;
-create policy "activities readable"
-  on activities for select to authenticated using (true);
-
-drop policy if exists "availability_blocks owner read" on availability_blocks;
-create policy "availability_blocks owner read"
-  on availability_blocks for select to authenticated using (user_id = (select auth.uid()));
-
-drop policy if exists "availability readable" on availability;
-create policy "availability readable" on availability for select to authenticated using (true);
-
-drop policy if exists "blocks owner read" on blocks;
-create policy "blocks owner read"
-  on blocks for select to authenticated using (blocker_id = (select auth.uid()));
-
-drop policy if exists "bookings parties read" on bookings;
-create policy "bookings parties read"
-  on bookings for select to authenticated
-  using (seeker_id = (select auth.uid()) or companion_id = (select auth.uid()));
-
-drop policy if exists "listings active readable" on companion_listings;
-create policy "listings active readable"
-  on companion_listings for select to authenticated
-  using (status = 'active' or user_id = (select auth.uid()));
-
-drop policy if exists "consent_records owner read" on consent_records;
-create policy "consent_records owner read"
-  on consent_records for select to authenticated
-  using (user_id = (select auth.uid()));
-
-drop policy if exists "conversations participant read" on conversations;
-create policy "conversations participant read"
-  on conversations for select to authenticated
-  using ((select auth.uid()) in (participant_a, participant_b));
-
-drop policy if exists "exercises readable" on exercises;
-create policy "exercises readable"
-  on exercises for select to authenticated using (true);
-
-drop policy if exists "offerings readable for active listings" on listing_offerings;
-create policy "offerings readable for active listings"
-  on listing_offerings for select to authenticated
-  using (
-    exists (
-      select 1 from companion_listings l
-      where l.id = listing_id
-        and (l.status = 'active' or l.user_id = (select auth.uid()))
-    )
-  );
-
-drop policy if exists "messages participant read" on messages;
-create policy "messages participant read"
-  on messages for select to authenticated
-  using (
-    exists (
-      select 1 from conversations c
-      where c.id = conversation_id
-        and (select auth.uid()) in (c.participant_a, c.participant_b)
-    )
-  );
-
-drop policy if exists "notifications owner read" on notifications;
-create policy "notifications owner read"
-  on notifications for select to authenticated using (user_id = (select auth.uid()));
-
-drop policy if exists "payments owner read" on payments;
-create policy "payments owner read"
-  on payments for select to authenticated
-  using (user_id = (select auth.uid()));
-
-drop policy if exists "payments trainer read" on payments;
-create policy "payments trainer read"
-  on payments for select to authenticated
-  using (exists (
-    select 1 from bookings b
-    where b.id = payments.booking_id and b.companion_id = (select auth.uid())
-  ));
-
-drop policy if exists "reviews readable" on reviews;
-create policy "reviews readable"
-  on reviews for select to authenticated using (true);
-
-drop policy if exists "saved owner read" on saved_companions;
-create policy "saved owner read"
-  on saved_companions for select to authenticated using (seeker_id = (select auth.uid()));
-
-drop policy if exists "avatars owner delete" on storage.objects;
-create policy "avatars owner delete" on storage.objects for delete to authenticated
-  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid()::text));
-
-drop policy if exists "avatars owner insert" on storage.objects;
-create policy "avatars owner insert" on storage.objects for insert to authenticated
-  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid()::text));
-
-drop policy if exists "avatars owner update" on storage.objects;
-create policy "avatars owner update" on storage.objects for update to authenticated
-  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid()::text))
-  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid()::text));
-
-drop policy if exists "avatars public read" on storage.objects;
-create policy "avatars public read"
-  on storage.objects for select
-  using (bucket_id = 'avatars');
-
-drop policy if exists "banners owner delete" on storage.objects;
-create policy "banners owner delete" on storage.objects for delete to authenticated
-  using (bucket_id = 'banners' and (storage.foldername(name))[1] = (select auth.uid()::text));
-
-drop policy if exists "banners owner insert" on storage.objects;
-create policy "banners owner insert" on storage.objects for insert to authenticated
-  with check (bucket_id = 'banners' and (storage.foldername(name))[1] = (select auth.uid()::text));
-
-drop policy if exists "banners owner update" on storage.objects;
-create policy "banners owner update" on storage.objects for update to authenticated
-  using (bucket_id = 'banners' and (storage.foldername(name))[1] = (select auth.uid()::text))
-  with check (bucket_id = 'banners' and (storage.foldername(name))[1] = (select auth.uid()::text));
-
-drop policy if exists "banners public read" on storage.objects;
-create policy "banners public read"
-  on storage.objects for select
-  using (bucket_id = 'banners');
-
-drop policy if exists "verif docs admin read" on storage.objects;
-create policy "verif docs admin read" on storage.objects for select to authenticated
-  using (bucket_id = 'verification-docs' and (select is_platform_admin()));
-
-drop policy if exists "verif docs owner insert" on storage.objects;
-create policy "verif docs owner insert" on storage.objects for insert to authenticated
-  with check (
-    bucket_id = 'verification-docs'
-    and (storage.foldername(name))[1] = (select auth.uid()::text)
-  );
-
-drop policy if exists "verif docs owner read" on storage.objects;
-create policy "verif docs owner read" on storage.objects for select to authenticated
-  using (
-    bucket_id = 'verification-docs'
-    and (storage.foldername(name))[1] = (select auth.uid()::text)
-  );
-
-drop policy if exists "user_activities owner read" on user_activities;
-create policy "user_activities owner read"
-  on user_activities for select to authenticated using (user_id = (select auth.uid()));
-
-drop policy if exists "user_onboarding owner can read" on user_onboarding;
-create policy "user_onboarding owner can read"
-  on user_onboarding for select to authenticated using (user_id = (select auth.uid()));
-
-drop policy if exists "user_training_plans owner can read" on user_training_plans;
-create policy "user_training_plans owner can read"
-  on user_training_plans for select to authenticated
-  using ((select auth.uid()) = user_id);
-
-drop policy if exists "users owner can read" on users;
-create policy "users owner can read"
-  on users for select to authenticated using (id = (select auth.uid()));
-
-drop policy if exists "verifications admin read" on verifications;
-create policy "verifications admin read"
-  on verifications for select to authenticated using ((select is_platform_admin()));
-
-drop policy if exists "verifications owner read" on verifications;
-create policy "verifications owner read"
-  on verifications for select to authenticated using (user_id = (select auth.uid()));
-
-drop policy if exists "withdrawal_requests trainer read" on withdrawal_requests;
-create policy "withdrawal_requests trainer read"
-  on withdrawal_requests for select to authenticated
-  using (trainer_id = (select auth.uid()));
-

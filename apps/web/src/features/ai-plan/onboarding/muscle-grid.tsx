@@ -1,6 +1,7 @@
 "use client";
 
-import { Check } from "lucide-react";
+import * as React from "react";
+import { Check, Dumbbell } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   ONBOARDING_MUSCLE_GROUPS,
@@ -88,12 +89,7 @@ export function MuscleGrid({
                         isSelected ? "border-primary" : "border-border",
                       )}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- local static asset in public/ */}
-                      <img
-                        src={MUSCLE_GROUP_IMAGES[muscle]}
-                        alt=""
-                        className="h-full w-full object-cover mix-blend-multiply"
-                      />
+                      <MuscleTileImage src={MUSCLE_GROUP_IMAGES[muscle]} />
                       {isSelected && (
                         <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
                           <Check size={11} className="text-primary-foreground" strokeWidth={3} />
@@ -122,5 +118,28 @@ export function MuscleGrid({
         );
       })}
     </div>
+  );
+}
+
+/** Some muscle groups are still missing their source artwork on disk (see
+ *  `shared/assets/images.ts`) — falls back to a generic icon instead of a
+ *  broken-image glyph when the file 404s. */
+function MuscleTileImage({ src }: { src: string }) {
+  const [failed, setFailed] = React.useState(false);
+
+  if (failed) {
+    return (
+      <Dumbbell size={22} className="text-muted-foreground" aria-hidden />
+    );
+  }
+
+  // eslint-disable-next-line @next/next/no-img-element -- local static asset in public/
+  return (
+    <img
+      src={src}
+      alt=""
+      className="h-full w-full object-cover mix-blend-multiply"
+      onError={() => setFailed(true)}
+    />
   );
 }

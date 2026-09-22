@@ -1,25 +1,18 @@
--- AI Plan exercise library — GENERATED, do not edit by hand.
--- Regenerate with:  node apps/web/scripts/generate-exercises-seed.mjs
+-- Exercise catalog (conditioning/cardio/mobility tags + full content) — GENERATED.
+-- Row data source of truth: backend/seeds/03_ai_plan_exercises.sql
+--   Regenerate seed: node apps/web/scripts/generate-exercises-seed.mjs
+--   Then refresh this file: copy the seed INSERT body and keep the slug-rewrite
+--   block at the bottom.
 --
--- One row per illustrated exercise (302), keyed by the catalog slug (kebab-case),
--- built from:
---   apps/web/src/shared/assets/exercise-catalog.json   name, equipment, muscles
---   apps/web/src/shared/assets/exercise-names.zh.json  Traditional Chinese names
---   apps/web/src/shared/assets/exercise-content.json   steps + tips (302 of 302 written so far)
--- and the equipment rules in features/ai-plan/onboarding/equipment-exercises.ts.
+-- Idempotent:
+--   * INSERT … ON CONFLICT (slug) DO UPDATE refreshes every catalog row
+--   * DELETE removes any non-catalog slug (old snake_case list)
+--   * Saved-plan slug rewrite only touches rows that still hold old slugs
+-- Safe to re-apply on a DB that already has this data.
 --
--- Needs the equipment column, which 0001_init.sql defines on the exercises table.
---
--- Columns:
---   muscle_groups       the plan generator's muscle vocabulary (push/pull/legs pools)
---   equipment           onboarding equipment / cardio ids — ANY ONE unlocks the
---                       exercise; empty = needs no equipment
---   equipment_settings  gym types (large/small/garage/bodyweight) that can do it
---
--- Idempotent and replacing: it upserts every catalog row and DELETES any other
--- row (the old snake_case list), so running it on a live database swaps the old
--- exercise list for this one. Saved plans keep working — they store their own
--- copy of each exercise's name, and old slugs are resolved by the app.
+-- Consolidates what was previously split across:
+--   20260922010000_exercise_conditioning_tags.sql  (superseded — repaired out)
+--   20260922020000_exercise_catalog_update.sql     (this file)
 
 insert into exercises
   (slug, name_en, name_zh, muscle_groups, equipment, equipment_settings,

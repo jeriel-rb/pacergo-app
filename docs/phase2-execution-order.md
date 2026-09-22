@@ -11,17 +11,42 @@
 > until the schema/abstraction decisions under them are locked, because rework there is the
 > most expensive kind.
 >
-> **Status as of 2026-09-16 (corrected):** Stage 0 done, Stage 1 done, Stage 2a done,
-> **Stage 2b done**, **Stage 2c done**, **Stage 3 done** (backend + B-4/B-7/B-8 UI),
-> **Stage 4 done** (provider abstraction + simulated checkout UI, `PAYMENT_PROVIDER=simulated`
-> now set in `.env` — Phase 1 checkout is actively using the simulated provider).
-> **Stage 5 (Scope A rebuild): not started at all** — an earlier version of this status line
-> said step 1 ("re-scope the 6 inputs") was done; that was wrong. Step 1 was *attempted* and
-> then deliberately reverted/abandoned once it was confirmed it can't land in isolation
-> without breaking the current `/ai-plan` route (see the Stage 5 section below and the
-> Decisions log). Zero Stage 5 code exists. Migrations `0036`–`0042` **are applied** to the
-> live Supabase project (verified directly against the DB, not just local file state) —
-> `backend/migrations/` (the renamed `supabase/migrations/`, now junctioned) is current.
+> **Status as of 2026-09-22 (corrected — supersedes the 2026-09-16 line below it):** Stage 0
+> done, Stage 1 done, Stage 2a done, Stage 2b done, Stage 2c done, Stage 3 done (backend +
+> B-4/B-7/B-8 UI), Stage 4 done (provider abstraction + simulated checkout UI,
+> `PAYMENT_PROVIDER` still defaults to `newebpay` in production — flipping to `simulated` is
+> still an open client/ops decision, not done).
+> **Stage 5 (Scope A rebuild): DONE**, built in a separate session between 2026-09-16 and
+> 2026-09-22 that this doc was never updated to reflect — the line below (from 2026-09-16)
+> describing it as "not started at all" was accurate *at the time* and is now wrong. What
+> shipped diverges from this document's original Stage-5 plan: a multi-step wizard (~18 inputs
+> across three sub-flows, not the spec's literal 6), 302 seeded exercises (not 80), a Rest
+> Timer preference the plan below never anticipated, and no exercise photography (placeholder
+> images — content production, still not something a dev session can generate). This was a
+> **client/PacerGo-decided scope change**, recorded in `phase2-work-tracker.md`'s Decisions log
+> under "[decided 2026-09-22] Stage 5 (Scope A rebuild) is DONE" — read that entry for the
+> reasoning and for what's still genuinely open (exercise images; migrating `apps/mobile` off
+> the old 6-input composer it still depends on). **The Stage 5 section below has been rewritten
+> to describe what actually shipped** (no longer the original speculative 7-step plan) — it and
+> `phase2-work-tracker.md`'s Scope A section should now agree; treat both as current.
+>
+> **2026-09-16 status line (kept for history, no longer current):** Stage 5 (Scope A rebuild):
+> not started at all — an earlier version of this status line said step 1 ("re-scope the 6
+> inputs") was done; that was wrong. Step 1 was *attempted* and then deliberately
+> reverted/abandoned once it was confirmed it can't land in isolation without breaking the
+> current `/ai-plan` route (see the Stage 5 section below and the Decisions log). Zero Stage 5
+> code exists. Migrations `0036`–`0042` **are applied** to the live Supabase project (verified
+> directly against the DB, not just local file state) — `backend/migrations/` (the renamed
+> `supabase/migrations/`, now junctioned) is current.
+>
+> **2026-09-22 migration-history note:** `backend/migrations/` was later squashed into
+> `0001_init.sql` (schema) + `0002_policies.sql` (centralized RLS/storage policies with
+> comments); new migrations since then use full timestamp filenames. The exercise-catalog
+> work is one idempotent migration (`20260922020000_exercise_catalog_update.sql` — upsert +
+> delete stale + saved-plan slug rewrite); the earlier
+> `20260922010000_exercise_conditioning_tags.sql` was superseded and repaired out of remote
+> history. Seed mirror: `backend/seeds/03_ai_plan_exercises.sql`. Verified live: 302 rows in
+> `exercises`.
 
 ---
 
@@ -278,50 +303,57 @@ new bookings. See the Decisions log.
 
 ---
 
-## Stage 5 — Scope A rebuild (A-1 through A-7) — **not started (attempted, stopped deliberately)**
+## Stage 5 — Scope A rebuild (A-1 through A-8) — **DONE 2026-09-22**
 
-**Deliberately last**, despite being M1's target (Oct 8) in the spec's own calendar — because
-the investigation confirmed this is closer to a ground-up build than an extension, and every
-other stage above is either a fast win (Stage 1, 2b) or a fix to something already
-half-working (Stage 2a/2c, 3, 4). Putting the largest, most novel piece of work last on this
-list is a sequencing choice for *this document*, not a recommendation to blow the M1 date —
-flag the M1 timeline risk to the client now (see "Open risk" below) rather than silently
-absorbing it.
+Built in a separate session between 2026-09-16 and 2026-09-22 that this document wasn't
+updated to reflect at the time — the plan this section originally laid out (re-scope the
+literal 6 inputs, then build on top of that enum) is **not** what shipped. What actually
+happened, and is confirmed working end-to-end against the live Supabase project:
 
-> **2026-09-16: why step 1 wasn't started even in isolation.** The plan below treats "re-scope
-> the 6 inputs" as a small first step, but on inspection `apps/web/src/features/ai-plan/
-> ai-plan-view.tsx` and `actions.ts` consume every one of the fields this step would remove
-> (`ageBand`, the `nutrition` boolean) or reshape (`goal`, `location`, `frequency` option
-> sets) directly, with no adapter layer between the enum and the UI. Changing the enum without
-> rewriting the UI/generation logic in the same pass breaks the build and takes down the
-> *currently shipped, working* `/ai-plan` route — worse than not starting. Doing it properly
-> means steps 1–6 essentially have to land together (enum → data model → content → UI →
-> tests), which confirms this is a single large build, not seven independent small ones. **Do
-> not attempt step 1 alone again** — schedule this stage as one dedicated build, and expect it
-> to include real exercise photography/illustrations for ≥80 exercises, which is content
-> production, not something an agent session can generate.
+1. [x] **Onboarding wizard** — three guided sub-flows (About You / Training Preferences / Gym
+       & Equipment, ~18 screens total) instead of a single 6-field form.
+       `apps/web/src/features/ai-plan/onboarding/**`, types in
+       `packages/shared/src/onboarding/onboarding-types.ts`. This is a **client/PacerGo-decided
+       scope change from the spec's literal 6-input list**, not an oversight — see the Decisions
+       log entry dated 2026-09-22 in `phase2-work-tracker.md` for the reasoning. Includes a Rest
+       Timer preference the original spec never mentioned.
+2. [x] **Structured plan data model** — `GeneratedPlan` (weeks → days → warm-up/main/cool-down
+       → exercise refs), not markdown. `packages/shared/src/plan/generate-plan.ts`.
+3. [x] **`exercises` table + content** — **302 distinct exercises** shipped (not the ≥80
+       minimum), each with muscles + zh/en instructions/tips, verified complete (no empty
+       rows). `backend/seeds/03_ai_plan_exercises.sql`, generated from
+       `apps/web/src/shared/assets/exercise-content.json`. **Real photography/illustrations
+       were not produced** — every exercise still shows a "Photo coming soon" placeholder; this
+       was anticipated from the start as content production a dev/agent session can't do, and
+       remains the one genuinely open piece of A-7/A-4/A-5.
+4. [x] **Persistence** — saved plans live in `user_training_plans`, viewable via **My Plans**
+       until updated or deleted. "Update Preferences" edits the specific saved plan's inputs in
+       a dedicated Customize Plan page and re-runs the composer in place — functionally the
+       spec's "no separate regenerate control," implemented as a more targeted edit flow than
+       "re-open the whole questionnaire," since re-walking an 18-screen wizard to change one
+       field would have been worse UX than the spec anticipated when it assumed a 6-field form.
+5. [x] **UI** — program overview (week tabs/day cards), daily workout screen, exercise detail
+       page, all shipped and live.
+6. [x] **Determinism test** — `packages/shared/src/__tests__/generate-plan.test.ts`, asserts
+       byte-identical output for identical inputs, plus coverage for frequency/equipment/split/
+       experience/cardio variance. Zero AI/LLM calls, confirmed by grep across the composer and
+       feature tree. **Not done:** a formal full A-1 combination-matrix test (every possible
+       input combination, asserted to produce a complete plan) — the determinism suite tests
+       representative cases, not the full matrix.
+7. [x] Beta labeling carried forward — `BetaBadge` on the Home tile, onboarding hub, and plan
+       overview header. (The literal spec string "Personalized Workout Plan Generator (Beta)"
+       is not rendered anywhere verbatim — client/PacerGo decision 2026-09-22 that the badge +
+       existing titles satisfy this requirement; see `phase2-work-tracker.md`'s A-8 entry.)
 
-1. [ ] **Re-scope the 6 inputs** (`enums/training.ts`): drop `ageBand` and the nutrition
-       boolean per spec, remap goal/location/frequency option sets to the spec's exact lists.
-       Must land together with step 2 (see note above) — the current UI/actions consume these
-       fields directly.
-2. [ ] **Structured plan data model** — weeks → days → warm-up/main/cool-down groups →
-       exercise refs. Replace the markdown-string output entirely.
-3. [ ] **`exercises` table + content authoring** — ≥80 distinct exercises, each with image,
-       muscles, zh+en name/instructions/tips, sets×reps/duration, rest. Start authoring
-       content in parallel with step 2 (it's independent work) — send the W3 draft to the
-       client for P-7 review as soon as ~40 exist, don't wait for all 80.
-4. [ ] **Persistence** — save the generated plan to the user's account; "Update Workout Plan"
-       replaces it (no separate regenerate control).
-5. [ ] **UI:** program overview (week tabs/day cards), daily workout screen, exercise detail
-       page. Straightforward once 2–4 exist.
-6. [ ] **Determinism + combination-matrix tests** — byte-identical test, network-log
-       verification, full A-1 combination matrix. Write these test alongside step 2, not
-       after — the existing composer already proves this team can write a determinism test
-       correctly (`plan-composer.test.ts`), so extend that pattern rather than bolting tests
-       on at the end.
-7. [ ] Reuse the Stage 2b Beta-label/copy fix — carry it forward into the new UI rather than
-       redoing it.
+**Known trade-off, not yet resolved:** `apps/mobile/src/app/ai-plan.tsx` still runs the *old*
+6-input composer (`enums/training.ts` / `plan-composer.ts` in `packages/shared`) — that's
+mobile's only plan-generation implementation, so those files stay in the codebase and stay
+load-bearing even though the web app no longer uses them. Migrating mobile onto the new wizard
+and composer is open work, not a Scope A blocker for web.
+
+For the full item-by-item DoD checklist (A-1 through A-8), see `phase2-work-tracker.md`'s
+Scope A section — that document is the source of truth for checkbox state; this one is the
+sequencing/rationale record.
 
 ---
 
@@ -337,12 +369,20 @@ absorbing it.
 
 ---
 
-## Open risk to flag to the client/Jeriel now
+## Open risk to flag to the client/Jeriel now — **resolved 2026-09-22, kept for history**
 
-Sequencing Scope A last in this document does not change the spec's M1 = Oct 8 target. Given
-the scale of the Scope A gap (schema, content DB, and UI are all effectively unbuilt), either:
-(a) Scope A starts in parallel with Stage 1–2 immediately, accepting that context-switching
-costs some velocity, or (b) the M1 date needs an early, honest conversation with the client
-per §11 (change requests are cheaper the earlier they're raised). This document sequences by
-*risk and dependency*, not by calendar — reconcile the two before committing dates back to
-the client.
+This section described a real risk as of 2026-09-16: Scope A was entirely unbuilt with M1
+(Oct 8) approaching. That risk no longer applies — Scope A shipped (see the status note at the
+top of this document and `phase2-work-tracker.md`'s Scope A section) — but the scope it
+shipped as differs from the spec's literal wording (6 inputs → ~18; 60 fixed minutes → a
+15–90 min preference), which **is** a live item: get that divergence formally acknowledged by
+the client per §11, since M1/M3 acceptance is graded against literal DoD wording. That is the
+actual remaining action here, not a timeline risk.
+
+**Original text, unmodified, for reference:** Sequencing Scope A last in this document does not
+change the spec's M1 = Oct 8 target. Given the scale of the Scope A gap (schema, content DB,
+and UI are all effectively unbuilt), either: (a) Scope A starts in parallel with Stage 1–2
+immediately, accepting that context-switching costs some velocity, or (b) the M1 date needs an
+early, honest conversation with the client per §11 (change requests are cheaper the earlier
+they're raised). This document sequences by *risk and dependency*, not by calendar — reconcile
+the two before committing dates back to the client.

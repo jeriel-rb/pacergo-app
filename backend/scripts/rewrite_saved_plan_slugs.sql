@@ -1,8 +1,9 @@
 -- Saved plans: replace old exercise slugs with the current catalog slugs.
 --
--- ALREADY APPLIED to the live project by migration 20260922020000_exercise_catalog_update.sql
--- (its last block is the REWRITE below). Kept for reference and for other databases; the
--- PREVIEW and VERIFY selects are still handy for checking a plan set.
+-- ALREADY APPLIED to the live project by the consolidated migration
+-- 20260922020000_exercise_catalog_update.sql (its last block is the REWRITE below).
+-- Kept for reference and for other databases; the PREVIEW and VERIFY selects are
+-- still handy for checking a plan set.
 --
 -- Saved plans store each exercise's slug inside their JSON (user_training_plans.plan).
 -- The exercise list moved from snake_case slugs (push_up, barbell_bench_press …) to the

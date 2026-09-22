@@ -1,0 +1,378 @@
+"use client";
+
+import * as React from "react";
+import {
+  EQUIPMENT_PRESETS,
+  GYM_EQUIPMENT_DEFAULT,
+  ONBOARDING_ANSWERS_DEFAULT,
+  ONBOARDING_EXCLUDED_MUSCLES_MAX,
+  ONBOARDING_MUSCLE_GROUPS,
+  ONBOARDING_PRIORITIZED_MUSCLES_MAX,
+  ONBOARDING_USE_CASE_MAX,
+  TRAINING_PREFERENCES_DEFAULT,
+  type GeneratedPlan,
+  type GymEquipmentAnswers,
+  type OnboardingAnswers,
+  type OnboardingCardioPlacement,
+  type OnboardingCardioType,
+  type OnboardingDaysPerWeek,
+  type OnboardingEquipment,
+  type OnboardingExperience,
+  type OnboardingGoal,
+  type OnboardingGymType,
+  type OnboardingMuscleGroup,
+  type OnboardingObstacle,
+  type OnboardingStepId,
+  type OnboardingUnit,
+  type OnboardingUseCase,
+  type OnboardingVariety,
+  type OnboardingWorkoutSplit,
+  type TrainingPreferencesAnswers,
+} from "@pacergo/shared";
+
+const STORAGE_KEY_PREFIX = "pacergo.onboarding.v1";
+const LEGACY_STORAGE_KEY = STORAGE_KEY_PREFIX;
+
+function storageKeyForUser(userId: string | null | undefined): string {
+  return userId ? `${STORAGE_KEY_PREFIX}:${userId}` : `${STORAGE_KEY_PREFIX}:anon`;
+}
+
+/** Clears every onboarding draft (legacy + per-user). Call on sign-out. */
+export function clearOnboardingStorage(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < window.sessionStorage.length; i++) {
+      const key = window.sessionStorage.key(i);
+      if (key && (key === LEGACY_STORAGE_KEY || key.startsWith(`${STORAGE_KEY_PREFIX}:`))) {
+        keys.push(key);
+      }
+    }
+    for (const key of keys) window.sessionStorage.removeItem(key);
+  } catch {
+    // Storage may be unavailable — nothing to clear.
+  }
+}
+
+interface OnboardingState {
+  answers: OnboardingAnswers;
+  trainingPreferences: TrainingPreferencesAnswers;
+  gymEquipment: GymEquipmentAnswers;
+  completedSteps: Record<OnboardingStepId, boolean>;
+  /** Set once the "Creating your plan" screen finishes generating; consumed
+   *  by the summary screen and persisted on "Save My Plan". */
+  generatedPlan: GeneratedPlan | null;
+}
+
+const INITIAL_STATE: OnboardingState = {
+  answers: ONBOARDING_ANSWERS_DEFAULT,
+  trainingPreferences: TRAINING_PREFERENCES_DEFAULT,
+  gymEquipment: GYM_EQUIPMENT_DEFAULT,
+  completedSteps: { aboutYou: false, trainingPreferences: false, gymEquipment: false },
+  generatedPlan: null,
+};
+
+type Action =
+  | { type: "hydrate"; state: Partial<OnboardingState> }
+  | { type: "patch"; patch: Partial<OnboardingAnswers> }
+  | { type: "toggleUseCase"; value: OnboardingUseCase }
+  | { type: "patchTraining"; patch: Partial<TrainingPreferencesAnswers> }
+  | { type: "patchGymEquipment"; patch: Partial<GymEquipmentAnswers> }
+  | { type: "toggleEquipment"; value: OnboardingEquipment }
+  | { type: "toggleCardioType"; value: OnboardingCardioType }
+  | { type: "toggleExcludedMuscle"; value: OnboardingMuscleGroup }
+  | { type: "togglePrioritizedMuscle"; value: OnboardingMuscleGroup }
+  | { type: "completeStep"; step: OnboardingStepId }
+  | { type: "setGeneratedPlan"; plan: GeneratedPlan }
+  | { type: "resetForUpdate" }
+  | { type: "reset" };
+
+/** Map retired picker keys from older sessionStorage drafts. */
+const LEGACY_MUSCLE_KEYS: Record<string, OnboardingMuscleGroup> = {
+  quads: "quadriceps",
+};
+
+function migrateMuscleKeys(
+  muscles: readonly string[] | undefined,
+): OnboardingMuscleGroup[] {
+  if (!muscles?.length) return [];
+  const allowed = new Set<string>(ONBOARDING_MUSCLE_GROUPS);
+  const next: OnboardingMuscleGroup[] = [];
+  for (const raw of muscles) {
+    const key = LEGACY_MUSCLE_KEYS[raw] ?? raw;
+    if (!allowed.has(key) || next.includes(key as OnboardingMuscleGroup)) continue;
+    next.push(key as OnboardingMuscleGroup);
+  }
+  return next;
+}
+
+function reducer(state: OnboardingState, action: Action): OnboardingState {
+  switch (action.type) {
+    case "hydrate": {
+      // Merge onto INITIAL_STATE (not a wholesale replace) so a session
+      // stored before a field was added to the schema doesn't wipe it back
+      // to `undefined` — each slice falls back to its own default.
+      const training = {
+        ...INITIAL_STATE.trainingPreferences,
+        ...action.state.trainingPreferences,
+      };
+      return {
+        answers: { ...INITIAL_STATE.answers, ...action.state.answers },
+        trainingPreferences: {
+          ...training,
+          excludedMuscles: migrateMuscleKeys(training.excludedMuscles),
+          prioritizedMuscles: migrateMuscleKeys(training.prioritizedMuscles),
+        },
+        gymEquipment: {
+          ...INITIAL_STATE.gymEquipment,
+          ...action.state.gymEquipment,
+        },
+        completedSteps: {
+          ...INITIAL_STATE.completedSteps,
+          ...action.state.completedSteps,
+        },
+        generatedPlan: action.state.generatedPlan ?? null,
+      };
+    }
+    case "patch":
+      return { ...state, answers: { ...state.answers, ...action.patch } };
+    case "toggleUseCase": {
+      const has = state.answers.useCases.includes(action.value);
+      const useCases = has
+        ? state.answers.useCases.filter((v) => v !== action.value)
+        : state.answers.useCases.length >= ONBOARDING_USE_CASE_MAX
+          ? state.answers.useCases
+          : [...state.answers.useCases, action.value];
+      return { ...state, answers: { ...state.answers, useCases } };
+    }
+    case "patchTraining":
+      return {
+        ...state,
+        trainingPreferences: { ...state.trainingPreferences, ...action.patch },
+      };
+    case "patchGymEquipment":
+      return {
+        ...state,
+        gymEquipment: { ...state.gymEquipment, ...action.patch },
+      };
+    case "toggleEquipment": {
+      const has = state.gymEquipment.equipment.includes(action.value);
+      const equipment = has
+        ? state.gymEquipment.equipment.filter((v) => v !== action.value)
+        : [...state.gymEquipment.equipment, action.value];
+      return { ...state, gymEquipment: { ...state.gymEquipment, equipment } };
+    }
+    case "toggleCardioType": {
+      const has = state.gymEquipment.cardioTypes.includes(action.value);
+      const cardioTypes = has
+        ? state.gymEquipment.cardioTypes.filter((v) => v !== action.value)
+        : [...state.gymEquipment.cardioTypes, action.value];
+      return { ...state, gymEquipment: { ...state.gymEquipment, cardioTypes } };
+    }
+    case "toggleExcludedMuscle": {
+      const { prioritizeMuscles, prioritizedMuscles } = state.trainingPreferences;
+      // Already a focus muscle: the picker greys it out; ignore it here too.
+      if (prioritizeMuscles === true && prioritizedMuscles.includes(action.value)) return state;
+      const current = state.trainingPreferences.excludedMuscles;
+      const has = current.includes(action.value);
+      const excludedMuscles = has
+        ? current.filter((v) => v !== action.value)
+        : current.length >= ONBOARDING_EXCLUDED_MUSCLES_MAX
+          ? current
+          : [...current, action.value];
+      return {
+        ...state,
+        trainingPreferences: { ...state.trainingPreferences, excludedMuscles },
+      };
+    }
+    case "togglePrioritizedMuscle": {
+      const { excludeMuscles, excludedMuscles } = state.trainingPreferences;
+      // Already excluded: the picker greys it out; ignore it here too.
+      if (excludeMuscles === true && excludedMuscles.includes(action.value)) return state;
+      const current = state.trainingPreferences.prioritizedMuscles;
+      const has = current.includes(action.value);
+      const prioritizedMuscles = has
+        ? current.filter((v) => v !== action.value)
+        : current.length >= ONBOARDING_PRIORITIZED_MUSCLES_MAX
+          ? current
+          : [...current, action.value];
+      return {
+        ...state,
+        trainingPreferences: { ...state.trainingPreferences, prioritizedMuscles },
+      };
+    }
+    case "completeStep":
+      return {
+        ...state,
+        completedSteps: { ...state.completedSteps, [action.step]: true },
+      };
+    case "setGeneratedPlan":
+      return { ...state, generatedPlan: action.plan };
+    case "resetForUpdate":
+      // A-6 "Update Workout Plan": re-walk the wizard with existing answers
+      // still prefilled, but every step unlocked again.
+      return {
+        ...state,
+        completedSteps: { aboutYou: false, trainingPreferences: false, gymEquipment: false },
+        generatedPlan: null,
+      };
+    case "reset":
+      return INITIAL_STATE;
+    default:
+      return state;
+  }
+}
+
+interface OnboardingContextValue {
+  answers: OnboardingAnswers;
+  trainingPreferences: TrainingPreferencesAnswers;
+  gymEquipment: GymEquipmentAnswers;
+  completedSteps: Record<OnboardingStepId, boolean>;
+  generatedPlan: GeneratedPlan | null;
+  setGoal: (goal: OnboardingGoal) => void;
+  setObstacle: (obstacle: OnboardingObstacle) => void;
+  toggleUseCase: (useCase: OnboardingUseCase) => void;
+  setGender: (gender: OnboardingAnswers["gender"]) => void;
+  setAge: (age: number) => void;
+  setUnit: (unit: OnboardingUnit) => void;
+  setHeightCm: (heightCm: number) => void;
+  setWeightKg: (weightKg: number) => void;
+  setExperience: (experience: OnboardingExperience) => void;
+  setDaysPerWeek: (days: OnboardingDaysPerWeek) => void;
+  setExcludeMuscles: (value: boolean) => void;
+  toggleExcludedMuscle: (muscle: OnboardingMuscleGroup) => void;
+  setPrioritizeMuscles: (value: boolean) => void;
+  togglePrioritizedMuscle: (muscle: OnboardingMuscleGroup) => void;
+  setWorkoutSplit: (split: OnboardingWorkoutSplit) => void;
+  setVariety: (variety: OnboardingVariety) => void;
+  setDurationMin: (minutes: number) => void;
+  setGymType: (gymType: OnboardingGymType) => void;
+  toggleEquipment: (equipment: OnboardingEquipment) => void;
+  setAddCardio: (value: boolean) => void;
+  setCardioPlacement: (placement: OnboardingCardioPlacement) => void;
+  toggleCardioType: (cardioType: OnboardingCardioType) => void;
+  markStepComplete: (step: OnboardingStepId) => void;
+  setGeneratedPlan: (plan: GeneratedPlan) => void;
+  resetForUpdate: () => void;
+  reset: () => void;
+}
+
+const OnboardingContext = React.createContext<OnboardingContextValue | null>(null);
+
+export function OnboardingProvider({
+  children,
+  initialGender = null,
+  userId = null,
+}: {
+  children: React.ReactNode;
+  /** Prefills the gender step from the user's saved profile, same as the old
+   *  single-page form did — only applies when there's no sessionStorage
+   *  state yet (the hydration effect below overrides it otherwise). */
+  initialGender?: OnboardingAnswers["gender"];
+  /** Scopes the draft to this auth user so accounts on a shared browser
+   *  cannot read each other's onboarding answers. */
+  userId?: string | null;
+}) {
+  const [state, dispatch] = React.useReducer(
+    reducer,
+    initialGender,
+    (gender): OnboardingState => ({
+      ...INITIAL_STATE,
+      answers: { ...INITIAL_STATE.answers, gender },
+    }),
+  );
+  const storageKey = storageKeyForUser(userId);
+
+  // Hydrate (or reset) whenever the scoped storage key changes — e.g. sign-in
+  // as a different user on the same browser tab.
+  React.useEffect(() => {
+    try {
+      const raw =
+        window.sessionStorage.getItem(storageKey) ??
+        // One-time migration from the pre-scoped key when this user is signed in.
+        (userId ? window.sessionStorage.getItem(LEGACY_STORAGE_KEY) : null);
+      if (raw) {
+        dispatch({ type: "hydrate", state: JSON.parse(raw) as Partial<OnboardingState> });
+        if (userId) window.sessionStorage.removeItem(LEGACY_STORAGE_KEY);
+      } else {
+        dispatch({ type: "reset" });
+        if (initialGender) {
+          dispatch({ type: "patch", patch: { gender: initialGender } });
+        }
+      }
+    } catch {
+      // Ignore malformed/blocked storage — fall back to defaults.
+    }
+  }, [storageKey, userId, initialGender]);
+
+  React.useEffect(() => {
+    try {
+      window.sessionStorage.setItem(storageKey, JSON.stringify(state));
+    } catch {
+      // Storage may be unavailable (private mode, quota) — state just won't persist.
+    }
+  }, [state, storageKey]);
+
+  const value = React.useMemo<OnboardingContextValue>(
+    () => ({
+      answers: state.answers,
+      trainingPreferences: state.trainingPreferences,
+      gymEquipment: state.gymEquipment,
+      completedSteps: state.completedSteps,
+      generatedPlan: state.generatedPlan,
+      setGoal: (goal) => dispatch({ type: "patch", patch: { goal } }),
+      setObstacle: (obstacle) => dispatch({ type: "patch", patch: { obstacle } }),
+      toggleUseCase: (value) => dispatch({ type: "toggleUseCase", value }),
+      setGender: (gender) => dispatch({ type: "patch", patch: { gender } }),
+      setAge: (age) => dispatch({ type: "patch", patch: { age } }),
+      setUnit: (unit) => dispatch({ type: "patch", patch: { unit } }),
+      setHeightCm: (heightCm) => dispatch({ type: "patch", patch: { heightCm } }),
+      setWeightKg: (weightKg) => dispatch({ type: "patch", patch: { weightKg } }),
+      setExperience: (experience) =>
+        dispatch({ type: "patchTraining", patch: { experience } }),
+      setDaysPerWeek: (daysPerWeek) =>
+        dispatch({ type: "patchTraining", patch: { daysPerWeek } }),
+      setExcludeMuscles: (excludeMuscles) =>
+        dispatch({ type: "patchTraining", patch: { excludeMuscles } }),
+      toggleExcludedMuscle: (value) => dispatch({ type: "toggleExcludedMuscle", value }),
+      setPrioritizeMuscles: (prioritizeMuscles) =>
+        dispatch({ type: "patchTraining", patch: { prioritizeMuscles } }),
+      togglePrioritizedMuscle: (value) => dispatch({ type: "togglePrioritizedMuscle", value }),
+      setWorkoutSplit: (workoutSplit) =>
+        dispatch({ type: "patchTraining", patch: { workoutSplit } }),
+      setVariety: (variety) => dispatch({ type: "patchTraining", patch: { variety } }),
+      setDurationMin: (durationMin) =>
+        dispatch({ type: "patchTraining", patch: { durationMin } }),
+      // Picking a gym type also selects that gym's typical equipment kit.
+      setGymType: (gymType) =>
+        dispatch({
+          type: "patchGymEquipment",
+          patch: {
+            gymType,
+            equipment: [...EQUIPMENT_PRESETS[gymType]],
+          },
+        }),
+      toggleEquipment: (value) => dispatch({ type: "toggleEquipment", value }),
+      setAddCardio: (addCardio) =>
+        dispatch({ type: "patchGymEquipment", patch: { addCardio } }),
+      setCardioPlacement: (cardioPlacement) =>
+        dispatch({ type: "patchGymEquipment", patch: { cardioPlacement } }),
+      toggleCardioType: (value) => dispatch({ type: "toggleCardioType", value }),
+      markStepComplete: (step) => dispatch({ type: "completeStep", step }),
+      setGeneratedPlan: (plan) => dispatch({ type: "setGeneratedPlan", plan }),
+      resetForUpdate: () => dispatch({ type: "resetForUpdate" }),
+      reset: () => dispatch({ type: "reset" }),
+    }),
+    [state],
+  );
+
+  return (
+    <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>
+  );
+}
+
+export function useOnboarding(): OnboardingContextValue {
+  const ctx = React.useContext(OnboardingContext);
+  if (!ctx) throw new Error("useOnboarding must be used within OnboardingProvider");
+  return ctx;
+}

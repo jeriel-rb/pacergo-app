@@ -1,0 +1,488 @@
+{
+  "back": "返回",
+  "continue": "繼續",
+  "hub": {
+    "title": "開始設定",
+    "subtitle": "專屬於你的訓練計畫即將完成",
+    "allDone": "設定完成！你的計畫已經準備好了。",
+    "cta": {
+      "start": "前往基本資料",
+      "continue": "繼續",
+      "goTo": "前往{{step}}"
+    },
+    "steps": {
+      "aboutYou": {
+        "title": "關於你",
+        "description": "告訴我們你的目標、基本資料與訓練需求，讓我們為你打造合適的計畫。"
+      },
+      "trainingPreferences": {
+        "title": "訓練偏好",
+        "description": "多常訓練、強度多高、喜歡哪種訓練風格。"
+      },
+      "gymEquipment": {
+        "title": "場地與器材",
+        "description": "你在哪裡訓練，擁有哪些器材。"
+      }
+    }
+  },
+  "aboutYou": {
+    "title": "關於你"
+  },
+  "goal": {
+    "title": "你的主要目標是什麼？",
+    "subtitle": "這能幫助我們為你推薦合適的動作與組數。",
+    "options": {
+      "lose_weight": {
+        "title": "減重",
+        "description": "高次數、輕負重訓練，著重於燃脂、耐力與線條。"
+      },
+      "build_muscle": {
+        "title": "增肌",
+        "description": "中等次數、重負重訓練，著重於肌肉生長、力量與線條。"
+      },
+      "stay_healthy": {
+        "title": "維持健康",
+        "description": "多元動作訓練，提升健康、體能與規律運動習慣。"
+      }
+    }
+  },
+  "obstacle": {
+    "title": "是什麼阻礙你達成這個目標？",
+    "options": {
+      "lack_of_time": "沒有時間",
+      "lack_of_knowledge": "缺乏知識",
+      "low_motivation": "動力不足",
+      "injuries": "傷痛或身體不適",
+      "lack_of_equipment": "缺乏器材",
+      "never_tried": "從未嘗試過"
+    }
+  },
+  "useCase": {
+    "title": "你打算如何使用 Pacergo？",
+    "subtitle": "最多可選擇 {{max}} 項。",
+    "options": {
+      "log_weights_reps": "記錄我的重量與次數",
+      "personalized_plan": "取得專屬訓練計畫",
+      "progressive_overload": "使用智慧漸進超負荷",
+      "manage_plan_workouts": "管理訓練計畫與自訂訓練",
+      "exercise_demos": "查看動作示範與步驟指引",
+      "muscle_recovery": "查看肌肉恢復狀態"
+    }
+  },
+  "gender": {
+    "title": "選擇你的性別",
+    "options": {
+      "male": "男性",
+      "female": "女性",
+      "other": "其他"
+    }
+  },
+  "age": {
+    "title": "你的年齡是？",
+    "hint": "我們會用你的年齡與 BMI 來調整訓練強度，例如 50 歲以上會改採低衝擊動作。",
+    "suffix": "歲"
+  },
+  "heightWeight": {
+    "title": "身高與體重",
+    "bmiPrefix": "你的 BMI 是",
+    "bmiSuffix": "，我們會用它來協助調整你的健身計畫。",
+    "imperial": "英制",
+    "metric": "公制",
+    "unitToggle": "切換英制／公制單位",
+    "height": "身高",
+    "weight": "體重"
+  },
+  "comingSoon": "此步驟將於未來更新中推出。",
+  "trainingPreferences": {
+    "title": "訓練偏好",
+    "experience": {
+      "title": "你的訓練經驗是？",
+      "subtitle": "這能幫助我們為你推薦合適的動作與重量。",
+      "options": {
+        "no_experience": {
+          "title": "無訓練經驗",
+          "description": "剛接觸訓練，不熟悉常見動作或訓練器材。著重打好基礎。"
+        },
+        "beginner": {
+          "title": "初學者",
+          "description": "有一些訓練經驗（少於 1 年）。熟悉基本動作，但仍在學習正確姿勢與技巧。"
+        },
+        "intermediate": {
+          "title": "中階",
+          "description": "1 至 2 年訓練經驗。對動作與正確姿勢有良好理解，準備好嘗試更進階的方法。"
+        },
+        "advanced": {
+          "title": "進階",
+          "description": "3 年以上持續訓練經驗，已達到顯著的力量與肌肉發展。"
+        }
+      }
+    },
+    "daysPerWeek": {
+      "title": "你每週訓練幾天？",
+      "subtitle": "設定合理的目標有助於保持動力並追蹤進度。",
+      "recommendedBadge": "建議",
+      "options": {
+        "2": "每週 2 天",
+        "3": "每週 3 天",
+        "4": "每週 4 天",
+        "5": "每週 5 天",
+        "6": "每週 6 天",
+        "every_day": "每天"
+      }
+    },
+    "excludeMuscles": {
+      "title": "你想排除任何肌群嗎？",
+      "subtitle": "你可以告訴我們在規劃訓練計畫時要避開哪些肌群。",
+      "no": {
+        "title": "否",
+        "description": "我們將為你規劃計畫，不排除任何肌群。"
+      },
+      "yes": {
+        "title": "是",
+        "description": "最多可選擇 4 個要避開的肌群。"
+      }
+    },
+    "excludeMusclesSelect": {
+      "title": "你想排除哪些肌群？",
+      "subtitle": "最多可選擇 4 個"
+    },
+    "muscleSelectedCount": "已選擇 {{count}}/{{max}}",
+    "muscleRegions": {
+      "upper": "上半身",
+      "lower": "下半身"
+    },
+    "muscles": {
+      "abs": "腹肌",
+      "trapezius": "斜方肌",
+      "front_deltoid": "前三角肌",
+      "calves": "小腿肌",
+      "shins": "脛骨前肌",
+      "middle_chest": "胸肌中部",
+      "forearms": "前臂",
+      "biceps": "二頭肌",
+      "triceps": "三頭肌",
+      "hip_flexors": "髖屈肌",
+      "quadriceps": "股四頭肌",
+      "lower_back": "下背肌",
+      "obliques": "腹斜肌",
+      "upper_chest": "上胸肌",
+      "lats": "背闊肌",
+      "hamstrings": "膕繩肌",
+      "lower_chest": "下胸肌",
+      "lower_abs": "下腹肌",
+      "adductors": "內收肌",
+      "rear_deltoid": "後三角肌",
+      "middle_deltoid": "中三角肌",
+      "upper_back": "上背肌",
+      "abductors": "外展肌",
+      "glutes": "臀肌",
+      "neck": "頸部"
+    },
+    "prioritizeMuscles": {
+      "title": "你想著重特定肌群嗎？",
+      "subtitle": "你可以告訴我們在訓練計畫中要優先加強哪些肌群。",
+      "no": {
+        "title": "否",
+        "description": "我們將讓 AI 平衡你的計畫，不特別著重任何肌群。"
+      },
+      "yes": {
+        "title": "是",
+        "description": "最多可選擇 3 個要優先加強的肌群。"
+      }
+    },
+    "prioritizeMusclesSelect": {
+      "title": "你想優先加強哪些肌群？",
+      "subtitle": "最多可選擇 3 個"
+    },
+    "workoutSplit": {
+      "title": "你偏好哪種訓練分項？",
+      "subtitle": "根據你的訓練頻率與經驗程度，我們推薦以下訓練分項。",
+      "options": {
+        "ai_custom": {
+          "badge": "AI 推薦",
+          "title": "由 AI 客製化",
+          "description": "AI 會根據你的目標與訓練設定，打造專屬訓練分項。"
+        },
+        "ppl_full_body": {
+          "badge": "為你推薦",
+          "title": "推、拉、腿 + 全身",
+          "description": "結合推、拉、腿訓練與全身訓練，維持多樣性並優化每週訓練量。"
+        },
+        "ppl_upper_body": {
+          "badge": "為你推薦",
+          "title": "推、拉、腿 + 上半身",
+          "description": "平衡式訓練菜單，透過每週兩次的推、拉訓練加強上半身發展。"
+        }
+      }
+    },
+    "variety": {
+      "title": "你希望動作變化多大？",
+      "subtitle": "每次訓練後，AI 會根據你的進度與目標調整下次訓練的動作。你之後可以再變更。",
+      "options": {
+        "fixed": {
+          "title": "固定",
+          "description": "每次訓練維持相同動作，不自動變化。"
+        },
+        "balanced": {
+          "title": "平衡",
+          "description": "適度變化，兼顧進度與多樣性。"
+        },
+        "dynamic": {
+          "title": "動態",
+          "description": "更頻繁地變換動作，讓訓練保持新鮮與挑戰性。"
+        }
+      }
+    },
+    "duration": {
+      "title": "你的訓練時間多長？",
+      "subtitle": "選擇每次訓練的平均時長，之後可以再變更。",
+      "recommendedTitle": "建議時長",
+      "recommendedBody": "為了穩定進步，我們建議每次訓練 45–60 分鐘。",
+      "unit": "分鐘",
+      "less": "較短",
+      "more": "較長"
+    },
+    "muscleBlocked": {
+      "excluded": "已列為排除肌群，請先從排除肌群中移除。",
+      "prioritized": "已列為重點肌群，請先從重點肌群中移除。"
+    },
+    "muscleBlockedTag": {
+      "excluded": "已排除",
+      "prioritized": "重點"
+    }
+  },
+  "gymEquipment": {
+    "whereDoYouExercise": {
+      "title": "你在哪裡訓練？",
+      "options": {
+        "large_gym": {
+          "title": "大型健身房",
+          "description": "全功能健身俱樂部，例如 Anytime、Fitness First、Gold's、Planet Fitness 等。"
+        },
+        "small_gym": {
+          "title": "小型健身房",
+          "description": "器材有限的小型健身房"
+        },
+        "garage_gym": {
+          "title": "車庫健身房",
+          "description": "槓鈴、深蹲架、啞鈴等。"
+        },
+        "bodyweight_only": {
+          "title": "純徒手",
+          "description": "不需器材，隨處都能訓練"
+        }
+      }
+    },
+    "equipment": {
+      "title": "你有哪些可用的器材？",
+      "subtitle": "之後可以再變更。",
+      "freeWeights": "自由重量",
+      "barsAndBenches": "槓與訓練椅",
+      "search": {
+        "placeholder": "搜尋器材",
+        "clear": "清除搜尋",
+        "empty": "找不到符合「{{query}}」的器材",
+        "emptyFiltered": "目前的篩選條件下沒有可顯示的器材。"
+      },
+      "presetsLabel": "健身房類型",
+      "selectedCount": "已選 {{selected}} / {{total}} 項",
+      "filter": {
+        "button": "排序與篩選",
+        "sortLabel": "排序方式",
+        "sort": {
+          "category": "分類",
+          "name": "名稱"
+        },
+        "showLabel": "顯示",
+        "show": {
+          "all": "全部",
+          "selected": "已選",
+          "unselected": "未選"
+        }
+      },
+      "categories": {
+        "free_weights": "自由重量",
+        "bars_and_benches": "槓與訓練椅",
+        "machines": "器械",
+        "accessories": "彈力帶與輔助器材",
+        "household": "居家用品"
+      },
+      "options": {
+        "dumbbells": {
+          "title": "啞鈴",
+          "description": "2.5、5、7.5、10… 磅"
+        },
+        "barbell": {
+          "title": "槓鈴",
+          "description": "標準奧林匹克槓"
+        },
+        "plates": {
+          "title": "槓片",
+          "description": "2.5、5、10、15… 磅"
+        },
+        "bench": {
+          "title": "訓練椅"
+        },
+        "pull_up_bar": {
+          "title": "引體向上桿"
+        },
+        "ez_bar": {
+          "title": "EZ 曲槓"
+        },
+        "kettlebell": {
+          "title": "壺鈴"
+        },
+        "landmine": {
+          "title": "地雷管"
+        },
+        "trap_bar": {
+          "title": "六角槓"
+        },
+        "squat_rack": {
+          "title": "深蹲架"
+        },
+        "cable_machine": {
+          "title": "滑輪繩索機"
+        },
+        "lat_pulldown": {
+          "title": "高位下拉機"
+        },
+        "chest_press_machine": {
+          "title": "胸推機"
+        },
+        "leg_press": {
+          "title": "腿推機"
+        },
+        "leg_extension_machine": {
+          "title": "腿伸展機"
+        },
+        "smith_machine": {
+          "title": "史密斯機"
+        },
+        "resistance_bands": {
+          "title": "彈力帶"
+        },
+        "stability_ball": {
+          "title": "瑞士球"
+        },
+        "ab_wheel": {
+          "title": "健腹輪"
+        },
+        "dip_station": {
+          "title": "雙槓／羅馬椅"
+        },
+        "back_extension_bench": {
+          "title": "背伸展椅"
+        },
+        "preacher_bench": {
+          "title": "牧師椅（彎舉椅）"
+        },
+        "pec_deck": {
+          "title": "蝴蝶機（夾胸／後三角）"
+        },
+        "shoulder_press_machine": {
+          "title": "肩推機"
+        },
+        "row_machine": {
+          "title": "坐姿划船機"
+        },
+        "leg_curl_machine": {
+          "title": "腿彎舉機"
+        },
+        "hack_squat_machine": {
+          "title": "哈克深蹲機"
+        },
+        "calf_machine": {
+          "title": "提踵機"
+        },
+        "hip_machine": {
+          "title": "髖外展／內收機"
+        },
+        "assisted_machine": {
+          "title": "輔助引體向上／雙槓機"
+        },
+        "chair": {
+          "title": "椅子"
+        },
+        "towel": {
+          "title": "毛巾"
+        },
+        "doorway": {
+          "title": "門框"
+        },
+        "step_box": {
+          "title": "穩固的箱子或台階"
+        }
+      }
+    },
+    "addCardio": {
+      "title": "要在計畫中加入有氧嗎？",
+      "subtitle": "我們可以在生成的訓練計畫中加入有氧運動，之後可以再變更。",
+      "yes": "是",
+      "notNow": "暫不需要"
+    },
+    "chooseCardio": {
+      "title": "選擇你的有氧運動",
+      "subtitle": "挑選你偏好的有氧項目，我們會將它們安排進合適的訓練中。",
+      "placementLabel": "有氧安排位置",
+      "placement": {
+        "start": "訓練開始前",
+        "end": "訓練結束後"
+      },
+      "pickAtLeastOne": "請至少選擇一項。",
+      "selectedCount": "已選 {{count}} 項",
+      "categories": {
+        "gym_equipment": "健身房有氧器材",
+        "outdoor_and_bodyweight": "戶外與徒手"
+      },
+      "selectLabel": "選擇有氧項目",
+      "options": {
+        "air_bike": "風扇車",
+        "cycling": "騎自行車",
+        "cycling_stationary": "室內飛輪",
+        "elliptical": "橢圓機",
+        "jump_rope": "跳繩",
+        "rowing": "划船機",
+        "treadmill": "跑步機（跑步／健走）",
+        "stair_climber": "登階機",
+        "ski_erg": "滑雪機",
+        "battle_ropes": "戰繩",
+        "swimming": "游泳",
+        "hiking": "健行"
+      }
+    },
+    "creatingPlan": {
+      "title": "正在為你打造專屬健身計畫…",
+      "steps": {
+        "analyzing": "分析你的體能檔案",
+        "selecting": "挑選最適合的動作",
+        "calibrating": "校準強度與訓練量",
+        "designing": "規劃每週訓練進程",
+        "finalizing": "完成你的專屬計畫"
+      }
+    },
+    "planReady": {
+      "congratulations": "恭喜",
+      "headline": "你的 AI 教練已經準備好了！",
+      "aboutYou": "關於你",
+      "weight": "體重",
+      "age": "年齡",
+      "height": "身高",
+      "gender": "性別",
+      "bmiCategory": {
+        "underweight": "過輕",
+        "healthy": "健康",
+        "overweight": "過重",
+        "obese": "肥胖"
+      },
+      "builtForYou": "為你打造",
+      "perWeek": "每週",
+      "fitnessLevel": "體能程度",
+      "equipment": "器材",
+      "workoutSplit": "訓練分項",
+      "saveMyPlan": "儲存我的計畫",
+      "saving": "儲存中…",
+      "saveError": "儲存計畫時發生錯誤，請再試一次。"
+    }
+  }
+}

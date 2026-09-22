@@ -1,0 +1,488 @@
+{
+  "back": "Back",
+  "continue": "Continue",
+  "hub": {
+    "title": "Let's get started",
+    "subtitle": "Your personalized training plan awaits",
+    "allDone": "All set! Your plan is ready.",
+    "cta": {
+      "start": "Go to Basics",
+      "continue": "Continue",
+      "goTo": "Go to {{step}}"
+    },
+    "steps": {
+      "aboutYou": {
+        "title": "About You",
+        "description": "Tell us about your goals, basic details, and training needs so we can build a plan that fits you."
+      },
+      "trainingPreferences": {
+        "title": "Training Preferences",
+        "description": "How often, how hard, and what style of training works for you."
+      },
+      "gymEquipment": {
+        "title": "Gym & Equipment",
+        "description": "Where you train and what equipment you have access to."
+      }
+    }
+  },
+  "aboutYou": {
+    "title": "About You"
+  },
+  "goal": {
+    "title": "What's your primary goal?",
+    "subtitle": "This helps us recommend the right exercises and sets for you.",
+    "options": {
+      "lose_weight": {
+        "title": "Lose Weight",
+        "description": "Higher-rep, lighter-weight training focused on fat loss, endurance, and muscle tone."
+      },
+      "build_muscle": {
+        "title": "Build Muscle",
+        "description": "Moderate-rep, heavy-weight training focused on muscle growth, strength, and definition."
+      },
+      "stay_healthy": {
+        "title": "Stay Healthy",
+        "description": "Perform a variety of exercises to improve health, strength and consistency."
+      }
+    }
+  },
+  "obstacle": {
+    "title": "What is stopping you from achieving this goal?",
+    "options": {
+      "lack_of_time": "Lack of time",
+      "lack_of_knowledge": "Lack of knowledge",
+      "low_motivation": "Low motivation",
+      "injuries": "Injuries or physical discomfort",
+      "lack_of_equipment": "Lack of equipment",
+      "never_tried": "I've never tried"
+    }
+  },
+  "useCase": {
+    "title": "What do you plan to use Pacergo for?",
+    "subtitle": "Choose up to {{max}} options.",
+    "options": {
+      "log_weights_reps": "Keep a log of my weights and reps",
+      "personalized_plan": "Get my personalized training plan",
+      "progressive_overload": "Use smart progressive overload",
+      "manage_plan_workouts": "Manage my training plan and custom workouts",
+      "exercise_demos": "View exercise demos and step-by-step guidance",
+      "muscle_recovery": "View muscle recovery status"
+    }
+  },
+  "gender": {
+    "title": "Choose your gender",
+    "options": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    }
+  },
+  "age": {
+    "title": "What's your age?",
+    "hint": "We use your age and BMI to set the right intensity, for example gentler, low-impact moves from age 50.",
+    "suffix": "years old"
+  },
+  "heightWeight": {
+    "title": "Height & weight",
+    "bmiPrefix": "Your BMI is",
+    "bmiSuffix": ", and we use it to help tailor your fitness plan to you.",
+    "imperial": "Imperial",
+    "metric": "Metric",
+    "unitToggle": "Toggle imperial/metric units",
+    "height": "Height",
+    "weight": "Weight"
+  },
+  "comingSoon": "This step will be available in a future update.",
+  "trainingPreferences": {
+    "title": "Training Preferences",
+    "experience": {
+      "title": "What's your training experience?",
+      "subtitle": "This helps us recommend the right exercises and weights for you.",
+      "options": {
+        "no_experience": {
+          "title": "No Training Experience",
+          "description": "New to training. Not familiar with common exercises or training equipment. Focus on building a solid foundation."
+        },
+        "beginner": {
+          "title": "Beginner",
+          "description": "Some training experience (<1 year). Familiar with basic exercises but still learning proper form and technique."
+        },
+        "intermediate": {
+          "title": "Intermediate",
+          "description": "1–2 years of training experience. Good understanding of exercises and proper form. Ready for more advanced methods."
+        },
+        "advanced": {
+          "title": "Advanced",
+          "description": "3 years or more of consistent training experience. Achieved significant strength and muscle development."
+        }
+      }
+    },
+    "daysPerWeek": {
+      "title": "How many days per week do you train?",
+      "subtitle": "Setting a realistic goal will help you stay motivated and track your progress.",
+      "recommendedBadge": "Recommended",
+      "options": {
+        "2": "2 days per week",
+        "3": "3 days per week",
+        "4": "4 days per week",
+        "5": "5 days per week",
+        "6": "6 days per week",
+        "every_day": "Every day"
+      }
+    },
+    "excludeMuscles": {
+      "title": "Do you want to exclude any muscles?",
+      "subtitle": "You can tell us which muscles to avoid when building your workout plan.",
+      "no": {
+        "title": "No",
+        "description": "We'll build your plan without excluding any muscles."
+      },
+      "yes": {
+        "title": "Yes",
+        "description": "Choose up to 4 muscles to avoid."
+      }
+    },
+    "excludeMusclesSelect": {
+      "title": "Which muscles would you like to exclude?",
+      "subtitle": "Select up to 4"
+    },
+    "muscleSelectedCount": "{{count}}/{{max}} selected",
+    "muscleRegions": {
+      "upper": "Upper Body",
+      "lower": "Lower Body"
+    },
+    "muscles": {
+      "abs": "Abs",
+      "trapezius": "Trapezius",
+      "front_deltoid": "Front Deltoid",
+      "calves": "Calves",
+      "shins": "Shins",
+      "middle_chest": "Middle Chest",
+      "forearms": "Forearms",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "hip_flexors": "Hip Flexors",
+      "quadriceps": "Quadriceps",
+      "lower_back": "Lower Back",
+      "obliques": "Obliques",
+      "upper_chest": "Upper Chest",
+      "lats": "Lats",
+      "hamstrings": "Hamstrings",
+      "lower_chest": "Lower Chest",
+      "lower_abs": "Lower Abs",
+      "adductors": "Adductors",
+      "rear_deltoid": "Rear Deltoid",
+      "middle_deltoid": "Middle Deltoid",
+      "upper_back": "Upper Back",
+      "abductors": "Abductors",
+      "glutes": "Glutes",
+      "neck": "Neck"
+    },
+    "prioritizeMuscles": {
+      "title": "Do you want to focus on specific muscles?",
+      "subtitle": "You can tell us which muscles to prioritize in your workout plan.",
+      "no": {
+        "title": "No",
+        "description": "We'll let AI balance your plan without prioritizing specific muscles."
+      },
+      "yes": {
+        "title": "Yes",
+        "description": "Choose up to 3 muscles to prioritize."
+      }
+    },
+    "prioritizeMusclesSelect": {
+      "title": "Which muscles would you like to prioritize?",
+      "subtitle": "Select up to 3"
+    },
+    "workoutSplit": {
+      "title": "What's your preferred workout split?",
+      "subtitle": "Based on your training frequency and experience level, we recommend these training splits.",
+      "options": {
+        "ai_custom": {
+          "badge": "AI Recommended",
+          "title": "Customize with AI",
+          "description": "AI creates a training split tailored to your goals and workout settings."
+        },
+        "ppl_full_body": {
+          "badge": "Recommended for you",
+          "title": "Push, Pull, Legs + Full Body",
+          "description": "Blend push, pull, and leg routines with full-body sessions to maintain variety and optimize weekly volume."
+        },
+        "ppl_upper_body": {
+          "badge": "Recommended for you",
+          "title": "Push, Pull, Legs + Upper Body",
+          "description": "A balanced routine that emphasizes upper body development by training both push and pull muscles twice per week."
+        }
+      }
+    },
+    "variety": {
+      "title": "How much exercise variety do you want?",
+      "subtitle": "After each workout, AI adjusts the exercises in your next session based on your progress and goals. You can change this later.",
+      "options": {
+        "fixed": {
+          "title": "Fixed",
+          "description": "Keeps the same exercises across workouts with no automatic changes."
+        },
+        "balanced": {
+          "title": "Balanced",
+          "description": "Moderate variability to balance progress and variety."
+        },
+        "dynamic": {
+          "title": "Dynamic",
+          "description": "Changes exercises more often to keep workouts fresh and challenging."
+        }
+      }
+    },
+    "duration": {
+      "title": "How long are your workouts?",
+      "subtitle": "Pick an average duration for each session. You can change this later.",
+      "recommendedTitle": "Recommended duration",
+      "recommendedBody": "For steady progress, we recommend 45-60 minutes per session.",
+      "unit": "MIN",
+      "less": "Less",
+      "more": "More"
+    },
+    "muscleBlocked": {
+      "excluded": "Already excluded — remove it from Excluded Muscles first.",
+      "prioritized": "Already a focus muscle — remove it from Focused Muscles first."
+    },
+    "muscleBlockedTag": {
+      "excluded": "Excluded",
+      "prioritized": "Focused"
+    }
+  },
+  "gymEquipment": {
+    "whereDoYouExercise": {
+      "title": "Where do you exercise?",
+      "options": {
+        "large_gym": {
+          "title": "Large Gym",
+          "description": "Full fitness clubs such as Anytime, Fitness First, Gold's, Planet Fitness, etc."
+        },
+        "small_gym": {
+          "title": "Small Gym",
+          "description": "Compact gym with limited equipment"
+        },
+        "garage_gym": {
+          "title": "Garage Gym",
+          "description": "Barbells, squat rack, dumbbells and more."
+        },
+        "bodyweight_only": {
+          "title": "Bodyweight Only",
+          "description": "Train anywhere without equipment"
+        }
+      }
+    },
+    "equipment": {
+      "title": "What equipment do you have access to?",
+      "subtitle": "You can change it later.",
+      "freeWeights": "Free Weights",
+      "barsAndBenches": "Bars & Benches",
+      "search": {
+        "placeholder": "Search equipment",
+        "clear": "Clear search",
+        "empty": "No equipment matches “{{query}}”",
+        "emptyFiltered": "Nothing to show with these filters."
+      },
+      "presetsLabel": "Gym type",
+      "selectedCount": "{{selected}} of {{total}} selected",
+      "filter": {
+        "button": "Sort & filter",
+        "sortLabel": "Sort by",
+        "sort": {
+          "category": "Category",
+          "name": "Name (A–Z)"
+        },
+        "showLabel": "Show",
+        "show": {
+          "all": "All",
+          "selected": "Selected",
+          "unselected": "Not selected"
+        }
+      },
+      "categories": {
+        "free_weights": "Free Weights",
+        "bars_and_benches": "Bars & Benches",
+        "machines": "Machines",
+        "accessories": "Bands & Accessories",
+        "household": "Home Essentials"
+      },
+      "options": {
+        "dumbbells": {
+          "title": "Dumbbells",
+          "description": "2.5, 5, 7.5, 10… lb"
+        },
+        "barbell": {
+          "title": "Barbell",
+          "description": "Standard Olympic bar"
+        },
+        "plates": {
+          "title": "Plates",
+          "description": "2.5, 5, 10, 15… lb"
+        },
+        "bench": {
+          "title": "Bench"
+        },
+        "pull_up_bar": {
+          "title": "Pull-Up Bar"
+        },
+        "ez_bar": {
+          "title": "EZ-Bar"
+        },
+        "kettlebell": {
+          "title": "Kettlebells"
+        },
+        "landmine": {
+          "title": "Landmine"
+        },
+        "trap_bar": {
+          "title": "Trap Bar"
+        },
+        "squat_rack": {
+          "title": "Squat Rack"
+        },
+        "cable_machine": {
+          "title": "Cable Machine"
+        },
+        "lat_pulldown": {
+          "title": "Lat Pulldown"
+        },
+        "chest_press_machine": {
+          "title": "Chest Press Machine"
+        },
+        "leg_press": {
+          "title": "Leg Press"
+        },
+        "leg_extension_machine": {
+          "title": "Leg Extension Machine"
+        },
+        "smith_machine": {
+          "title": "Smith Machine"
+        },
+        "resistance_bands": {
+          "title": "Resistance Bands"
+        },
+        "stability_ball": {
+          "title": "Stability Ball"
+        },
+        "ab_wheel": {
+          "title": "Ab Wheel"
+        },
+        "dip_station": {
+          "title": "Dip / Captain's Chair Station"
+        },
+        "back_extension_bench": {
+          "title": "Back Extension Bench"
+        },
+        "preacher_bench": {
+          "title": "Preacher Curl Bench"
+        },
+        "pec_deck": {
+          "title": "Pec Deck / Rear Delt Machine"
+        },
+        "shoulder_press_machine": {
+          "title": "Shoulder Press Machine"
+        },
+        "row_machine": {
+          "title": "Seated Row Machine"
+        },
+        "leg_curl_machine": {
+          "title": "Leg Curl Machine"
+        },
+        "hack_squat_machine": {
+          "title": "Hack Squat Machine"
+        },
+        "calf_machine": {
+          "title": "Calf Raise Machine"
+        },
+        "hip_machine": {
+          "title": "Hip Abduction / Adduction Machine"
+        },
+        "assisted_machine": {
+          "title": "Assisted Pull-up / Dip Machine"
+        },
+        "chair": {
+          "title": "Chair"
+        },
+        "towel": {
+          "title": "Towel"
+        },
+        "doorway": {
+          "title": "Doorway"
+        },
+        "step_box": {
+          "title": "Sturdy Box or Step"
+        }
+      }
+    },
+    "addCardio": {
+      "title": "Add cardio to your plan?",
+      "subtitle": "We can include cardio in your generated training plan. You can change this later.",
+      "yes": "Yes",
+      "notNow": "Not Now"
+    },
+    "chooseCardio": {
+      "title": "Choose your cardio",
+      "subtitle": "Pick your go-to cardio exercises, and we'll add them to your workouts where they fit.",
+      "placementLabel": "Cardio Placement",
+      "placement": {
+        "start": "Start of Workout",
+        "end": "End of Workout"
+      },
+      "selectLabel": "Select Cardio",
+      "pickAtLeastOne": "Pick at least one.",
+      "selectedCount": "{{count}} selected",
+      "categories": {
+        "gym_equipment": "Gym Cardio Equipment",
+        "outdoor_and_bodyweight": "Outdoor & Bodyweight"
+      },
+      "options": {
+        "air_bike": "Air Bike",
+        "cycling": "Cycling",
+        "cycling_stationary": "Cycling - Stationary",
+        "elliptical": "Elliptical",
+        "jump_rope": "Jump Rope",
+        "rowing": "Rowing",
+        "treadmill": "Treadmill (Run / Walk)",
+        "stair_climber": "Stair Climber",
+        "ski_erg": "SkiErg",
+        "battle_ropes": "Battle Ropes",
+        "swimming": "Swimming",
+        "hiking": "Hiking"
+      }
+    },
+    "creatingPlan": {
+      "title": "Creating your personalized fitness plan…",
+      "steps": {
+        "analyzing": "Analyzing your fitness profile",
+        "selecting": "Selecting optimal exercises",
+        "calibrating": "Calibrating intensity & volume",
+        "designing": "Designing weekly progression",
+        "finalizing": "Finalizing your custom plan"
+      }
+    },
+    "planReady": {
+      "congratulations": "Congratulations",
+      "headline": "Your AI-powered coach is ready!",
+      "aboutYou": "About you",
+      "weight": "Weight",
+      "age": "Age",
+      "height": "Height",
+      "gender": "Gender",
+      "bmiCategory": {
+        "underweight": "Underweight",
+        "healthy": "Healthy",
+        "overweight": "Overweight",
+        "obese": "Obese"
+      },
+      "builtForYou": "Built for you",
+      "perWeek": "per week",
+      "fitnessLevel": "Fitness level",
+      "equipment": "Equipment",
+      "workoutSplit": "Workout split",
+      "saveMyPlan": "Save My Plan",
+      "saving": "Saving…",
+      "saveError": "Something went wrong saving your plan. Please try again."
+    }
+  }
+}

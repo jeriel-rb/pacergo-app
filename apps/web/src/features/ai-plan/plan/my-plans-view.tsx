@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { MoreVertical, Pencil, Trash2, ClipboardList } from "lucide-react";
+import { ONBOARDING_GOALS, type OnboardingGoal } from "@pacergo/shared";
 import { ConfirmDialog } from "@/shared/components/atoms/confirm-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
 import { useLocale } from "@/shared/hooks/use-locale";
@@ -15,7 +16,7 @@ import type { SavedPlanSummaryServer } from "@/lib/plan-view.server";
  *  (this app supports several saved plans, not a single replaced-in-place
  *  one; see the "Save My Plan" flow). */
 export function MyPlansView({ plans: initialPlans }: { plans: SavedPlanSummaryServer[] }) {
-  const { t } = useTranslation("plan");
+  const { t } = useTranslation(["plan", "onboarding"]);
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
@@ -25,6 +26,15 @@ export function MyPlansView({ plans: initialPlans }: { plans: SavedPlanSummarySe
 
   function planHref(id: string) {
     return pathname.replace(/\/my-plans$/, `/plan/${id}`);
+  }
+
+  // Live-translated title from the promoted `goal` column — `label` (the
+  // string frozen at save time in whatever locale was active then) is only
+  // the fallback for older rows or an unrecognized goal.
+  function planTitle(p: SavedPlanSummaryServer): string {
+    return p.goal && ONBOARDING_GOALS.includes(p.goal as OnboardingGoal)
+      ? t(`goal.options.${p.goal}.title`, { ns: "onboarding" })
+      : p.label;
   }
 
   async function onConfirmDelete() {
@@ -48,7 +58,7 @@ export function MyPlansView({ plans: initialPlans }: { plans: SavedPlanSummarySe
           {plans.map((p) => (
             <div key={p.id} className="flex items-center gap-3 px-4 py-3.5">
               <Link href={planHref(p.id)} className="min-w-0 flex-1">
-                <p className="text-sm font-semibold">{p.label}</p>
+                <p className="text-sm font-semibold">{planTitle(p)}</p>
                 <p className="text-xs text-muted-foreground">
                   {t("myPlans.createdOn", {
                     date: new Date(p.createdAt).toLocaleDateString(

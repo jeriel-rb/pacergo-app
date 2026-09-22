@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import {
   BarChart3,
@@ -126,6 +126,13 @@ export function CustomizePlanView({
   const { t } = useTranslation(["plan", "onboarding"]);
   const format = useDurationFormat();
   const router = useRouter();
+  const pathname = usePathname();
+  // Explicit, locale-preserving targets — `pathname` already carries
+  // whatever locale prefix (or lack of one, for zh) is currently active, so
+  // this survives a plain locale-rewritten default route the way
+  // `router.back()` didn't (that's what caused #locale-reset-on-save).
+  const myPlansHref = pathname.replace(/\/plan\/[^/]+\/update$/, "/my-plans");
+  const planOverviewHref = pathname.replace(/\/update$/, "");
   const [answers, setAnswers] = React.useState<OnboardingAnswers>(() => ({
     ...ONBOARDING_ANSWERS_DEFAULT,
     ...onboardingSnapshot.answers,
@@ -186,7 +193,7 @@ export function CustomizePlanView({
       const label = answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : currentLabel;
       const snapshot: PlanOnboardingSnapshot = { answers, trainingPreferences: tp, gymEquipment: ge };
       await updateTrainingPlan({ id: planId, label, plan, onboardingSnapshot: snapshot });
-      router.back();
+      router.push(planOverviewHref);
     } catch {
       setError(true);
       setSaving(false);
@@ -198,7 +205,7 @@ export function CustomizePlanView({
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push(myPlansHref)}
           aria-label={t("back")}
           className="-ml-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent md:hidden"
         >
@@ -250,7 +257,7 @@ export function CustomizePlanView({
           type="button"
           variant="outline"
           size="lg"
-          onClick={() => router.back()}
+          onClick={() => router.push(myPlansHref)}
           className="hidden flex-1 shadow-lg md:inline-flex"
         >
           {t("back")}

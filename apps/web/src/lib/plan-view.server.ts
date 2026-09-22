@@ -16,23 +16,28 @@ export interface PlanRestTimer {
 
 export async function getTrainingPlanServer(
   id: string,
-): Promise<{ label: string; plan: GeneratedPlan; restTimer: PlanRestTimer } | null> {
+): Promise<{ label: string; goal: string | null; plan: GeneratedPlan; restTimer: PlanRestTimer } | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("user_training_plans")
-    .select("label, plan, onboarding_snapshot")
+    .select("label, goal, plan, onboarding_snapshot")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const row = data as {
     label: string;
+    goal: string | null;
     plan: GeneratedPlan;
     onboarding_snapshot: PlanOnboardingSnapshot | null;
   };
   const prefs = row.onboarding_snapshot?.trainingPreferences;
   return {
     label: row.label,
+    // Promoted column (see 20260922030000_plan_goal_column.sql) — lets the
+    // client re-translate the title live instead of trusting the stored
+    // string, which was frozen in whatever locale was active at save time.
+    goal: row.goal,
     plan: row.plan,
     // Plans saved before the timer existed have no choice stored: on, with sound.
     restTimer: { enabled: prefs?.restTimerEnabled ?? true, sound: prefs?.restTimerSound ?? true },
@@ -42,6 +47,7 @@ export async function getTrainingPlanServer(
 export interface SavedPlanSummaryServer {
   id: string;
   label: string;
+  goal: string | null;
   createdAt: string;
 }
 
@@ -49,12 +55,12 @@ export async function listTrainingPlansServer(): Promise<SavedPlanSummaryServer[
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("user_training_plans")
-    .select("id, label, created_at")
+    .select("id, label, goal, created_at")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []).map((row) => {
-    const r = row as { id: string; label: string; created_at: string };
-    return { id: r.id, label: r.label, createdAt: r.created_at };
+    const r = row as { id: string; label: string; goal: string | null; created_at: string };
+    return { id: r.id, label: r.label, goal: r.goal, createdAt: r.created_at };
   });
 }
 

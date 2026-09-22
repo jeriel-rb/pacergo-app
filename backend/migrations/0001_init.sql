@@ -504,13 +504,16 @@ create table if not exists user_onboarding (
   updated_at timestamptz not null default now()
 );
 
--- user_training_plans: saved plans â€” a user can have several (list/view/delete).
+-- user_training_plans: saved plans — a user can have several (list/view/delete).
+-- `goal` is the onboarding goal key (e.g. build_muscle) so the UI can
+-- re-translate the plan title; `label` stays as the display fallback.
 create table if not exists user_training_plans (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   label text not null,
   plan jsonb not null,
   onboarding_snapshot jsonb not null default '{}'::jsonb,
+  goal text,
   created_at timestamptz not null default now()
 );
 
@@ -3719,8 +3722,11 @@ begin
   end if;
   if p_plan is null then raise exception 'missing plan'; end if;
 
-  insert into user_training_plans (user_id, label, plan, onboarding_snapshot)
-  values (auth.uid(), p_label, p_plan, coalesce(p_onboarding_snapshot, '{}'::jsonb))
+  insert into user_training_plans (user_id, label, plan, onboarding_snapshot, goal)
+  values (
+    auth.uid(), p_label, p_plan, coalesce(p_onboarding_snapshot, '{}'::jsonb),
+    p_onboarding_snapshot -> 'answers' ->> 'goal'
+  )
   returning id into v_id;
 
   return v_id;
@@ -3823,7 +3829,8 @@ begin
   update user_training_plans set
     label = p_label,
     plan = p_plan,
-    onboarding_snapshot = coalesce(p_onboarding_snapshot, '{}'::jsonb)
+    onboarding_snapshot = coalesce(p_onboarding_snapshot, '{}'::jsonb),
+    goal = p_onboarding_snapshot -> 'answers' ->> 'goal'
   where id = p_id and user_id = auth.uid();
 
   if not found then raise exception 'plan not found'; end if;

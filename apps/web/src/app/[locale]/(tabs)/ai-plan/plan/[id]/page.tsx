@@ -12,5 +12,5 @@ export default async function PlanOverviewPage({
   const { id } = await params;
   const result = await getTrainingPlanServer(id);
   if (!result) return <PlanNotFound />;
-  return <PlanOverviewView label={result.label} plan={result.plan} />;
+  return <PlanOverviewView label={result.label} goal={result.goal} plan={result.plan} />;
 }

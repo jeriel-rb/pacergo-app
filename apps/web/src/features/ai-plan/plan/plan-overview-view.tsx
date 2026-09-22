@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, Moon } from "lucide-react";
-import type { GeneratedPlan } from "@pacergo/shared";
+import { ONBOARDING_GOALS, type GeneratedPlan, type OnboardingGoal } from "@pacergo/shared";
 import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/shared/hooks/use-locale";
@@ -13,9 +13,25 @@ import { useLocale } from "@/shared/hooks/use-locale";
 /** A-3 program overview: week tabs + one card per day. All 4 weeks exist up
  *  front ("nothing drip-released"); the exercise mix rotates week to week
  *  according to the plan's Variety setting. */
-export function PlanOverviewView({ label, plan }: { label: string; plan: GeneratedPlan }) {
-  const { t } = useTranslation("plan");
+export function PlanOverviewView({
+  label,
+  goal,
+  plan,
+}: {
+  label: string;
+  /** Promoted column, not the JSONB snapshot — see `plan-view.server.ts`.
+   *  Lets the title re-translate live instead of showing whatever language
+   *  was active when the plan was saved. `label` is the fallback for older
+   *  rows saved before this column existed, or an unrecognized goal. */
+  goal: string | null;
+  plan: GeneratedPlan;
+}) {
+  const { t } = useTranslation(["plan", "onboarding"]);
   const locale = useLocale();
+  const title =
+    goal && ONBOARDING_GOALS.includes(goal as OnboardingGoal)
+      ? t(`goal.options.${goal}.title`, { ns: "onboarding" })
+      : label;
   const pathname = usePathname();
   // Opens on the week the user came back from (?week=), otherwise week 1.
   const weekParam = Number(useSearchParams().get("week"));
@@ -41,7 +57,7 @@ export function PlanOverviewView({ label, plan }: { label: string; plan: Generat
           <ChevronLeft size={22} />
         </Link>
         <div className="flex flex-1 items-center gap-2">
-          <h1 className="text-lg font-semibold">{label}</h1>
+          <h1 className="text-lg font-semibold">{title}</h1>
           <BetaBadge />
         </div>
       </div>

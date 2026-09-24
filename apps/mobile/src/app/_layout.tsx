@@ -22,6 +22,8 @@ import { useRouteGuard } from '@/features/auth/useRouteGuard';
 
 SplashScreen.preventAutoHideAsync();
 
+console.log('[pacergo] root layout loaded');
+
 // Keep Supabase session auto-refresh tied to app foreground state.
 AppState.addEventListener('change', (state) => {
   if (state === 'active') supabase.auth.startAutoRefresh();

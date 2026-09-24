@@ -27,7 +27,9 @@ export function normalizeLocale(locale: string | null | undefined): "zh" | "en" 
   return locale && isSupportedLocale(locale) ? (locale as "zh" | "en") : "zh";
 }
 
-export function isSupportedOtpType(type: string | null): type is EmailOtpType {
+export function isSupportedOtpType(
+  type: string | null | undefined,
+): type is EmailOtpType {
   return Boolean(type && SUPPORTED_OTP_TYPES.has(type as EmailOtpType));
 }
 

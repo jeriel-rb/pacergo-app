@@ -9,6 +9,7 @@
   "perHour": "/hr",
   "back": "Back",
   "close": "Close",
+  "dismiss": "Dismiss",
   "duration": {
     "long": {
       "seconds": "{{count}} sec",
@@ -51,5 +52,15 @@
     "placeholder": "Select time",
     "selectAmPm": "Select AM/PM",
     "selectAmPmHint": "Choose AM or PM to confirm the time"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist or may have moved.",
+    "home": "Back to home"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "body": "An unexpected error occurred. You can try again, or head back home.",
+    "home": "Back to home"
   }
 }

@@ -7,8 +7,8 @@ import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { useAboutYouNav } from "./about-you-steps";
 import { StepScreen } from "./step-screen";
 
-const DEFAULT_HEIGHT_CM = 170;
-const DEFAULT_WEIGHT_KG = 70;
+const DEFAULT_HEIGHT_CM = 175;
+const DEFAULT_WEIGHT_KG = 80;
 
 const CM_VALUES = Array.from({ length: 220 - 120 + 1 }, (_, i) => 120 + i);
 const KG_VALUES = Array.from({ length: 180 - 30 + 1 }, (_, i) => 30 + i);

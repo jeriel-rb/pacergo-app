@@ -1,1 +1,0 @@
--- Seed data lives in ./seeds/*.sql (see config.toml [db.seed] sql_paths).

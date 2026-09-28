@@ -113,7 +113,7 @@ function TargetEditor({ current }: { current: number }) {
         <div className="flex items-center justify-center gap-6 py-2">
           <button
             type="button"
-            aria-label="decrease"
+            aria-label={t("weeklyTarget.decrease")}
             onClick={() => setValue((v) => Math.max(1, v - 1))}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border transition-colors hover:bg-accent"
           >
@@ -125,7 +125,7 @@ function TargetEditor({ current }: { current: number }) {
           </div>
           <button
             type="button"
-            aria-label="increase"
+            aria-label={t("weeklyTarget.increase")}
             onClick={() => setValue((v) => Math.min(21, v + 1))}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border transition-colors hover:bg-accent"
           >

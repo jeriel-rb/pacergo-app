@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Clock3, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3 } from "lucide-react";
 import { ACTIVITY_META, formatInAppTimeZone } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { buttonVariants } from "@/shared/components/ui/button";
@@ -56,8 +56,11 @@ export function PaymentResultView({
               <Row
                 label={t("result.paymentDate")}
                 value={formatInAppTimeZone(payment.paid_at, locale, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
                   timeZoneName: "short",
                 })}
               />
@@ -76,25 +79,18 @@ export function PaymentResultView({
         )}
       </Card>
 
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Link
-          href={payment ? getLocalizedPath(`/payments/newebpay/result?payment=${payment.id}`, locale) : getLocalizedPath("/sessions", locale)}
-          className={cn(buttonVariants({ variant: "outline" }), "gap-2")}
-        >
-          <RefreshCw size={16} />
-          {t("refreshStatus")}
-        </Link>
+      <div className="flex gap-2">
         {payment && (
           <Link
             href={getLocalizedPath(`/sessions/${payment.booking_id}`, locale)}
-            className={buttonVariants({ variant: "default" })}
+            className={cn(buttonVariants({ variant: "default" }), "min-w-0 flex-1")}
           >
             {t("viewBooking")}
           </Link>
         )}
         <Link
           href={getLocalizedPath("/sessions", locale)}
-          className={buttonVariants({ variant: "outline" })}
+          className={cn(buttonVariants({ variant: "outline" }), "min-w-0 flex-1")}
         >
           {t("returnToBookings")}
         </Link>

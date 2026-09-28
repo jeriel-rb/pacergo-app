@@ -9,6 +9,7 @@
   "perHour": "/小時",
   "back": "返回",
   "close": "關閉",
+  "dismiss": "關閉",
   "duration": {
     "long": {
       "seconds": "{{count}} 秒",
@@ -51,5 +52,15 @@
     "placeholder": "選擇時間",
     "selectAmPm": "請選擇上午／下午",
     "selectAmPmHint": "請選擇上午或下午以確認時間"
+  },
+  "notFound": {
+    "title": "找不到頁面",
+    "body": "您要找的頁面不存在，或可能已經移動。",
+    "home": "回首頁"
+  },
+  "errorBoundary": {
+    "title": "發生錯誤",
+    "body": "發生非預期的錯誤。您可以重試，或回到首頁。",
+    "home": "回首頁"
   }
 }

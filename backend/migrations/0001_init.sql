@@ -968,15 +968,59 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_uid uuid := auth.uid();
+  r payments%rowtype;
 begin
-  update bookings
-  set status = 'cancelled', cancelled_by = auth.uid()
-  where id = p_id
-    and (seeker_id = auth.uid() or companion_id = auth.uid())
-    and status in ('requested', 'pending_payment', 'payment_failed', 'accepted');
+  if v_uid is null then raise exception 'not authenticated'; end if;
 
+  update bookings
+  set status = 'cancelled', cancelled_by = v_uid
+  where id = p_id
+    and (seeker_id = v_uid or companion_id = v_uid)
+    and status in (
+      'requested', 'pending_payment', 'payment_processing', 'payment_failed', 'accepted'
+    );
   if not found then raise exception 'cancel not allowed'; end if;
+
+  for r in
+    select * from payments
+    where booking_id = p_id
+      and status in ('created', 'redirected', 'processing', 'awaiting_payment')
+    for update
+  loop
+    update payments
+    set status = 'cancelled',
+        failed_at = coalesce(failed_at, now())
+    where id = r.id;
+    insert into payment_status_events
+      (payment_id, event_type, from_value, to_value, actor_id)
+    values (r.id, 'booking_cancelled_open_attempt', r.status::text, 'cancelled', v_uid);
+  end loop;
+
+  for r in
+    select * from payments
+    where booking_id = p_id
+      and status = 'paid'
+      and refund_status = 'none'
+      and settlement_status = 'unsettled'
+    for update
+  loop
+    update payments
+    set refund_status = 'refund_requested',
+        settlement_eligibility_status = 'ineligible'
+    where id = r.id;
+    insert into payment_status_events
+      (payment_id, event_type, from_value, to_value, actor_id)
+    values (
+      r.id, 'booking_cancelled_refund_requested', 'none', 'refund_requested', v_uid
+    );
+  end loop;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Simulated attempts record a zero processing fee (nothing to deduct).
+-- ---------------------------------------------------------------------------
 
 grant execute on function payment_review(uuid) to authenticated;
 grant execute on function payment_detail(uuid) to authenticated;
@@ -988,14 +1032,49 @@ grant execute on function create_booking(uuid, uuid, timestamptz, int, text, tex
 grant execute on function cancel_booking(uuid) to authenticated;
 
 create or replace function complete_booking(p_id uuid)
-returns void language plpgsql security definer set search_path = public as $$
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  pay payments%rowtype;
 begin
-  update bookings set status = 'completed', completed_at = now()
+  if v_uid is null then raise exception 'not authenticated'; end if;
+
+  update bookings
+  set status = 'completed', completed_at = now()
   where id = p_id
-    and (seeker_id = auth.uid() or companion_id = auth.uid())
+    and (seeker_id = v_uid or companion_id = v_uid)
     and status = 'accepted';
   if not found then raise exception 'complete not allowed'; end if;
+
+  select * into pay
+  from payments
+  where booking_id = p_id
+    and status = 'paid'
+    and service_completed_at is null
+  order by paid_at desc nulls last, created_at desc
+  limit 1
+  for update;
+
+  if not found then return; end if;
+  if pay.settlement_status = 'paid' then return; end if;
+
+  update payments
+  set service_completed_at = now(),
+      settlement_hold_until = now() + interval '24 hours'
+  where id = pay.id;
+
+  insert into payment_status_events (payment_id, event_type, to_value, actor_id)
+  values (pay.id, 'service_completed_by_session', now()::text, v_uid);
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Cancel closes an open attempt, or asks for a refund on a paid unsettled
+-- order. Settled orders stay put — an admin has to undo the payout first.
+-- ---------------------------------------------------------------------------
 
 grant execute on function accept_booking(uuid) to authenticated;
 grant execute on function decline_booking(uuid) to authenticated;
@@ -3617,10 +3696,12 @@ begin
 
   insert into payments (
     booking_id, user_id, provider, merchant_order_no, amount, currency, status,
-    gross_amount, platform_fee_amount, trainer_payable
+    gross_amount, platform_fee_amount, trainer_payable,
+    processing_fee_rate, processing_fee_amount
   ) values (
     p_booking_id, v_uid, 'simulated', p_merchant_order_no, p_amount, 'TWD', 'created',
-    p_amount, fee.platform_fee_amount, fee.trainer_payable
+    p_amount, fee.platform_fee_amount, fee.trainer_payable,
+    0, 0
   )
   returning * into inserted;
 
@@ -3638,10 +3719,6 @@ begin
   );
 end $$;
 
--- Trainee-callable "gateway" for the simulated provider â€” an explicit
--- approve/decline in place of NewebPay's hosted page + real NotifyURL.
--- Clearly test-only: only ever touches rows this same user owns and with
--- provider='simulated', so it can never be used to fake a live payment.
 create or replace function confirm_simulated_payment(
   p_payment_id uuid,
   p_approve boolean
@@ -5108,7 +5185,196 @@ select cron.schedule(
 -- either, so it's already provider-agnostic.;
 
 
+update payments
+set processing_fee_rate = 0,
+    processing_fee_amount = 0
+where provider = 'simulated'
+  and processing_fee_amount is null;
+
 -- ---------------------------------------------------------------------------
+-- Trainer bank account. The mask trigger fills bank_account_mask.
+-- ---------------------------------------------------------------------------
+
+create or replace function save_bank_account(
+  p_bank_code text,
+  p_bank_name text,
+  p_branch_name text,
+  p_account_number text,
+  p_account_holder text
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_code text := trim(coalesce(p_bank_code, ''));
+  v_name text := trim(coalesce(p_bank_name, ''));
+  v_branch text := trim(coalesce(p_branch_name, ''));
+  v_number text := trim(coalesce(p_account_number, ''));
+  v_holder text := trim(coalesce(p_account_holder, ''));
+begin
+  if v_uid is null then raise exception 'bank_unauthenticated'; end if;
+  if v_code !~ '^[0-9]{3,7}$' then raise exception 'bank_details_invalid'; end if;
+  if char_length(v_name) < 1 or char_length(v_name) > 80 then
+    raise exception 'bank_details_invalid';
+  end if;
+  if char_length(v_branch) < 1 or char_length(v_branch) > 80 then
+    raise exception 'bank_details_invalid';
+  end if;
+  if v_number !~ '^[0-9]{8,16}$' then raise exception 'bank_details_invalid'; end if;
+  if char_length(v_holder) < 1 or char_length(v_holder) > 80 then
+    raise exception 'bank_details_invalid';
+  end if;
+
+  update users
+  set bank_code = v_code,
+      bank_name = v_name,
+      branch_name = v_branch,
+      bank_account_number = v_number,
+      bank_account_holder = v_holder
+  where id = v_uid;
+  if not found then raise exception 'bank_unauthenticated'; end if;
+end $$;
+
+create or replace function my_bank_account()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'bank_code', bank_code,
+    'bank_name', bank_name,
+    'branch_name', branch_name,
+    'bank_account_number', bank_account_number,
+    'bank_account_holder', bank_account_holder,
+    'bank_account_mask', bank_account_mask
+  )
+  from users
+  where id = auth.uid();
+$$;
+
+-- ---------------------------------------------------------------------------
+-- Admin order list + detail, so refund / hold / service-completed are usable.
+-- ---------------------------------------------------------------------------
+
+create or replace function admin_list_payments(p_filter text default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+stable
+as $$
+declare
+  v_rows jsonb;
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+  if p_filter is not null and p_filter not in (
+    'paid', 'pending', 'failed', 'cancelled', 'refund_requested', 'on_hold'
+  ) then
+    raise exception 'invalid_filter';
+  end if;
+
+  select coalesce(jsonb_agg(s.obj order by s.created_at desc, s.id), '[]'::jsonb)
+  into v_rows
+  from (
+    select pay.created_at, pay.id, jsonb_build_object(
+      'id', pay.id,
+      'booking_id', b.id,
+      'seeker_name', b.seeker_name,
+      'companion_name', b.companion_name,
+      'amount', pay.amount,
+      'provider', pay.provider,
+      'status', pay.status,
+      'refund_status', pay.refund_status,
+      'settlement_status', pay.settlement_status,
+      'admin_hold', pay.admin_hold,
+      'created_at', pay.created_at
+    ) as obj
+    from payments pay
+    join bookings b on b.id = pay.booking_id
+    where case
+      when p_filter is null then true
+      when p_filter = 'pending' then pay.status in (
+        'created', 'redirected', 'processing', 'awaiting_payment'
+      )
+      when p_filter = 'failed' then pay.status = 'failed'
+      when p_filter = 'cancelled' then pay.status = 'cancelled'
+      when p_filter = 'paid' then pay.status = 'paid' and pay.refund_status = 'none'
+      when p_filter = 'refund_requested' then pay.refund_status = 'refund_requested'
+      when p_filter = 'on_hold' then pay.admin_hold = true
+      else false
+    end
+  ) s;
+
+  return v_rows;
+end $$;
+
+create or replace function admin_payment_detail(p_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+stable
+as $$
+declare
+  v jsonb;
+  v_history jsonb;
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+
+  select jsonb_build_object(
+    'id', pay.id,
+    'booking_id', b.id,
+    'seeker_name', b.seeker_name,
+    'companion_name', b.companion_name,
+    'activity_slug', b.activity_slug,
+    'scheduled_start', b.scheduled_start,
+    'amount', pay.amount,
+    'currency', pay.currency,
+    'provider', pay.provider,
+    'merchant_order_no', pay.merchant_order_no,
+    'status', pay.status,
+    'refund_status', pay.refund_status,
+    'platform_fee_amount', pay.platform_fee_amount,
+    'processing_fee_amount', pay.processing_fee_amount,
+    'trainer_payable', pay.trainer_payable,
+    'service_completed_at', pay.service_completed_at,
+    'settlement_hold_until', pay.settlement_hold_until,
+    'settlement_eligibility_status', pay.settlement_eligibility_status,
+    'settlement_status', pay.settlement_status,
+    'admin_hold', pay.admin_hold,
+    'admin_hold_reason', pay.admin_hold_reason,
+    'created_at', pay.created_at
+  ) into v
+  from payments pay
+  join bookings b on b.id = pay.booking_id
+  where pay.id = p_id;
+
+  if v is null then raise exception 'payment_not_found'; end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'event_type', e.event_type,
+    'from_value', e.from_value,
+    'to_value', e.to_value,
+    'reason_note', e.reason_note,
+    'actor_name', a.display_name,
+    'created_at', e.created_at
+  ) order by e.created_at asc), '[]'::jsonb) into v_history
+  from payment_status_events e
+  left join users a on a.id = e.actor_id
+  where e.payment_id = p_id;
+
+  return v || jsonb_build_object('history', v_history);
+end $$;
+
+grant execute on function save_bank_account(text, text, text, text, text) to authenticated;
+grant execute on function my_bank_account() to authenticated;
+grant execute on function admin_list_payments(text) to authenticated;
+grant execute on function admin_payment_detail(uuid) to authenticated;
+
 -- Security hardening (final state): FK covering indexes + RPC ACL matrix.
 -- Idempotent with the live apply_migration timestamps 20260921051016 / 026.
 -- ---------------------------------------------------------------------------

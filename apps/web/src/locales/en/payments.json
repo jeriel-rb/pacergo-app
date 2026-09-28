@@ -10,14 +10,14 @@
   "returnToBookings": "Return to bookings",
   "review": {
     "title": "Review payment",
-    "notice": "Confirm your booking and total before going to NewebPay.",
+    "notice": "Review your booking and total before you continue.",
     "partner": "Partner",
     "service": "Service",
     "time": "Time",
     "duration": "Duration",
     "location": "Location",
     "total": "Total",
-    "paymentNotice": "You will pay on NewebPay's secure hosted page. PacerGo will confirm the transaction with the payment provider before marking the booking paid."
+    "paymentNotice": "Are you sure you want to proceed with this payment? You'll pay the total shown above."
   },
   "result": {
     "processing": {
@@ -55,12 +55,11 @@
     "paymentDate": "Payment date"
   },
   "simulated": {
-    "badge": "Test payment",
-    "title": "Simulated payment",
-    "notice": "Phase 1 test mode — no real payment provider or card data is involved. Approve or decline to simulate the outcome.",
-    "approve": "Approve (simulate success)",
-    "decline": "Decline (simulate failure)",
-    "alreadyResolved": "This payment has already been resolved."
+    "title": "Payment",
+    "notice": "Confirm the total to complete your payment.",
+    "approve": "Pay now",
+    "decline": "Cancel",
+    "alreadyResolved": "This payment has already been completed."
   },
   "instructions": {
     "title": "Payment instructions",

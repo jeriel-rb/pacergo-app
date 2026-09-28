@@ -9,7 +9,11 @@ export function availableActions(status: BookingStatus, role: BookingRole): Book
   if (status === 'requested') {
     return role === 'companion' ? ['accept', 'decline'] : ['cancel'];
   }
-  if (status === 'pending_payment' || status === 'payment_failed') {
+  if (
+    status === 'pending_payment' ||
+    status === 'payment_processing' ||
+    status === 'payment_failed'
+  ) {
     return role === 'seeker' ? ['cancel'] : [];
   }
   if (status === 'accepted') {

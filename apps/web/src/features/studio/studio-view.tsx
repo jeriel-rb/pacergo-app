@@ -20,7 +20,7 @@ export function StudioView({ data }: { data: MyListing }) {
   const hasListing = data.listing !== null;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <header>
         <h1 className="text-2xl font-bold lg:text-3xl">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
@@ -54,7 +54,7 @@ export function StudioView({ data }: { data: MyListing }) {
         </Card>
       )}
 
-      <Link href={earningsHref}>
+      <Link href={earningsHref} className="block">
         <Card className="flex items-center justify-between gap-3 p-5 transition-colors hover:bg-accent">
           <span className="flex items-center gap-2 font-semibold">
             <Wallet size={18} className="text-primary" />

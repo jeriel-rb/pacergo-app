@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, FlaskConical, Loader2, X } from "lucide-react";
+import { Check, Loader2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { PaymentDetail } from "@/lib/payments";
 import { Card } from "@/shared/components/ui/card";
@@ -12,8 +12,7 @@ import { getLocalizedPath } from "@/lib/locale-path";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { confirmSimulatedPayment } from "./simulated-actions";
 
-/** B-2 Phase 1 simulated checkout screen — explicit approve/decline test
- *  controls, clearly labeled test/beta, no card data collected. */
+/** Checkout screen for the simulated provider. Copy is a normal payment, with no test labeling. */
 export function SimulatedPaymentView({ payment }: { payment: PaymentDetail }) {
   const { t } = useTranslation("payments");
   const locale = useLocale();
@@ -30,7 +29,8 @@ export function SimulatedPaymentView({ payment }: { payment: PaymentDetail }) {
         getLocalizedPath(`/payments/newebpay/result?payment=${payment.id}`, locale),
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("errors.payment_request_failed"));
+      const code = e instanceof Error ? e.message : "payment_request_failed";
+      setError(t(`errors.${code}`, { defaultValue: t("errors.payment_request_failed") }));
       setBusy(null);
     }
   }
@@ -40,10 +40,6 @@ export function SimulatedPaymentView({ payment }: { payment: PaymentDetail }) {
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <header className="space-y-1">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">
-          <FlaskConical size={12} />
-          {t("simulated.badge")}
-        </div>
         <h1 className="text-2xl font-bold lg:text-3xl">{t("simulated.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("simulated.notice")}</p>
       </header>
@@ -59,12 +55,12 @@ export function SimulatedPaymentView({ payment }: { payment: PaymentDetail }) {
         ) : (
           <>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 type="button"
                 onClick={() => void decide(true)}
                 disabled={busy !== null}
-                className="flex-1 gap-2"
+                className="w-full gap-2 sm:flex-1"
               >
                 {busy === "approve" ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -75,10 +71,10 @@ export function SimulatedPaymentView({ payment }: { payment: PaymentDetail }) {
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant="destructive"
                 onClick={() => void decide(false)}
                 disabled={busy !== null}
-                className="flex-1 gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive sm:flex-1"
               >
                 {busy === "decline" ? (
                   <Loader2 size={16} className="animate-spin" />

@@ -101,6 +101,7 @@
     "requestWithdrawal": "Request withdrawal",
     "confirmWithdrawal": "Confirm request",
     "withdrawDesc": "Your available balance is {{balance}}. Enter the amount to withdraw.",
+    "insufficient": "That amount is higher than your available balance.",
     "error": "Something went wrong. Please try again.",
     "ordersTitle": "Orders",
     "ordersEmpty": "No orders yet.",
@@ -120,6 +121,17 @@
       "paid": "Paid",
       "rejected": "Rejected",
       "cancelled": "Cancelled"
+    },
+    "bank": {
+      "title": "Payout account",
+      "missing": "Add a bank account before you can request a withdrawal.",
+      "savedAs": "Saved account ending {{mask}}",
+      "code": "Bank code",
+      "name": "Bank name",
+      "branch": "Branch",
+      "number": "Account number",
+      "holder": "Account holder",
+      "invalid": "Check the bank code (3–7 digits) and account number (8–16 digits)."
     }
   }
 }

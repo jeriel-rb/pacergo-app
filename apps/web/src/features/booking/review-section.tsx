@@ -19,14 +19,15 @@ import {
 import { cn } from "@/lib/utils";
 import { submitReview } from "./review-actions";
 
-/** Review affordance on a completed booking — shows the user's review or a
- *  prompt to leave one. Either party can review the other. */
+/** Review affordance on a completed booking. Only the trainee reviews the trainer. */
 export function ReviewSection({
   bookingId,
   myReview,
+  inline = false,
 }: {
   bookingId: string;
   myReview: MyReview | null;
+  inline?: boolean;
 }) {
   const { t } = useTranslation("sessions");
 
@@ -60,7 +61,12 @@ export function ReviewSection({
     <ReviewDialog
       bookingId={bookingId}
       trigger={
-        <Button className="w-full gap-2">
+        <Button
+          className={cn(
+            "min-h-10 min-w-0 gap-2 whitespace-normal px-2 text-center text-xs sm:px-4 sm:text-sm",
+            inline ? "flex-1" : "w-full",
+          )}
+        >
           <Star size={16} />
           {t("review.leave")}
         </Button>

@@ -19,6 +19,7 @@ import {
 import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
 import { requestWithdrawal } from "./earnings-actions";
+import { BankAccountForm } from "./bank-account-form";
 
 function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
@@ -26,8 +27,11 @@ function ntd(amount: number): string {
 
 function formatStamp(iso: string, locale: "zh" | "en"): string {
   return formatInAppTimeZone(iso, locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
     timeZoneName: "short",
   });
 }
@@ -56,9 +60,12 @@ export function EarningsView({ data }: { data: EarningsData }) {
         </div>
         <WithdrawDialog
           balance={data.balance}
+          hasBank={Boolean(data.bank?.bank_account_mask)}
           onSuccess={() => router.refresh()}
         />
       </Card>
+
+      <BankAccountForm bank={data.bank} />
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-muted-foreground">
@@ -126,9 +133,11 @@ export function EarningsView({ data }: { data: EarningsData }) {
 
 function WithdrawDialog({
   balance,
+  hasBank,
   onSuccess,
 }: {
   balance: number;
+  hasBank: boolean;
   onSuccess: () => void;
 }) {
   const { t } = useTranslation("studio");
@@ -145,7 +154,14 @@ function WithdrawDialog({
       setOpen(false);
       onSuccess();
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("earnings.error"));
+      const message = e instanceof Error ? e.message : "";
+      setError(
+        message.includes("bank_details_missing")
+          ? t("earnings.bank.missing")
+          : message.includes("insufficient_balance")
+            ? t("earnings.insufficient")
+            : t("earnings.error"),
+      );
     } finally {
       setBusy(false);
     }
@@ -163,7 +179,7 @@ function WithdrawDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button type="button" disabled={balance <= 0} className="gap-2">
+        <Button type="button" disabled={balance <= 0 || !hasBank} className="gap-2">
           <Wallet size={16} />
           {t("earnings.requestWithdrawal")}
         </Button>

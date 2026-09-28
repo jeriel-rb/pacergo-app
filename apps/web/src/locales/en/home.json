@@ -27,13 +27,17 @@
     "title": "Set weekly goal",
     "desc": "How many sessions do you want to complete this week?",
     "unit": "× / week",
-    "save": "Save goal"
+    "save": "Save goal",
+    "decrease": "Decrease",
+    "increase": "Increase"
   },
   "tools": "Your tools",
   "myTrainer": "Your partner",
   "myTrainerHint": "Once you connect, your regular training partner shows up here.",
   "recommended": "Recommended trainers",
   "viewAll": "View all",
+  "saveTrainer": "Save trainer",
+  "unsaveTrainer": "Remove saved trainer",
   "category": {
     "all": "All",
     "gym": "Fitness",

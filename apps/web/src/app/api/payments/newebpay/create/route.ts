@@ -35,15 +35,31 @@ export async function POST(request: Request) {
     }
 
     const provider = getPaymentProvider();
-    const merchantOrderNo = createMerchantOrderNo();
-    const result = await provider.createAttempt({
+    const attemptInput = {
       supabase,
       bookingId: body.bookingId,
-      merchantOrderNo,
       amount: review.agreed_price,
       email: user.email ?? null,
       locale: body.locale === "en" ? "en" : "zh",
-    });
+    } as const;
+
+    let result;
+    try {
+      result = await provider.createAttempt({
+        ...attemptInput,
+        merchantOrderNo: createMerchantOrderNo(),
+      });
+    } catch (err) {
+      const inProgress =
+        err instanceof ProviderRpcError &&
+        mapDatabaseError(err.message) === "payment_attempt_in_progress";
+      if (!inProgress || provider.type !== "simulated") throw err;
+      await abandonOpenSimulatedAttempts(supabase, body.bookingId);
+      result = await provider.createAttempt({
+        ...attemptInput,
+        merchantOrderNo: createMerchantOrderNo(),
+      });
+    }
 
     console.info("payment_attempt_created", {
       provider: provider.type,
@@ -89,6 +105,27 @@ export async function POST(request: Request) {
       error: err instanceof Error ? mapDatabaseError(err.message) : "payment_request_failed",
     });
     return error("payment_request_failed", 500);
+  }
+}
+
+/** Drop an unfinished simulated attempt so the seeker can start payment again. */
+async function abandonOpenSimulatedAttempts(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  bookingId: string,
+) {
+  const { data, error } = await supabase
+    .from("payments")
+    .select("id")
+    .eq("booking_id", bookingId)
+    .eq("provider", "simulated")
+    .in("status", ["created", "redirected", "processing", "awaiting_payment"]);
+  if (error) throw new Error(error.message);
+  for (const row of data ?? []) {
+    const { error: confirmError } = await supabase.rpc("confirm_simulated_payment", {
+      p_payment_id: row.id,
+      p_approve: false,
+    });
+    if (confirmError) throw new Error(confirmError.message);
   }
 }
 

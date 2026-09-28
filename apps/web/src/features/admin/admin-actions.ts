@@ -1,6 +1,9 @@
 "use client";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { AdminUsersPage } from "@/lib/admin";
+
+const MEMBERS_PAGE_SIZE = 20;
 
 /** Approve or reject a certification request (admin-only RPC). */
 export async function reviewVerification(
@@ -15,6 +18,35 @@ export async function reviewVerification(
     p_notes: notes,
   });
   if (error) throw new Error(error.message);
+}
+
+/** Grant or revoke platform-admin on another user (admin-only RPC). */
+export async function setUserAdmin(
+  userId: string,
+  isAdmin: boolean,
+): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("set_user_admin", {
+    p_user_id: userId,
+    p_is_admin: isAdmin,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Fetch one page of members (admin-only RPC), admins first, optionally
+ *  filtered by a name/email search — for client-side pagination. */
+export async function fetchUsersPage(
+  page: number,
+  search = "",
+): Promise<AdminUsersPage> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("list_all_users", {
+    p_limit: MEMBERS_PAGE_SIZE,
+    p_offset: page * MEMBERS_PAGE_SIZE,
+    p_search: search.trim() || null,
+  });
+  if (error || !data) throw new Error(error?.message ?? "members");
+  return data as AdminUsersPage;
 }
 
 /** Short-lived signed URL for a private verification document (admins only). */
@@ -54,6 +86,36 @@ export async function setPaymentStatus(
   const { error } = await supabase.rpc("admin_set_payment_status", {
     p_payment_id: paymentId,
     p_action: action,
+    p_reason: reason,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Dispute flag. A hold drops an unsettled order out of the trainer balance. */
+export async function setPaymentHold(
+  paymentId: string,
+  hold: boolean,
+  reason: string,
+): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("admin_set_payment_hold", {
+    p_payment_id: paymentId,
+    p_hold: hold,
+    p_reason: reason,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Starts or clears the 24-hour settlement clock on one order. */
+export async function correctServiceCompleted(
+  paymentId: string,
+  completed: boolean,
+  reason: string,
+): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("admin_correct_service_completed", {
+    p_payment_id: paymentId,
+    p_completed: completed,
     p_reason: reason,
   });
   if (error) throw new Error(error.message);

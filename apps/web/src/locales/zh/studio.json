@@ -101,6 +101,7 @@
     "requestWithdrawal": "申請提領",
     "confirmWithdrawal": "確認申請",
     "withdrawDesc": "目前可提領餘額為 {{balance}}，請輸入欲提領金額。",
+    "insufficient": "提領金額超過可提領餘額。",
     "error": "發生錯誤，請再試一次。",
     "ordersTitle": "訂單收款",
     "ordersEmpty": "目前沒有訂單收款紀錄。",
@@ -120,6 +121,17 @@
       "paid": "已撥款",
       "rejected": "已拒絕",
       "cancelled": "已取消"
+    },
+    "bank": {
+      "title": "撥款帳戶",
+      "missing": "請先填寫銀行帳戶，才能申請提領。",
+      "savedAs": "已儲存帳戶，末碼 {{mask}}",
+      "code": "銀行代碼",
+      "name": "銀行名稱",
+      "branch": "分行",
+      "number": "帳號",
+      "holder": "戶名",
+      "invalid": "請確認銀行代碼（3–7 碼）與帳號（8–16 碼）。"
     }
   }
 }

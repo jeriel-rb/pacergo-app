@@ -20,10 +20,12 @@ dist/
 .env*.local
 
 # Backend (Supabase) CLI link state. The real project lives in `backend/`.
-# A local `supabase` directory junction → `backend` is optional so the
-# Supabase CLI (which hard-requires a folder named `supabase`) keeps working.
+# A local `supabase` symlink → `backend` is optional so the Supabase CLI
+# (which hard-requires a folder named `supabase`) keeps working. No trailing
+# slash: `supabase/` matches only a real directory, so the symlink stayed
+# visible and `git add -A` died on paths beyond it.
 backend/.temp/
-supabase/
+/supabase
 
 # local MCP server config (contains personal access tokens)
 .mcp.json

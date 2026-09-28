@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { MapPin, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { TrainerSummary } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
@@ -31,6 +32,7 @@ export function TrainerCard({
   /** Whether the signed-in user has this trainer saved. */
   saved?: boolean;
 }) {
+  const { t } = useTranslation("home");
   const pathname = usePathname();
   const routeLocale = getCurrentLocale(pathname);
   const href = getLocalizedPath(`/trainers/${trainer.id}`, routeLocale);
@@ -64,7 +66,7 @@ export function TrainerCard({
           />
           <button
             type="button"
-            aria-label="Save"
+            aria-label={saved ? t("unsaveTrainer") : t("saveTrainer")}
             aria-pressed={saved}
             onClick={onToggleSave}
             className="absolute right-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground"

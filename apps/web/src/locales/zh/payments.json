@@ -10,14 +10,14 @@
   "returnToBookings": "返回預約列表",
   "review": {
     "title": "確認付款",
-    "notice": "前往藍新金流前，請確認預約內容與金額。",
+    "notice": "繼續付款前，請確認預約內容與金額。",
     "partner": "陪練師",
     "service": "服務",
     "time": "時間",
     "duration": "時長",
     "location": "地點",
     "total": "總計",
-    "paymentNotice": "你將在藍新金流的安全付款頁面完成付款。PacerGo 會向付款服務確認交易狀態後，才會將預約標記為已付款。"
+    "paymentNotice": "確定要繼續付款嗎？你將支付上方顯示的金額。"
   },
   "result": {
     "processing": {
@@ -55,11 +55,10 @@
     "paymentDate": "付款時間"
   },
   "simulated": {
-    "badge": "測試付款",
-    "title": "模擬付款",
-    "notice": "第一階段測試模式——不涉及真實付款服務或卡片資料。請選擇核准或拒絕以模擬結果。",
-    "approve": "核准（模擬成功）",
-    "decline": "拒絕（模擬失敗）",
+    "title": "付款",
+    "notice": "請確認金額以完成付款。",
+    "approve": "立即付款",
+    "decline": "取消",
     "alreadyResolved": "這筆付款已處理完成。"
   },
   "instructions": {

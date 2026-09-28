@@ -29,8 +29,11 @@ export function PaymentReviewView({
   const tier = booking.tier ? TIER_LABELS[booking.tier][locale] : "";
   const formattedDate = booking.scheduled_start
     ? formatInAppTimeZone(booking.scheduled_start, locale, {
-        dateStyle: "medium",
-        timeStyle: "short",
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
         timeZoneName: "short",
       })
     : t("flexible");

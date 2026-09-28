@@ -27,13 +27,17 @@
     "title": "設定每週目標",
     "desc": "你希望這週完成幾次訓練？",
     "unit": "次 / 週",
-    "save": "儲存目標"
+    "save": "儲存目標",
+    "decrease": "減少",
+    "increase": "增加"
   },
   "tools": "個人工具",
   "myTrainer": "你的固定夥伴",
   "myTrainerHint": "配對後，你的固定陪練夥伴會顯示在這裡。",
   "recommended": "推薦陪練師",
   "viewAll": "查看全部",
+  "saveTrainer": "收藏陪練師",
+  "unsaveTrainer": "取消收藏",
   "category": {
     "all": "全部",
     "gym": "健身",

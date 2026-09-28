@@ -3,12 +3,32 @@
     "console": "Admin console",
     "menu": "Admin menu",
     "verifications": "Trainer requests",
+    "orders": "Orders",
     "payouts": "Payouts",
     "exports": "CSV export",
     "backToApp": "Back to Pacergo"
   },
   "title": "Trainer verification",
   "subtitle": "Review certification / qualification-proof and competition-experience requests",
+  "tabVerifications": "Verifications",
+  "tabMembers": "Members",
+  "noMembers": "No members yet.",
+  "searchMembers": "Search by name or email…",
+  "clearSearch": "Clear search",
+  "noSearchResults": "No members match your search.",
+  "roleMember": "Member",
+  "roleTrainer": "Trainer",
+  "roleAdmin": "Admin",
+  "makeAdmin": "Make admin",
+  "revokeAdmin": "Revoke admin",
+  "toast": {
+    "madeAdmin": "{{name}} is now an admin",
+    "revokedAdmin": "Admin access revoked for {{name}}",
+    "roleUpdateFailed": "Couldn't update that member's role. Please try again."
+  },
+  "prevPage": "Previous",
+  "nextPage": "Next",
+  "pageOf": "Page {{page}} of {{total}}",
   "pendingTitle": "Pending review",
   "historyTitle": "Reviewed",
   "empty": "No pending requests. You're all caught up.",
@@ -91,6 +111,92 @@
       "export_failed": "Export failed. Please try again.",
       "export_unknown_resource": "Unknown export type.",
       "supabase_unconfigured": "Exports are unavailable in this environment."
+    }
+  },
+  "orders": {
+    "title": "Orders",
+    "subtitle": "Record refunds, holds, and service completion on the simulated ledger. No money leaves the platform.",
+    "empty": "No orders match this filter.",
+    "unknown": "Unknown",
+    "amount": "Amount",
+    "withTrainer": "With {{name}}",
+    "actions": "Ledger actions",
+    "actionsNotice": "These update the order record only. A refund here does not call a payment provider.",
+    "reasonPlaceholder": "Reason note (required)…",
+    "reasonRequired": "This action requires a reason note.",
+    "history": "History",
+    "noHistory": "No ledger events yet.",
+    "systemActor": "System",
+    "serviceOpen": "Not completed",
+    "holdOn": "On hold",
+    "holdOff": "No hold",
+    "filter": {
+      "all": "All",
+      "paid": "Paid",
+      "pending": "Pending",
+      "refund_requested": "Refund requested",
+      "on_hold": "On hold",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "status": {
+      "created": "Created",
+      "redirected": "Redirected",
+      "processing": "Processing",
+      "awaiting_payment": "Awaiting payment",
+      "paid": "Paid",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "expired": "Expired"
+    },
+    "refund": {
+      "none": "None",
+      "refund_requested": "Refund requested",
+      "refunded": "Refunded"
+    },
+    "provider": {
+      "simulated": "Simulated",
+      "newebpay": "NewebPay"
+    },
+    "settlement": {
+      "eligible": "Eligible",
+      "ineligible": "Not eligible"
+    },
+    "settlementState": {
+      "unsettled": "Unsettled",
+      "paid": "Settled"
+    },
+    "fields": {
+      "status": "Payment",
+      "refund": "Refund",
+      "provider": "Provider",
+      "fee": "Platform fee",
+      "processing": "Processing fee",
+      "payable": "Trainer payable",
+      "settlement": "Settlement",
+      "service": "Service completed",
+      "hold": "Admin hold"
+    },
+    "action": {
+      "cancel": "Cancel attempt",
+      "refund_requested": "Request refund",
+      "refunded": "Mark refunded",
+      "hold": "Place hold",
+      "release": "Clear hold",
+      "completeService": "Mark service completed",
+      "revertService": "Clear service completed"
+    },
+    "events": {
+      "service_completed_auto": "Service completed (automatic)",
+      "service_completed_by_session": "Service completed (session marked done)",
+      "service_completed_admin_correction": "Service completed (admin)",
+      "service_completed_admin_reverted": "Service completed cleared",
+      "admin_hold_set": "Hold placed",
+      "admin_hold_cleared": "Hold cleared",
+      "admin_cancelled": "Payment cancelled",
+      "admin_refund_status_changed": "Refund status changed",
+      "booking_cancelled_open_attempt": "Open attempt cancelled with booking",
+      "booking_cancelled_refund_requested": "Refund requested because the booking was cancelled"
     }
   }
 }

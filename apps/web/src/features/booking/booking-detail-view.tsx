@@ -121,37 +121,50 @@ export function BookingDetailView({
         </div>
       </Card>
 
-      <BookingActionsBar booking={booking} currentUserId={currentUserId} />
+      {booking.status !== "cancelled" && (
+        <div className="flex items-stretch gap-2">
+          <BookingActionsBar booking={booking} currentUserId={currentUserId} />
 
-      {currentUserId === booking.seeker_id &&
-        !booking.is_free &&
-        booking.agreed_price > 0 &&
-        [
-          "requested",
-          "pending_payment",
-          "payment_processing",
-          "payment_failed",
-          "accepted",
-        ].includes(booking.status) && (
-          <Link
-            href={getLocalizedPath(
-              `/payments/newebpay/review?booking=${booking.id}`,
-              routeLocale,
+          {currentUserId === booking.seeker_id &&
+            !booking.is_free &&
+            booking.agreed_price > 0 &&
+            [
+              "requested",
+              "pending_payment",
+              "payment_processing",
+              "payment_failed",
+            ].includes(booking.status) && (
+              <Link
+                href={getLocalizedPath(
+                  `/payments/newebpay/review?booking=${booking.id}`,
+                  routeLocale,
+                )}
+                className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-2 text-center text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:px-4 sm:text-sm"
+              >
+                <CreditCard size={16} className="shrink-0" />
+                {booking.status === "payment_processing"
+                  ? t("actions.viewPayment")
+                  : t("actions.pay")}
+              </Link>
             )}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <CreditCard size={16} />
-            {booking.status === "payment_processing"
-              ? t("actions.viewPayment")
-              : t("actions.pay")}
-          </Link>
-        )}
 
-      <MessageButton otherId={otherId} className="w-full" />
-
-      {booking.status === "completed" && (
-        <ReviewSection bookingId={booking.id} myReview={myReview} />
+          <MessageButton
+            otherId={otherId}
+            className="min-h-10 min-w-0 flex-1 whitespace-normal px-2 text-center text-xs sm:px-4 sm:text-sm"
+          />
+          {booking.status === "completed" &&
+            currentUserId === booking.seeker_id &&
+            !myReview && (
+              <ReviewSection bookingId={booking.id} myReview={null} inline />
+            )}
+        </div>
       )}
+
+      {booking.status === "completed" &&
+        currentUserId === booking.seeker_id &&
+        myReview && (
+          <ReviewSection bookingId={booking.id} myReview={myReview} />
+        )}
     </div>
   );
 }

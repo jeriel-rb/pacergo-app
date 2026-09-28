@@ -55,10 +55,13 @@ export function BookingActionsBar({
 
   const iAmCompanion = currentUserId === booking.companion_id;
 
+  const actionOrder: BookingAction[] = ["cancel", "accept", "decline", "complete"];
   const actions: Action[] = availableActions(
     booking.status,
     iAmCompanion ? "companion" : "seeker",
-  ).map((key) => ({ key, ...ACTION_META[key] }));
+  )
+    .map((key) => ({ key, ...ACTION_META[key] }))
+    .sort((a, b) => actionOrder.indexOf(a.key) - actionOrder.indexOf(b.key));
 
   async function dispatch(action: Action) {
     setBusy(true);
@@ -74,26 +77,29 @@ export function BookingActionsBar({
   }
 
   if (actions.length === 0) {
-    return error ? <p className="text-sm text-destructive">{error}</p> : null;
+    return error ? (
+      <p className="basis-full text-sm text-destructive">{error}</p>
+    ) : null;
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        {actions.map((a) => (
-          <Button
-            key={a.key}
-            variant={a.variant ?? "default"}
-            disabled={busy}
-            onClick={() => dispatch(a)}
-            className={cn("flex-1 gap-2", a.className)}
-          >
-            {busy && <Loader2 size={16} className="animate-spin" />}
-            {t(`actions.${a.key}`)}
-          </Button>
-        ))}
-      </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-    </div>
+    <>
+      {actions.map((a) => (
+        <Button
+          key={a.key}
+          variant={a.variant ?? "default"}
+          disabled={busy}
+          onClick={() => dispatch(a)}
+          className={cn(
+            "min-h-10 min-w-0 flex-1 whitespace-normal px-2 text-center text-xs sm:px-4 sm:text-sm",
+            a.className,
+          )}
+        >
+          {busy && <Loader2 size={16} className="animate-spin" />}
+          {t(`actions.${a.key}`)}
+        </Button>
+      ))}
+      {error && <p className="basis-full text-sm text-destructive">{error}</p>}
+    </>
   );
 }

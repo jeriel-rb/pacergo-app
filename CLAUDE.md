@@ -44,11 +44,10 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
 - **Exercises:** `backend/seeds/03_ai_plan_exercises.sql` is GENERATED — one row per
   catalog exercise (302, kebab-case slugs). Regenerate with
   `node apps/web/scripts/generate-exercises-seed.mjs`; hand-written steps/tips live in
-  `apps/web/src/shared/assets/exercise-content.json`. Ship to a live DB via the
-  idempotent migration `20260922020000_exercise_catalog_update.sql` (seed body +
-  ON CONFLICT upsert + delete stale + saved-plan slug rewrite). Refresh that file
-  from the regenerated seed when the catalog changes; do not add a second overlapping
-  exercise-catalog migration.
+  `apps/web/src/shared/assets/exercise-content.json`. That seed file is the only
+  catalog load (`config.toml` `[db.seed]`, on `supabase db reset`). Do not copy
+  the insert into a migration. `20260922020000_exercise_catalog_update.sql` is
+  only the one-time saved-plan slug rewrite.
 
 ## Conventions / gotchas
 

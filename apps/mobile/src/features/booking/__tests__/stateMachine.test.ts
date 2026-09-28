@@ -9,6 +9,11 @@ describe('availableActions', () => {
     expect(availableActions('requested', 'seeker')).toEqual(['cancel']);
   });
 
+  it('lets a seeker cancel while payment is still processing', () => {
+    expect(availableActions('payment_processing', 'seeker')).toEqual(['cancel']);
+    expect(availableActions('payment_processing', 'companion')).toEqual([]);
+  });
+
   it('lets either party cancel or complete an accepted booking', () => {
     expect(availableActions('accepted', 'seeker')).toEqual(['complete', 'cancel']);
     expect(availableActions('accepted', 'companion')).toEqual(['complete', 'cancel']);

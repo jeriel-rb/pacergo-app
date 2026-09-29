@@ -83,5 +83,17 @@
   "cancel": "Cancel",
   "notSignedIn": "Sign in to manage your profile.",
   "mockNotice": "Connect Supabase to edit and save your profile.",
-  "genericError": "Something went wrong. Please try again."
+  "genericError": "Something went wrong. Please try again.",
+  "toast": {
+    "profileSaved": "Profile saved",
+    "profileSaveFailed": "Couldn't save your profile. Please try again.",
+    "avatarUpdated": "Profile photo updated",
+    "avatarRemoved": "Profile photo removed",
+    "avatarFailed": "Couldn't update your profile photo. Please try again.",
+    "bannerUpdated": "Cover photo updated",
+    "bannerRemoved": "Cover photo removed",
+    "bannerFailed": "Couldn't update your cover photo. Please try again.",
+    "accountDeleteFailed": "Couldn't delete your account. Please try again.",
+    "signOutFailed": "Couldn't sign you out. Please try again."
+  }
 }

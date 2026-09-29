@@ -10,6 +10,8 @@
   "composer": {
     "placeholder": "Type a message…"
   },
+  "sendFailed": "Your message failed to send.",
+  "retry": "Retry",
   "dock": {
     "maximize": "Open full screen",
     "close": "Close chat",

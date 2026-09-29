@@ -74,6 +74,11 @@
     "Barcode_2": "條碼 2",
     "Barcode_3": "條碼 3"
   },
+  "toast": {
+    "paymentApproved": "付款成功",
+    "paymentDeclined": "已取消付款",
+    "paymentActionFailed": "付款發生問題，請再試一次。"
+  },
   "errors": {
     "payment_booking_not_found": "找不到這筆預約。",
     "payment_booking_not_owned": "你只能為自己的預約付款。",

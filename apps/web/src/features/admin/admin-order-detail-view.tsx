@@ -9,6 +9,7 @@ import type { AdminOrderDetail } from "@/lib/admin";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { useToast } from "@/shared/components/ui/toast";
 import {
   correctServiceCompleted,
   setPaymentHold,
@@ -45,6 +46,7 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,9 +64,11 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
     try {
       await action();
       setReason("");
+      toast.show(t("toast.orderUpdated"), "success");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error"));
+      toast.show(t("toast.orderUpdateFailed"), "destructive");
     } finally {
       setBusy(null);
     }

@@ -15,6 +15,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { useToast } from "@/shared/components/ui/toast";
 import { buildAuthCallbackUrl, getTrustedAppOrigin } from "@/lib/auth-callback";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { changeEmail } from "./profile-actions";
@@ -23,14 +24,13 @@ export function ChangeEmailDialog({
   open,
   currentEmail,
   onOpenChange,
-  onSuccess,
 }: {
   open: boolean;
   currentEmail: string;
   onOpenChange: (open: boolean) => void;
-  onSuccess: (message: string) => void;
 }) {
   const { t } = useTranslation("profile");
+  const toast = useToast();
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const [email, setEmail] = useState("");
@@ -67,10 +67,12 @@ export function ChangeEmailDialog({
       setLoading(false);
       reset();
       onOpenChange(false);
-      onSuccess(t("changeEmailDialog.sent"));
+      toast.show(t("changeEmailDialog.sent"), "success");
     } catch (err) {
       setLoading(false);
-      setError(err instanceof Error ? err.message : t("genericError"));
+      const message = err instanceof Error ? err.message : t("genericError");
+      setError(message);
+      toast.show(message, "destructive");
     }
   }
 

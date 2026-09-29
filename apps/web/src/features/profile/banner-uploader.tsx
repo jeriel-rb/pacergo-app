@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Camera, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/shared/components/ui/toast";
 import { validateBannerFile } from "./banner";
 import { removeBanner, uploadBanner } from "./profile-actions";
 
@@ -21,6 +22,7 @@ export function BannerUploader({
 }) {
   const { t } = useTranslation("profile");
   const router = useRouter();
+  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(bannerUrl);
   const [busy, setBusy] = useState(false);
@@ -42,9 +44,11 @@ export function BannerUploader({
     try {
       const url = await uploadBanner(file);
       setPreview(url);
+      toast.show(t("toast.bannerUpdated"), "success");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("genericError"));
+      toast.show(t("toast.bannerFailed"), "destructive");
     } finally {
       setBusy(false);
     }
@@ -56,9 +60,11 @@ export function BannerUploader({
     try {
       await removeBanner();
       setPreview(null);
+      toast.show(t("toast.bannerRemoved"), "success");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("genericError"));
+      toast.show(t("toast.bannerFailed"), "destructive");
     } finally {
       setBusy(false);
     }

@@ -10,6 +10,8 @@
   "composer": {
     "placeholder": "輸入訊息…"
   },
+  "sendFailed": "訊息傳送失敗。",
+  "retry": "重新傳送",
   "dock": {
     "maximize": "全螢幕開啟",
     "close": "關閉聊天",

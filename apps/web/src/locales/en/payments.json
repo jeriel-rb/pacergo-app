@@ -74,6 +74,11 @@
     "Barcode_2": "Barcode 2",
     "Barcode_3": "Barcode 3"
   },
+  "toast": {
+    "paymentApproved": "Payment successful",
+    "paymentDeclined": "Payment cancelled",
+    "paymentActionFailed": "Something went wrong with your payment. Please try again."
+  },
   "errors": {
     "payment_booking_not_found": "This booking is unavailable.",
     "payment_booking_not_owned": "You can only pay for your own booking.",

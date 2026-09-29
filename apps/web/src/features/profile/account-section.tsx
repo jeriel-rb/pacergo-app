@@ -9,12 +9,11 @@ import {
   LogOut,
   Trash2,
   ChevronRight,
-  CheckCircle2,
-  X,
 } from "lucide-react";
 import type { UserProfile } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { ConfirmDialog } from "@/shared/components/atoms/confirm-dialog";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
@@ -32,24 +31,36 @@ export function AccountSection({
 }) {
   const { t } = useTranslation("profile");
   const router = useRouter();
+  const toast = useToast();
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
 
   const [dialog, setDialog] = useState<null | "password" | "email">(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
 
   async function signOut() {
-    clearOnboardingStorage();
-    await createSupabaseBrowserClient().auth.signOut();
-    router.push(getLocalizedPath("/sign-in", locale));
-    router.refresh();
+    try {
+      clearOnboardingStorage();
+      await createSupabaseBrowserClient().auth.signOut();
+      router.push(getLocalizedPath("/sign-in", locale));
+      router.refresh();
+    } catch {
+      toast.show(t("toast.signOutFailed"), "destructive");
+    }
   }
 
   async function onDelete() {
-    await deleteAccount();
-    router.push(getLocalizedPath("/sign-in", locale));
-    router.refresh();
+    try {
+      await deleteAccount();
+      router.push(getLocalizedPath("/sign-in", locale));
+      router.refresh();
+    } catch (err) {
+      toast.show(
+        err instanceof Error ? err.message : t("toast.accountDeleteFailed"),
+        "destructive",
+      );
+      throw err;
+    }
   }
 
   return (
@@ -60,21 +71,6 @@ export function AccountSection({
           {t("account.sub")}
         </p>
       </div>
-
-      {notice && (
-        <div className="mt-4 flex items-start gap-2 rounded-md bg-success/10 px-3.5 py-3 text-sm text-success">
-          <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-          <span className="flex-1">{notice}</span>
-          <button
-            type="button"
-            onClick={() => setNotice(null)}
-            aria-label={t("cancel")}
-            className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
-          >
-            <X size={15} />
-          </button>
-        </div>
-      )}
 
       <ul className="mt-4 divide-y divide-border">
         <AccountRow
@@ -122,13 +118,11 @@ export function AccountSection({
       <ChangePasswordDialog
         open={dialog === "password"}
         onOpenChange={(open) => setDialog(open ? "password" : null)}
-        onSuccess={setNotice}
       />
       <ChangeEmailDialog
         open={dialog === "email"}
         currentEmail={profile.email}
         onOpenChange={(open) => setDialog(open ? "email" : null)}
-        onSuccess={setNotice}
       />
       <ConfirmDialog
         open={deleteOpen}

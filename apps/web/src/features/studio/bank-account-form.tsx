@@ -8,12 +8,14 @@ import type { BankAccount } from "@/lib/earnings";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
+import { useToast } from "@/shared/components/ui/toast";
 import { saveBankAccount } from "./earnings-actions";
 
 /** Trainer payout account. Withdrawals stay blocked until this is saved. */
 export function BankAccountForm({ bank }: { bank: BankAccount | null }) {
   const { t } = useTranslation("studio");
   const router = useRouter();
+  const toast = useToast();
   const [bankCode, setBankCode] = useState(bank?.bank_code ?? "");
   const [bankName, setBankName] = useState(bank?.bank_name ?? "");
   const [branchName, setBranchName] = useState(bank?.branch_name ?? "");
@@ -36,6 +38,7 @@ export function BankAccountForm({ bank }: { bank: BankAccount | null }) {
         accountHolder,
       });
       setSaved(true);
+      toast.show(t("toast.bankAccountSaved"), "success");
       router.refresh();
     } catch (e) {
       const message = e instanceof Error ? e.message : "";
@@ -44,6 +47,7 @@ export function BankAccountForm({ bank }: { bank: BankAccount | null }) {
           ? t("earnings.bank.invalid")
           : t("earnings.error"),
       );
+      toast.show(t("toast.bankAccountSaveFailed"), "destructive");
     } finally {
       setBusy(false);
     }

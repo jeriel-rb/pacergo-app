@@ -24,7 +24,14 @@
   "toast": {
     "madeAdmin": "{{name}} is now an admin",
     "revokedAdmin": "Admin access revoked for {{name}}",
-    "roleUpdateFailed": "Couldn't update that member's role. Please try again."
+    "roleUpdateFailed": "Couldn't update that member's role. Please try again.",
+    "verificationApproved": "Verification approved",
+    "verificationRejected": "Verification rejected",
+    "verificationUpdateFailed": "Couldn't update that verification. Please try again.",
+    "orderUpdated": "Order updated",
+    "orderUpdateFailed": "Couldn't update that order. Please try again.",
+    "payoutUpdated": "Payout status updated",
+    "payoutUpdateFailed": "Couldn't update that payout. Please try again."
   },
   "prevPage": "Previous",
   "nextPage": "Next",
@@ -156,7 +163,7 @@
     },
     "provider": {
       "simulated": "Simulated",
-      "newebpay": "NewebPay"
+      "newebpay": "Manual transfer"
     },
     "settlement": {
       "eligible": "Eligible",

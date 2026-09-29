@@ -64,5 +64,16 @@
     "commentPlaceholder": "分享這次訓練的感受…",
     "submit": "送出評價"
   },
-  "error": "發生錯誤，請再試一次。"
+  "error": "發生錯誤，請再試一次。",
+  "toast": {
+    "accept": "已確認預約",
+    "decline": "已婉拒預約",
+    "cancel": "已取消預約",
+    "complete": "已標記為完成",
+    "actionFailed": "無法更新預約，請再試一次。",
+    "reviewSubmitted": "評價已送出",
+    "reviewFailed": "無法送出評價，請再試一次。",
+    "requestSent": "已送出預約請求",
+    "requestFailed": "無法送出預約請求，請再試一次。"
+  }
 }

@@ -9,6 +9,7 @@ import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { upsertMyListing } from "./studio-actions";
 import { ConsentCheckboxRow } from "@/features/legal/consent-checkbox-row";
@@ -21,6 +22,7 @@ const STATUSES: ListingStatus[] = ["draft", "active", "paused"];
 export function ListingEditor({ listing }: { listing: StudioListing | null }) {
   const { t } = useTranslation("studio");
   const router = useRouter();
+  const toast = useToast();
 
   const [headline, setHeadline] = useState(listing?.headline ?? "");
   const [bio, setBio] = useState(listing?.bio_long ?? "");
@@ -53,10 +55,12 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
         status,
       });
       setSaved(true);
+      toast.show(t("toast.listingSaved"), "success");
       router.refresh();
       window.setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
+      toast.show(t("toast.listingSaveFailed"), "destructive");
       return;
     } finally {
       setSaving(false);

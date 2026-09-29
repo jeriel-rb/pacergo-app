@@ -14,6 +14,7 @@ import { RatingStars } from "@/shared/components/atoms/rating-stars";
 import { ActivityIconCircle } from "@/shared/components/atoms/activity";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { toggleSaved } from "@/features/saved/saved-actions";
+import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 type Locale = "zh" | "en";
@@ -37,6 +38,7 @@ export function TrainerCard({
   const routeLocale = getCurrentLocale(pathname);
   const href = getLocalizedPath(`/trainers/${trainer.id}`, routeLocale);
   const [saved, setSaved] = useState(initialSaved);
+  const toast = useToast();
 
   async function onToggleSave(e: React.MouseEvent) {
     e.preventDefault();
@@ -48,6 +50,7 @@ export function TrainerCard({
       if (result !== null) setSaved(result);
     } catch {
       setSaved(!optimistic); // revert
+      toast.show(t(optimistic ? "toast.saveFailed" : "toast.unsaveFailed"), "destructive");
     }
   }
 

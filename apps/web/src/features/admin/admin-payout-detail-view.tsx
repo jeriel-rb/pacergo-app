@@ -9,6 +9,7 @@ import type { PayoutDetail, PayoutStatus } from "@/lib/admin";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { useToast } from "@/shared/components/ui/toast";
 import { setWithdrawalStatus } from "./admin-actions";
 import { StatusBadge } from "./admin-payouts-view";
 
@@ -47,6 +48,7 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<PayoutStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,9 +65,11 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
     try {
       await setWithdrawalStatus(detail.id, to, reason.trim());
       setReason("");
+      toast.show(t("toast.payoutUpdated"), "success");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error"));
+      toast.show(t("toast.payoutUpdateFailed"), "destructive");
     } finally {
       setBusy(null);
     }

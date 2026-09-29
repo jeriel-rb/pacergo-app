@@ -16,6 +16,7 @@ import {
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getLocalizedPath } from "@/lib/locale-path";
+import { useToast } from "@/shared/components/ui/toast";
 import { confirmSimulatedPayment } from "./simulated-actions";
 
 interface GatewayForm {
@@ -27,6 +28,7 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
   const { t } = useTranslation("payments");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [gatewayForm, setGatewayForm] = useState<GatewayForm | null>(null);
@@ -71,6 +73,7 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
     if (!id || keepAttemptRef.current) return;
     try {
       await confirmSimulatedPayment(id, false);
+      toast.show(t("toast.paymentDeclined"), "default");
     } catch {
       // Already closed, or the attempt was replaced. Pay securely can start again.
     }
@@ -84,6 +87,7 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
     try {
       await confirmSimulatedPayment(pending.id, true);
       pendingIdRef.current = null;
+      toast.show(t("toast.paymentApproved"), "success");
       router.push(
         getLocalizedPath(`/payments/newebpay/result?payment=${pending.id}`, locale),
       );
@@ -94,6 +98,7 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
       setDialogError(
         t(`errors.${code}`, { defaultValue: t("errors.payment_request_failed") }),
       );
+      toast.show(t("toast.paymentActionFailed"), "destructive");
     }
   }
 
@@ -133,6 +138,7 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
       setBusy(false);
       const code = err instanceof Error ? err.message : "payment_request_failed";
       setError(t(`errors.${code}`, { defaultValue: t("errors.payment_request_failed") }));
+      toast.show(t("toast.paymentActionFailed"), "destructive");
     }
   }
 

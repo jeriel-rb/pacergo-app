@@ -31,6 +31,7 @@ import {
   getLocalizedPath,
 } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/shared/components/ui/toast";
 import { createBooking } from "./booking-actions";
 
 /** Booking request form (modal). Triggered from the trainer detail CTA. */
@@ -50,6 +51,7 @@ export function BookingSheet({
   const routeLocale = getCurrentLocale(pathname);
   const locale = useLocale();
   const { t } = useTranslation("sessions");
+  const toast = useToast();
 
   const [open, setOpen] = useState(false);
   const [offeringId, setOfferingId] = useState(offerings[0]?.id ?? "");
@@ -79,10 +81,12 @@ export function BookingSheet({
         seekerNote: note.trim() || null,
       });
       setOpen(false);
+      toast.show(t("toast.requestSent"), "success");
       // URL locale (pathname), not i18n language — keeps nav consistent after switch.
       router.push(getLocalizedPath(`/sessions/${id}`, routeLocale));
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
+      toast.show(t("toast.requestFailed"), "destructive");
     } finally {
       setSubmitting(false);
     }

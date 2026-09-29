@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { ChatMessage, ConversationHeader } from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { sendMessage, markConversationRead } from "./chat-actions";
+
+type PendingMessage = ChatMessage & { status?: "sending" | "failed" };
 
 /** Shared message list + composer (page thread and floating dock). */
 export function ChatThread({
@@ -23,9 +25,8 @@ export function ChatThread({
   const { t } = useTranslation("chat");
   const convId = header.id;
 
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [messages, setMessages] = useState<PendingMessage[]>(initialMessages);
   const [draft, setDraft] = useState("");
-  const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,29 +66,46 @@ export function ChatThread({
   async function onSend(e: React.FormEvent) {
     e.preventDefault();
     const body = draft.trim();
-    if (!body || sending) return;
-    setSending(true);
+    if (!body) return;
     setDraft("");
+    await attemptSend(`pending-${Date.now()}-${Math.random().toString(36).slice(2)}`, body);
+  }
+
+  async function attemptSend(tempId: string, body: string) {
+    setMessages((prev) => {
+      const existing = prev.find((m) => m.id === tempId);
+      if (existing) {
+        return prev.map((m) => (m.id === tempId ? { ...m, status: "sending" } : m));
+      }
+      return [
+        ...prev,
+        {
+          id: tempId,
+          sender_id: currentUserId ?? "",
+          body,
+          created_at: new Date().toISOString(),
+          status: "sending",
+        },
+      ];
+    });
     try {
       const id = await sendMessage(convId, body);
       setMessages((prev) =>
-        prev.some((x) => x.id === id)
-          ? prev
-          : [
-              ...prev,
-              {
-                id,
-                sender_id: currentUserId ?? "",
-                body,
-                created_at: new Date().toISOString(),
-              },
-            ],
+        prev.some((x) => x.id === id && x.id !== tempId)
+          ? prev.filter((m) => m.id !== tempId)
+          : prev.map((m) =>
+              m.id === tempId ? { ...m, id, status: undefined } : m,
+            ),
       );
     } catch {
-      setDraft(body);
-    } finally {
-      setSending(false);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, status: "failed" } : m)),
+      );
     }
+  }
+
+  function retry(m: PendingMessage) {
+    void attemptSend(m.id, m.body);
   }
 
   return (
@@ -103,7 +121,7 @@ export function ChatThread({
           return (
             <div
               key={m.id}
-              className={cn("flex", mine ? "justify-end" : "justify-start")}
+              className={cn("flex flex-col", mine ? "items-end" : "items-start")}
             >
               <span
                 className={cn(
@@ -111,10 +129,22 @@ export function ChatThread({
                   mine
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-foreground",
+                  m.status === "sending" && "opacity-60",
+                  m.status === "failed" && "opacity-80",
                 )}
               >
                 {m.body}
               </span>
+              {m.status === "failed" && (
+                <button
+                  type="button"
+                  onClick={() => retry(m)}
+                  className="mt-1 flex items-center gap-1 text-xs font-medium text-destructive"
+                >
+                  <TriangleAlert size={12} />
+                  {t("sendFailed")} · {t("retry")}
+                </button>
+              )}
             </div>
           );
         })}
@@ -134,7 +164,7 @@ export function ChatThread({
         />
         <button
           type="submit"
-          disabled={!draft.trim() || sending}
+          disabled={!draft.trim()}
           aria-label={t("send")}
           className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-50"
         >

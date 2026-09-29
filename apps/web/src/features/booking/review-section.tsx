@@ -17,6 +17,7 @@ import {
   DialogDescription,
 } from "@/shared/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/shared/components/ui/toast";
 import { submitReview } from "./review-actions";
 
 /** Review affordance on a completed booking. Only the trainee reviews the trainer. */
@@ -86,6 +87,7 @@ function ReviewDialog({
 }) {
   const { t } = useTranslation("sessions");
   const router = useRouter();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(initial?.rating ?? 5);
   const [comment, setComment] = useState(initial?.comment ?? "");
@@ -98,9 +100,11 @@ function ReviewDialog({
     try {
       await submitReview(bookingId, rating, comment.trim() || null);
       setOpen(false);
+      toast.show(t("toast.reviewSubmitted"), "success");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error"));
+      toast.show(t("toast.reviewFailed"), "destructive");
     } finally {
       setSaving(false);
     }

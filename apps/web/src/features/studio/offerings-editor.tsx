@@ -20,6 +20,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { addOffering, removeOffering } from "./studio-actions";
 import { VerificationGate } from "./certification-gate";
@@ -41,6 +42,7 @@ export function OfferingsEditor({
   const { t } = useTranslation("studio");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
 
   const usedActivities = new Set(offerings.map((o) => o.activity));
   const availableActivities = ACTIVITIES.filter((a) => !usedActivities.has(a));
@@ -92,9 +94,11 @@ export function OfferingsEditor({
         isFree: false,
         sessionMinutes: parseInt(minutes, 10) || 60,
       });
+      toast.show(t("toast.offeringAdded"), "success");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error"));
+      toast.show(t("toast.offeringAddFailed"), "destructive");
     } finally {
       setBusy(false);
     }
@@ -104,7 +108,10 @@ export function OfferingsEditor({
     setBusy(true);
     try {
       await removeOffering(id);
+      toast.show(t("toast.offeringRemoved"), "success");
       router.refresh();
+    } catch {
+      toast.show(t("toast.offeringRemoveFailed"), "destructive");
     } finally {
       setBusy(false);
     }

@@ -8,6 +8,7 @@ import { isExperienceQualified, type ActivitySlug, type Tier } from "@pacergo/sh
 import type { VerificationStatus } from "@/lib/studio";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { validateCertFile, type VerificationDocType } from "./certification";
 import { submitVerificationDoc } from "./studio-actions";
 
@@ -37,6 +38,7 @@ export function VerificationGate({
 }) {
   const { t } = useTranslation("studio");
   const router = useRouter();
+  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [label, setLabel] = useState("");
@@ -91,9 +93,11 @@ export function VerificationGate({
       await submitVerificationDoc({ docType, activity, file, label: label.trim() });
       setFile(null);
       setLabel("");
+      toast.show(t("toast.verificationSubmitted"), "success");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
+      toast.show(t("toast.verificationSubmitFailed"), "destructive");
     } finally {
       setBusy(false);
     }

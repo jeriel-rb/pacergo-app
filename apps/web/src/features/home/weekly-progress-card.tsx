@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/shared/components/ui/dialog";
+import { useToast } from "@/shared/components/ui/toast";
 import { setWeeklyTarget } from "./goal-actions";
 
 /** Weekly training-progress ring — real target + completed-this-week count,
@@ -72,6 +73,7 @@ export function WeeklyProgressCard({
 function TargetEditor({ current }: { current: number }) {
   const { t } = useTranslation("home");
   const router = useRouter();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(current);
   const [saving, setSaving] = useState(false);
@@ -81,7 +83,10 @@ function TargetEditor({ current }: { current: number }) {
     try {
       await setWeeklyTarget(value);
       setOpen(false);
+      toast.show(t("toast.weeklyGoalSaved"), "success");
       router.refresh();
+    } catch {
+      toast.show(t("toast.weeklyGoalFailed"), "destructive");
     } finally {
       setSaving(false);
     }

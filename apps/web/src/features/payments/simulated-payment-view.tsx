@@ -10,6 +10,7 @@ import { Button } from "@/shared/components/ui/button";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { getLocalizedPath } from "@/lib/locale-path";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { useToast } from "@/shared/components/ui/toast";
 import { confirmSimulatedPayment } from "./simulated-actions";
 
 /** Checkout screen for the simulated provider. Copy is a normal payment, with no test labeling. */
@@ -17,6 +18,7 @@ export function SimulatedPaymentView({ payment }: { payment: PaymentDetail }) {
   const { t } = useTranslation("payments");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
   const [busy, setBusy] = useState<"approve" | "decline" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,12 +27,17 @@ export function SimulatedPaymentView({ payment }: { payment: PaymentDetail }) {
     setError(null);
     try {
       await confirmSimulatedPayment(payment.id, approve);
+      toast.show(
+        t(approve ? "toast.paymentApproved" : "toast.paymentDeclined"),
+        approve ? "success" : "default",
+      );
       router.push(
         getLocalizedPath(`/payments/newebpay/result?payment=${payment.id}`, locale),
       );
     } catch (e) {
       const code = e instanceof Error ? e.message : "payment_request_failed";
       setError(t(`errors.${code}`, { defaultValue: t("errors.payment_request_failed") }));
+      toast.show(t("toast.paymentActionFailed"), "destructive");
       setBusy(null);
     }
   }

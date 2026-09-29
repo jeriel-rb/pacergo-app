@@ -14,18 +14,18 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { useToast } from "@/shared/components/ui/toast";
 import { changePassword } from "./profile-actions";
 
 export function ChangePasswordDialog({
   open,
   onOpenChange,
-  onSuccess,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: (message: string) => void;
 }) {
   const { t } = useTranslation("profile");
+  const toast = useToast();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,10 +56,12 @@ export function ChangePasswordDialog({
       setLoading(false);
       reset();
       onOpenChange(false);
-      onSuccess(t("changePasswordDialog.done"));
+      toast.show(t("changePasswordDialog.done"), "success");
     } catch (err) {
       setLoading(false);
-      setError(err instanceof Error ? err.message : t("genericError"));
+      const message = err instanceof Error ? err.message : t("genericError");
+      setError(message);
+      toast.show(message, "destructive");
     }
   }
 

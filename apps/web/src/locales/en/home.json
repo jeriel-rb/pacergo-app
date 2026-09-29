@@ -38,6 +38,12 @@
   "viewAll": "View all",
   "saveTrainer": "Save trainer",
   "unsaveTrainer": "Remove saved trainer",
+  "toast": {
+    "saveFailed": "Couldn't save that trainer. Please try again.",
+    "unsaveFailed": "Couldn't remove that trainer. Please try again.",
+    "weeklyGoalSaved": "Weekly goal saved",
+    "weeklyGoalFailed": "Couldn't save your weekly goal. Please try again."
+  },
   "category": {
     "all": "All",
     "gym": "Fitness",

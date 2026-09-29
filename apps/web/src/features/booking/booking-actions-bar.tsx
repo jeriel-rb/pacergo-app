@@ -10,6 +10,7 @@ import {
   type BookingRecord,
 } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   acceptBooking,
@@ -50,6 +51,7 @@ export function BookingActionsBar({
 }) {
   const { t } = useTranslation("sessions");
   const router = useRouter();
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,9 +70,11 @@ export function BookingActionsBar({
     setError(null);
     try {
       await action.run(booking.id);
+      toast.show(t(`toast.${action.key}`), "success");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error"));
+      toast.show(t("toast.actionFailed"), "destructive");
     } finally {
       setBusy(false);
     }

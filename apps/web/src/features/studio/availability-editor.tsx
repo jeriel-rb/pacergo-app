@@ -8,6 +8,7 @@ import type { StudioAvailability } from "@/lib/studio";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { addAvailability, removeAvailability } from "./studio-actions";
 
@@ -33,6 +34,7 @@ export function AvailabilityEditor({
 }) {
   const { t } = useTranslation(["studio", "trainer"]);
   const router = useRouter();
+  const toast = useToast();
   const weekdays = t("trainer:weekdaysShort", { returnObjects: true }) as string[];
 
   const [weekday, setWeekday] = useState(1);
@@ -52,9 +54,11 @@ export function AvailabilityEditor({
     setError(null);
     try {
       await addAvailability({ weekday, startMinute: s, endMinute: e });
+      toast.show(t("studio:toast.availabilityAdded"), "success");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("studio:error"));
+      toast.show(t("studio:toast.availabilityAddFailed"), "destructive");
     } finally {
       setBusy(false);
     }
@@ -64,7 +68,10 @@ export function AvailabilityEditor({
     setBusy(true);
     try {
       await removeAvailability(id);
+      toast.show(t("studio:toast.availabilityRemoved"), "success");
       router.refresh();
+    } catch {
+      toast.show(t("studio:toast.availabilityRemoveFailed"), "destructive");
     } finally {
       setBusy(false);
     }

@@ -14,6 +14,7 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { updateProfileFields } from "./profile-actions";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export function ProfileForm({
 }) {
   const { t } = useTranslation("profile");
   const router = useRouter();
+  const toast = useToast();
 
   const [displayName, setDisplayName] = useState(profile.display_name);
   const [bio, setBio] = useState(profile.bio ?? "");
@@ -53,10 +55,12 @@ export function ProfileForm({
         gender,
       });
       setSaved(true);
+      toast.show(t("toast.profileSaved"), "success");
       router.refresh();
       window.setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("genericError"));
+      toast.show(t("toast.profileSaveFailed"), "destructive");
     } finally {
       setSaving(false);
     }

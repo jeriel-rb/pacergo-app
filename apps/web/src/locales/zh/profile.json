@@ -83,5 +83,17 @@
   "cancel": "取消",
   "notSignedIn": "請先登入以管理你的個人檔案。",
   "mockNotice": "連接 Supabase 後即可編輯並儲存你的個人檔案。",
-  "genericError": "發生錯誤，請再試一次。"
+  "genericError": "發生錯誤，請再試一次。",
+  "toast": {
+    "profileSaved": "個人檔案已儲存",
+    "profileSaveFailed": "無法儲存個人檔案，請再試一次。",
+    "avatarUpdated": "已更新個人照片",
+    "avatarRemoved": "已移除個人照片",
+    "avatarFailed": "無法更新個人照片，請再試一次。",
+    "bannerUpdated": "已更新封面照片",
+    "bannerRemoved": "已移除封面照片",
+    "bannerFailed": "無法更新封面照片，請再試一次。",
+    "accountDeleteFailed": "無法刪除帳號，請再試一次。",
+    "signOutFailed": "無法登出，請再試一次。"
+  }
 }

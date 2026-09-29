@@ -50,7 +50,9 @@ export function AppHeader(props: AppHeaderProps) {
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-sm text-white dark:bg-emerald-500">
               A
             </span>
-            <span className="text-lg">{t("nav.console")}</span>
+            <span className="text-lg">
+              {t("nav.console")} — 陪練動
+            </span>
           </Link>
 
           <Link
@@ -82,7 +84,7 @@ export function AppHeader(props: AppHeaderProps) {
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
             P
           </span>
-          <span className="text-lg">Pacergo</span>
+          <span className="text-lg">Pacergo — 陪練動</span>
         </Link>
 
         <nav className="hidden lg:flex lg:items-center lg:gap-1">

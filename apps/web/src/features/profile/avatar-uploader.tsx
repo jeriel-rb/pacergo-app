@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { validateAvatarFile } from "./avatar";
 import { removeAvatar, uploadAvatar } from "./profile-actions";
 
@@ -27,6 +28,7 @@ export function AvatarUploader({
 }) {
   const { t } = useTranslation("profile");
   const router = useRouter();
+  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(photoUrl);
   const [busy, setBusy] = useState(false);
@@ -49,9 +51,11 @@ export function AvatarUploader({
     try {
       const url = await uploadAvatar(file);
       setPreview(url);
+      toast.show(t("toast.avatarUpdated"), "success");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("genericError"));
+      toast.show(t("toast.avatarFailed"), "destructive");
     } finally {
       setBusy(false);
     }
@@ -64,9 +68,11 @@ export function AvatarUploader({
     try {
       await removeAvatar();
       setPreview(null);
+      toast.show(t("toast.avatarRemoved"), "success");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("genericError"));
+      toast.show(t("toast.avatarFailed"), "destructive");
     } finally {
       setBusy(false);
     }

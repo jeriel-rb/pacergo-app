@@ -14,7 +14,7 @@ import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { SearchInput } from "@/shared/components/ui/search-input";
-import { ToastProvider, useToast } from "@/shared/components/ui/toast";
+import { useToast } from "@/shared/components/ui/toast";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
 import {
@@ -41,32 +41,30 @@ export function AdminView({
   const pending = queue.filter((v) => v.status === "pending");
 
   return (
-    <ToastProvider>
-      <div className="mx-auto max-w-2xl space-y-6">
-        <header>
-          <h1 className="text-2xl font-bold lg:text-3xl">{t("title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
-        </header>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold lg:text-3xl">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+      </header>
 
-        <div className="flex gap-1 rounded-lg bg-muted p-1">
-          <TabButton
-            active={tab === "verifications"}
-            onClick={() => setTab("verifications")}
-          >
-            {t("tabVerifications")} ({pending.length})
-          </TabButton>
-          <TabButton active={tab === "members"} onClick={() => setTab("members")}>
-            {t("tabMembers")} ({usersPage.total})
-          </TabButton>
-        </div>
-
-        {tab === "verifications" ? (
-          <VerificationsPanel queue={queue} />
-        ) : (
-          <MembersPanel initial={usersPage} />
-        )}
+      <div className="flex gap-1 rounded-lg bg-muted p-1">
+        <TabButton
+          active={tab === "verifications"}
+          onClick={() => setTab("verifications")}
+        >
+          {t("tabVerifications")} ({pending.length})
+        </TabButton>
+        <TabButton active={tab === "members"} onClick={() => setTab("members")}>
+          {t("tabMembers")} ({usersPage.total})
+        </TabButton>
       </div>
-    </ToastProvider>
+
+      {tab === "verifications" ? (
+        <VerificationsPanel queue={queue} />
+      ) : (
+        <MembersPanel initial={usersPage} />
+      )}
+    </div>
   );
 }
 
@@ -363,6 +361,7 @@ function Row({ v }: { v: AdminVerification }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
   const activityLabel = v.activity
     ? ACTIVITY_META[v.activity as ActivitySlug]?.[locale] ?? v.activity
     : null;
@@ -402,9 +401,14 @@ function Row({ v }: { v: AdminVerification }) {
     setError(null);
     try {
       await reviewVerification(v.id, status, notes.trim());
+      toast.show(
+        t(status === "approved" ? "toast.verificationApproved" : "toast.verificationRejected"),
+        "success",
+      );
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error"));
+      toast.show(t("toast.verificationUpdateFailed"), "destructive");
       setBusy(null);
     }
   }

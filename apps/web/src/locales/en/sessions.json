@@ -64,5 +64,16 @@
     "commentPlaceholder": "Share how the session went…",
     "submit": "Submit review"
   },
-  "error": "Something went wrong. Please try again."
+  "error": "Something went wrong. Please try again.",
+  "toast": {
+    "accept": "Booking confirmed",
+    "decline": "Booking declined",
+    "cancel": "Booking cancelled",
+    "complete": "Session marked as completed",
+    "actionFailed": "Couldn't update the booking. Please try again.",
+    "reviewSubmitted": "Review submitted",
+    "reviewFailed": "Couldn't submit your review. Please try again.",
+    "requestSent": "Booking request sent",
+    "requestFailed": "Couldn't send the booking request. Please try again."
+  }
 }

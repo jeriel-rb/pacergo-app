@@ -24,7 +24,14 @@
   "toast": {
     "madeAdmin": "{{name}} 現在是管理員",
     "revokedAdmin": "已移除 {{name}} 的管理員權限",
-    "roleUpdateFailed": "無法更新該會員的權限，請再試一次。"
+    "roleUpdateFailed": "無法更新該會員的權限，請再試一次。",
+    "verificationApproved": "已核准驗證",
+    "verificationRejected": "已拒絕驗證",
+    "verificationUpdateFailed": "無法更新該驗證，請再試一次。",
+    "orderUpdated": "訂單已更新",
+    "orderUpdateFailed": "無法更新該訂單，請再試一次。",
+    "payoutUpdated": "已更新提款狀態",
+    "payoutUpdateFailed": "無法更新該筆提款，請再試一次。"
   },
   "prevPage": "上一頁",
   "nextPage": "下一頁",
@@ -156,7 +163,7 @@
     },
     "provider": {
       "simulated": "模擬付款",
-      "newebpay": "藍新"
+      "newebpay": "手動轉帳"
     },
     "settlement": {
       "eligible": "可結算",

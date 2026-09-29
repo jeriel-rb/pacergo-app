@@ -3,6 +3,7 @@ import initTranslations from "@/app/i18n";
 import i18nConfig from "@/i18nConfig";
 import { TranslationsProvider } from "@/components/translations-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { ToastProvider } from "@/shared/components/ui/toast";
 
 const NAMESPACES = [
   "common",
@@ -63,7 +64,7 @@ export default async function LocaleLayout({
             namespaces={NAMESPACES}
             resources={resources}
           >
-            {children}
+            <ToastProvider>{children}</ToastProvider>
           </TranslationsProvider>
         </ThemeProvider>
       </body>

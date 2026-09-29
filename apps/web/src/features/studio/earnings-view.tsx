@@ -17,6 +17,7 @@ import {
   DialogDescription,
 } from "@/shared/components/ui/dialog";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { requestWithdrawal } from "./earnings-actions";
 import { BankAccountForm } from "./bank-account-form";
@@ -141,6 +142,7 @@ function WithdrawDialog({
   onSuccess: () => void;
 }) {
   const { t } = useTranslation("studio");
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(balance);
   const [busy, setBusy] = useState(false);
@@ -152,6 +154,7 @@ function WithdrawDialog({
     try {
       await requestWithdrawal(amount);
       setOpen(false);
+      toast.show(t("toast.withdrawalRequested"), "success");
       onSuccess();
     } catch (e) {
       const message = e instanceof Error ? e.message : "";
@@ -162,6 +165,7 @@ function WithdrawDialog({
             ? t("earnings.insufficient")
             : t("earnings.error"),
       );
+      toast.show(t("toast.withdrawalRequestFailed"), "destructive");
     } finally {
       setBusy(false);
     }

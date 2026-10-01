@@ -1,13 +1,16 @@
 import {
   REST_TIMER_RECOMMENDED_SEC,
   REST_TIMER_STEP_SEC,
+  resolveTrainingDays,
   type GymEquipmentAnswers,
+  type TrainingSplit,
   type OnboardingAnswers,
-  type OnboardingDaysPerWeek,
   type OnboardingMuscleGroup,
   type TrainingPreferencesAnswers,
 } from "../onboarding/onboarding-types";
 import type { Bi } from "./plan-types";
+import { recommendSplit } from "./split-recommendation";
+import { experienceFit } from "./exercise-fit";
 import type {
   ExerciseRecord,
   GeneratedCardioBlock,
@@ -32,21 +35,11 @@ const WEEKDAY: Bi[] = [
   { zh: "週日", en: "Sun" },
 ];
 
-/** Which 7-length day-of-week pattern is a training day, per frequency.
- *  Spread evenly across the week rather than front-loaded. */
-const TRAINING_DAY_MASK: Record<OnboardingDaysPerWeek, boolean[]> = {
-  every_day: [true, true, true, true, true, true, true],
-  "6": [true, true, true, true, true, true, false],
-  "5": [true, true, true, true, true, false, false],
-  "4": [true, true, false, true, true, false, false],
-  "3": [true, false, true, false, true, false, false],
-  "2": [false, true, false, true, false, false, false],
-};
-
 const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
   push: ["chest", "shoulders", "triceps", "upper_chest", "lower_chest"],
   pull: ["back", "biceps", "lats", "upper_back", "rear_delts"],
   legs: ["quads", "glutes", "hamstrings", "calves"],
+  lower: ["quads", "glutes", "hamstrings", "calves", "lower_abs"],
   upper: ["chest", "back", "shoulders", "biceps", "triceps", "upper_chest", "lats", "lower_chest"],
   full_body: [
     "chest",
@@ -67,7 +60,7 @@ const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 3;
+export const PLAN_RULES_VERSION = 4;
 
 /** Extra sets on main lifts as the weeks go on (progressive overload): weeks 1–2
  *  as prescribed, weeks 3–4 one set more. Kept off for people who are short on
@@ -78,13 +71,25 @@ export function progressionSets(week: number, obstacle: OnboardingAnswers["obsta
   return week >= 2 ? 1 : 0;
 }
 
-/** The recurring day-type sequence for a chosen split — cycles across
- *  however many training days the week has. */
-function focusSequence(workoutSplit: TrainingPreferencesAnswers["workoutSplit"]): SessionFocus[] {
+const SPLIT_SEQUENCE: Record<TrainingSplit, SessionFocus[]> = {
+  full_body: ["full_body"],
+  upper_lower: ["upper", "lower"],
+  push_pull_legs: ["push", "pull", "legs"],
+  ppl_upper: ["push", "pull", "legs", "upper"],
+  ppl_upper_lower: ["push", "pull", "legs", "upper", "lower"],
+};
+
+/** The recurring day-type sequence for a split — cycles across however many
+ *  training days the week has. Unset or "ai_custom" uses the recommendation
+ *  for these answers; the retired "PPL + full body" keeps its own rotation. */
+export function focusSequence(
+  workoutSplit: TrainingPreferencesAnswers["workoutSplit"],
+  recommended: () => TrainingSplit,
+): SessionFocus[] {
   if (workoutSplit === "ppl_full_body") return ["push", "pull", "legs", "full_body"];
-  if (workoutSplit === "ppl_upper_body") return ["push", "pull", "legs", "upper"];
-  // "ai_custom" (or unset) — a general-purpose rotation.
-  return ["full_body", "upper", "legs"];
+  if (workoutSplit === "ppl_upper_body") return SPLIT_SEQUENCE.ppl_upper;
+  if (!workoutSplit || workoutSplit === "ai_custom") return SPLIT_SEQUENCE[recommended()];
+  return SPLIT_SEQUENCE[workoutSplit];
 }
 
 const SETS_REPS_BY_EXPERIENCE: Record<
@@ -322,6 +327,12 @@ function isAvailable(e: ExerciseRecord, gymType: string, selected: ReadonlySet<s
   return e.equipmentSettings.includes(gymType);
 }
 
+/** The eligible exercise pool for one session focus, best first. Equipment is
+ *  a hard filter (applied before anything is ranked or picked); experience
+ *  then ranks what's left, so an advanced lifter's loaded compound lifts come
+ *  ahead of band or beginner bodyweight variants of the same muscle. A
+ *  missing machine is substituted naturally: other exercises for the same
+ *  main muscle stay in the pool. */
 function poolFor(
   exercises: readonly ExerciseRecord[],
   gymType: string,
@@ -330,6 +341,7 @@ function poolFor(
   excluded: ReadonlySet<string>,
   priority: ReadonlySet<string>,
   lowImpact: boolean,
+  experience: NonNullable<TrainingPreferencesAnswers["experience"]>,
 ): ExerciseRecord[] {
   return exercises
     .filter(
@@ -342,9 +354,10 @@ function poolFor(
     )
     .sort(
       (a, b) =>
-        // Prioritized muscles first, then exercises with written instructions,
-        // then a stable slug order.
+        // Prioritized muscles first, then fit for the training level, then
+        // exercises with written instructions, then a stable slug order.
         priorityScore(b, priority) - priorityScore(a, priority) ||
+        experienceFit(b, experience) - experienceFit(a, experience) ||
         Number(b.hasInstructions === true) - Number(a.hasInstructions === true) ||
         a.slug.localeCompare(b.slug),
     );
@@ -355,11 +368,17 @@ function byslugs(exercises: readonly ExerciseRecord[], slugs: readonly string[])
   return slugs.map((s) => bySlug.get(s)).filter((e): e is ExerciseRecord => e !== undefined);
 }
 
-function mainExerciseCount(durationMin: number, obstacle: OnboardingAnswers["obstacle"]): number {
+function mainExerciseCount(
+  durationMin: number,
+  obstacle: OnboardingAnswers["obstacle"],
+  experience: NonNullable<TrainingPreferencesAnswers["experience"]>,
+): number {
   // ~10 min warm-up + ~10 min cool-down leaves the rest for main work;
-  // budget roughly 8 min per main exercise (sets + rest included).
+  // budget roughly 8 min per main exercise (sets + rest included) — more for
+  // newcomers, who need time to learn each movement.
   const mainMinutes = Math.max(20, durationMin - 20);
-  const count = Math.min(6, Math.max(3, Math.round(mainMinutes / 8)));
+  const perExercise = experience === "no_experience" ? 10 : 8;
+  const count = Math.min(6, Math.max(3, Math.round(mainMinutes / perExercise)));
   // "Lack of time" keeps sessions short and focused whatever length was chosen.
   return obstacle === "lack_of_time" ? Math.min(count, 4) : count;
 }
@@ -397,9 +416,11 @@ export function generateTrainingPlan(input: {
     trainingPreferences.prioritizeMuscles === true ? trainingPreferences.prioritizedMuscles : [],
   );
   const variety = trainingPreferences.variety ?? "balanced";
-  const mask = TRAINING_DAY_MASK[daysPerWeek];
-  const sequence = focusSequence(trainingPreferences.workoutSplit);
-  const mainCount = mainExerciseCount(durationMin, answers.obstacle);
+  const trainingDays = new Set(resolveTrainingDays(daysPerWeek, trainingPreferences.trainingDays));
+  const sequence = focusSequence(trainingPreferences.workoutSplit, () =>
+    recommendSplit({ answers, trainingPreferences, gymEquipment }).split,
+  );
+  const mainCount = mainExerciseCount(durationMin, answers.obstacle, experience);
 
   const lowImpact = needsLowImpact(answers);
   const warmupPool = byslugs(exercises, lowImpact ? LOW_IMPACT_WARMUP_SLUGS : WARMUP_SLUGS);
@@ -416,7 +437,7 @@ export function generateTrainingPlan(input: {
     const days: GeneratedDay[] = [];
 
     for (let dayIndex = 0; dayIndex < DAYS_PER_WEEK; dayIndex++) {
-      if (!mask[dayIndex]) {
+      if (!trainingDays.has(dayIndex)) {
         days.push({ dayIndex, dayLabel: WEEKDAY[dayIndex]!, isRestDay: true, session: null });
         continue;
       }
@@ -424,7 +445,7 @@ export function generateTrainingPlan(input: {
       const focus = sequence[trainingDayCounter % sequence.length]!;
       let session = sessionByFocus.get(focus);
       if (!session) {
-        const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact);
+        const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact, experience);
         // Sessions that train a prioritized muscle get one extra exercise.
         const worksPriority = FOCUS_MUSCLES[focus].some((m) => priority.has(m));
         const count = Math.min(7, mainCount + (worksPriority ? 1 : 0));

@@ -7,6 +7,7 @@ import { Check, Loader2 } from "lucide-react";
 import { generateTrainingPlan } from "@pacergo/shared";
 import { cn } from "@/lib/utils";
 import { fetchAllExercises } from "@/lib/exercises";
+import { saveTrainingPlan } from "@/lib/plans";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 
 const DURATION_MS = 4500;
@@ -33,7 +34,15 @@ export function CreatingPlanView() {
   const { t } = useTranslation("onboarding");
   const router = useRouter();
   const pathname = usePathname();
-  const { answers, trainingPreferences, gymEquipment, setGeneratedPlan } = useOnboarding();
+  const {
+    answers,
+    trainingPreferences,
+    gymEquipment,
+    setGeneratedPlan,
+    setSavedPlanId,
+    markStepComplete,
+    persistProfile,
+  } = useOnboarding();
   const [percent, setPercent] = React.useState(0);
 
   React.useEffect(() => {
@@ -63,20 +72,29 @@ export function CreatingPlanView() {
     }
     raf = requestAnimationFrame(tick);
 
-    fetchAllExercises()
-      .then((exercises) => {
-        if (cancelled) return;
-        const plan = generateTrainingPlan({
-          answers,
-          trainingPreferences,
-          gymEquipment,
-          exercises,
-        });
-        setGeneratedPlan(plan);
-      })
+    // Generate, then save straight to the account: the profile (incl. the
+    // selected equipment list) and the plan, which becomes the active plan.
+    // Nothing depends on a later "save" tap, so leaving now can't lose it.
+    (async () => {
+      const exercises = await fetchAllExercises();
+      if (cancelled) return;
+      const plan = generateTrainingPlan({ answers, trainingPreferences, gymEquipment, exercises });
+      setGeneratedPlan(plan);
+      await persistProfile().catch(() => {
+        // Non-fatal: the plan below still saves; the profile saves again later.
+      });
+      if (cancelled) return;
+      const planId = await saveTrainingPlan({
+        label: answers.goal ? t(`goal.options.${answers.goal}.title`) : t("gymEquipment.planReady.headline"),
+        plan,
+        onboardingSnapshot: { answers, trainingPreferences, gymEquipment },
+      });
+      setSavedPlanId(planId);
+      markStepComplete("gymEquipment");
+    })()
       .catch(() => {
-        // Fall through with no plan — plan-ready-view retries generation
-        // itself if it finds `generatedPlan` still null.
+        // Fall through — plan-ready-view offers to retry generating/saving
+        // when it finds no saved plan.
       })
       .finally(() => {
         generationDone = true;

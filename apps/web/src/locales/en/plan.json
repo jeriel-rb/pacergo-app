@@ -10,7 +10,8 @@
       "pull": "Pull",
       "legs": "Legs",
       "upper": "Upper Body",
-      "full_body": "Full Body"
+      "full_body": "Full Body",
+      "lower": "Lower Body"
     },
     "minutes": "{{count}} min"
   },
@@ -43,7 +44,35 @@
     "tapHint": "Tap a set when you finish it — your rest countdown starts right after.",
     "tapHintNoRest": "Tap a set when you finish it.",
     "next": "Next: {{name}}",
-    "backToWorkout": "Back to workout"
+    "backToWorkout": "Back to workout",
+    "log": {
+      "unitToggle": "Weight unit",
+      "weight": "Weight",
+      "reps": "Reps",
+      "repsUnit": "reps",
+      "target": "Target: {{reps}} per set",
+      "lastTime": "Last time ({{date}}): {{sets}}",
+      "suggested": "Suggested today: {{weight}}",
+      "reason": {
+        "hit_top_of_range": "You hit the top of your rep range last time — add a little weight.",
+        "felt_too_light": "It felt too light last time — try a little more.",
+        "within_range": "Keep this weight and aim for a few more reps.",
+        "missed_bottom_of_range": "Some sets fell short last time — stay at this weight.",
+        "felt_too_heavy": "It felt too heavy last time — eased off to a weight you can own."
+      },
+      "useSuggestion": "Use",
+      "effortTitle": "How did it feel?",
+      "effort": {
+        "too_light": "Too Light",
+        "just_right": "Just Right",
+        "too_heavy": "Too Heavy"
+      },
+      "save": {
+        "saving": "Saving…",
+        "saved": "Saved to your training history",
+        "error": "Couldn't save. Edit a value to try again."
+      }
+    }
   },
   "weekProgress": "Weeks 3–4 add one set to every main lift.",
   "detail": {
@@ -148,7 +177,12 @@
     "deleteConfirmTitle": "Delete this plan?",
     "deleteConfirmBody": "This can't be undone.",
     "cancel": "Cancel",
-    "options": "More options"
+    "options": "More options",
+    "active": "Active",
+    "setActive": "Set as active plan",
+    "activeSet": "Active plan updated",
+    "activeSetError": "Couldn't change the active plan. Please try again.",
+    "createPlan": "Create a Training Plan"
   },
   "update": {
     "cta": "Update Preferences",
@@ -190,6 +224,96 @@
     "save": "Update",
     "saving": "Updating…",
     "saveError": "Something went wrong. Please try again.",
-    "doneEditing": "Done"
+    "doneEditing": "Done",
+    "splitAuto": "Chosen for you from your goal, experience, training days, session length and equipment. Change those settings and it updates.",
+    "profileNote": "Experience, training days and equipment here are part of your"
+  },
+  "nutrition": {
+    "title": "Nutrition",
+    "subtitle": "Daily targets estimated from your fitness profile.",
+    "calories": "Estimated Daily Calories",
+    "caloriesUnit": "kcal/day",
+    "protein": "Protein Target",
+    "proteinUnit": "g/day",
+    "proteinDetail": "About {{perKg}} g per kg of body weight",
+    "maintenance": "Maintenance: about {{kcal}} kcal/day",
+    "goalNote": {
+      "lose_weight": "Set below maintenance to support steady fat loss.",
+      "build_muscle": "Set slightly above maintenance to support muscle gain.",
+      "stay_healthy": "Set at maintenance to keep your current weight."
+    },
+    "disclaimer": "These are estimates based on your current information and goal, not medical advice. Your actual needs may differ — adjust based on how your body responds.",
+    "missing": "Complete your fitness profile to see your daily calorie and protein targets.",
+    "missingFields": "Still needed: {{fields}}",
+    "viewCta": "View nutrition targets",
+    "cardTitle": "Your daily nutrition",
+    "profileTitle": "Your fitness profile",
+    "profileHint": "Changing any of these recalculates your targets.",
+    "fields": {
+      "goal": "Fitness Goal",
+      "age": "Age",
+      "heightCm": "Height",
+      "weightKg": "Weight",
+      "body": "Height & Weight",
+      "activityLevel": "Daily Activity Level",
+      "gender": "Gender"
+    },
+    "done": "Done",
+    "updatedOn": "Last updated {{date}}",
+    "intro": {
+      "title": "AI Nutrition",
+      "body": "PacerGo can recommend your daily nutrition targets based on your body data, activity and fitness goal.",
+      "reuse": "We'll use what's already in your fitness profile and only ask for anything missing.",
+      "skip": "Skip",
+      "build": "Build Nutrition Plan",
+      "building": "Building…",
+      "error": "Something went wrong. Please try again."
+    },
+    "build": {
+      "title": "A few quick details"
+    },
+    "guidanceTitle": "Your food guidance",
+    "guidance": {
+      "proteinPerMeal": "Spread your protein over {{meals}} meals — about {{grams}} g each.",
+      "proteinFoods": "Easy protein sources: chicken breast, eggs, fish, tofu, unsweetened soy milk, Greek yogurt.",
+      "goal_lose_weight": "Fill half your plate with vegetables, choose lean protein, and swap sugary drinks for water or unsweetened tea.",
+      "goal_build_muscle": "Have a carb + protein meal or snack within about 2 hours after training (e.g. chicken rice, or a banana with soy milk).",
+      "goal_stay_healthy": "Build balanced plates: ½ vegetables, ¼ protein, ¼ whole grains such as brown rice or sweet potato.",
+      "activity_low": "With a mostly seated day, keep portions moderate and favor high-fiber foods that keep you full.",
+      "activity_high": "Active days burn more — include enough carbs (rice, noodles, fruit) to keep your energy up.",
+      "hydration": "Drink about {{liters}} L of water a day, more on hot days and training days."
+    },
+    "continueToPlan": "Continue to My Plan",
+    "editInProfile": "These targets are calculated from your Fitness Profile. Change your details there and they update automatically."
+  },
+  "openCurrentPlan": "Open my current plan",
+  "fitnessProfile": {
+    "title": "Fitness Profile",
+    "cardHint": "Body, goal, schedule and equipment",
+    "subtitle": "The details your training plans and nutrition targets are built from.",
+    "sections": {
+      "about": "About You",
+      "training": "Training",
+      "equipment": "Equipment"
+    },
+    "fields": {
+      "gender": "Gender",
+      "age": "Age",
+      "body": "Height & Weight",
+      "goal": "Fitness Goal",
+      "activityLevel": "Daily Activity Level",
+      "experience": "Training Experience",
+      "frequency": "Training Days",
+      "duration": "Session Duration",
+      "equipment": "Gym & Equipment"
+    },
+    "note": "Saving updates your nutrition targets and your active training plan (your other saved plans stay as they are — update one from My Plans with Update Preferences). Plan-only settings like rest timer and muscle focus are kept.",
+    "save": "Save Changes",
+    "saving": "Saving…",
+    "saved": "Fitness profile saved",
+    "saveError": "Couldn't save your changes. Please try again.",
+    "viewNutrition": "View my nutrition targets",
+    "savedPlanUpdated": "Profile saved — your nutrition targets and active plan were updated",
+    "savedPlanFailed": "Profile saved, but your active plan couldn't be updated. Try Update Preferences on My Plans."
   }
 }

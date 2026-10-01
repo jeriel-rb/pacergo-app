@@ -36,6 +36,7 @@ function TrackedDetail({ exercise, workout }: { exercise: ExerciseDetailServer; 
     week: workout.week,
     dayIndex: workout.dayIndex,
     restTimer: workout.restTimer,
+    session: workout.session,
   });
   return <DetailBody exercise={exercise} workout={workout} tracking={tracking} />;
 }
@@ -86,7 +87,9 @@ function DetailBody({
         </div>
       )}
 
-      {workout && tracking && <SetTracker workout={workout} tracking={tracking} />}
+      {workout && tracking && (
+        <SetTracker workout={workout} tracking={tracking} equipment={exercise.equipment} />
+      )}
 
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">

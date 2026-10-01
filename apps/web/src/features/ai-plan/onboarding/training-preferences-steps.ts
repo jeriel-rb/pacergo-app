@@ -10,7 +10,6 @@ export const TRAINING_PREFERENCES_STEPS = [
   "exclude-muscles-select",
   "prioritize-muscles",
   "prioritize-muscles-select",
-  "workout-split",
   "variety",
   "duration",
 ] as const;

@@ -50,6 +50,21 @@ export const ONBOARDING_USE_CASE_MAX = 3;
 
 export type OnboardingUnit = "imperial" | "metric";
 
+/** General day-to-day activity outside of planned workouts (NEAT), bucketed
+ *  by typical daily step count — see ACTIVITY_LEVEL_STEPS. One input to the
+ *  nutrition calculator's energy-expenditure estimate. */
+export type ActivityLevel = "low" | "moderate" | "high";
+
+export const ACTIVITY_LEVELS: readonly ActivityLevel[] = ["low", "moderate", "high"] as const;
+
+/** Approximate daily step range each activity level stands for — shown to the
+ *  user so the options are self-explanatory (`null` = open-ended). */
+export const ACTIVITY_LEVEL_STEPS: Record<ActivityLevel, { min: number | null; max: number | null }> = {
+  low: { min: null, max: 5000 },
+  moderate: { min: 5000, max: 15000 },
+  high: { min: 15000, max: null },
+};
+
 /** Everything collected across the "About You" sub-steps. Height/weight are
  *  always stored in metric; `unit` only controls which wheels are shown. */
 export interface OnboardingAnswers {
@@ -61,6 +76,8 @@ export interface OnboardingAnswers {
   unit: OnboardingUnit;
   heightCm: number | null;
   weightKg: number | null;
+  /** Absent on drafts/rows saved before the activity-level step existed. */
+  activityLevel: ActivityLevel | null;
 }
 
 export const ONBOARDING_ANSWERS_DEFAULT: OnboardingAnswers = {
@@ -72,6 +89,7 @@ export const ONBOARDING_ANSWERS_DEFAULT: OnboardingAnswers = {
   unit: "metric",
   heightCm: null,
   weightKg: null,
+  activityLevel: null,
 };
 
 export type OnboardingStepId = "aboutYou" | "trainingPreferences" | "gymEquipment";
@@ -117,16 +135,73 @@ export const ONBOARDING_DAYS_RECOMMENDED: readonly OnboardingDaysPerWeek[] = [
   "4",
 ] as const;
 
+/** Weekdays training falls on when the user hasn't picked specific days
+ *  (0 = Monday .. 6 = Sunday) — spread out to leave recovery days between. */
+const DEFAULT_TRAINING_DAYS: Record<OnboardingDaysPerWeek, readonly number[]> = {
+  every_day: [0, 1, 2, 3, 4, 5, 6],
+  "6": [0, 1, 2, 3, 4, 5],
+  "5": [0, 1, 2, 3, 4],
+  "4": [0, 1, 3, 4],
+  "3": [0, 2, 4],
+  "2": [1, 3],
+};
+
+export function trainingDaysCount(daysPerWeek: OnboardingDaysPerWeek): number {
+  return DEFAULT_TRAINING_DAYS[daysPerWeek].length;
+}
+
+export function defaultTrainingDays(daysPerWeek: OnboardingDaysPerWeek): number[] {
+  return [...DEFAULT_TRAINING_DAYS[daysPerWeek]];
+}
+
+/** The user picked exactly as many weekdays as their weekly frequency (every
+ *  weekday is implied for "every day"). */
+export function trainingDaysComplete(
+  daysPerWeek: OnboardingDaysPerWeek | null,
+  trainingDays: readonly number[] | undefined,
+): boolean {
+  if (!daysPerWeek) return false;
+  const count = trainingDaysCount(daysPerWeek);
+  return count === 7 || new Set(trainingDays ?? []).size === count;
+}
+
+/** The weekdays to train on: the user's own pick when it's valid for the
+ *  chosen frequency, otherwise the default spread. Sorted, Monday first. */
+export function resolveTrainingDays(
+  daysPerWeek: OnboardingDaysPerWeek,
+  trainingDays: readonly number[] | undefined,
+): number[] {
+  const picked = [...new Set(trainingDays ?? [])].filter((d) => Number.isInteger(d) && d >= 0 && d <= 6);
+  return picked.length === trainingDaysCount(daysPerWeek)
+    ? picked.sort((a, b) => a - b)
+    : defaultTrainingDays(daysPerWeek);
+}
+
+/** Weekly training structures the AI recommendation chooses from (one
+ *  personalized pick per user — see recommendSplit). */
+export type TrainingSplit =
+  | "full_body"
+  | "upper_lower"
+  | "push_pull_legs"
+  | "ppl_upper"
+  | "ppl_upper_lower";
+
+export const TRAINING_SPLITS: readonly TrainingSplit[] = [
+  "full_body",
+  "upper_lower",
+  "push_pull_legs",
+  "ppl_upper",
+  "ppl_upper_lower",
+] as const;
+
+/** What's stored on the answers: a TrainingSplit, or a value from the retired
+ *  three-option picker on plans saved before it ("ai_custom" means "let the
+ *  recommendation decide"). */
 export type OnboardingWorkoutSplit =
+  | TrainingSplit
   | "ai_custom"
   | "ppl_full_body"
   | "ppl_upper_body";
-
-export const ONBOARDING_WORKOUT_SPLITS: readonly OnboardingWorkoutSplit[] = [
-  "ai_custom",
-  "ppl_full_body",
-  "ppl_upper_body",
-] as const;
 
 export type OnboardingVariety = "fixed" | "balanced" | "dynamic";
 
@@ -228,6 +303,10 @@ export const ONBOARDING_PRIORITIZED_MUSCLES_MAX = 3;
 export interface TrainingPreferencesAnswers {
   experience: OnboardingExperience | null;
   daysPerWeek: OnboardingDaysPerWeek | null;
+  /** The specific weekdays chosen (0 = Monday .. 6 = Sunday). Empty, or a
+   *  count that doesn't match `daysPerWeek`, means "use the default spread"
+   *  — see resolveTrainingDays. */
+  trainingDays: number[];
   excludeMuscles: boolean | null;
   excludedMuscles: OnboardingMuscleGroup[];
   prioritizeMuscles: boolean | null;
@@ -245,6 +324,7 @@ export interface TrainingPreferencesAnswers {
 export const TRAINING_PREFERENCES_DEFAULT: TrainingPreferencesAnswers = {
   experience: null,
   daysPerWeek: null,
+  trainingDays: [],
   excludeMuscles: null,
   excludedMuscles: [],
   prioritizeMuscles: null,
@@ -293,10 +373,13 @@ export type OnboardingEquipment =
   | "chest_press_machine"
   | "pec_deck"
   | "shoulder_press_machine"
+  | "lateral_raise_machine"
   | "row_machine"
+  | "chest_supported_row_machine"
   | "leg_press"
   | "leg_extension_machine"
   | "leg_curl_machine"
+  | "lying_leg_curl_machine"
   | "hack_squat_machine"
   | "calf_machine"
   | "hip_machine"
@@ -331,10 +414,13 @@ export const ONBOARDING_EQUIPMENT: readonly OnboardingEquipment[] = [
   "chest_press_machine",
   "pec_deck",
   "shoulder_press_machine",
+  "lateral_raise_machine",
   "row_machine",
+  "chest_supported_row_machine",
   "leg_press",
   "leg_extension_machine",
   "leg_curl_machine",
+  "lying_leg_curl_machine",
   "hack_squat_machine",
   "calf_machine",
   "hip_machine",

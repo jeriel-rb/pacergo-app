@@ -61,6 +61,22 @@ export function toggleSet(progress: WorkoutProgress, key: string, set: number): 
   return { done: { ...progress.done, [key]: next }, rest: has ? null : progress.rest };
 }
 
+/** Marks sets done without touching the rest countdown — restoring sets the
+ *  account already has logged (another device, or after signing back in). */
+export function markSetsDone(progress: WorkoutProgress, key: string, sets: readonly number[]): WorkoutProgress {
+  const current = progress.done[key] ?? [];
+  const next = [...new Set([...current, ...sets])].sort((a, b) => a - b);
+  return next.length === current.length ? progress : { ...progress, done: { ...progress.done, [key]: next } };
+}
+
+/** Every main-lift set of the day is done — the workout counts as finished. */
+export function mainSetsComplete(session: GeneratedSession, progress: WorkoutProgress): boolean {
+  return (
+    session.main.length > 0 &&
+    session.main.every((e) => (progress.done[setKey("main", e.slug)] ?? []).filter((n) => n < e.sets).length >= e.sets)
+  );
+}
+
 export function startRest(progress: WorkoutProgress, totalSec: number, now: number): WorkoutProgress {
   if (totalSec <= 0) return { ...progress, rest: null };
   return { ...progress, rest: { endsAt: now + totalSec * 1000, totalSec } };

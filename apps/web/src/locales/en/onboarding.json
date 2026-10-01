@@ -4,11 +4,15 @@
   "hub": {
     "title": "Let's get started",
     "subtitle": "Your personalized training plan awaits",
-    "allDone": "All set! Your plan is ready.",
+    "allDone": "All set! Your training plan is ready.",
     "cta": {
       "start": "Go to Basics",
       "continue": "Continue",
-      "goTo": "Go to {{step}}"
+      "goTo": "Go to {{step}}",
+      "createFromProfile": "Create Plan from My Profile",
+      "review": "Review My Answers",
+      "viewPlan": "View My Training Plan",
+      "newPlan": "Create New Plan"
     },
     "steps": {
       "aboutYou": {
@@ -23,7 +27,10 @@
         "title": "Gym & Equipment",
         "description": "Where you train and what equipment you have access to."
       }
-    }
+    },
+    "prefilled": "We've filled in what we already know from your fitness profile.",
+    "edit": "Edit",
+    "missingPlan": "Your setup is complete, but there's no active training plan. Create it from your saved answers."
   },
   "aboutYou": {
     "title": "About You"
@@ -75,7 +82,8 @@
       "male": "Male",
       "female": "Female",
       "other": "Other"
-    }
+    },
+    "subtitle": "Used for your training plan and to estimate your daily calories and protein."
   },
   "age": {
     "title": "What's your age?",
@@ -194,27 +202,6 @@
       "title": "Which muscles would you like to prioritize?",
       "subtitle": "Select up to 3"
     },
-    "workoutSplit": {
-      "title": "What's your preferred workout split?",
-      "subtitle": "Based on your training frequency and experience level, we recommend these training splits.",
-      "options": {
-        "ai_custom": {
-          "badge": "AI Recommended",
-          "title": "Customize with AI",
-          "description": "AI creates a training split tailored to your goals and workout settings."
-        },
-        "ppl_full_body": {
-          "badge": "Recommended for you",
-          "title": "Push, Pull, Legs + Full Body",
-          "description": "Blend push, pull, and leg routines with full-body sessions to maintain variety and optimize weekly volume."
-        },
-        "ppl_upper_body": {
-          "badge": "Recommended for you",
-          "title": "Push, Pull, Legs + Upper Body",
-          "description": "A balanced routine that emphasizes upper body development by training both push and pull muscles twice per week."
-        }
-      }
-    },
     "variety": {
       "title": "How much exercise variety do you want?",
       "subtitle": "After each workout, AI adjusts the exercises in your next session based on your progress and goals. You can change this later.",
@@ -249,6 +236,19 @@
     "muscleBlockedTag": {
       "excluded": "Excluded",
       "prioritized": "Focused"
+    },
+    "trainingDays": {
+      "title": "Which days?",
+      "hint": "{{selected}} of {{count}} days selected",
+      "days": {
+        "0": "Mon",
+        "1": "Tue",
+        "2": "Wed",
+        "3": "Thu",
+        "4": "Fri",
+        "5": "Sat",
+        "6": "Sun"
+      }
     }
   },
   "gymEquipment": {
@@ -387,7 +387,7 @@
           "title": "Seated Row Machine"
         },
         "leg_curl_machine": {
-          "title": "Leg Curl Machine"
+          "title": "Seated Leg Curl Machine"
         },
         "hack_squat_machine": {
           "title": "Hack Squat Machine"
@@ -412,8 +412,18 @@
         },
         "step_box": {
           "title": "Sturdy Box or Step"
+        },
+        "lateral_raise_machine": {
+          "title": "Lateral Raise Machine"
+        },
+        "chest_supported_row_machine": {
+          "title": "Chest-Supported Row"
+        },
+        "lying_leg_curl_machine": {
+          "title": "Lying Leg Curl Machine"
         }
-      }
+      },
+      "largeGymHint": "We’ve preselected common equipment found in large gyms. Deselect anything your regular gym doesn’t have."
     },
     "addCardio": {
       "title": "Add cardio to your plan?",
@@ -482,7 +492,50 @@
       "workoutSplit": "Workout split",
       "saveMyPlan": "Save My Plan",
       "saving": "Saving…",
-      "saveError": "Something went wrong saving your plan. Please try again."
+      "saveError": "Something went wrong saving your plan. Please try again.",
+      "viewPlan": "View My Training Plan"
+    }
+  },
+  "activityLevel": {
+    "title": "How active is your daily life?",
+    "hint": "Think about a typical day outside your workouts. We use this to estimate how many calories you burn.",
+    "options": {
+      "low": {
+        "title": "Low Activity",
+        "description": "Mostly sedentary · usually under about {{max}} steps a day"
+      },
+      "moderate": {
+        "title": "Moderate Activity",
+        "description": "Regular daily walking · about {{min}}–{{max}} steps a day"
+      },
+      "high": {
+        "title": "High Activity",
+        "description": "Highly active lifestyle · often above about {{min}} steps a day"
+      }
+    }
+  },
+  "split": {
+    "names": {
+      "full_body": "Full Body",
+      "upper_lower": "Upper / Lower",
+      "push_pull_legs": "Push / Pull / Legs",
+      "ppl_upper": "Push / Pull / Legs + Upper",
+      "ppl_upper_lower": "Push / Pull / Legs + Upper / Lower",
+      "ai_custom": "AI Recommended",
+      "ppl_full_body": "Push / Pull / Legs + Full Body",
+      "ppl_upper_body": "Push / Pull / Legs + Upper"
+    },
+    "recommended": {
+      "title": "Your training structure",
+      "badge": "AI Recommended",
+      "reason": "Recommended based on your {{days}}-day weekly schedule, {{experience}} training experience and {{goal}} goal.",
+      "consecutive": "Your training days run back to back, so each day trains different muscles to give the rest time to recover.",
+      "limited": "With your available equipment, this structure keeps every session full of exercises you can actually do.",
+      "short": "Short sessions work best with fewer, broader workouts.",
+      "weekPreview": "Your week",
+      "rest": "Rest",
+      "use": "Use This Plan",
+      "adjust": "Adjust Settings"
     }
   }
 }

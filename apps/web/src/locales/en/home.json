@@ -50,5 +50,6 @@
     "running": "Running",
     "hiking": "Hiking",
     "hyrox": "Hyrox"
-  }
+  },
+  "openPlan": "Open my training plan"
 }

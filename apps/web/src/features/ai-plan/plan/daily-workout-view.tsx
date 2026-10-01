@@ -40,6 +40,7 @@ export function DailyWorkoutView({
     week,
     dayIndex: day.dayIndex,
     restTimer,
+    session,
   });
 
   function onReset() {

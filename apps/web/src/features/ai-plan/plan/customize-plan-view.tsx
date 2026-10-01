@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import {
@@ -38,9 +39,12 @@ import {
   REST_TIMER_RECOMMENDED_SEC,
   REST_TIMER_STEP_SEC,
   ONBOARDING_VARIETIES,
-  ONBOARDING_WORKOUT_SPLITS,
   TRAINING_PREFERENCES_DEFAULT,
   generateTrainingPlan,
+  recommendSplit,
+  resolveTrainingDays,
+  trainingDaysComplete,
+  trainingDaysCount,
   upgradeLegacyEquipment,
   withGymType,
   type GymEquipmentAnswers,
@@ -59,7 +63,14 @@ import { OptionCard } from "@/shared/components/atoms/option-card";
 import { MuscleGrid } from "@/features/ai-plan/onboarding/muscle-grid";
 import { fetchAllExercises } from "@/lib/exercises";
 import { useDurationFormat } from "@/lib/format-duration";
-import { updateTrainingPlan, type PlanOnboardingSnapshot } from "@/lib/plans";
+import {
+  fetchFitnessProfile,
+  getCurrentUserId,
+  saveOnboardingAnswers,
+  updateTrainingPlan,
+  type PlanOnboardingSnapshot,
+} from "@/lib/plans";
+import { TrainingDaysPicker } from "@/features/ai-plan/onboarding/training-days-picker";
 
 type FieldKey =
   | "goal"
@@ -78,6 +89,7 @@ type FieldKey =
  *  list) keep their editor dialog open until "Done" — every other field
  *  auto-closes the instant an option is picked. */
 const MULTI_STEP_FIELDS: readonly FieldKey[] = [
+  "frequency",
   "duration",
   "cardio",
   "gymType",
@@ -137,13 +149,22 @@ export function CustomizePlanView({
     ...ONBOARDING_ANSWERS_DEFAULT,
     ...onboardingSnapshot.answers,
   }));
-  const [tp, setTp] = React.useState<TrainingPreferencesAnswers>(() => ({
-    ...TRAINING_PREFERENCES_DEFAULT,
-    ...onboardingSnapshot.trainingPreferences,
-  }));
+  const [tp, setTp] = React.useState<TrainingPreferencesAnswers>(() => {
+    const saved = { ...TRAINING_PREFERENCES_DEFAULT, ...onboardingSnapshot.trainingPreferences };
+    // Plans saved before weekday picking show the days they actually train on.
+    return saved.daysPerWeek && !trainingDaysComplete(saved.daysPerWeek, saved.trainingDays)
+      ? { ...saved, trainingDays: resolveTrainingDays(saved.daysPerWeek, saved.trainingDays) }
+      : saved;
+  });
+  const daysIncomplete = !trainingDaysComplete(tp.daysPerWeek, tp.trainingDays);
   const [ge, setGe] = React.useState<GymEquipmentAnswers>(() =>
     upgradeLegacyEquipment({ ...GYM_EQUIPMENT_DEFAULT, ...onboardingSnapshot.gymEquipment }),
   );
+  // One AI-recommended structure, re-derived from the edited settings (no
+  // template picker) — saved with the plan on "Update".
+  const recommended = recommendSplit({ answers, trainingPreferences: tp, gymEquipment: ge }).split;
+  // What this screen opened with — to tell which fields the user changed.
+  const opened = React.useRef({ tp, ge, goal: answers.goal });
   const [openField, setOpenField] = React.useState<FieldKey | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState(false);
@@ -155,12 +176,21 @@ export function CustomizePlanView({
 
   const rowValue: Record<FieldKey, string> = {
     goal: answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : "—",
-    frequency: tp.daysPerWeek
-      ? t(`trainingPreferences.daysPerWeek.options.${tp.daysPerWeek}`, { ns: "onboarding" })
-      : "—",
-    split: tp.workoutSplit
-      ? t(`trainingPreferences.workoutSplit.options.${tp.workoutSplit}.title`, { ns: "onboarding" })
-      : "—",
+    frequency: !tp.daysPerWeek
+      ? "—"
+      : daysIncomplete
+        ? t("trainingPreferences.trainingDays.hint", {
+            ns: "onboarding",
+            selected: tp.trainingDays.length,
+            count: trainingDaysCount(tp.daysPerWeek),
+          })
+        : [
+            t(`trainingPreferences.daysPerWeek.options.${tp.daysPerWeek}`, { ns: "onboarding" }),
+            tp.trainingDays
+              .map((d) => t(`trainingPreferences.trainingDays.days.${d}`, { ns: "onboarding" }))
+              .join(t("update.listSeparator")),
+          ].join(" · "),
+    split: `${t("split.recommended.badge", { ns: "onboarding" })} · ${t(`split.names.${recommended}`, { ns: "onboarding" })}`,
     experience: tp.experience
       ? t(`trainingPreferences.experience.options.${tp.experience}.title`, { ns: "onboarding" })
       : "—",
@@ -188,15 +218,62 @@ export function CustomizePlanView({
     setSaving(true);
     setError(false);
     try {
+      const trainingPreferences = { ...tp, workoutSplit: recommended };
       const exercises = await fetchAllExercises();
-      const plan = generateTrainingPlan({ answers, trainingPreferences: tp, gymEquipment: ge, exercises });
+      const plan = generateTrainingPlan({ answers, trainingPreferences, gymEquipment: ge, exercises });
       const label = answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : currentLabel;
-      const snapshot: PlanOnboardingSnapshot = { answers, trainingPreferences: tp, gymEquipment: ge };
+      const snapshot: PlanOnboardingSnapshot = { answers, trainingPreferences, gymEquipment: ge };
       await updateTrainingPlan({ id: planId, label, plan, onboardingSnapshot: snapshot });
+      await syncSharedProfile(trainingPreferences);
       router.push(planOverviewHref);
+      router.refresh();
     } catch {
       setError(true);
       setSaving(false);
+    }
+  }
+
+  /** What the user changes here is their current preference, so it also goes
+   *  to the account's Shared Fitness Profile — otherwise this plan and the
+   *  profile (which AI Nutrition and the next plan read) would disagree.
+   *  Only fields changed on this screen are written, on top of the profile as
+   *  it is now: this plan's copies of everything else may be older than the
+   *  profile (e.g. training days edited on the Fitness Profile page since).
+   *  Non-fatal: the plan itself is already saved. */
+  async function syncSharedProfile(trainingPreferences: TrainingPreferencesAnswers) {
+    try {
+      const userId = await getCurrentUserId();
+      if (!userId) return;
+      const current = await fetchFitnessProfile();
+      const was = opened.current;
+      const differs = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
+
+      let next = {
+        answers: answers,
+        trainingPreferences,
+        gymEquipment: ge,
+      };
+      if (current.updatedAt) {
+        const mergedTp: Record<string, unknown> = { ...current.trainingPreferences };
+        for (const [k, v] of Object.entries(trainingPreferences)) {
+          // The split is derived (recommendSplit), not a profile answer.
+          if (k !== "workoutSplit" && differs(v, was.tp[k as keyof TrainingPreferencesAnswers])) mergedTp[k] = v;
+        }
+        const mergedGe: Record<string, unknown> = { ...current.gymEquipment };
+        for (const [k, v] of Object.entries(ge)) {
+          if (differs(v, was.ge[k as keyof GymEquipmentAnswers])) mergedGe[k] = v;
+        }
+        next = {
+          answers:
+            differs(answers.goal, was.goal) ? { ...current.answers, goal: answers.goal } : current.answers,
+          trainingPreferences: mergedTp as unknown as TrainingPreferencesAnswers,
+          gymEquipment: mergedGe as unknown as GymEquipmentAnswers,
+        };
+        if (!differs(next, { answers: current.answers, trainingPreferences: current.trainingPreferences, gymEquipment: current.gymEquipment })) return;
+      }
+      await saveOnboardingAnswers({ userId, ...next });
+    } catch {
+      // Leave the profile as it was; the next profile save reconciles it.
     }
   }
 
@@ -216,6 +293,16 @@ export function CustomizePlanView({
           <p className="text-sm text-muted-foreground">{t("update.dialogSubtitle")}</p>
         </div>
       </div>
+
+      <p className="-mt-2 text-xs text-muted-foreground">
+        {t("update.profileNote")}{" "}
+        <Link
+          href={pathname.replace(/\/plan\/[^/]+\/update$/, "/fitness-profile")}
+          className="font-semibold text-primary hover:underline"
+        >
+          {t("fitnessProfile.title")}
+        </Link>
+      </p>
 
       <div className="space-y-5">
         {SECTIONS.map((section) => (
@@ -262,7 +349,7 @@ export function CustomizePlanView({
         >
           {t("back")}
         </Button>
-        <Button size="lg" className="flex-1" onClick={handleUpdate} disabled={saving}>
+        <Button size="lg" className="flex-1" onClick={handleUpdate} disabled={saving || daysIncomplete}>
           {saving && <Loader2 size={16} className="animate-spin" />}
           {saving ? t("update.saving") : t("update.save")}
         </Button>
@@ -349,27 +436,36 @@ function FieldEditorDialog({
                     }
                     title={t(`trainingPreferences.daysPerWeek.options.${d}`, { ns: "onboarding" })}
                     selected={tp.daysPerWeek === d}
-                    onSelect={() => {
-                      setTp((prev) => ({ ...prev, daysPerWeek: d }));
-                      close();
-                    }}
+                    onSelect={() =>
+                      setTp((prev) => ({
+                        ...prev,
+                        daysPerWeek: d,
+                        trainingDays: d === prev.daysPerWeek ? prev.trainingDays : [],
+                      }))
+                    }
                   />
                 ))}
+              {field === "frequency" && tp.daysPerWeek && (
+                <div className="pt-3">
+                  <TrainingDaysPicker
+                    daysPerWeek={tp.daysPerWeek}
+                    value={tp.trainingDays}
+                    onChange={(trainingDays) => setTp((prev) => ({ ...prev, trainingDays }))}
+                  />
+                </div>
+              )}
 
-              {field === "split" &&
-                ONBOARDING_WORKOUT_SPLITS.map((s) => (
-                  <OptionCard
-                    key={s}
-                    badge={t(`trainingPreferences.workoutSplit.options.${s}.badge`, { ns: "onboarding" })}
-                    title={t(`trainingPreferences.workoutSplit.options.${s}.title`, { ns: "onboarding" })}
-                    description={t(`trainingPreferences.workoutSplit.options.${s}.description`, { ns: "onboarding" })}
-                    selected={tp.workoutSplit === s}
-                    onSelect={() => {
-                      setTp((prev) => ({ ...prev, workoutSplit: s }));
-                      close();
-                    }}
-                  />
-                ))}
+              {field === "split" && (
+                <div className="space-y-2 rounded-2xl border-2 border-primary bg-primary/5 p-4">
+                  <p className="text-xs font-bold text-primary">
+                    {t("split.recommended.badge", { ns: "onboarding" })}
+                  </p>
+                  <p className="text-lg font-bold">
+                    {t(`split.names.${recommendSplit({ answers, trainingPreferences: tp, gymEquipment: ge }).split}`, { ns: "onboarding" })}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{t("update.splitAuto")}</p>
+                </div>
+              )}
 
               {field === "experience" &&
                 ONBOARDING_EXPERIENCES.map((e) => (
@@ -450,7 +546,12 @@ function FieldEditorDialog({
 
             {MULTI_STEP_FIELDS.includes(field) && (
               <div className="px-5 pb-5">
-                <Button className="w-full" size="lg" onClick={close}>
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={close}
+                  disabled={field === "frequency" && !trainingDaysComplete(tp.daysPerWeek, tp.trainingDays)}
+                >
                   {t("update.doneEditing")}
                 </Button>
               </div>
@@ -462,7 +563,7 @@ function FieldEditorDialog({
   );
 }
 
-function DurationEditor({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+export function DurationEditor({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const { t } = useTranslation(["plan", "onboarding"]);
   return (
     <div className="flex flex-col items-center gap-6 py-4">

@@ -28,6 +28,24 @@ set booking_id = (payload ->> 'booking_id')::uuid
 where booking_id is null
   and payload ? 'booking_id';
 
+-- Existing data already holds the duplicates this migration is fixing, and
+-- the unique index below can't be built over them. Keep one row per
+-- (recipient, booking, type) — a copy the user already read if there is one
+-- (so an old notification doesn't come back as unread), otherwise the
+-- earliest — and delete the extra copies.
+delete from notifications n
+using (
+  select id,
+         row_number() over (
+           partition by user_id, booking_id, type
+           order by (read_at is null), created_at, id
+         ) as rn
+  from notifications
+  where booking_id is not null
+) ranked
+where n.id = ranked.id
+  and ranked.rn > 1;
+
 -- One notification per (recipient, booking, type). Booking-less
 -- notifications (booking_id null) are untouched by this constraint.
 create unique index if not exists notifications_one_per_booking_event_idx

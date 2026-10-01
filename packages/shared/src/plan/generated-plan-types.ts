@@ -2,7 +2,7 @@ import type { Bi } from "./plan-types";
 
 /** Which muscle-group cluster a training day targets — drives exercise
  *  selection from the `exercises` catalog. */
-export type SessionFocus = "push" | "pull" | "legs" | "upper" | "full_body";
+export type SessionFocus = "push" | "pull" | "legs" | "upper" | "lower" | "full_body";
 
 export interface GeneratedExercise {
   slug: string;

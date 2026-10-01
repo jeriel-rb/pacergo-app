@@ -9,7 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { fetchAllExercises } from "@/lib/exercises";
-import { getCurrentUserId, saveOnboardingAnswers, saveTrainingPlan } from "@/lib/plans";
+import { saveTrainingPlan } from "@/lib/plans";
 
 const BMI_MIN = 15;
 const BMI_MAX = 35;
@@ -35,6 +35,10 @@ export function PlanReadyView() {
     generatedPlan,
     setGeneratedPlan,
     markStepComplete,
+    persistProfile,
+    nutritionStatus,
+    savedPlanId,
+    setSavedPlanId,
   } = useOnboarding();
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState(false);
@@ -59,36 +63,41 @@ export function PlanReadyView() {
         return `${Math.floor(totalIn / 12)}'${totalIn % 12}"`;
       })();
 
-  async function onSavePlan() {
+  /** Into the plan — via the AI Nutrition offer the first time (nutrition
+   *  never built or skipped), which reuses everything just answered. */
+  function openPlan(planId: string) {
+    const planPath = pathname.replace(/\/plan-ready$/, `/plan/${planId}`);
+    router.push(
+      nutritionStatus === null
+        ? `${pathname.replace(/\/plan-ready$/, "/nutrition")}?next=${encodeURIComponent(planPath)}`
+        : planPath,
+    );
+  }
+
+  /** Recovery when generating or saving on the previous screen failed (or
+   *  this screen was opened directly): generate if needed, then save. */
+  async function onRetrySave() {
     setSaving(true);
     setError(false);
     try {
-      const userId = await getCurrentUserId();
-      if (!userId) throw new Error("Not signed in");
-
-      // Fallback: generation normally already ran on the "Creating your
-      // plan" screen; only regenerate here if that somehow didn't happen
-      // (e.g. this screen was reached directly).
       let plan = generatedPlan;
       if (!plan) {
         const exercises = await fetchAllExercises();
         plan = generateTrainingPlan({ answers, trainingPreferences, gymEquipment, exercises });
         setGeneratedPlan(plan);
       }
-
-      await saveOnboardingAnswers({ userId, answers, trainingPreferences, gymEquipment });
+      await persistProfile();
       const label = answers.goal
         ? t(`goal.options.${answers.goal}.title`)
         : t("gymEquipment.planReady.headline");
       const planId = await saveTrainingPlan({
-        userId,
         label,
         plan,
         onboardingSnapshot: { answers, trainingPreferences, gymEquipment },
       });
-
+      setSavedPlanId(planId);
       markStepComplete("gymEquipment");
-      router.push(pathname.replace(/\/plan-ready$/, `/plan/${planId}`));
+      openPlan(planId);
     } catch {
       setError(true);
       setSaving(false);
@@ -194,7 +203,7 @@ export function PlanReadyView() {
               label={t("gymEquipment.planReady.workoutSplit")}
               value={
                 trainingPreferences.workoutSplit
-                  ? t(`trainingPreferences.workoutSplit.options.${trainingPreferences.workoutSplit}.title`)
+                  ? t(`split.names.${trainingPreferences.workoutSplit}`)
                   : "—"
               }
             />
@@ -207,9 +216,15 @@ export function PlanReadyView() {
           {t("gymEquipment.planReady.saveError")}
         </p>
       )}
-      <Button size="lg" className="w-full" onClick={onSavePlan} disabled={saving}>
-        {saving ? t("gymEquipment.planReady.saving") : t("gymEquipment.planReady.saveMyPlan")}
-      </Button>
+      {savedPlanId ? (
+        <Button size="lg" className="w-full" onClick={() => openPlan(savedPlanId)}>
+          {t("gymEquipment.planReady.viewPlan")}
+        </Button>
+      ) : (
+        <Button size="lg" className="w-full" onClick={onRetrySave} disabled={saving}>
+          {saving ? t("gymEquipment.planReady.saving") : t("gymEquipment.planReady.saveMyPlan")}
+        </Button>
+      )}
     </div>
   );
 }

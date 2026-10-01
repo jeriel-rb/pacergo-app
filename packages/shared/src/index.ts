@@ -17,9 +17,17 @@ export * from './plan/plan-types';
 export * from './plan/plan-composer';
 export * from './plan/generated-plan-types';
 export * from './plan/generate-plan';
+export * from './plan/split-recommendation';
+export * from './plan/exercise-fit';
+export * from './plan/progression';
+export * from './plan/plan-inputs';
 
 export * from './onboarding/onboarding-types';
 export * from './onboarding/equipment-catalog';
+
+export * from './nutrition/fitness-profile';
+export * from './nutrition/nutrition-rules';
+export * from './nutrition/calculate-nutrition';
 
 export * from './booking/state-machine';
 

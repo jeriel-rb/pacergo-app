@@ -47,10 +47,13 @@ export const EQUIPMENT_CATALOG: readonly {
   { id: "chest_press_machine", category: "machines" },
   { id: "pec_deck", category: "machines" },
   { id: "shoulder_press_machine", category: "machines" },
+  { id: "lateral_raise_machine", category: "machines" },
   { id: "row_machine", category: "machines" },
+  { id: "chest_supported_row_machine", category: "machines" },
   { id: "leg_press", category: "machines" },
   { id: "leg_extension_machine", category: "machines" },
   { id: "leg_curl_machine", category: "machines" },
+  { id: "lying_leg_curl_machine", category: "machines" },
   { id: "hack_squat_machine", category: "machines" },
   { id: "calf_machine", category: "machines" },
   { id: "hip_machine", category: "machines" },
@@ -179,10 +182,30 @@ const LEGACY_EQUIPMENT_IDS = new Set<string>(["dumbbells", "barbell", "plates", 
 
 /** Plans saved with the old five-item picker carry only those ids, which would
  *  now read as "just free weights and a bar". Treat that selection as the gym
- *  type's usual kit instead; anything else passes through untouched. */
+ *  type's usual kit instead. Selections saved before a machine was split out
+ *  of a broader entry gain the new machine (see SPLIT_MACHINES). */
 export function upgradeLegacyEquipment(answers: GymEquipmentAnswers): GymEquipmentAnswers {
   const legacy =
     answers.equipment.length > 0 && answers.equipment.every((id) => LEGACY_EQUIPMENT_IDS.has(id));
-  if (!legacy || answers.gymType === null) return answers;
-  return { ...answers, equipment: [...EQUIPMENT_PRESETS[answers.gymType]] };
+  if (legacy && answers.gymType !== null) {
+    return { ...answers, equipment: [...EQUIPMENT_PRESETS[answers.gymType]] };
+  }
+  return withSplitMachines(answers);
+}
+
+/** Machines that used to be covered by a broader entry (the lateral raise
+ *  machine counted as the shoulder press machine, etc.). A selection saved
+ *  before the split, which has none of the new ids, keeps access to what its
+ *  parent entry used to unlock. */
+const SPLIT_MACHINES: readonly [parent: OnboardingEquipment, child: OnboardingEquipment][] = [
+  ["shoulder_press_machine", "lateral_raise_machine"],
+  ["row_machine", "chest_supported_row_machine"],
+  ["leg_curl_machine", "lying_leg_curl_machine"],
+];
+
+function withSplitMachines(answers: GymEquipmentAnswers): GymEquipmentAnswers {
+  const have = new Set(answers.equipment);
+  if (SPLIT_MACHINES.some(([, child]) => have.has(child))) return answers;
+  const added = SPLIT_MACHINES.filter(([parent]) => have.has(parent)).map(([, child]) => child);
+  return added.length ? { ...answers, equipment: [...answers.equipment, ...added] } : answers;
 }

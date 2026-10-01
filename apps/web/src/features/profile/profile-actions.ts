@@ -1,4 +1,4 @@
-import type { ExperienceLevel, Gender } from "@pacergo/shared";
+import type { ExperienceLevel } from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { clearOnboardingStorage } from "@/features/ai-plan/onboarding-store";
 import { avatarObjectPath } from "./avatar";
@@ -9,7 +9,6 @@ export interface ProfileFields {
   bio: string | null;
   experience_level: ExperienceLevel | null;
   home_area: string | null;
-  gender: Gender | null;
 }
 
 async function requireUserId(
@@ -22,7 +21,9 @@ async function requireUserId(
   return user.id;
 }
 
-/** Persist the editable `users` columns for the signed-in user (via RPC). */
+/** Persist the editable `users` columns for the signed-in user (via RPC).
+ *  Gender isn't one of them: it lives in the Fitness Profile, and passing null
+ *  leaves the account column untouched (see update_my_profile). */
 export async function updateProfileFields(fields: ProfileFields): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.rpc("update_my_profile", {
@@ -30,7 +31,7 @@ export async function updateProfileFields(fields: ProfileFields): Promise<void> 
     p_bio: fields.bio,
     p_experience_level: fields.experience_level,
     p_home_area: fields.home_area,
-    p_gender: fields.gender,
+    p_gender: null,
   });
   if (error) throw new Error(error.message);
 }

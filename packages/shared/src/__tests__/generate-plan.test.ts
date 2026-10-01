@@ -77,6 +77,17 @@ describe("generateTrainingPlan", () => {
     expect(everyDay.weeks[0]!.days.every((d) => !d.isRestDay)).toBe(true);
   });
 
+  it("trains on the user's selected weekdays when given", () => {
+    const plan = generateTrainingPlan({
+      answers: ANSWERS,
+      trainingPreferences: { ...TRAINING, daysPerWeek: "3", trainingDays: [1, 3, 5] },
+      gymEquipment: GYM,
+      exercises: EXERCISES,
+    });
+    const days = plan.weeks[0]!.days.filter((d) => !d.isRestDay).map((d) => d.dayIndex);
+    expect(days).toEqual([1, 3, 5]);
+  });
+
   it("varies by equipment setting: bodyweight-only and large-gym pick different exercises", () => {
     const bodyweight = generateTrainingPlan({
       answers: ANSWERS,

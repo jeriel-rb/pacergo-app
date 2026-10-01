@@ -1,5 +1,7 @@
-import { WorkoutSplitView } from "@/features/ai-plan/onboarding/workout-split-view";
+import { RetiredStepRedirect } from "@/features/ai-plan/onboarding/retired-step-redirect";
 
+// The three-option split picker was replaced by one AI-recommended split,
+// shown once every input (incl. equipment) is known — see recommended-split.
 export default function WorkoutSplitPage() {
-  return <WorkoutSplitView />;
+  return <RetiredStepRedirect to="variety" />;
 }

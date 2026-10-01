@@ -17,5 +17,5 @@ export type GymEquipmentStep = (typeof GYM_EQUIPMENT_STEPS)[number];
  *  through a `skip` predicate here, since it sets that same answer and
  *  navigates in one click (see the stale-closure note on useSubStepNav). */
 export function useGymEquipmentNav() {
-  return useSubStepNav(GYM_EQUIPMENT_STEPS, { finishSuffix: "creating-plan" });
+  return useSubStepNav(GYM_EQUIPMENT_STEPS, { finishSuffix: "recommended-split" });
 }

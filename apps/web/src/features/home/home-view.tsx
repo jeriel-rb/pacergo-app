@@ -149,6 +149,11 @@ export function HomeView({
             title={t("weeklyProgress")}
             target={weeklyProgress.target}
             done={weeklyProgress.done}
+            planHref={
+              weeklyProgress.planId
+                ? getLocalizedPath(`/ai-plan/plan/${weeklyProgress.planId}`, locale)
+                : null
+            }
           />
 
           <Card className="p-4 sm:p-5">

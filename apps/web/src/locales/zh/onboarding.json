@@ -4,11 +4,15 @@
   "hub": {
     "title": "開始設定",
     "subtitle": "專屬於你的訓練計畫即將完成",
-    "allDone": "設定完成！你的計畫已經準備好了。",
+    "allDone": "設定完成！你的訓練計畫已經準備好了。",
     "cta": {
       "start": "前往基本資料",
       "continue": "繼續",
-      "goTo": "前往{{step}}"
+      "goTo": "前往{{step}}",
+      "createFromProfile": "用我的健身檔案建立計畫",
+      "review": "檢視我的回答",
+      "viewPlan": "查看我的訓練計畫",
+      "newPlan": "建立新計畫"
     },
     "steps": {
       "aboutYou": {
@@ -23,7 +27,10 @@
         "title": "場地與器材",
         "description": "你在哪裡訓練，擁有哪些器材。"
       }
-    }
+    },
+    "prefilled": "我們已依據你的健身檔案填入已知的資料。",
+    "edit": "編輯",
+    "missingPlan": "你已完成設定，但目前沒有使用中的訓練計畫。用你儲存的回答重新建立吧。"
   },
   "aboutYou": {
     "title": "關於你"
@@ -75,7 +82,8 @@
       "male": "男性",
       "female": "女性",
       "other": "其他"
-    }
+    },
+    "subtitle": "用於你的訓練計畫，以及估算每日熱量與蛋白質需求。"
   },
   "age": {
     "title": "你的年齡是？",
@@ -194,27 +202,6 @@
       "title": "你想優先加強哪些肌群？",
       "subtitle": "最多可選擇 3 個"
     },
-    "workoutSplit": {
-      "title": "你偏好哪種訓練分項？",
-      "subtitle": "根據你的訓練頻率與經驗程度，我們推薦以下訓練分項。",
-      "options": {
-        "ai_custom": {
-          "badge": "AI 推薦",
-          "title": "由 AI 客製化",
-          "description": "AI 會根據你的目標與訓練設定，打造專屬訓練分項。"
-        },
-        "ppl_full_body": {
-          "badge": "為你推薦",
-          "title": "推、拉、腿 + 全身",
-          "description": "結合推、拉、腿訓練與全身訓練，維持多樣性並優化每週訓練量。"
-        },
-        "ppl_upper_body": {
-          "badge": "為你推薦",
-          "title": "推、拉、腿 + 上半身",
-          "description": "平衡式訓練菜單，透過每週兩次的推、拉訓練加強上半身發展。"
-        }
-      }
-    },
     "variety": {
       "title": "你希望動作變化多大？",
       "subtitle": "每次訓練後，AI 會根據你的進度與目標調整下次訓練的動作。你之後可以再變更。",
@@ -249,6 +236,19 @@
     "muscleBlockedTag": {
       "excluded": "已排除",
       "prioritized": "重點"
+    },
+    "trainingDays": {
+      "title": "哪幾天訓練？",
+      "hint": "已選 {{selected}}／{{count}} 天",
+      "days": {
+        "0": "一",
+        "1": "二",
+        "2": "三",
+        "3": "四",
+        "4": "五",
+        "5": "六",
+        "6": "日"
+      }
     }
   },
   "gymEquipment": {
@@ -387,7 +387,7 @@
           "title": "坐姿划船機"
         },
         "leg_curl_machine": {
-          "title": "腿彎舉機"
+          "title": "坐姿腿彎舉機"
         },
         "hack_squat_machine": {
           "title": "哈克深蹲機"
@@ -412,8 +412,18 @@
         },
         "step_box": {
           "title": "穩固的箱子或台階"
+        },
+        "lateral_raise_machine": {
+          "title": "側平舉機"
+        },
+        "chest_supported_row_machine": {
+          "title": "胸部支撐划船機"
+        },
+        "lying_leg_curl_machine": {
+          "title": "俯臥腿彎舉機"
         }
-      }
+      },
+      "largeGymHint": "已為你預選大型健身房常見器材，把你常去的健身房沒有的器材取消即可。"
     },
     "addCardio": {
       "title": "要在計畫中加入有氧嗎？",
@@ -482,7 +492,50 @@
       "workoutSplit": "訓練分項",
       "saveMyPlan": "儲存我的計畫",
       "saving": "儲存中…",
-      "saveError": "儲存計畫時發生錯誤，請再試一次。"
+      "saveError": "儲存計畫時發生錯誤，請再試一次。",
+      "viewPlan": "查看我的訓練計畫"
+    }
+  },
+  "activityLevel": {
+    "title": "你平常的日常活動量如何？",
+    "hint": "不含訓練時間，想想你平常的一天。我們會用它來估算你每天消耗的熱量。",
+    "options": {
+      "low": {
+        "title": "活動量低",
+        "description": "大多久坐・每天通常少於約 {{max}} 步"
+      },
+      "moderate": {
+        "title": "活動量中等",
+        "description": "日常規律走動・每天約 {{min}}–{{max}} 步"
+      },
+      "high": {
+        "title": "活動量高",
+        "description": "生活型態非常活躍・每天經常超過約 {{min}} 步"
+      }
+    }
+  },
+  "split": {
+    "names": {
+      "full_body": "全身訓練",
+      "upper_lower": "上半身／下半身",
+      "push_pull_legs": "推／拉／腿",
+      "ppl_upper": "推／拉／腿 + 上半身",
+      "ppl_upper_lower": "推／拉／腿 + 上／下半身",
+      "ai_custom": "AI 推薦",
+      "ppl_full_body": "推／拉／腿 + 全身",
+      "ppl_upper_body": "推／拉／腿 + 上半身"
+    },
+    "recommended": {
+      "title": "你的訓練結構",
+      "badge": "AI 推薦",
+      "reason": "根據你每週 {{days}} 天的訓練安排、{{experience}}的訓練經驗與「{{goal}}」目標推薦。",
+      "consecutive": "你的訓練日連續排在一起，因此每天訓練不同部位，讓其他肌群有時間恢復。",
+      "limited": "依照你現有的器材，這個結構能讓每次訓練都安排你實際做得到的動作。",
+      "short": "訓練時間較短時，較少但涵蓋範圍較廣的訓練效果最好。",
+      "weekPreview": "你的一週",
+      "rest": "休息",
+      "use": "使用這個計畫",
+      "adjust": "調整設定"
     }
   }
 }

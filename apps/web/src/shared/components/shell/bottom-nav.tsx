@@ -36,7 +36,7 @@ export function BottomNav({
   // myPlans is sidebar-only — see nav-items.ts.
   const items: ShellNavItem[] = isAdmin
     ? ADMIN_NAV_ITEMS
-    : NAV_ITEMS.filter((item) => item.key !== "myPlans");
+    : NAV_ITEMS.filter((item) => item.key !== "myPlans" && item.key !== "fitnessProfile");
   const isItemActive = isAdmin ? isAdminNavItemActive : isNavItemActive;
   const labelFor = (key: string) =>
     isAdmin ? t(`nav.${key}`) : t(key);

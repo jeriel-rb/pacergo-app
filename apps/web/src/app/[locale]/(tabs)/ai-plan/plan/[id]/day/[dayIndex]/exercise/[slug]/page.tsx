@@ -29,7 +29,7 @@ export default async function ExerciseDetailPage({
     const index = Number(dayIndex);
     const session = result.plan.weeks[week - 1]?.days.find((d) => d.dayIndex === index)?.session;
     const slot = session ? findExerciseSlot(session, slug, group) : null;
-    if (slot) workout = { planId: id, week, dayIndex: index, restTimer: result.restTimer, slot };
+    if (slot && session) workout = { planId: id, week, dayIndex: index, restTimer: result.restTimer, slot, session };
   }
 
   return <ExerciseDetailView exercise={exercise} workout={workout} />;

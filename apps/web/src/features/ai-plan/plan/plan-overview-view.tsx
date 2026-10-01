@@ -9,6 +9,7 @@ import { ONBOARDING_GOALS, type GeneratedPlan, type OnboardingGoal } from "@pace
 import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { NutritionLinkCard } from "@/features/ai-plan/nutrition/nutrition-link-card";
 
 /** A-3 program overview: week tabs + one card per day. All 4 weeks exist up
  *  front ("nothing drip-released"); the exercise mix rotates week to week
@@ -61,6 +62,8 @@ export function PlanOverviewView({
           <BetaBadge />
         </div>
       </div>
+
+      <NutritionLinkCard href={pathname.replace(/\/plan\/[^/]+$/, "/nutrition")} />
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {plan.weeks.map((w) => (

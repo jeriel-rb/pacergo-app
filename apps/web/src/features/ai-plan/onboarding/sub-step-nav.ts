@@ -6,8 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
  *  Training Preferences): derived purely from the current pathname (works
  *  for both the unprefixed default locale and the `/en` prefix — see
  *  i18nConfig.prefixDefault), since every step lives one segment below the
- *  same `.../ai-plan/<flow>` parent, which itself is two segments below the
- *  hub (`.../ai-plan`).
+ *  same `.../ai-plan/<flow>` parent. The setup hub ("Let's Get Started") is
+ *  `.../ai-plan/setup` — `.../ai-plan` itself opens the user's active plan.
  *
  *  `skip` marks steps that aren't reachable given the current answers (e.g.
  *  a muscle-picker step when the preceding yes/no question was "No") —
@@ -15,9 +15,9 @@ import { usePathname, useRouter } from "next/navigation";
  *  the progress bar) still count the full fixed step list, skipped or not.
  *
  *  `finishSuffix` sends `goNext()` (or the explicit `goToFinish()`) from the
- *  last step to `<hub>/<finishSuffix>` instead of the hub itself — for a
- *  flow whose last step hands off to a follow-up screen that's a sibling of
- *  the flow's own folder (e.g. Gym & Equipment → `.../ai-plan/creating-plan`)
+ *  last step to `.../ai-plan/<finishSuffix>` instead of the hub — for a flow
+ *  whose last step hands off to a follow-up screen that's a sibling of the
+ *  flow's own folder (e.g. Gym & Equipment → `.../ai-plan/recommended-split`)
  *  rather than returning straight to "Let's Get Started".
  *
  *  Caution: `skip` reads answer state from the render that produced this
@@ -36,7 +36,8 @@ export function useSubStepNav<T extends string>(
   const segments = pathname.split("/");
   const step = segments[segments.length - 1] as T;
   const basePath = segments.slice(0, -1).join("/"); // ".../ai-plan/<flow>"
-  const hubPath = segments.slice(0, -2).join("/"); // ".../ai-plan"
+  const rootPath = segments.slice(0, -2).join("/"); // ".../ai-plan"
+  const hubPath = `${rootPath}/setup`;
 
   const index = Math.max(0, steps.indexOf(step));
   const total = steps.length;
@@ -57,7 +58,7 @@ export function useSubStepNav<T extends string>(
   }
 
   function goToFinish() {
-    router.push(options?.finishSuffix ? `${hubPath}/${options.finishSuffix}` : hubPath);
+    router.push(options?.finishSuffix ? `${rootPath}/${options.finishSuffix}` : hubPath);
   }
 
   function goNext() {
@@ -69,5 +70,5 @@ export function useSubStepNav<T extends string>(
     }
   }
 
-  return { step, index, total, basePath, hubPath, goToStep, goToFinish, goBack, goNext };
+  return { step, index, total, basePath, rootPath, hubPath, goToStep, goToFinish, goBack, goNext };
 }

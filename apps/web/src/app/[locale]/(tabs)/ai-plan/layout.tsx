@@ -1,7 +1,8 @@
 import { getCurrentProfile } from "@/lib/profile";
+import { getSavedFitnessProfileServer } from "@/lib/fitness-profile.server";
 import { OnboardingProvider } from "@/features/ai-plan/onboarding-store";
 
-// Per-request so the prefilled gender reflects the latest saved profile.
+// Per-request so the wizard starts from the latest saved fitness profile.
 export const dynamic = "force-dynamic";
 
 export default async function AiPlanLayout({
@@ -9,11 +10,14 @@ export default async function AiPlanLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const profile = await getCurrentProfile();
+  const [profile, savedProfile] = await Promise.all([
+    getCurrentProfile(),
+    getSavedFitnessProfileServer().catch(() => null),
+  ]);
   return (
     <OnboardingProvider
-      initialGender={profile?.gender ?? null}
       userId={profile?.id ?? null}
+      savedProfile={savedProfile}
     >
       {children}
     </OnboardingProvider>

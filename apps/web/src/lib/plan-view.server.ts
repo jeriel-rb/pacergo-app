@@ -44,6 +44,16 @@ export async function getTrainingPlanServer(
   };
 }
 
+/** The user's active plan: the one AI Training opens by default and Home
+ *  progress follows (falls back to the newest saved plan — see
+ *  active_training_plan_id()). null when they have no plan at all. */
+export async function getActivePlanIdServer(): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("active_training_plan_id");
+  if (error) throw error;
+  return (data as string | null) ?? null;
+}
+
 export interface SavedPlanSummaryServer {
   id: string;
   label: string;
@@ -90,6 +100,8 @@ export async function getTrainingPlanForEditServer(id: string): Promise<PlanForE
 
 export interface ExerciseDetailServer {
   slug: string;
+  /** Equipment ids it needs (empty = none) — decides whether a weight is logged. */
+  equipment: string[];
   nameEn: string;
   nameZh: string;
   muscleGroups: string[];
@@ -104,9 +116,8 @@ export async function getExerciseDetailServer(slug: string): Promise<ExerciseDet
   const find = async (s: string) => {
     const { data, error } = await supabase
       .from("exercises")
-      .select(
-        "slug, name_en, name_zh, muscle_groups, instructions_en, instructions_zh, tips_en, tips_zh",
-      )
+      // "*" so a database without the newer `equipment` column still works.
+      .select("*")
       .eq("slug", s)
       .maybeSingle();
     if (error) throw error;
@@ -130,9 +141,11 @@ export async function getExerciseDetailServer(slug: string): Promise<ExerciseDet
     instructions_zh: string[];
     tips_en: string[];
     tips_zh: string[];
+    equipment?: string[] | null;
   };
   return {
     slug: row.slug,
+    equipment: row.equipment ?? [],
     nameEn: row.name_en,
     nameZh: row.name_zh,
     muscleGroups: row.muscle_groups,

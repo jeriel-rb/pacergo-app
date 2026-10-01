@@ -10,7 +10,8 @@
       "pull": "拉力訓練",
       "legs": "腿部訓練",
       "upper": "上半身",
-      "full_body": "全身訓練"
+      "full_body": "全身訓練",
+      "lower": "下半身"
     },
     "minutes": "{{count}} 分鐘"
   },
@@ -43,7 +44,35 @@
     "tapHint": "每完成一組就點一下，休息倒數會隨即開始。",
     "tapHintNoRest": "每完成一組就點一下。",
     "next": "下一個：{{name}}",
-    "backToWorkout": "回到訓練"
+    "backToWorkout": "回到訓練",
+    "log": {
+      "unitToggle": "重量單位",
+      "weight": "重量",
+      "reps": "次數",
+      "repsUnit": "下",
+      "target": "目標：每組 {{reps}}",
+      "lastTime": "上次（{{date}}）：{{sets}}",
+      "suggested": "今天建議：{{weight}}",
+      "reason": {
+        "hit_top_of_range": "上次每組都做到目標次數上限，可以加一點重量。",
+        "felt_too_light": "上次感覺太輕，可以試著再加一點。",
+        "within_range": "維持這個重量，試著多做幾下。",
+        "missed_bottom_of_range": "上次有幾組沒達到目標次數，先維持這個重量。",
+        "felt_too_heavy": "上次感覺太重，調降到你能掌握的重量。"
+      },
+      "useSuggestion": "套用",
+      "effortTitle": "這個動作感覺如何？",
+      "effort": {
+        "too_light": "太輕",
+        "just_right": "剛好",
+        "too_heavy": "太重"
+      },
+      "save": {
+        "saving": "儲存中…",
+        "saved": "已存入你的訓練紀錄",
+        "error": "儲存失敗，修改任一數值即可重試。"
+      }
+    }
   },
   "weekProgress": "第 3–4 週，每個主訓練動作多加 1 組。",
   "detail": {
@@ -148,7 +177,12 @@
     "deleteConfirmTitle": "要刪除這個計畫嗎？",
     "deleteConfirmBody": "此操作無法復原。",
     "cancel": "取消",
-    "options": "更多選項"
+    "options": "更多選項",
+    "active": "使用中",
+    "setActive": "設為使用中的計畫",
+    "activeSet": "已更新使用中的計畫",
+    "activeSetError": "無法變更使用中的計畫，請再試一次。",
+    "createPlan": "建立訓練計畫"
   },
   "update": {
     "cta": "更新偏好設定",
@@ -190,6 +224,96 @@
     "save": "更新",
     "saving": "更新中…",
     "saveError": "發生錯誤，請再試一次。",
-    "doneEditing": "完成"
+    "doneEditing": "完成",
+    "splitAuto": "依據你的目標、經驗、訓練日、訓練時長與器材自動為你挑選；修改這些設定時會跟著更新。",
+    "profileNote": "這裡的訓練經驗、訓練日與器材屬於你的"
+  },
+  "nutrition": {
+    "title": "營養",
+    "subtitle": "依據你的健身檔案估算的每日目標。",
+    "calories": "每日建議熱量",
+    "caloriesUnit": "大卡／天",
+    "protein": "蛋白質目標",
+    "proteinUnit": "克／天",
+    "proteinDetail": "約每公斤體重 {{perKg}} 克",
+    "maintenance": "維持熱量：約 {{kcal}} 大卡／天",
+    "goalNote": {
+      "lose_weight": "設定略低於維持熱量，幫助穩定減脂。",
+      "build_muscle": "設定略高於維持熱量，幫助增肌。",
+      "stay_healthy": "設定在維持熱量，保持目前體重。"
+    },
+    "disclaimer": "這些數值是依據你目前的資料與目標所做的估算，並非醫療建議。實際需求可能不同，請依身體反應調整。",
+    "missing": "完成你的健身檔案，即可查看每日熱量與蛋白質目標。",
+    "missingFields": "尚需填寫：{{fields}}",
+    "viewCta": "查看營養目標",
+    "cardTitle": "你的每日營養",
+    "profileTitle": "你的健身檔案",
+    "profileHint": "修改任何一項都會重新計算你的目標。",
+    "fields": {
+      "goal": "健身目標",
+      "age": "年齡",
+      "heightCm": "身高",
+      "weightKg": "體重",
+      "body": "身高與體重",
+      "activityLevel": "日常活動量",
+      "gender": "性別"
+    },
+    "done": "完成",
+    "updatedOn": "最後更新：{{date}}",
+    "intro": {
+      "title": "AI 營養",
+      "body": "PacerGo 可以依據你的身體數據、活動量與健身目標，推薦你的每日營養目標。",
+      "reuse": "我們會沿用健身檔案中已有的資料，只詢問缺少的部分。",
+      "skip": "略過",
+      "build": "建立營養計畫",
+      "building": "建立中…",
+      "error": "發生錯誤，請再試一次。"
+    },
+    "build": {
+      "title": "再補充幾項資料"
+    },
+    "guidanceTitle": "你的飲食建議",
+    "guidance": {
+      "proteinPerMeal": "把蛋白質平均分配到 {{meals}} 餐，每餐約 {{grams}} 克。",
+      "proteinFoods": "方便的蛋白質來源：雞胸肉、雞蛋、魚、豆腐、無糖豆漿、希臘優格。",
+      "goal_lose_weight": "餐盤一半放蔬菜，選擇低脂蛋白質，把含糖飲料換成水或無糖茶。",
+      "goal_build_muscle": "訓練後約 2 小時內吃一份含碳水與蛋白質的餐點或點心（例如雞肉飯，或香蕉配豆漿）。",
+      "goal_stay_healthy": "均衡餐盤：½ 蔬菜、¼ 蛋白質、¼ 全穀類（如糙米、地瓜）。",
+      "activity_low": "日常多久坐時，份量適中，多選擇高纖、有飽足感的食物。",
+      "activity_high": "活動量高時消耗較多，記得攝取足夠的碳水（飯、麵、水果）維持體力。",
+      "hydration": "每天喝約 {{liters}} 公升的水，天氣熱或訓練日再多喝一些。"
+    },
+    "continueToPlan": "前往我的計畫",
+    "editInProfile": "這些目標是依據你的健身檔案計算的。在那裡修改資料，目標就會自動更新。"
+  },
+  "openCurrentPlan": "開啟目前的計畫",
+  "fitnessProfile": {
+    "title": "健身檔案",
+    "cardHint": "身體資料、目標、時間與器材",
+    "subtitle": "你的訓練計畫與營養目標都是依據這些資料產生。",
+    "sections": {
+      "about": "關於你",
+      "training": "訓練",
+      "equipment": "器材"
+    },
+    "fields": {
+      "gender": "性別",
+      "age": "年齡",
+      "body": "身高與體重",
+      "goal": "健身目標",
+      "activityLevel": "日常活動量",
+      "experience": "訓練經驗",
+      "frequency": "訓練日",
+      "duration": "每次訓練時長",
+      "equipment": "場地與器材"
+    },
+    "note": "儲存後會更新你的營養目標與使用中的訓練計畫（其他已儲存的計畫維持不變——可在「我的計畫」用「更新偏好」更新）。休息計時、肌群偏好等計畫專屬設定會保留。",
+    "save": "儲存變更",
+    "saving": "儲存中…",
+    "saved": "已儲存健身檔案",
+    "saveError": "無法儲存變更，請再試一次。",
+    "viewNutrition": "查看我的營養目標",
+    "savedPlanUpdated": "已儲存健身檔案——營養目標與使用中的計畫都已更新",
+    "savedPlanFailed": "健身檔案已儲存，但使用中的計畫無法更新。請到「我的計畫」使用「更新偏好」。"
   }
 }

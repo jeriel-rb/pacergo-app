@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import type { OnboardingUnit } from "@pacergo/shared";
 import { WheelPicker } from "@/shared/components/atoms/wheel-picker";
 import { Switch } from "@/shared/components/ui/switch";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
@@ -34,22 +35,17 @@ function lbToKg(lb: number): number {
 
 export function HeightWeightView() {
   const { t } = useTranslation("onboarding");
-  const { answers, setUnit, setHeightCm, setWeightKg, markStepComplete } =
-    useOnboarding();
+  const { answers, setUnit, setHeightCm, setWeightKg } = useOnboarding();
   const { goNext, goBack } = useAboutYouNav();
 
   const heightCm = answers.heightCm ?? DEFAULT_HEIGHT_CM;
   const weightKg = answers.weightKg ?? DEFAULT_WEIGHT_KG;
-  const isMetric = answers.unit === "metric";
-
   const bmi = weightKg / (heightCm / 100) ** 2;
 
   function commitDefaultsIfNeeded() {
     if (answers.heightCm === null) setHeightCm(DEFAULT_HEIGHT_CM);
     if (answers.weightKg === null) setWeightKg(DEFAULT_WEIGHT_KG);
   }
-
-  const { ft, inches } = cmToFtIn(heightCm);
 
   return (
     <StepScreen
@@ -58,7 +54,6 @@ export function HeightWeightView() {
       continueDisabled={false}
       onContinue={() => {
         commitDefaultsIfNeeded();
-        markStepComplete("aboutYou");
         goNext();
       }}
       onBack={goBack}
@@ -69,13 +64,49 @@ export function HeightWeightView() {
         {t("heightWeight.bmiSuffix")}
       </div>
 
+      <BodyMeasurementsPicker
+        unit={answers.unit}
+        heightCm={heightCm}
+        weightKg={weightKg}
+        onUnitChange={setUnit}
+        onHeightChange={setHeightCm}
+        onWeightChange={setWeightKg}
+      />
+    </StepScreen>
+  );
+}
+
+/** Metric/imperial toggle plus height & weight wheels. Values are always
+ *  metric; `unit` only picks which wheels are shown. Shared by this step and
+ *  the nutrition page's profile editor. */
+export function BodyMeasurementsPicker({
+  unit,
+  heightCm,
+  weightKg,
+  onUnitChange,
+  onHeightChange,
+  onWeightChange,
+}: {
+  unit: OnboardingUnit;
+  heightCm: number;
+  weightKg: number;
+  onUnitChange: (unit: OnboardingUnit) => void;
+  onHeightChange: (cm: number) => void;
+  onWeightChange: (kg: number) => void;
+}) {
+  const { t } = useTranslation("onboarding");
+  const isMetric = unit === "metric";
+  const { ft, inches } = cmToFtIn(heightCm);
+
+  return (
+    <>
       <div className="flex items-center justify-center gap-3 py-2 text-sm font-medium">
         <span className={!isMetric ? "text-foreground" : "text-muted-foreground"}>
           {t("heightWeight.imperial")}
         </span>
         <Switch
           checked={isMetric}
-          onChange={(checked) => setUnit(checked ? "metric" : "imperial")}
+          onChange={(checked) => onUnitChange(checked ? "metric" : "imperial")}
           aria-label={t("heightWeight.unitToggle")}
         />
         <span className={isMetric ? "text-foreground" : "text-muted-foreground"}>
@@ -92,7 +123,7 @@ export function HeightWeightView() {
             <WheelPicker
               values={CM_VALUES}
               value={heightCm}
-              onChange={setHeightCm}
+              onChange={onHeightChange}
               suffix="cm"
               ariaLabel={t("heightWeight.height")}
             />
@@ -101,7 +132,7 @@ export function HeightWeightView() {
               <WheelPicker
                 values={FT_VALUES}
                 value={ft}
-                onChange={(v) => setHeightCm(ftInToCm(v, inches))}
+                onChange={(v) => onHeightChange(ftInToCm(v, inches))}
                 suffix="ft"
                 ariaLabel={`${t("heightWeight.height")} (ft)`}
                 className="flex-1"
@@ -109,7 +140,7 @@ export function HeightWeightView() {
               <WheelPicker
                 values={IN_VALUES}
                 value={inches}
-                onChange={(v) => setHeightCm(ftInToCm(ft, v))}
+                onChange={(v) => onHeightChange(ftInToCm(ft, v))}
                 suffix="in"
                 ariaLabel={`${t("heightWeight.height")} (in)`}
                 className="flex-1"
@@ -126,7 +157,7 @@ export function HeightWeightView() {
             <WheelPicker
               values={KG_VALUES}
               value={weightKg}
-              onChange={setWeightKg}
+              onChange={onWeightChange}
               suffix="kg"
               ariaLabel={t("heightWeight.weight")}
             />
@@ -134,13 +165,13 @@ export function HeightWeightView() {
             <WheelPicker
               values={LB_VALUES}
               value={kgToLb(weightKg)}
-              onChange={(v) => setWeightKg(lbToKg(v))}
+              onChange={(v) => onWeightChange(lbToKg(v))}
               suffix="lb"
               ariaLabel={t("heightWeight.weight")}
             />
           )}
         </div>
       </div>
-    </StepScreen>
+    </>
   );
 }

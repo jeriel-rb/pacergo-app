@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pencil, Minus, Plus, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -17,16 +18,21 @@ import {
 import { useToast } from "@/shared/components/ui/toast";
 import { setWeeklyTarget } from "./goal-actions";
 
-/** Weekly training-progress ring — real target + completed-this-week count,
- *  with an inline editor for the target. */
+/** Weekly training-progress ring — real target + completed-this-week count.
+ *  With an active plan it follows that plan (its training days, its finished
+ *  workouts) and links to it; otherwise the target is the user's own, with
+ *  an inline editor. */
 export function WeeklyProgressCard({
   title,
   target,
   done,
+  planHref,
 }: {
   title: string;
   target: number;
   done: number;
+  /** Set when progress follows the active training plan. */
+  planHref?: string | null;
 }) {
   const { t } = useTranslation("home");
   const pct = target > 0 ? Math.min(100, Math.round((done / target) * 100)) : 0;
@@ -36,7 +42,7 @@ export function WeeklyProgressCard({
 
   return (
     <Card className="relative p-5">
-      <TargetEditor current={target} />
+      {!planHref && <TargetEditor current={target} />}
       <div className="flex items-center gap-4">
         <div className="relative h-[84px] w-[84px] shrink-0">
           <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
@@ -64,6 +70,11 @@ export function WeeklyProgressCard({
           <p className="mt-2 text-sm text-muted-foreground">
             {t("weeklyCount", { done, total: target })}
           </p>
+          {planHref && (
+            <Link href={planHref} className="mt-1 inline-block text-sm font-semibold text-primary hover:underline">
+              {t("openPlan")}
+            </Link>
+          )}
         </div>
       </div>
     </Card>

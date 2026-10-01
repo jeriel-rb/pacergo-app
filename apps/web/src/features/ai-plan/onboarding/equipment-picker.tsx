@@ -155,6 +155,12 @@ export function EquipmentPicker({
           ))}
         </div>
 
+        {gymType === "large_gym" && (
+          <p className="rounded-xl bg-primary/10 px-3 py-2 text-sm text-foreground">
+            {t("gymEquipment.equipment.largeGymHint")}
+          </p>
+        )}
+
         <p className="text-xs text-muted-foreground" aria-live="polite">
           {t("gymEquipment.equipment.selectedCount", {
             selected: selected.length,

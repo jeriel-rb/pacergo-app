@@ -11,8 +11,6 @@ export const metadata: Metadata = {
   },
 };
 
-console.log("[pacergo] web root layout loaded");
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

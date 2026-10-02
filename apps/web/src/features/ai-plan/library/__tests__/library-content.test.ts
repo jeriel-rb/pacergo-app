@@ -14,11 +14,9 @@ describe("exercise library content", () => {
     expect(EXERCISE_CATALOG).toHaveLength(302);
   });
 
-  it("has all three SVG frames on disk for every exercise", () => {
+  it("has its static illustration on disk for every exercise", () => {
     for (const e of EXERCISE_CATALOG) {
-      for (const n of [1, 2, 3]) {
-        expect(fs.existsSync(path.join(ART_DIR, e.slug, `frame-${n}.svg`)), `${e.slug} frame ${n}`).toBe(true);
-      }
+      expect(fs.existsSync(path.join(ART_DIR, e.slug, "frame-1.svg")), e.slug).toBe(true);
     }
   });
 

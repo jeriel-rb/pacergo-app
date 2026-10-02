@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isSupportedOtpType, normalizeLocale } from "@/lib/auth-callback";
+import { createRecoveryMarker } from "@/lib/recovery-marker";
 import {
   mapPasswordRecoveryCallbackError,
   passwordResetLogPayload,
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     return redirectToNewPassword(request, locale, { error: result.error });
   }
 
-  return redirectToNewPassword(request, locale, { recoveryReady: true });
+  return redirectToNewPassword(request, locale, { recoveryUserId: result.userId });
 }
 
 export async function POST(request: NextRequest, { params }: RouteContext) {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     success: true,
     redirectTo: safeNewPasswordPath(locale),
   });
-  setRecoveryReadyCookie(response, request);
+  setRecoveryReadyCookie(response, request, result.userId);
   return response;
 }
 
@@ -89,7 +90,7 @@ async function verifyRecoveryRequest({
   code?: string | null;
   tokenHash?: string | null;
 }): Promise<
-  { success: true } | { success: false; error: PasswordUpdateErrorCode }
+  { success: true; userId: string } | { success: false; error: PasswordUpdateErrorCode }
 > {
   try {
     const supabase = await createSupabaseServerClient();
@@ -117,7 +118,7 @@ async function verifyRecoveryRequest({
       return { success: false, error: "password_update_session_missing" };
     }
 
-    return { success: true };
+    return { success: true, userId: user.id };
   } catch {
     console.warn(
       passwordResetLogPayload(
@@ -146,8 +147,8 @@ function passwordRecoveryJsonFailure(
   return NextResponse.json({ success: false, error }, { status });
 }
 
-function setRecoveryReadyCookie(response: NextResponse, request: NextRequest) {
-  response.cookies.set(RECOVERY_SESSION_COOKIE, "1", {
+function setRecoveryReadyCookie(response: NextResponse, request: NextRequest, userId: string) {
+  response.cookies.set(RECOVERY_SESSION_COOKIE, createRecoveryMarker(userId), {
     httpOnly: true,
     secure: request.nextUrl.protocol === "https:",
     sameSite: "lax",
@@ -172,7 +173,8 @@ function redirectToNewPassword(
   request: NextRequest,
   locale: "zh" | "en",
   params: {
-    recoveryReady?: boolean;
+    /** Set once a recovery link was verified: issues the signed marker. */
+    recoveryUserId?: string;
     error?: PasswordUpdateErrorCode;
   },
 ) {
@@ -182,8 +184,8 @@ function redirectToNewPassword(
   if (params.error) url.searchParams.set("error", params.error);
 
   const response = NextResponse.redirect(url);
-  if (params.recoveryReady) {
-    setRecoveryReadyCookie(response, request);
+  if (params.recoveryUserId) {
+    setRecoveryReadyCookie(response, request, params.recoveryUserId);
   }
 
   return response;

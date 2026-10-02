@@ -7,12 +7,12 @@ import { ArrowRight, Check } from "lucide-react";
 import { exerciseModality, parseRepRange, type GeneratedSession } from "@pacergo/shared";
 import type { PlanRestTimer } from "@/lib/plan-view.server";
 import { useLocale } from "@/shared/hooks/use-locale";
-import { useDurationFormat } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
 import { RestCountdown } from "./rest-countdown";
 import type { useWorkoutProgress } from "./use-workout-progress";
 import { isSetDone, setKey, type ExerciseSlot } from "./workout-progress";
 import { SetLogger } from "./set-logger";
+import { useExerciseSummary } from "./exercise-summary";
 import { useExerciseLog } from "./use-exercise-log";
 
 /** Everything the exercise screen needs to track this exercise in its workout. */
@@ -44,7 +44,7 @@ export function SetTracker({
   const { t } = useTranslation("plan");
   const locale = useLocale();
   const pathname = usePathname();
-  const format = useDurationFormat();
+  const summarize = useExerciseSummary();
   const { progress, rest, left, toggle, nudge, stop, markDone } = tracking;
 
   const { group, exercise } = slot;
@@ -77,7 +77,7 @@ export function SetTracker({
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          {exercise.sets} × {format.reps(exercise.reps)} · {t("daily.rest")} {format.seconds(exercise.restSec)}
+          {summarize(exercise, group)}
         </p>
         {logsPerformance ? (
           <LoggedSets

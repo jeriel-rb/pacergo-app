@@ -51,5 +51,36 @@
     "hiking": "陪爬",
     "hyrox": "Hyrox"
   },
-  "openPlan": "開啟我的訓練計畫"
+  "openPlan": "開啟我的訓練計畫",
+  "profileSetup": {
+    "title": "簡單介紹一下你",
+    "subtitle": "只需約 20 秒，幫助我們為你推薦合適的教練與夥伴。你也可以先略過。",
+    "activity": "你主要的運動類型？",
+    "level": "你目前的程度",
+    "city": "城市／服務地區",
+    "cityPlaceholder": "或輸入你的城市或地區",
+    "activities": {
+      "gym": "健身房",
+      "running": "跑步",
+      "hiking": "登山健行",
+      "other": "其他"
+    },
+    "cities": {
+      "taichung": "台中",
+      "taipei": "台北",
+      "newTaipei": "新北",
+      "taoyuan": "桃園",
+      "hsinchu": "新竹",
+      "tainan": "台南",
+      "kaohsiung": "高雄"
+    },
+    "save": "儲存",
+    "skip": "先略過",
+    "saved": "謝謝！已完成個人資料設定。",
+    "error": "無法儲存，請再試一次，或先略過。"
+  },
+  "buildPlan": {
+    "title": "建立你的 AI 訓練計畫",
+    "body": "大約 3 分鐘，你在設定中填寫的答案已自動帶入。"
+  }
 }

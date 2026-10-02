@@ -10,6 +10,7 @@ import {
   sanitizeInternalRedirect,
   type VerificationErrorCode,
 } from "@/lib/auth-callback";
+import { createRecoveryMarker } from "@/lib/recovery-marker";
 import {
   mapPasswordRecoveryCallbackError,
   passwordResetLogPayload,
@@ -168,7 +169,7 @@ async function handleRecoveryCallback(
       });
     }
 
-    return redirectToNewPassword(request, locale, { recoveryReady: true });
+    return redirectToNewPassword(request, locale, { recoveryUserId: user.id });
   } catch {
     console.warn(
       passwordResetLogPayload(
@@ -207,7 +208,8 @@ function redirectToNewPassword(
   request: NextRequest,
   locale: "zh" | "en",
   params: {
-    recoveryReady?: boolean;
+    /** Set once a recovery link was verified: issues the signed marker. */
+    recoveryUserId?: string;
     error?: PasswordUpdateErrorCode;
   },
 ) {
@@ -217,8 +219,8 @@ function redirectToNewPassword(
   if (params.error) url.searchParams.set("error", params.error);
 
   const response = NextResponse.redirect(url);
-  if (params.recoveryReady) {
-    response.cookies.set(RECOVERY_SESSION_COOKIE, "1", {
+  if (params.recoveryUserId) {
+    response.cookies.set(RECOVERY_SESSION_COOKIE, createRecoveryMarker(params.recoveryUserId), {
       httpOnly: true,
       secure: request.nextUrl.protocol === "https:",
       sameSite: "lax",

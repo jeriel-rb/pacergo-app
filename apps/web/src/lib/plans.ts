@@ -116,6 +116,33 @@ export async function refreshActivePlanFromProfile(profile: {
   return true;
 }
 
+/** Regenerates a saved plan in place from its own saved answers, under the
+ *  current plan rules (same id, so it stays active and keeps its history).
+ *  Offered when the plan was built under older rules — e.g. before cooldowns
+ *  became real stretching. Nothing about the plan's settings changes. */
+export async function regeneratePlanUnderCurrentRules(planId: string): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from("user_training_plans")
+    .select("label, onboarding_snapshot")
+    .eq("id", planId)
+    .maybeSingle();
+  if (error) throw error;
+  const row = data as { label: string; onboarding_snapshot: Partial<PlanOnboardingSnapshot> | null } | null;
+  const snap = row?.onboarding_snapshot;
+  if (!row || !snap?.answers || !snap.trainingPreferences || !snap.gymEquipment) {
+    throw new Error("plan snapshot missing");
+  }
+  const next: PlanOnboardingSnapshot = {
+    answers: snap.answers,
+    trainingPreferences: snap.trainingPreferences,
+    gymEquipment: upgradeLegacyEquipment(snap.gymEquipment),
+  };
+  const exercises = await fetchAllExercises();
+  const plan = generateTrainingPlan({ ...next, exercises });
+  await updateTrainingPlan({ id: planId, label: row.label, plan, onboardingSnapshot: next });
+}
+
 /** "Skip" on the nutrition intro — not offered automatically again. */
 export async function skipNutritionPlan(): Promise<void> {
   const supabase = createSupabaseBrowserClient();
@@ -133,20 +160,6 @@ export async function fetchFitnessProfile(): Promise<SavedFitnessProfile> {
     .maybeSingle();
   if (error) throw error;
   return parseFitnessProfileRow(data);
-}
-
-export interface SavedPlanSummary {
-  id: string;
-  label: string;
-  createdAt: string;
-}
-
-interface SavedPlanRow {
-  id: string;
-  label: string;
-  plan: GeneratedPlan;
-  onboarding_snapshot: unknown;
-  created_at: string;
 }
 
 /** The frozen answers a saved plan was generated from — shape mirrors the
@@ -174,31 +187,6 @@ export async function saveTrainingPlan(input: {
   });
   if (error) throw error;
   return data as string;
-}
-
-export async function listTrainingPlans(): Promise<SavedPlanSummary[]> {
-  const supabase = createSupabaseBrowserClient();
-  const { data, error } = await supabase
-    .from("user_training_plans")
-    .select("id, label, created_at")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []).map((row) => ({
-    id: (row as { id: string }).id,
-    label: (row as { label: string }).label,
-    createdAt: (row as { created_at: string }).created_at,
-  }));
-}
-
-export async function fetchTrainingPlan(id: string): Promise<GeneratedPlan | null> {
-  const supabase = createSupabaseBrowserClient();
-  const { data, error } = await supabase
-    .from("user_training_plans")
-    .select("plan")
-    .eq("id", id)
-    .maybeSingle();
-  if (error) throw error;
-  return data ? (data as SavedPlanRow).plan : null;
 }
 
 /** Makes a saved plan the user's active plan (what AI Training opens and

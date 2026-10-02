@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-errors";
+import { isValidRecoveryMarker } from "@/lib/recovery-marker";
 import {
   mapPasswordUpdateError,
   passwordResetLogPayload,
@@ -11,10 +12,9 @@ import {
 type RouteContext = { params: Promise<{ locale: string }> };
 
 export async function POST(request: NextRequest, _context: RouteContext) {
-  const hasRecoverySession =
-    request.cookies.get(RECOVERY_SESSION_COOKIE)?.value === "1";
+  const recoveryMarker = request.cookies.get(RECOVERY_SESSION_COOKIE)?.value;
 
-  if (!hasRecoverySession) {
+  if (!recoveryMarker) {
     return passwordUpdateFailure("password_update_session_missing", 401, true);
   }
 
@@ -36,7 +36,9 @@ export async function POST(request: NextRequest, _context: RouteContext) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
+    // The marker must be one the server issued, for this user, and unexpired —
+    // a plain login session is not enough to change the password this way.
+    if (!user || !isValidRecoveryMarker(recoveryMarker, user.id)) {
       return passwordUpdateFailure("password_update_session_missing", 401, true);
     }
 

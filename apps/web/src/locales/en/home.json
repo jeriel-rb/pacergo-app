@@ -51,5 +51,36 @@
     "hiking": "Hiking",
     "hyrox": "Hyrox"
   },
-  "openPlan": "Open my training plan"
+  "openPlan": "Open my training plan",
+  "profileSetup": {
+    "title": "Tell us about you",
+    "subtitle": "Takes about 20 seconds and helps us show you the right trainers and partners. You can skip this.",
+    "activity": "What do you mainly train?",
+    "level": "Your current level",
+    "city": "City / service area",
+    "cityPlaceholder": "Or type your city or area",
+    "activities": {
+      "gym": "Gym",
+      "running": "Running",
+      "hiking": "Hiking",
+      "other": "Other"
+    },
+    "cities": {
+      "taichung": "Taichung",
+      "taipei": "Taipei",
+      "newTaipei": "New Taipei",
+      "taoyuan": "Taoyuan",
+      "hsinchu": "Hsinchu",
+      "tainan": "Tainan",
+      "kaohsiung": "Kaohsiung"
+    },
+    "save": "Save",
+    "skip": "Skip for now",
+    "saved": "Thanks! Your profile is set up.",
+    "error": "Couldn't save. Please try again, or skip for now."
+  },
+  "buildPlan": {
+    "title": "Build your AI training plan",
+    "body": "Takes about 3 minutes — what you told us in setup is already filled in."
+  }
 }

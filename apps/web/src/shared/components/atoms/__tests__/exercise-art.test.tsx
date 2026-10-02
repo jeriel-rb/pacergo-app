@@ -6,23 +6,21 @@ import { ListOptionRow } from "../list-option-row";
 const masks = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>("span[style*='mask-image']")];
 
 describe("ExerciseArt", () => {
-  it("loops all three frames by default", () => {
+  it("shows one static illustration (the first frame)", () => {
     const { container } = render(<ExerciseArt slug="bench-press" />);
     expect(masks(container).map((m) => m.style.maskImage)).toEqual([
       "url(/exercise-art/bench-press/frame-1.svg)",
-      "url(/exercise-art/bench-press/frame-2.svg)",
-      "url(/exercise-art/bench-press/frame-3.svg)",
     ]);
   });
 
-  it("shows only the first frame when `still`", () => {
-    const { container } = render(<ExerciseArt slug="bench-press" still />);
-    expect(masks(container).map((m) => m.style.maskImage)).toEqual([
-      "url(/exercise-art/bench-press/frame-1.svg)",
-    ]);
+  it("is named for assistive tech only when given a label", () => {
+    const { container, rerender } = render(<ExerciseArt slug="bench-press" label="Bench Press" />);
+    expect(container.querySelector("[role='img']")?.getAttribute("aria-label")).toBe("Bench Press");
+    rerender(<ExerciseArt slug="bench-press" />);
+    expect(container.querySelector("[role='img']")).toBeNull();
   });
 
-  it("uses still first-frame thumbnails in list rows (equipment / cardio pickers)", () => {
+  it("uses the static first-frame thumbnail in list rows (equipment / cardio pickers)", () => {
     const { container } = render(
       <ListOptionRow art="deadlift" title="Barbell" selected={false} onSelect={() => {}} />,
     );

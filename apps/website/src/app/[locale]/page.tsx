@@ -1,5 +1,6 @@
 import { SiteNav } from "@/components/site/site-nav";
 import { Hero } from "@/components/site/hero";
+import { Validation } from "@/components/site/validation";
 import { Steps } from "@/components/site/steps";
 import { AiCoach } from "@/components/site/ai-coach";
 import { Tiers } from "@/components/site/tiers";
@@ -14,6 +15,7 @@ export default function HomePage() {
       <SiteNav />
       <main>
         <Hero />
+        <Validation />
         <Steps />
         <AiCoach />
         <Tiers />

@@ -1,4 +1,5 @@
 import { PLAN_GENDERS, type Gender, type PlanGender } from "../enums/gender";
+import type { PrimaryActivity } from "../enums/profile-setup";
 import {
   resolveTrainingDays,
   trainingDaysComplete,
@@ -27,6 +28,8 @@ export interface FitnessProfile {
   weightKg: number | null;
   activityLevel: ActivityLevel | null;
   goal: OnboardingGoal | null;
+  /** What the user mainly trains (Home Profile Setup). */
+  primaryActivity: PrimaryActivity | null;
   experience: OnboardingExperience | null;
   /** Planned training sessions per week (2–7). */
   trainingDaysPerWeek: number | null;
@@ -52,6 +55,7 @@ export function toFitnessProfile(
     weightKg: answers.weightKg,
     activityLevel: answers.activityLevel ?? null,
     goal: answers.goal,
+    primaryActivity: answers.primaryActivity ?? null,
     experience: trainingPreferences.experience,
     trainingDaysPerWeek: daysPerWeek ? trainingDaysCount(daysPerWeek) : null,
     trainingDays: daysPerWeek ? resolveTrainingDays(daysPerWeek, trainingPreferences.trainingDays) : [],

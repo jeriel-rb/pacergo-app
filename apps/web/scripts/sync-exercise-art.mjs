@@ -4,7 +4,8 @@
  * derived from Everkinetic) into the web app.
  *
  * Writes:
- *  - public/exercise-art/<slug>/frame-{1,2,3}.svg  (SVG only, no PNGs)
+ *  - public/exercise-art/<slug>/frame-1.svg        (SVG only, no PNGs; the app shows one
+ *    static illustration per exercise, so only the first frame is kept)
  *  - public/exercise-art/manifest.json             (full per-frame credit/source/changes)
  *  - public/exercise-art/ATTRIBUTION.md, LICENSE-ASSETS (upstream, verbatim)
  *  - src/shared/assets/exercise-catalog.json       (compact catalog the app bundles:
@@ -40,8 +41,9 @@ await fs.rm(OUT_DIR, { recursive: true, force: true });
 const full = [];
 const catalog = [];
 for (const entry of manifest) {
-  const svgFrames = entry.frames.filter((f) => f.format === "svg");
-  if (svgFrames.length !== 3) throw new Error(`${entry.slug}: expected 3 SVG frames`);
+  // Static illustrations: keep the first SVG frame only.
+  const svgFrames = entry.frames.filter((f) => f.format === "svg" && f.index === 1);
+  if (svgFrames.length !== 1) throw new Error(`${entry.slug}: expected a first SVG frame`);
   await fs.mkdir(path.join(OUT_DIR, entry.slug), { recursive: true });
   for (const frame of svgFrames) {
     await fs.copyFile(
@@ -73,4 +75,4 @@ await fs.copyFile(path.join(PKG, "ATTRIBUTION.md"), path.join(OUT_DIR, "ATTRIBUT
 await fs.copyFile(path.join(PKG, "LICENSE-ASSETS"), path.join(OUT_DIR, "LICENSE-ASSETS"));
 await fs.writeFile(CATALOG_FILE, `${JSON.stringify(catalog, null, 2)}\n`);
 
-console.log(`Copied ${catalog.length} exercises (${catalog.length * 3} frames) → ${OUT_DIR}`);
+console.log(`Copied ${catalog.length} exercises (one static frame each) → ${OUT_DIR}`);

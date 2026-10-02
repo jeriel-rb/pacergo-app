@@ -13,7 +13,6 @@ const NAMESPACES = [
   "auth",
   "settings",
   "profile",
-  "aiPlan",
   "onboarding",
   "plan",
   "sessions",

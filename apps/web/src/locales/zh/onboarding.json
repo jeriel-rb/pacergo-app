@@ -30,7 +30,8 @@
     },
     "prefilled": "我們已依據你的健身檔案填入已知的資料。",
     "edit": "編輯",
-    "missingPlan": "你已完成設定，但目前沒有使用中的訓練計畫。用你儲存的回答重新建立吧。"
+    "missingPlan": "你已完成設定，但目前沒有使用中的訓練計畫。用你儲存的回答重新建立吧。",
+    "why": "三個簡短的部分：關於你、你的訓練方式與你的器材，讓計畫與營養目標更貼近你。大約需要 3 分鐘，首頁設定的答案已自動帶入。"
   },
   "aboutYou": {
     "title": "關於你"
@@ -62,18 +63,6 @@
       "injuries": "傷痛或身體不適",
       "lack_of_equipment": "缺乏器材",
       "never_tried": "從未嘗試過"
-    }
-  },
-  "useCase": {
-    "title": "你打算如何使用 Pacergo？",
-    "subtitle": "最多可選擇 {{max}} 項。",
-    "options": {
-      "log_weights_reps": "記錄我的重量與次數",
-      "personalized_plan": "取得專屬訓練計畫",
-      "progressive_overload": "使用智慧漸進超負荷",
-      "manage_plan_workouts": "管理訓練計畫與自訂訓練",
-      "exercise_demos": "查看動作示範與步驟指引",
-      "muscle_recovery": "查看肌肉恢復狀態"
     }
   },
   "gender": {
@@ -108,11 +97,11 @@
       "subtitle": "這能幫助我們為你推薦合適的動作與重量。",
       "options": {
         "no_experience": {
-          "title": "無訓練經驗",
+          "title": "初學者",
           "description": "剛接觸訓練，不熟悉常見動作或訓練器材。著重打好基礎。"
         },
         "beginner": {
-          "title": "初學者",
+          "title": "基礎",
           "description": "有一些訓練經驗（少於 1 年）。熟悉基本動作，但仍在學習正確姿勢與技巧。"
         },
         "intermediate": {

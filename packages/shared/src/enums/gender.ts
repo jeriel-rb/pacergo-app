@@ -5,9 +5,6 @@
  *  older stored values still parse — it's treated as unanswered everywhere. */
 export type Gender = "male" | "female" | "other";
 
-/** The selectable genders. */
-export const GENDERS: readonly Gender[] = ["male", "female"] as const;
-
 /** Genders the AI training plans are authored for. */
 export type PlanGender = "male" | "female";
 export const PLAN_GENDERS: readonly PlanGender[] = ["male", "female"] as const;

@@ -7,6 +7,10 @@ export type SessionFocus = "push" | "pull" | "legs" | "upper" | "lower" | "full_
 export interface GeneratedExercise {
   slug: string;
   name: Bi;
+  /** One-line how-to shown with the exercise (used for stretches). */
+  cue?: Bi;
+  /** Done once on each side (stretches and unilateral holds). */
+  perSide?: boolean;
   sets: number;
   /** "10-12" for rep ranges, or "30 sec" for timed work. */
   reps: string;
@@ -70,4 +74,8 @@ export interface ExerciseRecord {
   /** Has written step-by-step instructions. Exercises that do are preferred, so
    *  a day's exercises don't open onto an empty steps section. */
   hasInstructions?: boolean;
+  /** Has a drawn illustration. An exercise without one isn't generated. */
+  hasIllustration?: boolean;
+  /** First steps of the instructions, joined — shown as the stretch cue. */
+  shortCue?: Bi;
 }

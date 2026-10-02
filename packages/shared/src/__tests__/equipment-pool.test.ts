@@ -33,7 +33,7 @@ const EXERCISES: ExerciseRecord[] = [
   ex("dumbbell-fly", ["chest"], ["dumbbells"]),
   ex("cable-fly", ["chest"], ["cable_machine"]),
   ex("archer-push-up", ["chest", "triceps"], [], false),
-  ex("doorway-row", ["back", "biceps"], ["doorway"], false),
+  ex("doorway-row", ["back", "biceps"], ["doorway"]),
   ex("lat-pulldown", ["back", "biceps"], ["lat_pulldown"]),
 ];
 
@@ -78,10 +78,22 @@ describe("equipment-driven exercise pool", () => {
     expect(JSON.stringify(plan(["barbell", "dumbbells"]))).not.toEqual(JSON.stringify(plan(["cable_machine"])));
   });
 
-  it("prefers exercises that have written instructions over ones that don't", () => {
-    // push-up has steps, archer-push-up doesn't: with room for both, steps come first.
+  it("never generates an exercise that lacks instructions (reliable data is required)", () => {
+    // archer-push-up has no instructions, so it is kept out of the pool entirely.
     const picks = mainSlugs(plan([]), "push");
-    expect(picks.indexOf("push-up")).toBeLessThan(picks.indexOf("archer-push-up") === -1 ? 99 : picks.indexOf("archer-push-up"));
+    expect(picks).toContain("push-up");
+    expect(picks).not.toContain("archer-push-up");
+  });
+
+  it("never generates an exercise whose illustration is missing", () => {
+    const noArt = EXERCISES.map((e) => (e.slug === "push-up" ? { ...e, hasIllustration: false } : e));
+    const p = generateTrainingPlan({
+      answers: { ...ONBOARDING_ANSWERS_DEFAULT, goal: "build_muscle" },
+      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "beginner", daysPerWeek: "4", workoutSplit: "ppl_full_body", durationMin: 90 },
+      gymEquipment: { ...GYM_EQUIPMENT_DEFAULT, gymType: "large_gym", equipment: [] as never, addCardio: false },
+      exercises: noArt,
+    });
+    expect(mainSlugs(p, "push")).not.toContain("push-up");
   });
 
   it("can build a pull day for a bodyweight-only user (door rows)", () => {

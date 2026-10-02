@@ -2,6 +2,7 @@
 
 import type { ExerciseRecord } from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { exerciseArtSlugForDbSlug } from "@/shared/assets/exercise-art";
 
 interface ExerciseRow {
   slug: string;
@@ -12,6 +13,7 @@ interface ExerciseRow {
   /** Absent until the exercises seed that adds the column has been applied. */
   equipment?: string[] | null;
   instructions_en?: string[] | null;
+  instructions_zh?: string[] | null;
 }
 
 /** Full catalog, used by the composer to generate a plan. Exercises are
@@ -28,32 +30,11 @@ export async function fetchAllExercises(): Promise<ExerciseRecord[]> {
   return ((data ?? []) as ExerciseRow[]).map(rowToRecord);
 }
 
-export interface ExerciseDetail extends ExerciseRecord {
-  instructionsEn: string[];
-  instructionsZh: string[];
-  tipsEn: string[];
-  tipsZh: string[];
-}
-
-/** One exercise's full content, for the exercise detail screen (A-5). */
-export async function fetchExerciseBySlug(slug: string): Promise<ExerciseDetail | null> {
-  const supabase = createSupabaseBrowserClient();
-  const { data, error } = await supabase
-    .from("exercises")
-    .select(
-      "slug, name_en, name_zh, muscle_groups, equipment_settings, instructions_en, instructions_zh, tips_en, tips_zh",
-    )
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) return null;
-  return {
-    ...rowToRecord(data as ExerciseRow),
-    instructionsEn: (data as { instructions_en: string[] }).instructions_en,
-    instructionsZh: (data as { instructions_zh: string[] }).instructions_zh,
-    tipsEn: (data as { tips_en: string[] }).tips_en,
-    tipsZh: (data as { tips_zh: string[] }).tips_zh,
-  };
+/** First two steps, joined — the one-line how-to shown with a stretch. */
+function shortCue(row: ExerciseRow): ExerciseRecord["shortCue"] {
+  const en = (row.instructions_en ?? []).slice(0, 2).join(" ");
+  const zh = (row.instructions_zh ?? []).slice(0, 2).join("");
+  return en ? { en, zh: zh || en } : undefined;
 }
 
 function rowToRecord(row: ExerciseRow): ExerciseRecord {
@@ -65,5 +46,7 @@ function rowToRecord(row: ExerciseRow): ExerciseRecord {
     equipmentSettings: row.equipment_settings,
     equipment: Array.isArray(row.equipment) ? row.equipment : undefined,
     hasInstructions: (row.instructions_en?.length ?? 0) > 0,
+    hasIllustration: exerciseArtSlugForDbSlug(row.slug) !== null,
+    shortCue: shortCue(row),
   };
 }

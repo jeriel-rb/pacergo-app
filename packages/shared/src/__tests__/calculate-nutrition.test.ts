@@ -25,12 +25,13 @@ const BASE: NutritionInputs = {
 describe("toFitnessProfile", () => {
   it("flattens all three answer slices into one profile", () => {
     const profile = toFitnessProfile(
-      { ...ONBOARDING_ANSWERS_DEFAULT, age: 25, activityLevel: "high" },
+      { ...ONBOARDING_ANSWERS_DEFAULT, age: 25, activityLevel: "high", primaryActivity: "running" },
       { ...TRAINING_PREFERENCES_DEFAULT, daysPerWeek: "3", trainingDays: [5, 1, 3], durationMin: 60 },
       { ...GYM_EQUIPMENT_DEFAULT, gymType: "garage_gym", equipment: ["dumbbells", "bench"] },
     );
     expect(profile.age).toBe(25);
     expect(profile.activityLevel).toBe("high");
+    expect(profile.primaryActivity).toBe("running");
     expect(profile.trainingDaysPerWeek).toBe(3);
     expect(profile.trainingDays).toEqual([1, 3, 5]);
     expect(profile.sessionDurationMin).toBe(60);

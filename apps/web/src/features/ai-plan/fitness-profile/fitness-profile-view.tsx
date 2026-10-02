@@ -14,6 +14,7 @@ import {
   Ruler,
   Target,
   Timer,
+  Trophy,
   User,
   UserRound,
   type LucideIcon,
@@ -22,6 +23,7 @@ import {
   ONBOARDING_DAYS_PER_WEEK,
   ONBOARDING_DURATION_DEFAULT,
   ONBOARDING_EXPERIENCES,
+  PRIMARY_ACTIVITIES,
   trainingDaysComplete,
   withGymType,
   type GymEquipmentAnswers,
@@ -45,10 +47,10 @@ import { refreshActivePlanFromProfile, saveOnboardingAnswers } from "@/lib/plans
 import type { SavedFitnessProfile } from "@/lib/fitness-profile-row";
 import { cn } from "@/lib/utils";
 
-type FieldKey = BodyField | "experience" | "frequency" | "duration" | "equipment";
+type FieldKey = BodyField | "primaryActivity" | "experience" | "frequency" | "duration" | "equipment";
 
 const SECTIONS: { titleKey: string; keys: FieldKey[] }[] = [
-  { titleKey: "fitnessProfile.sections.about", keys: ["gender", "age", "body", "goal", "activityLevel"] },
+  { titleKey: "fitnessProfile.sections.about", keys: ["gender", "age", "body", "goal", "primaryActivity", "activityLevel"] },
   { titleKey: "fitnessProfile.sections.training", keys: ["experience", "frequency", "duration"] },
   { titleKey: "fitnessProfile.sections.equipment", keys: ["equipment"] },
 ];
@@ -58,6 +60,7 @@ const FIELD_ICONS: Record<FieldKey, LucideIcon> = {
   age: User,
   body: Ruler,
   goal: Target,
+  primaryActivity: Trophy,
   activityLevel: Activity,
   experience: BarChart3,
   frequency: CalendarDays,
@@ -84,7 +87,7 @@ export function FitnessProfileView({
   /** Saved answers merged with the account profile's gender. */
   answers: OnboardingAnswers;
 }) {
-  const { t } = useTranslation(["plan", "onboarding"]);
+  const { t } = useTranslation(["plan", "onboarding", "home"]);
   const router = useRouter();
   const pathname = usePathname();
   const toast = useToast();
@@ -153,6 +156,9 @@ export function FitnessProfileView({
             })()
         : "—",
     goal: answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : "—",
+    primaryActivity: answers.primaryActivity
+      ? t(`profileSetup.activities.${answers.primaryActivity}`, { ns: "home" })
+      : "—",
     activityLevel: answers.activityLevel
       ? t(`activityLevel.options.${answers.activityLevel}.title`, { ns: "onboarding" })
       : "—",
@@ -262,6 +268,19 @@ export function FitnessProfileView({
                     onPicked={close}
                   />
                 )}
+
+                {openField === "primaryActivity" &&
+                  PRIMARY_ACTIVITIES.map((a) => (
+                    <OptionCard
+                      key={a}
+                      title={t(`profileSetup.activities.${a}`, { ns: "home" })}
+                      selected={answers.primaryActivity === a}
+                      onSelect={() => {
+                        setAnswers((prev) => ({ ...prev, primaryActivity: a }));
+                        close();
+                      }}
+                    />
+                  ))}
 
                 {openField === "experience" &&
                   ONBOARDING_EXPERIENCES.map((e) => (

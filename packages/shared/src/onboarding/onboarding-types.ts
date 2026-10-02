@@ -1,3 +1,5 @@
+import type { PrimaryActivity } from '../enums/profile-setup';
+
 /** "About You" onboarding wizard (Let's Get Started → About You) inputs.
  *  Distinct from ../enums/training.ts's TrainingGoal (spec A-1, tied to the
  *  existing plan-composer's authored content) — this is a different,
@@ -36,18 +38,6 @@ export type OnboardingUseCase =
   | "exercise_demos"
   | "muscle_recovery";
 
-export const ONBOARDING_USE_CASES: readonly OnboardingUseCase[] = [
-  "log_weights_reps",
-  "personalized_plan",
-  "progressive_overload",
-  "manage_plan_workouts",
-  "exercise_demos",
-  "muscle_recovery",
-] as const;
-
-/** Use-case selection is capped at this many options (matches the reference UI). */
-export const ONBOARDING_USE_CASE_MAX = 3;
-
 export type OnboardingUnit = "imperial" | "metric";
 
 /** General day-to-day activity outside of planned workouts (NEAT), bucketed
@@ -78,6 +68,8 @@ export interface OnboardingAnswers {
   weightKg: number | null;
   /** Absent on drafts/rows saved before the activity-level step existed. */
   activityLevel: ActivityLevel | null;
+  /** What the user mainly trains (asked once, by the Home Profile Setup). */
+  primaryActivity: PrimaryActivity | null;
 }
 
 export const ONBOARDING_ANSWERS_DEFAULT: OnboardingAnswers = {
@@ -90,6 +82,7 @@ export const ONBOARDING_ANSWERS_DEFAULT: OnboardingAnswers = {
   heightCm: null,
   weightKg: null,
   activityLevel: null,
+  primaryActivity: null,
 };
 
 export type OnboardingStepId = "aboutYou" | "trainingPreferences" | "gymEquipment";
@@ -185,14 +178,6 @@ export type TrainingSplit =
   | "push_pull_legs"
   | "ppl_upper"
   | "ppl_upper_lower";
-
-export const TRAINING_SPLITS: readonly TrainingSplit[] = [
-  "full_body",
-  "upper_lower",
-  "push_pull_legs",
-  "ppl_upper",
-  "ppl_upper_lower",
-] as const;
 
 /** What's stored on the answers: a TrainingSplit, or a value from the retired
  *  three-option picker on plans saved before it ("ai_custom" means "let the

@@ -1,5 +1,6 @@
 import type { OnboardingExperience } from "../onboarding/onboarding-types";
 import type { ExerciseRecord } from "./generated-plan-types";
+import { isAdvancedSkill } from "./exercise-meta";
 
 /** How an exercise is loaded — derived from the equipment it needs. */
 export type ExerciseModality =
@@ -65,7 +66,7 @@ const TECHNICAL = /deadlift|clean|snatch|front[-_]squat|good[-_]morning|pistol|m
  *  non-core muscle groups) are moderate; barbell compounds and named
  *  technical lifts are technical. */
 export function exerciseComplexity(e: Pick<ExerciseRecord, "slug" | "equipment" | "muscleGroups">): 0 | 1 | 2 {
-  if (TECHNICAL.test(e.slug)) return 2;
+  if (TECHNICAL.test(e.slug) || isAdvancedSkill(e.slug)) return 2;
   const modality = exerciseModality(e);
   const compound = e.muscleGroups.filter((m) => m !== "cardio" && m !== "core" && m !== "abs").length >= 2;
   if (modality === "barbell") return compound ? 2 : 1;

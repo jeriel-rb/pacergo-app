@@ -105,6 +105,7 @@ export function HubView({ activePlanId }: { activePlanId: string | null }) {
           <BetaBadge />
         </div>
         <p className="text-muted-foreground">{t("hub.subtitle")}</p>
+        {!allDone && <p className="text-sm text-muted-foreground">{t("hub.why")}</p>}
         {hasSavedProfile && !generatedPlan && (
           <p className="text-sm text-muted-foreground">{t("hub.prefilled")}</p>
         )}

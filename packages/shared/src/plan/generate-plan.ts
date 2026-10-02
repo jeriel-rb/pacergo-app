@@ -11,6 +11,14 @@ import {
 import type { Bi } from "./plan-types";
 import { recommendSplit } from "./split-recommendation";
 import { experienceFit } from "./exercise-fit";
+import { isAiEligible } from "./exercise-qa";
+import {
+  ISOLATION_SLUGS,
+  LOW_PRIORITY_ISOLATION_SLUGS,
+  repsForExercise,
+  suitsExperience,
+} from "./exercise-meta";
+import { selectCooldown, stretchToExercise, STRETCH_LIBRARY } from "./stretch-library";
 import type {
   ExerciseRecord,
   GeneratedCardioBlock,
@@ -60,7 +68,7 @@ const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 4;
+export const PLAN_RULES_VERSION = 6;
 
 /** Extra sets on main lifts as the weeks go on (progressive overload): weeks 1–2
  *  as prescribed, weeks 3–4 one set more. Kept off for people who are short on
@@ -104,7 +112,6 @@ const SETS_REPS_BY_EXPERIENCE: Record<
 
 // Catalog slugs (kebab-case) of the exercise library.
 const WARMUP_SLUGS = ["jumping-jack", "high-knees", "bodyweight-squat"];
-const COOLDOWN_SLUGS = ["plank", "glute-bridge"];
 
 /** Impact / advanced-skill moves. Left out when the user says they have an
  *  injury, is 50 or over, or has a BMI of 30 or more. This is a cautious filter,
@@ -293,9 +300,25 @@ function pickMain(
   week: number,
   variety: NonNullable<TrainingPreferencesAnswers["variety"]>,
 ): ExerciseRecord[] {
-  const groups = muscleOrder
-    .map((m) => pool.filter((e) => e.muscleGroups[0] === m))
+  // Upper / lower chest are chest: one slot family, so a push day isn't three
+  // chest moves before it reaches shoulders or triceps.
+  const canon = (m: string) => (m === "upper_chest" || m === "lower_chest" ? "chest" : m);
+  const order = [...new Set(muscleOrder.map(canon))];
+  const groups = order
+    .map((m) => pool.filter((e) => canon(e.muscleGroups[0] ?? "") === m))
     .filter((g) => g.length > 0)
+    // The best-ranked lift leads; after it, single-joint work comes before
+    // more compounds (a main press, then the lateral raise — not two presses).
+    .map((g) => {
+      const rest = g.slice(1);
+      const isolations = rest.filter((e) => ISOLATION_SLUGS.has(e.slug));
+      return [
+        g[0]!,
+        ...isolations.filter((e) => !LOW_PRIORITY_ISOLATION_SLUGS.has(e.slug)),
+        ...isolations.filter((e) => LOW_PRIORITY_ISOLATION_SLUGS.has(e.slug)),
+        ...rest.filter((e) => !ISOLATION_SLUGS.has(e.slug)),
+      ];
+    })
     .map((g) => {
       if (week === 0 || variety === "fixed" || g.length < 2) return g;
       const staples = variety === "dynamic" ? 0 : 1;
@@ -347,6 +370,7 @@ function poolFor(
     .filter(
       (e) =>
         isAvailable(e, gymType, selected) &&
+        suitsExperience(e.slug, experience) &&
         // An exercise belongs to the focus its main (first-listed) muscle is in.
         muscleGroups.includes(e.muscleGroups[0] ?? "") &&
         !hitsExcluded(e, excluded) &&
@@ -397,7 +421,10 @@ export function generateTrainingPlan(input: {
   gymEquipment: GymEquipmentAnswers;
   exercises: readonly ExerciseRecord[];
 }): GeneratedPlan {
-  const { answers, trainingPreferences, gymEquipment, exercises } = input;
+  const { answers, trainingPreferences, gymEquipment } = input;
+  // Hard gate before anything is selected: only exercises with reliable
+  // illustration + instructions + muscle mapping that passed QA can be used.
+  const exercises = input.exercises.filter(isAiEligible);
 
   const gymType = gymEquipment.gymType ?? "bodyweight_only";
   const daysPerWeek = trainingPreferences.daysPerWeek ?? "3";
@@ -424,7 +451,14 @@ export function generateTrainingPlan(input: {
 
   const lowImpact = needsLowImpact(answers);
   const warmupPool = byslugs(exercises, lowImpact ? LOW_IMPACT_WARMUP_SLUGS : WARMUP_SLUGS);
-  const cooldownPool = byslugs(exercises, COOLDOWN_SLUGS);
+  // Recovery / stretching: real stretches only, chosen per workout from the
+  // muscles it trained (see selectCooldown). Equipment still applies (the
+  // doorway stretch needs a doorway).
+  const stretchSlugs = new Set(STRETCH_LIBRARY.map((s) => s.slug));
+  const stretchPool = exercises.filter(
+    (e) => stretchSlugs.has(e.slug) && isAvailable(e, gymType, selectedEquipment),
+  );
+  const cooldownCount = durationMin <= 30 || answers.obstacle === "lack_of_time" ? 3 : 4;
   // Jump rope is dropped in low-impact mode.
   const cardioTypes = gymEquipment.cardioTypes.filter((c) => !(lowImpact && c === "jump_rope"));
 
@@ -454,18 +488,22 @@ export function generateTrainingPlan(input: {
           ...FOCUS_MUSCLES[focus].filter((m) => !priority.has(m)),
         ];
         const sets = scheme.sets + progressionSets(week, answers.obstacle);
-        const main = pickMain(pool, muscleOrder, count, week, variety).map((e) =>
-          toExercise(e, {
+        const mainRecords = pickMain(pool, muscleOrder, count, week, variety);
+        const main = mainRecords.map((e) => {
+          // Timed holds get a hold time, single-joint work a higher rep range.
+          const reps = repsForExercise(e.slug, scheme.reps, answers.goal);
+          return toExercise(e, {
             ...scheme,
+            reps,
             sets,
             restSec: restSecFor({
               record: e,
-              reps: scheme.reps,
+              reps,
               goal: answers.goal,
               prefs: trainingPreferences,
             }),
-          }),
-        );
+          });
+        });
 
         let cardio: GeneratedCardioBlock | null = null;
         if (gymEquipment.addCardio && cardioTypes.length > 0) {
@@ -489,8 +527,8 @@ export function generateTrainingPlan(input: {
             toExercise(e, { sets: 1, reps: "45 sec", restSec: lightWorkRestSec(trainingPreferences) }),
           ),
           main,
-          cooldown: cooldownPool.map((e) =>
-            toExercise(e, { sets: 1, reps: "45 sec", restSec: lightWorkRestSec(trainingPreferences) }),
+          cooldown: selectCooldown({ main: mainRecords, available: stretchPool, count: cooldownCount }).map(
+            ({ def, record }) => stretchToExercise(def, record, lightWorkRestSec(trainingPreferences)),
           ),
           cardio,
         };

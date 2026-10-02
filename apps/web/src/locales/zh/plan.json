@@ -13,15 +13,25 @@
       "full_body": "全身訓練",
       "lower": "下半身"
     },
-    "minutes": "{{count}} 分鐘"
+    "minutes": "{{count}} 分鐘",
+    "outdated": {
+      "title": "這份計畫有更好的版本",
+      "body": "你的計畫是在我們改進之前建立的——現在每次訓練都會以針對當天訓練肌群的真正伸展作結。更新後所有設定都會保留。",
+      "cta": "更新這份計畫",
+      "updating": "更新中…",
+      "error": "無法更新計畫，請再試一次。",
+      "dayHint": "這份訓練可能仍使用舊的收操動作。點此更新計畫。"
+    }
   },
   "daily": {
     "warmup": "暖身",
     "main": "主訓練",
-    "cooldown": "收操",
+    "cooldown": "恢復與伸展",
     "cardio": "有氧",
     "sets": "組",
-    "rest": "休息"
+    "rest": "休息",
+    "eachSide": "每側",
+    "slowReps": "{{reps}} 次（緩慢）"
   },
   "workout": {
     "progress": "已完成 {{done}} / {{total}} 組",
@@ -305,7 +315,8 @@
       "experience": "訓練經驗",
       "frequency": "訓練日",
       "duration": "每次訓練時長",
-      "equipment": "場地與器材"
+      "equipment": "場地與器材",
+      "primaryActivity": "主要運動"
     },
     "note": "儲存後會更新你的營養目標與使用中的訓練計畫（其他已儲存的計畫維持不變——可在「我的計畫」用「更新偏好」更新）。休息計時、肌群偏好等計畫專屬設定會保留。",
     "save": "儲存變更",

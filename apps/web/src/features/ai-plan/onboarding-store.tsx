@@ -8,7 +8,6 @@ import {
   ONBOARDING_EXCLUDED_MUSCLES_MAX,
   ONBOARDING_MUSCLE_GROUPS,
   ONBOARDING_PRIORITIZED_MUSCLES_MAX,
-  ONBOARDING_USE_CASE_MAX,
   TRAINING_PREFERENCES_DEFAULT,
   isPlanGender,
   profileStepCompletion,
@@ -26,7 +25,6 @@ import {
   type OnboardingObstacle,
   type OnboardingStepId,
   type OnboardingUnit,
-  type OnboardingUseCase,
   type OnboardingVariety,
   type ActivityLevel,
   type OnboardingWorkoutSplit,
@@ -115,7 +113,6 @@ function stateFromProfile(
 type Action =
   | { type: "hydrate"; state: Partial<OnboardingState> }
   | { type: "patch"; patch: Partial<OnboardingAnswers> }
-  | { type: "toggleUseCase"; value: OnboardingUseCase }
   | { type: "patchTraining"; patch: Partial<TrainingPreferencesAnswers> }
   | { type: "patchGymEquipment"; patch: Partial<GymEquipmentAnswers> }
   | { type: "toggleEquipment"; value: OnboardingEquipment }
@@ -186,15 +183,6 @@ function reducer(state: OnboardingState, action: Action): OnboardingState {
       return { ...state, baseUpdatedAt: action.updatedAt };
     case "patch":
       return { ...state, answers: { ...state.answers, ...action.patch } };
-    case "toggleUseCase": {
-      const has = state.answers.useCases.includes(action.value);
-      const useCases = has
-        ? state.answers.useCases.filter((v) => v !== action.value)
-        : state.answers.useCases.length >= ONBOARDING_USE_CASE_MAX
-          ? state.answers.useCases
-          : [...state.answers.useCases, action.value];
-      return { ...state, answers: { ...state.answers, useCases } };
-    }
     case "patchTraining":
       return {
         ...state,
@@ -293,7 +281,6 @@ interface OnboardingContextValue {
   persistProfile: () => Promise<void>;
   setGoal: (goal: OnboardingGoal) => void;
   setObstacle: (obstacle: OnboardingObstacle) => void;
-  toggleUseCase: (useCase: OnboardingUseCase) => void;
   setGender: (gender: OnboardingAnswers["gender"]) => void;
   setAge: (age: number) => void;
   setUnit: (unit: OnboardingUnit) => void;
@@ -421,7 +408,6 @@ export function OnboardingProvider({
       persistProfile,
       setGoal: (goal) => dispatch({ type: "patch", patch: { goal } }),
       setObstacle: (obstacle) => dispatch({ type: "patch", patch: { obstacle } }),
-      toggleUseCase: (value) => dispatch({ type: "toggleUseCase", value }),
       setGender: (gender) => dispatch({ type: "patch", patch: { gender } }),
       setAge: (age) => dispatch({ type: "patch", patch: { age } }),
       setUnit: (unit) => dispatch({ type: "patch", patch: { unit } }),

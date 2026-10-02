@@ -38,7 +38,9 @@ export function WheelPicker({
     const el = containerRef.current;
     if (!el) return;
     suppressScroll.current = true;
-    el.scrollTop = index * ROW_HEIGHT;
+    // `scroll-smooth` would animate this jump from the top and the in-flight
+    // scroll events would overwrite the value, so jump instantly.
+    el.scrollTo({ top: index * ROW_HEIGHT, behavior: "instant" });
     const id = window.setTimeout(() => {
       suppressScroll.current = false;
     }, 60);

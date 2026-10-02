@@ -144,6 +144,14 @@ create table if not exists users (
   experience_level experience_level,
   location geography(Point, 4326),
   home_area text,
+  -- First-run profile setup. null status means the prompt has not been shown.
+  primary_activity text
+    check (primary_activity in ('gym', 'running', 'hiking', 'other')),
+  fitness_level text
+    check (fitness_level in ('beginner', 'basic', 'intermediate', 'advanced')),
+  profile_setup_status text
+    check (profile_setup_status in ('completed', 'skipped')),
+  profile_setup_at timestamptz,
   is_companion boolean not null default false,
   push_token text,
   created_at timestamptz not null default now(),
@@ -257,6 +265,7 @@ create table if not exists notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references users (id) on delete cascade,
   type text not null,
+  booking_id uuid references bookings (id) on delete cascade,
   payload jsonb not null default '{}',
   read_at timestamptz,
   created_at timestamptz not null default now()
@@ -501,6 +510,8 @@ create table if not exists user_onboarding (
   about_you jsonb not null default '{}'::jsonb,
   training_preferences jsonb not null default '{}'::jsonb,
   gym_equipment jsonb not null default '{}'::jsonb,
+  nutrition jsonb,
+  nutrition_status text check (nutrition_status in ('built', 'skipped')),
   updated_at timestamptz not null default now()
 );
 
@@ -517,6 +528,43 @@ create table if not exists user_training_plans (
   created_at timestamptz not null default now()
 );
 
+alter table user_onboarding
+  add column if not exists active_plan_id uuid references user_training_plans (id) on delete set null;
+
+-- One row per exercise per calendar day (Asia/Taipei). RPC-only: RLS on, no policies.
+create table if not exists workout_exercise_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  plan_id uuid references user_training_plans (id) on delete set null,
+  week int not null check (week between 1 and 52),
+  day_index int not null check (day_index between 0 and 6),
+  exercise_slug text not null check (char_length(exercise_slug) between 1 and 120),
+  performed_on date not null,
+  sets jsonb not null default '[]'::jsonb,
+  effort text check (effort in ('too_light', 'just_right', 'too_heavy')),
+  updated_at timestamptz not null default now(),
+  unique nulls not distinct (user_id, plan_id, week, day_index, exercise_slug, performed_on)
+);
+
+create index if not exists workout_exercise_logs_history_idx
+  on workout_exercise_logs (user_id, exercise_slug, performed_on desc);
+
+create table if not exists workout_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  plan_id uuid references user_training_plans (id) on delete set null,
+  week int not null check (week between 1 and 52),
+  day_index int not null check (day_index between 0 and 6),
+  performed_on date not null,
+  completed_at timestamptz not null default now(),
+  unique nulls not distinct (user_id, plan_id, week, day_index, performed_on)
+);
+
+create index if not exists workout_sessions_user_idx on workout_sessions (user_id, performed_on desc);
+
+alter table workout_exercise_logs enable row level security;
+alter table workout_sessions enable row level security;
+
 create index if not exists listing_offerings_listing_idx on listing_offerings (listing_id);
 
 create index if not exists bookings_seeker_idx on bookings (seeker_id);
@@ -524,6 +572,11 @@ create index if not exists bookings_seeker_idx on bookings (seeker_id);
 create index if not exists bookings_companion_idx on bookings (companion_id);
 
 create index if not exists notifications_user_idx on notifications (user_id, created_at desc);
+
+-- One notification per (recipient, booking, type). Null booking_id stays unconstrained.
+create unique index if not exists notifications_one_per_booking_event_idx
+  on notifications (user_id, booking_id, type)
+  where booking_id is not null;
 
 create index if not exists availability_profile_idx on availability (user_id);
 
@@ -782,8 +835,9 @@ begin
     return new;
   end if;
 
-  insert into notifications (user_id, type, payload)
-  values (recipient, ntype, jsonb_build_object('booking_id', new.id, 'status', new.status));
+  insert into notifications (user_id, type, booking_id, payload)
+  values (recipient, ntype, new.id, jsonb_build_object('booking_id', new.id, 'status', new.status))
+  on conflict (user_id, booking_id, type) where booking_id is not null do nothing;
   return new;
 end $$;
 
@@ -1275,7 +1329,7 @@ begin
     bio = p_bio,
     experience_level = p_experience_level,
     home_area = p_home_area,
-    gender = p_gender
+    gender = coalesce(p_gender, gender)
   where id = auth.uid();
 end $$;
 
@@ -1305,6 +1359,56 @@ as $$
     where id = auth.uid()
   ) t;
 $$;
+
+-- First-run profile setup. City reuses home_area. Shown once: completed or skipped.
+create or replace function save_profile_setup(
+  p_primary_activity text,
+  p_fitness_level text,
+  p_city text
+) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  if char_length(coalesce(p_city, '')) > 120 then raise exception 'city too long'; end if;
+
+  update users set
+    primary_activity = coalesce(p_primary_activity, primary_activity),
+    fitness_level = coalesce(p_fitness_level, fitness_level),
+    home_area = coalesce(nullif(btrim(p_city), ''), home_area),
+    profile_setup_status = 'completed',
+    profile_setup_at = now()
+  where id = auth.uid();
+end $$;
+
+create or replace function skip_profile_setup() returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+
+  update users set
+    profile_setup_status = 'skipped',
+    profile_setup_at = now()
+  where id = auth.uid() and profile_setup_status is null;
+end $$;
+
+create or replace function my_profile_setup() returns jsonb
+language sql security definer set search_path = public stable as $$
+  select jsonb_build_object(
+    'status', u.profile_setup_status,
+    'primaryActivity', u.primary_activity,
+    'fitnessLevel', u.fitness_level,
+    'city', u.home_area
+  )
+  from users u
+  where u.id = auth.uid();
+$$;
+
+revoke all on function save_profile_setup(text, text, text) from public, anon, authenticated;
+revoke all on function skip_profile_setup() from public, anon, authenticated;
+revoke all on function my_profile_setup() from public, anon, authenticated;
+grant execute on function save_profile_setup(text, text, text) to authenticated;
+grant execute on function skip_profile_setup() to authenticated;
+grant execute on function my_profile_setup() to authenticated;
 
 create or replace function toggle_saved_companion(p_companion_id uuid)
 returns boolean
@@ -3767,21 +3871,64 @@ create or replace function save_onboarding_answers(
   p_gym_type text,
   p_about_you jsonb,
   p_training_preferences jsonb,
-  p_gym_equipment jsonb
-) returns void
+  p_gym_equipment jsonb,
+  p_nutrition jsonb default null,
+  p_nutrition_status text default null
+) returns timestamptz
 language plpgsql security definer set search_path = public as $$
+declare
+  v_updated_at timestamptz;
+  v_gender text := p_about_you ->> 'gender';
 begin
   if auth.uid() is null then raise exception 'not authenticated'; end if;
+  if p_nutrition is not null and jsonb_typeof(p_nutrition) <> 'object' then
+    raise exception 'invalid nutrition';
+  end if;
+  if p_nutrition_status is not null and p_nutrition_status not in ('built', 'skipped') then
+    raise exception 'invalid nutrition status';
+  end if;
 
-  insert into user_onboarding (user_id, goal, gym_type, about_you, training_preferences, gym_equipment)
-  values (auth.uid(), p_goal, p_gym_type, coalesce(p_about_you, '{}'::jsonb),
-          coalesce(p_training_preferences, '{}'::jsonb), coalesce(p_gym_equipment, '{}'::jsonb))
+  insert into user_onboarding (
+    user_id, goal, gym_type, about_you, training_preferences, gym_equipment,
+    nutrition, nutrition_status
+  )
+  values (
+    auth.uid(), p_goal, p_gym_type, coalesce(p_about_you, '{}'::jsonb),
+    coalesce(p_training_preferences, '{}'::jsonb), coalesce(p_gym_equipment, '{}'::jsonb),
+    case when p_nutrition_status = 'built' then p_nutrition end,
+    p_nutrition_status
+  )
   on conflict (user_id) do update set
     goal = excluded.goal,
     gym_type = excluded.gym_type,
     about_you = excluded.about_you,
     training_preferences = excluded.training_preferences,
-    gym_equipment = excluded.gym_equipment;
+    gym_equipment = excluded.gym_equipment,
+    nutrition_status = coalesce(p_nutrition_status, user_onboarding.nutrition_status),
+    nutrition = case
+      when coalesce(p_nutrition_status, user_onboarding.nutrition_status) = 'built' then p_nutrition
+      else user_onboarding.nutrition
+    end
+  returning updated_at into v_updated_at;
+
+  if v_gender in ('male', 'female') then
+    update users set gender = v_gender
+    where id = auth.uid() and (gender is null or gender in ('male', 'female'))
+      and gender is distinct from v_gender;
+  end if;
+
+  return v_updated_at;
+end $$;
+
+create or replace function skip_nutrition_plan() returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+
+  insert into user_onboarding (user_id, nutrition_status)
+  values (auth.uid(), 'skipped')
+  on conflict (user_id) do update set
+    nutrition_status = coalesce(user_onboarding.nutrition_status, 'skipped');
 end $$;
 
 create or replace function save_training_plan(
@@ -3806,17 +3953,21 @@ begin
   )
   returning id into v_id;
 
+  insert into user_onboarding (user_id, active_plan_id)
+  values (auth.uid(), v_id)
+  on conflict (user_id) do update set active_plan_id = excluded.active_plan_id;
+
   return v_id;
 end $$;
 
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) to authenticated;
+grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -3832,13 +3983,13 @@ language sql security definer set search_path = public stable as $$
 $$;
 
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) to authenticated;
+grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -3852,13 +4003,13 @@ language sql security definer set search_path = public stable as $$
 $$;
 
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) to authenticated;
+grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -3873,13 +4024,13 @@ begin
   if not found then raise exception 'plan not found'; end if;
 end $$;
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) to authenticated;
+grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -4487,7 +4638,7 @@ revoke insert, update, delete, truncate, references, trigger on table
   exercises, user_onboarding, user_training_plans
 from authenticated;
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 
@@ -4497,7 +4648,7 @@ revoke all on function training_plan_detail(uuid) from public, anon, authenticat
 
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) to authenticated;
+grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 
@@ -4507,7 +4658,7 @@ grant execute on function training_plan_detail(uuid) to authenticated;
 
 grant execute on function delete_training_plan(uuid) to authenticated;
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 
@@ -4517,7 +4668,7 @@ revoke all on function training_plan_detail(uuid) from public, anon, authenticat
 
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb) to authenticated;
+grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 
@@ -5370,10 +5521,167 @@ begin
   return v || jsonb_build_object('history', v_history);
 end $$;
 
+revoke all on function save_bank_account(text, text, text, text, text) from public, anon;
+revoke all on function my_bank_account() from public, anon;
+revoke all on function admin_list_payments(text) from public, anon;
+revoke all on function admin_payment_detail(uuid) from public, anon;
 grant execute on function save_bank_account(text, text, text, text, text) to authenticated;
 grant execute on function my_bank_account() to authenticated;
 grant execute on function admin_list_payments(text) to authenticated;
 grant execute on function admin_payment_detail(uuid) to authenticated;
+
+-- Active plan, workout logs, and Home progress. "Today" is Asia/Taipei.
+create or replace function app_today() returns date
+language sql stable set search_path = public as $$
+  select (now() at time zone 'Asia/Taipei')::date;
+$$;
+
+create or replace function active_training_plan_id()
+returns uuid
+language sql security definer set search_path = public stable as $$
+  select coalesce(
+    (select o.active_plan_id
+       from user_onboarding o
+       join user_training_plans p on p.id = o.active_plan_id
+      where o.user_id = auth.uid()),
+    (select p.id from user_training_plans p
+      where p.user_id = auth.uid()
+      order by p.created_at desc
+      limit 1)
+  );
+$$;
+
+create or replace function set_active_training_plan(p_id uuid)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  if not exists (select 1 from user_training_plans where id = p_id and user_id = auth.uid()) then
+    raise exception 'plan not found';
+  end if;
+
+  insert into user_onboarding (user_id, active_plan_id)
+  values (auth.uid(), p_id)
+  on conflict (user_id) do update set active_plan_id = excluded.active_plan_id;
+end $$;
+
+create or replace function log_exercise_sets(
+  p_plan_id uuid,
+  p_week int,
+  p_day_index int,
+  p_slug text,
+  p_sets jsonb,
+  p_effort text default null
+) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  v_set jsonb;
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  if not exists (select 1 from user_training_plans where id = p_plan_id and user_id = auth.uid()) then
+    raise exception 'plan not found';
+  end if;
+  if jsonb_typeof(p_sets) <> 'array' or jsonb_array_length(p_sets) > 12 then
+    raise exception 'invalid sets';
+  end if;
+  for v_set in select * from jsonb_array_elements(p_sets) loop
+    if jsonb_typeof(v_set) <> 'object'
+      or coalesce((v_set ->> 'weightKg')::numeric, 0) not between 0 and 1000
+      or coalesce((v_set ->> 'reps')::int, 0) not between 0 and 500 then
+      raise exception 'invalid set';
+    end if;
+  end loop;
+  if p_effort is not null and p_effort not in ('too_light', 'just_right', 'too_heavy') then
+    raise exception 'invalid effort';
+  end if;
+
+  insert into workout_exercise_logs (user_id, plan_id, week, day_index, exercise_slug, performed_on, sets, effort)
+  values (auth.uid(), p_plan_id, p_week, p_day_index, p_slug, app_today(), p_sets, p_effort)
+  on conflict (user_id, plan_id, week, day_index, exercise_slug, performed_on) do update set
+    sets = excluded.sets,
+    effort = excluded.effort,
+    updated_at = now();
+end $$;
+
+create or replace function workout_day_logs(p_plan_id uuid, p_week int, p_day_index int)
+returns table (exercise_slug text, sets jsonb, effort text)
+language sql security definer set search_path = public stable as $$
+  select l.exercise_slug, l.sets, l.effort
+  from workout_exercise_logs l
+  where l.user_id = auth.uid()
+    and l.plan_id = p_plan_id and l.week = p_week and l.day_index = p_day_index
+    and l.performed_on = app_today();
+$$;
+
+create or replace function exercise_history(p_slug text, p_limit int default 3)
+returns table (performed_on date, sets jsonb, effort text)
+language sql security definer set search_path = public stable as $$
+  select l.performed_on, l.sets, l.effort
+  from workout_exercise_logs l
+  where l.user_id = auth.uid() and l.exercise_slug = p_slug and l.performed_on < app_today()
+    and jsonb_array_length(l.sets) > 0
+  order by l.performed_on desc, l.updated_at desc
+  limit least(greatest(coalesce(p_limit, 3), 1), 10);
+$$;
+
+create or replace function complete_workout(p_plan_id uuid, p_week int, p_day_index int)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  if not exists (select 1 from user_training_plans where id = p_plan_id and user_id = auth.uid()) then
+    raise exception 'plan not found';
+  end if;
+  insert into workout_sessions (user_id, plan_id, week, day_index, performed_on)
+  values (auth.uid(), p_plan_id, p_week, p_day_index, app_today())
+  on conflict (user_id, plan_id, week, day_index, performed_on) do nothing;
+end $$;
+
+-- With an active plan: target is that plan's training days, done is this week's
+-- finished workouts (Mon–Sun, Asia/Taipei). Otherwise the manual target.
+create or replace function weekly_progress()
+returns jsonb
+language sql security definer set search_path = public stable as $$
+  with active as (
+    select p.id, p.plan
+    from user_training_plans p
+    where p.id = active_training_plan_id()
+  )
+  select case
+    when exists (select 1 from active) then (
+      select jsonb_build_object(
+        'source', 'plan',
+        'planId', a.id,
+        'target', (
+          select count(*)
+          from jsonb_array_elements(a.plan -> 'weeks' -> 0 -> 'days') d
+          where coalesce((d ->> 'isRestDay')::boolean, false) = false
+        ),
+        'done', (
+          select count(*)
+          from workout_sessions s
+          where s.user_id = auth.uid() and s.plan_id = a.id
+            and s.performed_on >= date_trunc('week', app_today())::date
+        )
+      )
+      from active a
+    )
+    else jsonb_build_object(
+      'source', 'manual',
+      'target', coalesce((select weekly_target from users where id = auth.uid()), 5),
+      'done', (
+        select count(*)
+        from bookings
+        where (seeker_id = auth.uid() or companion_id = auth.uid())
+          and status = 'completed'
+          and completed_at >= date_trunc('week', now())
+      )
+    )
+  end;
+$$;
+
+revoke all on function app_today() from public, anon;
+grant execute on function app_today() to authenticated;
 
 -- Security hardening (final state): FK covering indexes + RPC ACL matrix.
 -- Idempotent with the live apply_migration timestamps 20260921051016 / 026.

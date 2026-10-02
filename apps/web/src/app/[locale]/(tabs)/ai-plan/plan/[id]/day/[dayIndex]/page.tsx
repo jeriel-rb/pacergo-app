@@ -1,3 +1,4 @@
+import { PLAN_RULES_VERSION } from "@pacergo/shared";
 import { getTrainingPlanServer } from "@/lib/plan-view.server";
 import { DailyWorkoutView } from "@/features/ai-plan/plan/daily-workout-view";
 import { PlanNotFound } from "@/features/ai-plan/plan/plan-not-found";
@@ -25,5 +26,13 @@ export default async function DailyWorkoutPage({
   const day = result.plan.weeks[week - 1]?.days.find((d) => d.dayIndex === index);
   if (!day) return <PlanNotFound />;
 
-  return <DailyWorkoutView planId={id} day={day} week={week} restTimer={result.restTimer} />;
+  return (
+    <DailyWorkoutView
+      planId={id}
+      day={day}
+      week={week}
+      restTimer={result.restTimer}
+      outdated={(result.plan.rulesVersion ?? 0) < PLAN_RULES_VERSION}
+    />
+  );
 }

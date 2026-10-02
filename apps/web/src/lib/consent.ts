@@ -25,7 +25,7 @@ export function isConsentSlug(value: string): value is ConsentSlug {
  */
 export const CONSENT_VERSIONS: Record<ConsentSlug, string> = {
   terms_of_service: "2026-09-15",
-  privacy_policy: "2026-09-15",
+  privacy_policy: "2026-10-02",
   risk_disclosure: "2026-09-15",
   partner_conduct_rules: "2026-09-15",
 };

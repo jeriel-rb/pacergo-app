@@ -59,6 +59,7 @@ begin
   return jsonb_build_object('users', v_users, 'total', v_total);
 end;
 $$;
+revoke all on function list_all_users(int, int, text) from public, anon;
 grant execute on function list_all_users(int, int, text) to authenticated;
 
 -- ---------------------------------------------------------------------------
@@ -75,4 +76,5 @@ begin
   update users set is_admin = p_is_admin where id = p_user_id;
 end;
 $$;
+revoke all on function set_user_admin(uuid, boolean) from public, anon;
 grant execute on function set_user_admin(uuid, boolean) to authenticated;

@@ -42,8 +42,8 @@
 > **2026-09-22 migration-history note:** `backend/migrations/` was later squashed into
 > `0001_init.sql` (schema) + `0002_policies.sql` (centralized RLS/storage policies with
 > comments); new migrations since then use full timestamp filenames. The exercise-catalog
-> work is one idempotent migration (`20260922020000_exercise_catalog_update.sql` — upsert +
-> delete stale + saved-plan slug rewrite); the earlier
+> slug rewrite (`20260922020000_exercise_catalog_update.sql`) already ran and was folded
+> out of the migration files; the earlier
 > `20260922010000_exercise_conditioning_tags.sql` was superseded and repaired out of remote
 > history. Seed mirror: `backend/seeds/03_ai_plan_exercises.sql`. Verified live: 302 rows in
 > `exercises`.

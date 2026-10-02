@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,7 +14,7 @@ import {
   Utensils,
   Zap,
 } from "lucide-react";
-import type { TrainerSummary, UserProfile } from "@pacergo/shared";
+import type { ProfileSetupState, TrainerSummary, UserProfile } from "@pacergo/shared";
 import type { WeeklyProgress } from "@/lib/goals";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -22,6 +23,7 @@ import { HeroBanner } from "./hero-banner";
 import { QuickActionsGrid, type QuickAction } from "./quick-actions-grid";
 import { ToolsList, type ToolItem } from "./tools-list";
 import { WeeklyProgressCard } from "./weekly-progress-card";
+import { ProfileSetupDialog } from "./profile-setup-dialog";
 import { RecommendedTrainers } from "./recommended-trainers";
 import { getLocalizedPath } from "@/lib/locale-path";
 import { useLocale } from "@/shared/hooks/use-locale";
@@ -54,11 +56,17 @@ export function HomeView({
   user,
   savedIds,
   weeklyProgress,
+  profileSetup,
+  hasActivePlan = false,
 }: {
   trainers: TrainerSummary[];
   user: UserProfile | null;
   savedIds?: string[];
   weeklyProgress: WeeklyProgress;
+  /** First-run Profile Setup state; the dialog shows only when never answered. */
+  profileSetup?: ProfileSetupState | null;
+  /** Signed-in user already has an AI training plan. */
+  hasActivePlan?: boolean;
 }) {
   const { t } = useTranslation(["home", "trainer", "common"]);
   const locale = useLocale();
@@ -103,6 +111,15 @@ export function HomeView({
 
   return (
     <div className="space-y-6">
+      {/* Only while something is still unknown: anything the fitness profile or
+          the account already holds is never asked again. */}
+      {user &&
+        profileSetup &&
+        profileSetup.status === null &&
+        !(profileSetup.primaryActivity && profileSetup.experience && profileSetup.city) && (
+          <ProfileSetupDialog initial={profileSetup} />
+        )}
+
       {/* Greeting */}
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -125,6 +142,21 @@ export function HomeView({
           <SoonBadge className="absolute -right-2 -top-2" />
         </Button>
       </header>
+
+      {/* Next step for a signed-in user with no AI plan yet. Setup answers
+          from the dialog are already filled in on the way. */}
+      {user && !hasActivePlan && (
+        <Link
+          href={getLocalizedPath("/ai-plan", locale)}
+          className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 transition-colors hover:bg-primary/10"
+        >
+          <Sparkles size={20} className="shrink-0 text-primary" aria-hidden />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">{t("buildPlan.title")}</p>
+            <p className="text-xs text-muted-foreground">{t("buildPlan.body")}</p>
+          </div>
+        </Link>
+      )}
 
       {/* Dashboard. Desktop: hero + actions (left), sticky personal rail (right),
           recommended trainers below-left. Mobile: a single stacked column in

@@ -43,8 +43,8 @@ export function PlanReadyView() {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState(false);
 
-  const heightCm = answers.heightCm ?? 170;
-  const weightKg = answers.weightKg ?? 70;
+  const heightCm = answers.heightCm ?? 165;
+  const weightKg = answers.weightKg ?? 62;
   const bmi = weightKg / (heightCm / 100) ** 2;
   const category = bmiCategory(bmi);
   const bmiPct = Math.min(

@@ -72,7 +72,12 @@
     ],
     "visual_label": "Web App screen",
     "visual_title": "AI Training Menu",
-    "visual_points": ["Goal", "Level", "Frequency", "Training place"],
+    "visual_points": [
+      "Goal",
+      "Level",
+      "Frequency",
+      "Training place"
+    ],
     "visual_note": "Approved AI plan screenshots will be placed here when available."
   },
   "tiers": {
@@ -87,19 +92,31 @@
         "code": "A",
         "name": "Top Tier",
         "blurb": "Partners at this level submit approved proof for the selected activity before listing at this level.",
-        "features": ["Credential review for Tier A", "Structured support", "Goal-based sessions"]
+        "features": [
+          "Credential review for Tier A",
+          "Structured support",
+          "Goal-based sessions"
+        ]
       },
       {
         "code": "B",
         "name": "Senior Pro",
         "blurb": "Experienced workout partners can support users with practical training experience after the required review.",
-        "features": ["Real training experience", "Hands-on support", "Peer accountability"]
+        "features": [
+          "Real training experience",
+          "Hands-on support",
+          "Peer accountability"
+        ]
       },
       {
         "code": "C",
         "name": "Buddy",
         "blurb": "Workout partners who want to show up and train together, free or at a small fee when they choose.",
-        "features": ["Casual accountability", "Flexible pace", "Workout partner support"]
+        "features": [
+          "Casual accountability",
+          "Flexible pace",
+          "Workout partner support"
+        ]
       }
     ]
   },
@@ -162,5 +179,11 @@
     "sub": "AI helps you plan, and real people help you follow through.",
     "submit": "Start Free",
     "launching": "Available in Taiwan · 繁體中文 & English"
+  },
+  "validation": {
+    "title_1": "Taichung ",
+    "title_highlight": "First-Round Validation",
+    "body": "Be among the first to try PacerGo in Taichung. It's free to join.",
+    "cta": "Join for Free"
   }
 }

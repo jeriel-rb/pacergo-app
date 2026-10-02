@@ -3,8 +3,8 @@ import { EXERCISE_CATALOG } from "./exercise-catalog";
 /**
  * Exercise/equipment line art from bryllim/workout-guide (CC BY-SA 4.0,
  * derived from Everkinetic). The files under `public/exercise-art/` are synced
- * by `apps/web/scripts/sync-exercise-art.mjs` (all 302 exercises, 3 frames
- * each). Attribution lives on `/credits`, linked from the Terms of Service and
+ * by `apps/web/scripts/sync-exercise-art.mjs` (all 302 exercises, one static
+ * frame each). Attribution lives on `/credits`, linked from the Terms of Service and
  * Privacy Policy pages rather than from the art itself — keep that link when
  * touching those pages, and keep the license/attribution files in
  * `public/exercise-art/`.
@@ -14,9 +14,9 @@ const ART_DIR = "/exercise-art";
 
 const AVAILABLE = new Set(EXERCISE_CATALOG.map((entry) => entry.slug));
 
-/** Frame image for an art slug (1 = start, 2 = mid, 3 = end position). */
-export function exerciseArtFrame(artSlug: string, frame: 1 | 2 | 3 = 1): string {
-  return `${ART_DIR}/${artSlug}/frame-${frame}.svg`;
+/** The static illustration for an art slug (the first frame is all we keep). */
+export function exerciseArtFrame(artSlug: string): string {
+  return `${ART_DIR}/${artSlug}/frame-1.svg`;
 }
 
 /** Legacy exercise slugs (the old snake_case `exercises.slug` list, still

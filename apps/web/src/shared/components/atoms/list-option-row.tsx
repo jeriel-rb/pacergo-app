@@ -58,7 +58,7 @@ export function ListOptionRow({
     >
       {art ? (
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-muted">
-          <ExerciseArt slug={art} still className="h-full w-full" />
+          <ExerciseArt slug={art} className="h-full w-full" />
         </span>
       ) : (
         Icon && (

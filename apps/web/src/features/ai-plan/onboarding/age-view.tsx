@@ -9,7 +9,7 @@ import { StepScreen } from "./step-screen";
 
 const MIN_AGE = 13;
 const MAX_AGE = 90;
-const DEFAULT_AGE = 30;
+const DEFAULT_AGE = 21;
 const AGE_VALUES = Array.from(
   { length: MAX_AGE - MIN_AGE + 1 },
   (_, i) => MIN_AGE + i,

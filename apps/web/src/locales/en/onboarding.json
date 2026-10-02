@@ -30,7 +30,8 @@
     },
     "prefilled": "We've filled in what we already know from your fitness profile.",
     "edit": "Edit",
-    "missingPlan": "Your setup is complete, but there's no active training plan. Create it from your saved answers."
+    "missingPlan": "Your setup is complete, but there's no active training plan. Create it from your saved answers.",
+    "why": "Three short sections — about you, how you train, and your equipment — so your plan and nutrition targets fit you. It takes about 3 minutes, and your Home setup answers are already filled in."
   },
   "aboutYou": {
     "title": "About You"
@@ -62,18 +63,6 @@
       "injuries": "Injuries or physical discomfort",
       "lack_of_equipment": "Lack of equipment",
       "never_tried": "I've never tried"
-    }
-  },
-  "useCase": {
-    "title": "What do you plan to use Pacergo for?",
-    "subtitle": "Choose up to {{max}} options.",
-    "options": {
-      "log_weights_reps": "Keep a log of my weights and reps",
-      "personalized_plan": "Get my personalized training plan",
-      "progressive_overload": "Use smart progressive overload",
-      "manage_plan_workouts": "Manage my training plan and custom workouts",
-      "exercise_demos": "View exercise demos and step-by-step guidance",
-      "muscle_recovery": "View muscle recovery status"
     }
   },
   "gender": {
@@ -108,11 +97,11 @@
       "subtitle": "This helps us recommend the right exercises and weights for you.",
       "options": {
         "no_experience": {
-          "title": "No Training Experience",
+          "title": "Beginner",
           "description": "New to training. Not familiar with common exercises or training equipment. Focus on building a solid foundation."
         },
         "beginner": {
-          "title": "Beginner",
+          "title": "Basic",
           "description": "Some training experience (<1 year). Familiar with basic exercises but still learning proper form and technique."
         },
         "intermediate": {

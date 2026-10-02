@@ -5,7 +5,15 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, Moon } from "lucide-react";
-import { ONBOARDING_GOALS, type GeneratedPlan, type OnboardingGoal } from "@pacergo/shared";
+import {
+  ONBOARDING_GOALS,
+  PLAN_RULES_VERSION,
+  type GeneratedPlan,
+  type OnboardingGoal,
+} from "@pacergo/shared";
+import { useRouter } from "next/navigation";
+import { Loader2, RefreshCw } from "lucide-react";
+import { regeneratePlanUnderCurrentRules } from "@/lib/plans";
 import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/shared/hooks/use-locale";
@@ -15,10 +23,12 @@ import { NutritionLinkCard } from "@/features/ai-plan/nutrition/nutrition-link-c
  *  front ("nothing drip-released"); the exercise mix rotates week to week
  *  according to the plan's Variety setting. */
 export function PlanOverviewView({
+  planId,
   label,
   goal,
   plan,
 }: {
+  planId: string;
   label: string;
   /** Promoted column, not the JSONB snapshot — see `plan-view.server.ts`.
    *  Lets the title re-translate live instead of showing whatever language
@@ -29,6 +39,25 @@ export function PlanOverviewView({
 }) {
   const { t } = useTranslation(["plan", "onboarding"]);
   const locale = useLocale();
+  const router = useRouter();
+  // Plans built under older rules (e.g. a plank / glute-bridge "cooldown") can
+  // be refreshed in place; the plan's settings stay as they are.
+  const outdated = (plan.rulesVersion ?? 0) < PLAN_RULES_VERSION;
+  const [updating, setUpdating] = React.useState(false);
+  const [updateError, setUpdateError] = React.useState(false);
+
+  async function onUpdateRules() {
+    setUpdating(true);
+    setUpdateError(false);
+    try {
+      await regeneratePlanUnderCurrentRules(planId);
+      router.refresh();
+    } catch {
+      setUpdateError(true);
+    } finally {
+      setUpdating(false);
+    }
+  }
   const title =
     goal && ONBOARDING_GOALS.includes(goal as OnboardingGoal)
       ? t(`goal.options.${goal}.title`, { ns: "onboarding" })
@@ -62,6 +91,23 @@ export function PlanOverviewView({
           <BetaBadge />
         </div>
       </div>
+
+      {outdated && (
+        <div className="space-y-2 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+          <p className="text-sm font-semibold">{t("overview.outdated.title")}</p>
+          <p className="text-xs text-muted-foreground">{t("overview.outdated.body")}</p>
+          {updateError && <p className="text-xs text-destructive">{t("overview.outdated.error")}</p>}
+          <button
+            type="button"
+            onClick={onUpdateRules}
+            disabled={updating}
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {updating ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} aria-hidden />}
+            {updating ? t("overview.outdated.updating") : t("overview.outdated.cta")}
+          </button>
+        </div>
+      )}
 
       <NutritionLinkCard href={pathname.replace(/\/plan\/[^/]+$/, "/nutrition")} />
 

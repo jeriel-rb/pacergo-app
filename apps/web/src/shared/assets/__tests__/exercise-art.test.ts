@@ -21,10 +21,17 @@ describe("exercise art registry", () => {
     for (const slug of EXERCISE_ART_ALIAS_TARGETS) expect(hasExerciseArt(slug), slug).toBe(true);
   });
 
-  it("has all three frames of every equipment/cardio illustration on disk", () => {
+  it("has the static illustration of every equipment/cardio item on disk", () => {
     const slugs = [...Object.values(EQUIPMENT_ART), ...Object.values(CARDIO_ART), CARDIO_HERO_ART];
-    for (const slug of slugs) {
-      for (const n of [1, 2, 3] as const) expect(onDisk(exerciseArtFrame(slug, n)), `${slug} ${n}`).toBe(true);
+    for (const slug of slugs) expect(onDisk(exerciseArtFrame(slug)), slug).toBe(true);
+  });
+
+  it("keeps exactly one frame per exercise (static illustrations)", () => {
+    const dir = path.join(PUBLIC_DIR, "exercise-art");
+    const folders = fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory());
+    expect(folders.length).toBeGreaterThan(0);
+    for (const folder of folders) {
+      expect(fs.readdirSync(path.join(dir, folder.name)), folder.name).toEqual(["frame-1.svg"]);
     }
   });
 
@@ -33,9 +40,7 @@ describe("exercise art registry", () => {
     expect(exerciseArtSlugForDbSlug("barbell_bench_press")).toBe("bench-press");
     expect(exerciseArtSlugForDbSlug("stationary_bike")).toBe("cycling");
     for (const slug of ["stationary_bike", "push_up", "barbell_bench_press"]) {
-      for (const n of [1, 2, 3] as const) {
-        expect(onDisk(exerciseArtFrame(exerciseArtSlugForDbSlug(slug)!, n)), `${slug} ${n}`).toBe(true);
-      }
+      expect(onDisk(exerciseArtFrame(exerciseArtSlugForDbSlug(slug)!)), slug).toBe(true);
     }
     expect(exerciseArtSlugForDbSlug("barbell_lunge")).toBeNull();
   });

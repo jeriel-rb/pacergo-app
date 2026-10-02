@@ -13,15 +13,25 @@
       "full_body": "Full Body",
       "lower": "Lower Body"
     },
-    "minutes": "{{count}} min"
+    "minutes": "{{count}} min",
+    "outdated": {
+      "title": "A better version of this plan is available",
+      "body": "Your plan was built before we improved it — workouts now end with real stretching for the muscles you trained. Updating keeps all your settings.",
+      "cta": "Update this plan",
+      "updating": "Updating…",
+      "error": "Couldn't update the plan. Please try again.",
+      "dayHint": "This workout may still use the old cooldown. Tap to update the plan."
+    }
   },
   "daily": {
     "warmup": "Warm-up",
     "main": "Main Training",
-    "cooldown": "Cool-down",
+    "cooldown": "Recovery / Stretching",
     "cardio": "Cardio",
     "sets": "sets",
-    "rest": "rest"
+    "rest": "rest",
+    "eachSide": "each side",
+    "slowReps": "{{reps}} slow reps"
   },
   "workout": {
     "progress": "{{done}} of {{total}} sets",
@@ -305,7 +315,8 @@
       "experience": "Training Experience",
       "frequency": "Training Days",
       "duration": "Session Duration",
-      "equipment": "Gym & Equipment"
+      "equipment": "Gym & Equipment",
+      "primaryActivity": "Main Activity"
     },
     "note": "Saving updates your nutrition targets and your active training plan (your other saved plans stay as they are — update one from My Plans with Update Preferences). Plan-only settings like rest timer and muscle focus are kept.",
     "save": "Save Changes",

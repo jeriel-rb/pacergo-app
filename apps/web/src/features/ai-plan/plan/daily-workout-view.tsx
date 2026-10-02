@@ -7,9 +7,9 @@ import { Check, ChevronLeft, ChevronRight, Dumbbell, PartyPopper, RotateCcw } fr
 import type { GeneratedDay, GeneratedExercise } from "@pacergo/shared";
 import type { PlanRestTimer } from "@/lib/plan-view.server";
 import { useLocale } from "@/shared/hooks/use-locale";
-import { useDurationFormat } from "@/lib/format-duration";
 import { cn } from "@/lib/utils";
 import { RestCountdown } from "./rest-countdown";
+import { useExerciseSummary } from "./exercise-summary";
 import { useWorkoutProgress } from "./use-workout-progress";
 import { sessionProgress, setKey, type WorkoutGroup, type WorkoutProgress } from "./workout-progress";
 
@@ -23,11 +23,14 @@ export function DailyWorkoutView({
   day,
   week,
   restTimer,
+  outdated = false,
 }: {
   planId: string;
   day: GeneratedDay;
   week: number;
   restTimer: PlanRestTimer;
+  /** Built before the latest rules; the update lives on the overview. */
+  outdated?: boolean;
 }) {
   const { t } = useTranslation("plan");
   const locale = useLocale();
@@ -76,6 +79,16 @@ export function DailyWorkoutView({
         </Link>
         <h1 className="text-lg font-semibold">{day.dayLabel[locale]}</h1>
       </div>
+
+      {outdated && (
+        <Link
+          href={`${overviewPath}?week=${week}`}
+          className="space-y-1 rounded-2xl border border-primary/30 bg-primary/5 p-4 transition-colors hover:bg-primary/10"
+        >
+          <p className="text-sm font-semibold">{t("overview.outdated.title")}</p>
+          <p className="text-xs text-muted-foreground">{t("overview.outdated.dayHint")}</p>
+        </Link>
+      )}
 
       {!session ? (
         <p className="text-sm text-muted-foreground">{t("overview.restDay")}</p>
@@ -164,7 +177,7 @@ function ExerciseGroup({
   week: number;
 }) {
   const { t } = useTranslation("plan");
-  const format = useDurationFormat();
+  const summarize = useExerciseSummary();
   if (exercises.length === 0) return null;
   return (
     <div className="space-y-2">
@@ -192,9 +205,12 @@ function ExerciseGroup({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold">{ex.name[locale]}</span>
-                <span className="block text-xs text-muted-foreground">
-                  {ex.sets} × {format.reps(ex.reps)} · {t("daily.rest")} {format.seconds(ex.restSec)}
-                </span>
+                <span className="block text-xs text-muted-foreground">{summarize(ex, group)}</span>
+                {group === "cooldown" && ex.cue && (
+                  <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground/80">
+                    {ex.cue[locale]}
+                  </span>
+                )}
               </span>
               {done > 0 && !finished && (
                 <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold tabular-nums text-primary">

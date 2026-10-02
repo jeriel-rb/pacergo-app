@@ -10,6 +10,7 @@ import {
   RECOVERY_SESSION_COOKIE,
   type PasswordUpdateErrorCode,
 } from "@/lib/password-reset";
+import { isValidRecoveryMarker } from "@/lib/recovery-marker";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
 
@@ -52,9 +53,8 @@ export default async function NewPasswordPage({
   }
 
   const cookieStore = await cookies();
-  const hasRecoverySession =
-    cookieStore.get(RECOVERY_SESSION_COOKIE)?.value === "1";
-  if (!hasRecoverySession || !SUPABASE_CONFIGURED) {
+  const recoveryMarker = cookieStore.get(RECOVERY_SESSION_COOKIE)?.value;
+  if (!recoveryMarker || !SUPABASE_CONFIGURED) {
     return <PasswordResetStatusCard error="password_update_session_missing" />;
   }
 
@@ -63,7 +63,7 @@ export default async function NewPasswordPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user || !isValidRecoveryMarker(recoveryMarker, user.id)) {
     return <PasswordResetStatusCard error="password_update_session_missing" />;
   }
 

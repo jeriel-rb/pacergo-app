@@ -5,7 +5,7 @@
   "switchTrainer": "切換陪練員",
   "hero": {
     "title": "找到你的訓練夥伴",
-    "subtitle": "6+ 位專業陪練師等你",
+    "subtitle": "6+ 位專業陪練等你",
     "cta": "立即探索"
   },
   "actions": {
@@ -34,14 +34,14 @@
   "tools": "個人工具",
   "myTrainer": "你的固定夥伴",
   "myTrainerHint": "配對後，你的固定陪練夥伴會顯示在這裡。",
-  "recommended": "推薦陪練師",
+  "recommended": "推薦陪練",
   "viewAll": "查看全部",
-  "saveTrainer": "收藏陪練師",
+  "saveTrainer": "收藏陪練",
   "moreActivities": "還提供",
   "moreActivitiesAria": "顯示另外 {{count}} 項運動",
   "unsaveTrainer": "取消收藏",
   "toast": {
-    "saveFailed": "無法收藏該陪練師，請再試一次。",
+    "saveFailed": "無法收藏該陪練，請再試一次。",
     "unsaveFailed": "無法取消收藏，請再試一次。",
     "weeklyGoalSaved": "已儲存每週目標",
     "weeklyGoalFailed": "無法儲存每週目標，請再試一次。"

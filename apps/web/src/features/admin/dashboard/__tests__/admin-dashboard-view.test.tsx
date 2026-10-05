@@ -458,7 +458,7 @@ describe("AdminDashboardView — empty and localized", () => {
     expect(screen.getByRole("heading", { name: "儀表板" })).toBeInTheDocument();
     expect(screen.getByText("總使用者數")).toBeInTheDocument();
     expect(screen.getByText("近 30 天新增 7 位")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "陪練師申請" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "陪練申請" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "撥款" })).toBeInTheDocument();
   });
 });

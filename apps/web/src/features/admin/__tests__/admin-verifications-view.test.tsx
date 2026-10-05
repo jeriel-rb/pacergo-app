@@ -214,6 +214,6 @@ describe("admin sidebar", () => {
 
   it("has a label for it in both languages", () => {
     expect(en.nav.verifications).toBe("Trainer requests");
-    expect(zh.nav.verifications).toBe("陪練師申請");
+    expect(zh.nav.verifications).toBe("陪練申請");
   });
 });

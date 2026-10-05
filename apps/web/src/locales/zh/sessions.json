@@ -1,7 +1,7 @@
 {
   "title": "我的預約",
   "subtitle": "你的訓練預約與紀錄",
-  "empty": "還沒有任何預約。在陪練師頁面預約一堂課開始吧。",
+  "empty": "還沒有任何預約。在陪練頁面預約一堂課開始吧。",
   "back": "返回",
   "flexible": "時間待確認",
   "groups": {
@@ -45,7 +45,7 @@
     "subtitle": "向 {{name}} 送出預約請求",
     "offering": "選擇方案",
     "when": "希望時間",
-    "whenHint": "可留空；時間以台北時間（GMT+8）為準，也可與陪練師再約定",
+    "whenHint": "可留空；時間以台北時間（GMT+8）為準，也可與陪練再約定",
     "location": "地點",
     "locationPlaceholder": "例如：台北市信義區 World Gym",
     "note": "備註",

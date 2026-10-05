@@ -1,14 +1,14 @@
 {
-  "listTitle": "陪練師",
+  "listTitle": "陪練",
   "listSubtitle": "找到最適合你的訓練夥伴",
   "viewList": "列表",
   "viewMap": "地圖",
   "nearby": {
-    "locating": "正在尋找你附近的陪練師…",
-    "denied": "需要定位權限才能顯示附近的陪練師。",
+    "locating": "正在尋找你附近的陪練…",
+    "denied": "需要定位權限才能顯示附近的陪練。",
     "error": "無法取得位置，請稍後再試。",
     "retry": "重新定位",
-    "count": "附近有 {{count}} 位陪練師"
+    "count": "附近有 {{count}} 位陪練"
   },
   "services": "服務項目",
   "bio": "個人簡介",
@@ -22,8 +22,8 @@
   "manager": "平台特約經理人",
   "managerRegion": "負責區域",
   "bookNow": "立即預約",
-  "bookHint": "預約後陪練師將在 24 小時內確認",
-  "bookingRequested": "已送出預約邀請，陪練師將盡快與你確認。",
+  "bookHint": "預約後陪練將在 24 小時內確認",
+  "bookingRequested": "已送出預約邀請，陪練將盡快與你確認。",
   "bidding": "競標制",
   "ratingCount": "({{count}})",
   "weekdaysShort": ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]

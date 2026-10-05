@@ -44,3 +44,4 @@ export * from './types/user';
 export * from './types/chat';
 export * from './types/nearby';
 export * from './matching/rank-companions';
+export * from './matching/city';

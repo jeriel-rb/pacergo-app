@@ -11,7 +11,7 @@ import { ListingEditor } from "./listing-editor";
 import { OfferingsEditor } from "./offerings-editor";
 import { AvailabilityEditor } from "./availability-editor";
 
-/** 陪練師後台 — manage your listing, offerings, and availability. */
+/** 陪練後台 — manage your listing, offerings, and availability. */
 export function StudioView({ data }: { data: MyListing }) {
   const { t } = useTranslation("studio");
   const pathname = usePathname();

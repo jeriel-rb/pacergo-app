@@ -1,6 +1,6 @@
 "use client";
 
-import type { OnboardingExperience, PrimaryActivity } from "@pacergo/shared";
+import { normalizeCity, type OnboardingExperience, type PrimaryActivity } from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 /** Saves the Profile Setup answers into the Shared Fitness Profile (level =
@@ -15,7 +15,7 @@ export async function saveProfileSetup(input: {
   const { error } = await supabase.rpc("save_profile_setup", {
     p_primary_activity: input.primaryActivity,
     p_experience: input.experience,
-    p_city: input.city.trim(),
+    p_city: normalizeCity(input.city),
   });
   if (error) throw error;
 }

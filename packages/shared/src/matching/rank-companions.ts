@@ -2,6 +2,7 @@ import type { ActivitySlug } from '../enums/activity';
 import type { ProfileSetupState } from '../enums/profile-setup';
 import type { OnboardingExperience } from '../onboarding/onboarding-types';
 import type { TrainerSummary } from '../types/trainer';
+import { cityKey } from './city';
 
 /** Points per signal. Activity matters most, then being nearby, then level. */
 export const MATCH_WEIGHTS = { activity: 3, city: 2, level: 1 } as const;
@@ -20,6 +21,9 @@ function slugFor(activity: ProfileSetupState['primaryActivity']): ActivitySlug |
 }
 
 function sameArea(userCity: string, trainerArea: string): boolean {
+  const ka = cityKey(userCity);
+  const kb = cityKey(trainerArea);
+  if (ka && kb) return ka === kb;
   const a = userCity.trim().toLowerCase();
   const b = trainerArea.trim().toLowerCase();
   return a.length > 0 && b.length > 0 && (a.includes(b) || b.includes(a));

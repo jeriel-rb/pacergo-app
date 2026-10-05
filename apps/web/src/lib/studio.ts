@@ -61,7 +61,7 @@ const EMPTY: MyListing = {
   availability: [],
 };
 
-/** The signed-in user's listing bundle (for 陪練師後台). */
+/** The signed-in user's listing bundle (for 陪練後台). */
 export async function getMyListing(): Promise<MyListing> {
   if (!SUPABASE_CONFIGURED) return EMPTY;
   const supabase = await createSupabaseServerClient();

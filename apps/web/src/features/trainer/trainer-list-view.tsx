@@ -8,7 +8,7 @@ import { NearbyView } from "@/features/nearby/nearby-view";
 import { cn } from "@/lib/utils";
 import { TrainerGrid } from "./trainer-grid";
 
-/** Full trainer listing page (陪練師 tab) — list feed or nearby map. */
+/** Full trainer listing page (陪練 tab) — list feed or nearby map. */
 export function TrainerListView({
   trainers,
   savedIds,

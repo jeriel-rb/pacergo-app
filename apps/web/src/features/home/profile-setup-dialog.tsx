@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import {
+  CITY_CANONICAL,
   ONBOARDING_EXPERIENCES,
   PRIMARY_ACTIVITIES,
+  cityKey,
+  normalizeCity,
   type OnboardingExperience,
   type PrimaryActivity,
   type ProfileSetupState,
@@ -41,7 +44,7 @@ export function ProfileSetupDialog({ initial }: { initial: ProfileSetupState }) 
   const [open, setOpen] = React.useState(true);
   const [activity, setActivity] = React.useState<PrimaryActivity | null>(initial.primaryActivity);
   const [level, setLevel] = React.useState<OnboardingExperience | null>(initial.experience);
-  const [city, setCity] = React.useState(initial.city ?? "");
+  const [city, setCity] = React.useState(normalizeCity(initial.city));
   const [busy, setBusy] = React.useState<"save" | "skip" | null>(null);
 
   const complete = activity !== null && level !== null && city.trim() !== "";
@@ -97,10 +100,10 @@ export function ProfileSetupDialog({ initial }: { initial: ProfileSetupState }) 
             <p className="text-sm font-semibold">{t("profileSetup.city")}</p>
             <div className="flex flex-wrap gap-2">
               {CITY_SUGGESTIONS.map((c) => {
-                const label = t(`profileSetup.cities.${c}`);
+                // Shown translated, saved as the canonical name.
                 return (
-                  <Chip key={c} selected={city.trim() === label} onClick={() => setCity(label)} small>
-                    {label}
+                  <Chip key={c} selected={cityKey(city) === c} onClick={() => setCity(CITY_CANONICAL[c])} small>
+                    {t(`profileSetup.cities.${c}`)}
                   </Chip>
                 );
               })}

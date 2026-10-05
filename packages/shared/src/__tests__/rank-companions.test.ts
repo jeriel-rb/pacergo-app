@@ -19,6 +19,10 @@ describe("rankCompanions", () => {
     const r = rankCompanions(list, profile({ primaryActivity: "running", city: "Taipei" }));
     expect(r.map((x) => x.id)).toEqual(["c", "b", "a"]);
   });
+  it("matches a Chinese district address with an English city name", () => {
+    const l = [t("a", {}), t("z", { home_area: "台北市信義區" })];
+    expect(rankCompanions(l, profile({ city: "Taipei" })).map((x) => x.id)).toEqual(["z", "a"]);
+  });
   it("'other' activity does not score", () => {
     expect(rankCompanions(list, profile({ primaryActivity: "other" })).map((x) => x.id)).toEqual(["a", "b", "c"]);
   });

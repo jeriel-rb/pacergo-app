@@ -25,6 +25,7 @@ import {
   type ResendVerificationErrorCode,
 } from "@/lib/auth-errors";
 import { cn } from "@/lib/utils";
+import { captureAttribution, readAttribution } from "@/lib/attribution";
 import {
   rememberPendingVerificationEmail,
   resendVerificationEmail,
@@ -46,6 +47,10 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const pathname = usePathname();
   const locale = getCurrentLocale(pathname);
   const isSignUp = mode === "sign-up";
+
+  useEffect(() => {
+    if (isSignUp) captureAttribution(window.location.search);
+  }, [isSignUp]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -127,7 +132,10 @@ export function EmailAuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
             // and read back by handle_new_user() to write consent_records — see
             // signUpConsentMetadata()'s comment for why this isn't a separate
             // post-signup RPC call.
-            data: signUpConsentMetadata(),
+            data: {
+              ...signUpConsentMetadata(),
+              ...readAttribution(window.location.search),
+            },
           },
         });
         if (error) throw error;

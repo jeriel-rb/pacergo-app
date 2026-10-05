@@ -578,7 +578,7 @@ export const GOAL_NOTES: Record<TrainingGoal, Bi[]> = {
 export const LOCATION_NOTES: Record<TrainingLocation, Bi[]> = {
   gym: [
     {
-      zh: "器材不熟悉時，先請現場教練或陪練師示範一次再上重量。",
+      zh: "器材不熟悉時，先請現場教練或陪練示範一次再上重量。",
       en: "If you're unfamiliar with a machine, ask a gym staff member or your training partner to demonstrate it before adding weight.",
     },
   ],

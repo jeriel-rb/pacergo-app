@@ -33,7 +33,7 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
       { weekday: 6, start_minute: min(9), end_minute: min(17) },
     ],
     reviews: [],
-    manager: { name: '張志明', region: '台北市', note_zh: '此陪練師由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
+    manager: { name: '張志明', region: '台北市', note_zh: '此陪練由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
     is_bidding: false,
   },
   {
@@ -61,7 +61,7 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
       { weekday: 3, start_minute: min(10), end_minute: min(20) },
     ],
     reviews: [],
-    manager: { name: '張志明', region: '台北市', note_zh: '此陪練師由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
+    manager: { name: '張志明', region: '台北市', note_zh: '此陪練由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
     is_bidding: false,
   },
   {
@@ -93,7 +93,7 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
       { weekday: 5, start_minute: min(14), end_minute: min(21) },
     ],
     reviews: [],
-    manager: { name: '張志明', region: '台北市', note_zh: '此陪練師由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
+    manager: { name: '張志明', region: '台北市', note_zh: '此陪練由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
     is_bidding: true,
   },
   {
@@ -120,7 +120,7 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
       { weekday: 6, start_minute: min(10), end_minute: min(16) },
     ],
     reviews: [],
-    manager: { name: '張志明', region: '台北市', note_zh: '此陪練師由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
+    manager: { name: '張志明', region: '台北市', note_zh: '此陪練由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
     is_bidding: false,
   },
   {
@@ -147,7 +147,7 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
       { weekday: 6, start_minute: min(6), end_minute: min(14) },
     ],
     reviews: [],
-    manager: { name: '張志明', region: '台北市', note_zh: '此陪練師由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
+    manager: { name: '張志明', region: '台北市', note_zh: '此陪練由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
     is_bidding: false,
   },
   {
@@ -175,7 +175,7 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
       { weekday: 0, start_minute: min(7), end_minute: min(12) },
     ],
     reviews: [],
-    manager: { name: '張志明', region: '台北市', note_zh: '此陪練師由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
+    manager: { name: '張志明', region: '台北市', note_zh: '此陪練由 張志明 特約經理人負責督導。', note_en: 'Supervised by platform manager 張志明.' },
     is_bidding: false,
   },
   {
@@ -210,14 +210,14 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
     manager: {
       name: '張志明',
       region: '台北市',
-      note_zh: '此陪練師由 張志明 特約經理人負責督導。若您對服務不滿意，平台將請對應經理人進行督導改正。',
+      note_zh: '此陪練由 張志明 特約經理人負責督導。若您對服務不滿意，平台將請對應經理人進行督導改正。',
       note_en: 'Supervised by platform manager 張志明. If you are unsatisfied, the platform will ask the assigned manager to follow up.',
     },
     is_bidding: true,
   },
 ];
 
-/** Ids shown in the home "推薦陪練師" feed, in display order (matches screenshot 1). */
+/** Ids shown in the home "推薦陪練" feed, in display order (matches screenshot 1). */
 export const RECOMMENDED_IDS: string[] = [
   'wang-jianhong',
   'li-yating',

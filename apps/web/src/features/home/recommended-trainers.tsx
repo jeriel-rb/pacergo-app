@@ -8,7 +8,7 @@ import type { TrainerSummary } from "@pacergo/shared";
 import { TrainerGrid } from "@/features/trainer/trainer-grid";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 
-/** Home "推薦陪練師" section: heading + view-all link + the shared trainer grid. */
+/** Home "推薦陪練" section: heading + view-all link + the shared trainer grid. */
 export function RecommendedTrainers({
   trainers,
   savedIds,

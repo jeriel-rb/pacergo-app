@@ -22,6 +22,13 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
+vi.mock("@/lib/supabase/env", () => ({
+  APP_URL: "",
+  SUPABASE_CONFIGURED: true,
+  SUPABASE_KEY: "test-key",
+  SUPABASE_URL: "https://project-ref.supabase.co",
+}));
+
 describe("ForgotPasswordForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -63,7 +70,7 @@ describe("ForgotPasswordForm", () => {
     expect(resetPasswordForEmail).toHaveBeenCalledWith(
       "runner@example.com",
       expect.objectContaining({
-        redirectTo: expect.stringContaining("/auth/recovery?flow=recovery"),
+        redirectTo: expect.stringContaining("/auth/recovery/confirm?flow=recovery"),
       }),
     );
     expect(screen.getByText("forgot.successBody")).toBeInTheDocument();

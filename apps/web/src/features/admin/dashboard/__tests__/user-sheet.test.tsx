@@ -375,7 +375,7 @@ describe("UserSheet", () => {
 
   it("renders the Chinese copy", () => {
     renderSheet({ detail: trainer }, "zh");
-    for (const name of ["帳號", "個人資料", "健身檔案", "活動紀錄", "信任與安全", "陪練師刊登", "審核紀錄", "收入與撥款"]) {
+    for (const name of ["帳號", "個人資料", "健身檔案", "活動紀錄", "信任與安全", "陪練刊登", "審核紀錄", "收入與撥款"]) {
       expect(screen.getByRole("button", { name: new RegExp(`^${name}`) })).toHaveAttribute("aria-expanded", "true");
     }
   });

@@ -21,7 +21,7 @@ const toSummary = (t: TrainerProfile): TrainerSummary => ({
   experience_level: t.experience_level,
 });
 
-/** Trainers for the home "推薦陪練師" feed, optionally filtered by activity. */
+/** Trainers for the home "推薦陪練" feed, optionally filtered by activity. */
 export async function getRecommendedTrainers(opts?: {
   activity?: ActivitySlug;
 }): Promise<TrainerSummary[]> {

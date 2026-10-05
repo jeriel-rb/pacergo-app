@@ -21,6 +21,9 @@ describe("export column sets match spec §5.2 B-9", () => {
     const headers = USERS_EXPORT.columns.map((c) => c.header);
     expect(headers).toContain("Display Name");
     expect(headers).toContain("Created At");
+    expect(headers).toEqual(
+      expect.arrayContaining(["Primary Activity", "Profile Level", "Profile Setup", "Profile Setup At", "Signup Source"]),
+    );
     expect(headers).not.toContain("Is Admin");
     expect(headers).not.toContain("Is Companion");
     expect(hasIdColumn(headers)).toBe(false);

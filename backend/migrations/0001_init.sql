@@ -1434,7 +1434,7 @@ begin
     training_preferences = user_onboarding.training_preferences || jsonb_strip_nulls(jsonb_build_object('experience', p_experience));
 
   update users set
-    home_area = coalesce(nullif(btrim(p_city), ''), home_area),
+    home_area = coalesce(nullif(regexp_replace(btrim(p_city), '\s+', ' ', 'g'), ''), home_area),
     experience_level = coalesce(
       (case p_experience when 'no_experience' then 'beginner' else p_experience end)::experience_level,
       experience_level
@@ -3341,11 +3341,18 @@ begin
       'display_name', u.display_name,
       'home_area', u.home_area,
       'experience_level', u.experience_level,
+      'primary_activity', o.about_you ->> 'primaryActivity',
+      'profile_level', o.training_preferences ->> 'experience',
+      'profile_setup_status', u.profile_setup_status,
+      'profile_setup_at', u.profile_setup_at,
+      'signup_source', au.raw_user_meta_data ->> 'utm_medium',
       'is_companion', u.is_companion,
       'is_admin', u.is_admin,
       'created_at', u.created_at
     ) as obj
     from users u
+    left join user_onboarding o on o.user_id = u.id
+    left join auth.users au on au.id = u.id
   ) s;
   return v;
 end $$;

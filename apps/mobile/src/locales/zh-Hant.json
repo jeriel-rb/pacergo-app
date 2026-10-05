@@ -52,7 +52,7 @@
     "sent": "預約已送出",
     "error": "無法送出預約，請再試一次。",
     "flexible": "彈性",
-    "whenHint": "可先不選，之後再與陪練師討論"
+    "whenHint": "可先不選，之後再與陪練討論"
   },
   "bookingDetail": {
     "accept": "接受",

@@ -29,6 +29,11 @@ export interface UserExportRow {
   display_name: unknown;
   home_area: unknown;
   experience_level: unknown;
+  primary_activity: unknown;
+  profile_level: unknown;
+  profile_setup_status: unknown;
+  profile_setup_at: unknown;
+  signup_source: unknown;
   created_at: unknown;
 }
 
@@ -140,6 +145,11 @@ export const USERS_EXPORT: CsvExport<UnknownRow> = {
     { header: "Display Name", cell: (r) => text(r.display_name) },
     { header: "Home Area", cell: (r) => text(r.home_area) },
     { header: "Experience Level", cell: (r) => text(r.experience_level) },
+    { header: "Primary Activity", cell: (r) => text(r.primary_activity) },
+    { header: "Profile Level", cell: (r) => text(r.profile_level) },
+    { header: "Profile Setup", cell: (r) => text(r.profile_setup_status) },
+    { header: "Profile Setup At", cell: (r) => dateTime(r.profile_setup_at) },
+    { header: "Signup Source", cell: (r) => text(r.signup_source) },
     { header: "Created At", cell: (r) => dateTime(r.created_at) },
   ],
 };

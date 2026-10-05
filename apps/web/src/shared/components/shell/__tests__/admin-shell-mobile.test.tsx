@@ -76,7 +76,7 @@ describe("admin bottom bar (phone)", () => {
     path = "/zh/admin";
     wrap("zh", <BottomNav variant="admin" />);
     expect(screen.getByRole("link", { name: "儀表板" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "陪練師申請" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "陪練申請" })).toBeInTheDocument();
   });
 });
 

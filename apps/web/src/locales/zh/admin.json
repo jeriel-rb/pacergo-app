@@ -1,7 +1,7 @@
 {
   "nav": {
     "dashboard": "儀表板",
-    "verifications": "陪練師申請",
+    "verifications": "陪練申請",
     "console": "管理後台",
     "menu": "管理選單",
     "orders": "訂單",
@@ -9,7 +9,7 @@
     "exports": "CSV 匯出",
     "backToApp": "返回 Pacergo"
   },
-  "title": "陪練師審核",
+  "title": "陪練審核",
   "subtitle": "審核教練證／資格證明與比賽經驗申請",
   "tabVerifications": "審核",
   "tabMembers": "會員",
@@ -18,7 +18,7 @@
   "clearSearch": "清除搜尋",
   "noSearchResults": "找不到符合的會員。",
   "roleMember": "會員",
-  "roleTrainer": "陪練師",
+  "roleTrainer": "陪練",
   "roleAdmin": "管理員",
   "makeAdmin": "設為管理員",
   "revokeAdmin": "移除管理員",
@@ -53,7 +53,7 @@
     "competition": "審核標準：需比賽得獎或成績證明（獎狀、名次證明、完賽成績）。"
   },
   "viewDoc": "檢視文件（PDF）",
-  "notesPlaceholder": "備註（選填，未通過時會顯示給陪練師）…",
+  "notesPlaceholder": "備註（選填，未通過時會顯示給陪練）…",
   "approve": "核准",
   "reject": "退回",
   "approved": "已核准",
@@ -63,7 +63,7 @@
   "error": "發生錯誤，請再試一次。",
   "docError": "無法開啟文件。",
   "payouts": {
-    "title": "陪練師撥款管理",
+    "title": "陪練撥款管理",
     "subtitle": "審核提領申請，並於平台外以銀行轉帳完成撥款",
     "totals": {
       "requested": "待審核",
@@ -128,7 +128,7 @@
     "empty": "沒有符合此篩選的訂單。",
     "unknown": "未知",
     "amount": "金額",
-    "withTrainer": "陪練師：{{name}}",
+    "withTrainer": "陪練：{{name}}",
     "actions": "帳本操作",
     "actionsNotice": "此操作只會更新 Pacergo 內的訂單紀錄。退款與撥款皆以手動轉帳於平台外處理。",
     "reasonPlaceholder": "原因說明（必填）…",
@@ -181,7 +181,7 @@
       "provider": "付款方式",
       "fee": "平台服務費",
       "processing": "金流手續費",
-      "payable": "陪練師應收",
+      "payable": "陪練應收",
       "settlement": "結算",
       "service": "服務完成",
       "hold": "管理員暫停",
@@ -247,16 +247,16 @@
     "stats": {
       "totalUsers": "總使用者數",
       "newUsers": "近 30 天新增 {{count}} 位",
-      "trainers": "陪練師",
+      "trainers": "陪練",
       "trainersShare": "佔所有使用者 {{percent}}%",
-      "pendingRequests": "待審核陪練師申請",
+      "pendingRequests": "待審核陪練申請",
       "requestsBreakdown": "已核准 {{approved}} · 已拒絕 {{rejected}}",
       "openPayouts": "待處理撥款",
       "openPayoutsSub": "{{count}} 筆等待匯款"
     },
     "requests": {
-      "title": "陪練師申請",
-      "empty": "目前沒有待審核的陪練師申請",
+      "title": "陪練申請",
+      "empty": "目前沒有待審核的陪練申請",
       "dialog": {
         "approveTitle": "核准此申請？",
         "rejectTitle": "拒絕此申請？",
@@ -271,7 +271,7 @@
       "role": {
         "all": "所有角色",
         "member": "一般會員",
-        "trainer": "陪練師",
+        "trainer": "陪練",
         "admin": "管理員"
       },
       "columns": {
@@ -291,7 +291,7 @@
     }
   },
   "verifications": {
-    "title": "陪練師申請",
+    "title": "陪練申請",
     "subtitle": "審核教練證／資格證明與比賽經驗申請",
     "searchPlaceholder": "搜尋名稱…",
     "filter": {
@@ -301,7 +301,7 @@
       "all": "全部"
     },
     "columns": {
-      "trainer": "陪練師",
+      "trainer": "陪練",
       "activity": "運動項目",
       "type": "類型",
       "status": "狀態",
@@ -328,7 +328,7 @@
       "consents": "已同意的文件",
       "noConsents": "尚未同意任何文件",
       "noOfferings": "尚無服務項目",
-      "noListing": "此陪練師尚未建立刊登資料。",
+      "noListing": "此陪練尚未建立刊登資料。",
       "noVerifications": "沒有審核申請",
       "noReviews": "尚無評價",
       "ratingValue": "★ {{avg}} · {{count}} 則評價",
@@ -339,7 +339,7 @@
         "fitness": "健身檔案",
         "activity": "活動紀錄",
         "safety": "信任與安全",
-        "listing": "陪練師刊登",
+        "listing": "陪練刊登",
         "verifications": "審核紀錄",
         "earnings": "收入與撥款"
       },
@@ -375,7 +375,7 @@
         "bookingsMade": "發出的預約",
         "bookingsReceived": "收到的預約",
         "reviewsGiven": "給出的評價",
-        "savedTrainers": "收藏的陪練師",
+        "savedTrainers": "收藏的陪練",
         "blockedByThem": "封鎖的使用者",
         "blockedThem": "被封鎖次數",
         "reportsFiled": "提出的檢舉",

@@ -42,25 +42,25 @@ export function AppHeader(props: AppHeaderProps) {
   if (isAdmin) {
     return (
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur lg:hidden">
-        <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between gap-4 px-4">
+        <div className="mx-auto flex h-14 w-full max-w-md items-center gap-1 px-2">
+          {/* Out of the admin console, back to the app. Icon only; the label is its accessible name. */}
           <Link
-            href={getLocalizedPath("/admin", locale)}
-            className="flex items-center gap-2 font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
+            href={getLocalizedPath("/", locale)}
+            aria-label={t("nav.backToApp")}
+            title={t("nav.backToApp")}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
           >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-sm text-white dark:bg-emerald-500">
-              A
-            </span>
-            <span className="text-lg">
-              {t("nav.console")} — 陪練動
-            </span>
+            <ArrowLeft size={20} />
           </Link>
 
           <Link
-            href={getLocalizedPath("/", locale)}
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            href={getLocalizedPath("/admin", locale)}
+            className="flex min-w-0 items-center gap-2 font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
           >
-            <ArrowLeft size={16} />
-            {t("nav.backToApp")}
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-sm text-white dark:bg-emerald-500">
+              A
+            </span>
+            <span className="truncate text-lg">{t("nav.console")}</span>
           </Link>
         </div>
       </header>

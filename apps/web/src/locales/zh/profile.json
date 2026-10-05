@@ -94,6 +94,7 @@
     "bannerRemoved": "已移除封面照片",
     "bannerFailed": "無法更新封面照片，請再試一次。",
     "accountDeleteFailed": "無法刪除帳號，請再試一次。",
+    "accountDeleteBlocked": "仍有未完成的付款、退款或提領時無法刪除帳號。請先完成或取消，或聯絡客服。",
     "signOutFailed": "無法登出，請再試一次。"
   }
 }

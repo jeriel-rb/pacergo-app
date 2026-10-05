@@ -1,6 +1,16 @@
 {
   "back": "Back",
   "notFound": "Plan not found.",
+  "toast": {
+    "planUpdated": "Plan updated",
+    "planUpdateFailed": "Couldn't update your plan. Please try again.",
+    "planRulesUpdated": "Plan updated to the latest version",
+    "planRulesUpdateFailed": "Couldn't update the plan. Please try again.",
+    "workoutReset": "Workout progress cleared",
+    "nutritionBuilt": "Nutrition plan ready",
+    "nutritionBuildFailed": "Couldn't build your nutrition plan. Please try again.",
+    "nutritionSkipFailed": "Couldn't skip nutrition. Please try again."
+  },
   "overview": {
     "week": "Week {{number}}",
     "restDay": "Rest day",
@@ -38,6 +48,9 @@
     "setLabel": "Set {{number}}",
     "reset": "Reset",
     "resetConfirm": "Clear the ticked sets for this workout?",
+    "resetTitle": "Reset this workout?",
+    "resetCta": "Clear sets",
+    "resetCancel": "Cancel",
     "complete": {
       "title": "Workout complete",
       "body": "All {{total}} sets done. Nice work!"

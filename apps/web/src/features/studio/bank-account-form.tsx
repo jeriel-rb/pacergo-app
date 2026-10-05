@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { BankAccount } from "@/lib/earnings";
-import { Button } from "@/shared/components/ui/button";
+import { SaveButton } from "@/shared/components/atoms/save-button";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/components/ui/toast";
+import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { saveBankAccount } from "./earnings-actions";
 
 /** Trainer payout account. Withdrawals stay blocked until this is saved. */
@@ -23,12 +23,18 @@ export function BankAccountForm({ bank }: { bank: BankAccount | null }) {
   const [accountHolder, setAccountHolder] = useState(bank?.bank_account_holder ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const { dirty, markClean } = useFormDirty({
+    bankCode,
+    bankName,
+    branchName,
+    accountNumber,
+    accountHolder,
+  });
 
   async function submit() {
+    if (!dirty || busy) return;
     setBusy(true);
     setError(null);
-    setSaved(false);
     try {
       await saveBankAccount({
         bankCode,
@@ -37,7 +43,7 @@ export function BankAccountForm({ bank }: { bank: BankAccount | null }) {
         accountNumber,
         accountHolder,
       });
-      setSaved(true);
+      markClean();
       toast.show(t("toast.bankAccountSaved"), "success");
       router.refresh();
     } catch (e) {
@@ -104,11 +110,7 @@ export function BankAccountForm({ bank }: { bank: BankAccount | null }) {
           {error}
         </p>
       )}
-      {saved && <p className="text-sm text-muted-foreground">{t("saved")}</p>}
-      <Button type="button" onClick={() => void submit()} disabled={busy} className="gap-2">
-        {busy && <Loader2 size={16} className="animate-spin" />}
-        {t("save")}
-      </Button>
+      <SaveButton onClick={() => void submit()} dirty={dirty} saving={busy} label={t("save")} />
     </Card>
   );
 }

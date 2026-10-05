@@ -37,6 +37,8 @@
   "recommended": "Recommended trainers",
   "viewAll": "View all",
   "saveTrainer": "Save trainer",
+  "moreActivities": "Also offers",
+  "moreActivitiesAria": "Show {{count}} more activities",
   "unsaveTrainer": "Remove saved trainer",
   "toast": {
     "saveFailed": "Couldn't save that trainer. Please try again.",

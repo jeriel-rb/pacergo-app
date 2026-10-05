@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
+import { useToast } from "@/shared/components/ui/toast";
 
 const RESOURCES = [
   { key: "users", labelKey: "exports.users" },
@@ -19,11 +20,10 @@ const RESOURCES = [
  *  am_i_admin server-side as well. Bank data is masked in every export. */
 export function AdminExportsView() {
   const { t } = useTranslation("admin");
+  const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   async function download(resource: string) {
-    setError(null);
     setBusy(resource);
     try {
       const res = await fetch(`/api/admin/exports/${resource}?format=csv`, {
@@ -54,8 +54,9 @@ export function AdminExportsView() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      toast.show(t("toast.exportDownloaded"), "success");
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("error"));
+      toast.show(e instanceof Error ? e.message : t("error"), "destructive");
     } finally {
       setBusy(null);
     }
@@ -68,11 +69,6 @@ export function AdminExportsView() {
         <p className="text-sm text-muted-foreground">{t("exports.notice")}</p>
       </header>
       <section className="space-y-3">
-      {error && (
-        <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {RESOURCES.map((r) => (
           <Card key={r.key} className="flex items-center justify-between p-4">

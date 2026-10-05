@@ -1,5 +1,5 @@
 import { getAdminOrders, type OrderFilter } from "@/lib/admin";
-import { AdminOrdersView } from "@/features/admin/admin-orders-view";
+import { AdminOrdersView } from "@/features/admin/orders/admin-orders-view";
 
 export const dynamic = "force-dynamic";
 

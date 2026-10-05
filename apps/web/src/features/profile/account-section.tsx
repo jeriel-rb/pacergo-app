@@ -56,7 +56,9 @@ export function AccountSection({
       router.refresh();
     } catch (err) {
       toast.show(
-        err instanceof Error ? err.message : t("toast.accountDeleteFailed"),
+        err instanceof Error && err.message.includes("account_has_open_payments")
+          ? t("toast.accountDeleteBlocked")
+          : t("toast.accountDeleteFailed"),
         "destructive",
       );
       throw err;

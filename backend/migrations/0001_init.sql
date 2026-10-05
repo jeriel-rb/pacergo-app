@@ -1,12 +1,12 @@
 -- Pacergo init migration — schema, types, functions, RPCs (no RLS).
 --
--- Consolidates the final schema of the original 0001–0046 sequence,
--- including function ACLs and exercises.equipment.
--- Row-level security lives in 0002_policies.sql (centralized).
+-- Final schema in one file: the original 0001–0046 sequence, admin members,
+-- profile-setup single source, fitness-profile validation, and withdrawal /
+-- account-deletion safety. Row-level security lives in 0002_policies.sql.
 -- Reference data lives in ../seeds/ (loaded after migrations on `supabase db reset`).
 --
--- Live history: 0001 (schema) → 0002 (policies) → later timestamped migrations
--- (see CLAUDE.md). Changing this file does not re-run on already-applied remotes.
+-- Live history: 0001 (schema) → 0002 (policies). Changing this file does not
+-- re-run on already-applied remotes.
 
 -- Extensions
 create extension if not exists postgis;
@@ -144,11 +144,8 @@ create table if not exists users (
   experience_level experience_level,
   location geography(Point, 4326),
   home_area text,
-  -- First-run profile setup. null status means the prompt has not been shown.
-  primary_activity text
-    check (primary_activity in ('gym', 'running', 'hiking', 'other')),
-  fitness_level text
-    check (fitness_level in ('beginner', 'basic', 'intermediate', 'advanced')),
+  -- First-run profile setup. Answers live on user_onboarding (primaryActivity,
+  -- experience). null status means the prompt has not been shown.
   profile_setup_status text
     check (profile_setup_status in ('completed', 'skipped')),
   profile_setup_at timestamptz,
@@ -571,6 +568,11 @@ create index if not exists bookings_seeker_idx on bookings (seeker_id);
 
 create index if not exists bookings_companion_idx on bookings (companion_id);
 
+-- One open request per seeker/companion. Accepted and later states are not open.
+create unique index if not exists bookings_one_open_per_pair_idx
+  on bookings (seeker_id, companion_id)
+  where status in ('requested', 'pending_payment', 'payment_processing', 'payment_failed');
+
 create index if not exists notifications_user_idx on notifications (user_id, created_at desc);
 
 -- One notification per (recipient, booking, type). Null booking_id stays unconstrained.
@@ -647,9 +649,12 @@ create index if not exists payments_provider_trade_no_idx on payments (provider_
 
 create index if not exists payments_status_idx on payments (status);
 
+-- One payment that is paid and not already flagged for refund. A late or
+-- duplicate capture is stored as paid + refund_requested, so it does not
+-- collide with the original.
 create unique index if not exists payments_one_paid_per_booking_idx
   on payments (booking_id)
-  where status = 'paid';
+  where status = 'paid' and refund_status = 'none';
 
 create index if not exists withdrawal_requests_trainer_idx
   on withdrawal_requests (trainer_id, requested_at desc);
@@ -695,6 +700,11 @@ language plpgsql
 set search_path = public
 as $$
 begin
+  -- Ciphertext can't be masked: the server that encrypted it (or the back-fill,
+  -- which leaves the existing mask in place) provides the mask instead.
+  if new.bank_account_number like 'enc:%' then
+    return new;
+  end if;
   new.bank_account_mask := mask_bank_account(new.bank_account_number);
   return new;
 end $$;
@@ -1149,10 +1159,43 @@ create trigger reviews_recompute_rating
   after insert on reviews
   for each row execute function recompute_listing_rating();
 
+-- Refuses deletion while this user still has money in flight (open withdrawal,
+-- in-progress payment, pending refund, or a paid order not yet settled).
+-- Bookings are locked first so a payment attempt cannot start in between.
+create or replace function assert_account_deletable(p_user_id uuid)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  perform 1 from bookings
+  where seeker_id = p_user_id or companion_id = p_user_id
+  for update;
+
+  if exists (
+    select 1 from withdrawal_requests
+    where trainer_id = p_user_id and status in ('requested', 'processing')
+  ) or exists (
+    select 1
+    from payments p
+    join bookings b on b.id = p.booking_id
+    where (b.seeker_id = p_user_id or b.companion_id = p_user_id or p.user_id = p_user_id)
+      and (
+        p.status in ('created', 'redirected', 'processing', 'awaiting_payment')
+        or (p.status = 'paid' and p.refund_status = 'refund_requested')
+        or (p.status = 'paid' and p.refund_status = 'none' and p.settlement_status = 'unsettled')
+      )
+  ) then
+    raise exception 'account_has_open_payments';
+  end if;
+end $$;
+
+revoke all on function assert_account_deletable(uuid) from public, anon, authenticated;
+
 -- Account deletion: removes the auth user; FKs cascade to profile + all data.
 create or replace function delete_account()
 returns void language plpgsql security definer set search_path = public as $$
 begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  perform assert_account_deletable(auth.uid());
   delete from auth.users where id = auth.uid();
 end $$;
 
@@ -1303,6 +1346,8 @@ security definer
 set search_path = public, auth
 as $$
 begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  perform assert_account_deletable(auth.uid());
   delete from auth.users where id = auth.uid();
 end $$;
 
@@ -1327,7 +1372,7 @@ begin
   update users set
     display_name = coalesce(p_display_name, display_name),
     bio = p_bio,
-    experience_level = p_experience_level,
+    experience_level = coalesce(p_experience_level, experience_level),
     home_area = p_home_area,
     gender = coalesce(p_gender, gender)
   where id = auth.uid();
@@ -1360,21 +1405,40 @@ as $$
   ) t;
 $$;
 
--- First-run profile setup. City reuses home_area. Shown once: completed or skipped.
+-- First-run profile setup. Answers go to the fitness profile (user_onboarding);
+-- city reuses home_area; level is mirrored onto users.experience_level.
 create or replace function save_profile_setup(
   p_primary_activity text,
-  p_fitness_level text,
+  p_experience text,
   p_city text
 ) returns void
 language plpgsql security definer set search_path = public as $$
 begin
   if auth.uid() is null then raise exception 'not authenticated'; end if;
   if char_length(coalesce(p_city, '')) > 120 then raise exception 'city too long'; end if;
+  if p_primary_activity is not null and p_primary_activity not in ('gym', 'running', 'hiking', 'other') then
+    raise exception 'invalid activity';
+  end if;
+  if p_experience is not null and p_experience not in ('no_experience', 'beginner', 'intermediate', 'advanced') then
+    raise exception 'invalid experience';
+  end if;
+
+  insert into user_onboarding (user_id, about_you, training_preferences)
+  values (
+    auth.uid(),
+    jsonb_strip_nulls(jsonb_build_object('primaryActivity', p_primary_activity)),
+    jsonb_strip_nulls(jsonb_build_object('experience', p_experience))
+  )
+  on conflict (user_id) do update set
+    about_you = user_onboarding.about_you || jsonb_strip_nulls(jsonb_build_object('primaryActivity', p_primary_activity)),
+    training_preferences = user_onboarding.training_preferences || jsonb_strip_nulls(jsonb_build_object('experience', p_experience));
 
   update users set
-    primary_activity = coalesce(p_primary_activity, primary_activity),
-    fitness_level = coalesce(p_fitness_level, fitness_level),
     home_area = coalesce(nullif(btrim(p_city), ''), home_area),
+    experience_level = coalesce(
+      (case p_experience when 'no_experience' then 'beginner' else p_experience end)::experience_level,
+      experience_level
+    ),
     profile_setup_status = 'completed',
     profile_setup_at = now()
   where id = auth.uid();
@@ -1395,11 +1459,12 @@ create or replace function my_profile_setup() returns jsonb
 language sql security definer set search_path = public stable as $$
   select jsonb_build_object(
     'status', u.profile_setup_status,
-    'primaryActivity', u.primary_activity,
-    'fitnessLevel', u.fitness_level,
+    'primaryActivity', o.about_you ->> 'primaryActivity',
+    'experience', o.training_preferences ->> 'experience',
     'city', u.home_area
   )
   from users u
+  left join user_onboarding o on o.user_id = u.id
   where u.id = auth.uid();
 $$;
 
@@ -1550,6 +1615,7 @@ declare
   o record;
   seeker_u record;
   comp_u record;
+  v_constraint text;
 begin
   if v_seeker is null then raise exception 'not authenticated'; end if;
 
@@ -1590,29 +1656,38 @@ begin
   select display_name, photo_url into seeker_u from users where id = v_seeker;
   select display_name, photo_url into comp_u from users where id = p_companion_id;
 
-  insert into bookings (
-    seeker_id, companion_id, offering_id, activity_slug, tier, status,
-    scheduled_start, duration_min, location_name, agreed_price, is_free,
-    seeker_note, seeker_name, seeker_photo, companion_name, companion_photo
-  ) values (
-    v_seeker,
-    p_companion_id,
-    p_offering_id,
-    o.activity_slug,
-    o.tier,
-    case when o.is_free or o.price_ntd <= 0 then 'requested'::booking_status else 'pending_payment'::booking_status end,
-    p_scheduled_start,
-    least(greatest(coalesce(p_duration_min, o.session_minutes), 15), 480),
-    p_location_name,
-    o.price_ntd,
-    o.is_free,
-    p_seeker_note,
-    seeker_u.display_name,
-    seeker_u.photo_url,
-    comp_u.display_name,
-    comp_u.photo_url
-  )
-  returning id into v_id;
+  begin
+    insert into bookings (
+      seeker_id, companion_id, offering_id, activity_slug, tier, status,
+      scheduled_start, duration_min, location_name, agreed_price, is_free,
+      seeker_note, seeker_name, seeker_photo, companion_name, companion_photo
+    ) values (
+      v_seeker,
+      p_companion_id,
+      p_offering_id,
+      o.activity_slug,
+      o.tier,
+      case when o.is_free or o.price_ntd <= 0 then 'requested'::booking_status else 'pending_payment'::booking_status end,
+      p_scheduled_start,
+      least(greatest(coalesce(p_duration_min, o.session_minutes), 15), 480),
+      p_location_name,
+      o.price_ntd,
+      o.is_free,
+      p_seeker_note,
+      seeker_u.display_name,
+      seeker_u.photo_url,
+      comp_u.display_name,
+      comp_u.photo_url
+    )
+    returning id into v_id;
+  exception
+    when unique_violation then
+      get stacked diagnostics v_constraint = constraint_name;
+      if v_constraint = 'bookings_one_open_per_pair_idx' then
+        raise exception 'you already have an open booking with this companion';
+      end if;
+      raise;
+  end;
 
   return v_id;
 end $$;
@@ -2351,6 +2426,253 @@ language sql security definer stable set search_path = public as $$
   select is_platform_admin();
 $$;
 
+-- Admin: paginated member list (admins first) and promote/revoke admin.
+drop function if exists list_all_users(int, int);
+drop function if exists list_all_users(int, int, text);
+
+create or replace function list_all_users(
+  p_limit int default 20,
+  p_offset int default 0,
+  p_search text default null,
+  p_role text default null          -- member | trainer | admin (null = everyone)
+) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  v_users jsonb;
+  v_total int;
+  v_search text := nullif(trim(coalesce(p_search, '')), '');
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+  if p_role is not null and p_role not in ('member', 'trainer', 'admin') then
+    raise exception 'invalid_role';
+  end if;
+
+  select count(*) into v_total
+  from users u
+  join auth.users au on au.id = u.id
+  where (v_search is null
+     or u.display_name ilike '%' || v_search || '%'
+     or au.email ilike '%' || v_search || '%')
+    and (p_role is null
+     or (p_role = 'admin' and u.is_admin)
+     or (p_role = 'trainer' and u.is_companion)
+     or (p_role = 'member' and not u.is_admin and not u.is_companion));
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', s.id,
+    'display_name', s.display_name,
+    'photo_url', s.photo_url,
+    'email', s.email,
+    'is_companion', s.is_companion,
+    'is_admin', s.is_admin,
+    'created_at', s.created_at
+  ) order by s.is_admin desc, s.created_at desc), '[]'::jsonb) into v_users
+  from (
+    select u.id, u.display_name, u.photo_url, au.email,
+           u.is_companion, u.is_admin, u.created_at
+    from users u
+    join auth.users au on au.id = u.id
+    where (v_search is null
+       or u.display_name ilike '%' || v_search || '%'
+       or au.email ilike '%' || v_search || '%')
+      and (p_role is null
+       or (p_role = 'admin' and u.is_admin)
+       or (p_role = 'trainer' and u.is_companion)
+       or (p_role = 'member' and not u.is_admin and not u.is_companion))
+    order by u.is_admin desc, u.created_at desc
+    limit greatest(p_limit, 1)
+    offset greatest(p_offset, 0)
+  ) s;
+
+  return jsonb_build_object('users', v_users, 'total', v_total);
+end;
+$$;
+revoke all on function list_all_users(int, int, text, text) from public, anon;
+grant execute on function list_all_users(int, int, text, text) to authenticated;
+
+-- Admin dashboard headline numbers (one cheap aggregate instead of loading rows).
+create or replace function admin_dashboard_stats()
+returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+  return (
+    select jsonb_build_object(
+      'total_users', count(*),
+      'total_trainers', count(*) filter (where is_companion),
+      'total_admins', count(*) filter (where is_admin),
+      'new_users_30d', count(*) filter (where created_at >= now() - interval '30 days')
+    )
+    from users
+  );
+end $$;
+revoke all on function admin_dashboard_stats() from public, anon;
+grant execute on function admin_dashboard_stats() to authenticated;
+
+-- Admin: everything the user sheet shows for one account. Counts and masked /
+-- derived values only — never the push token, exact coordinates, birthdate
+-- (age instead), full bank account number, or chat messages.
+create or replace function admin_user_detail(p_user_id uuid)
+returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare
+  u record;
+  v_trainer jsonb := null;
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+
+  select us.*,
+         au.email as auth_email,
+         au.email_confirmed_at,
+         au.last_sign_in_at,
+         o.about_you as ob_about_you,
+         o.training_preferences as ob_training_preferences,
+         o.goal as ob_goal
+    into u
+  from users us
+  join auth.users au on au.id = us.id
+  left join user_onboarding o on o.user_id = us.id
+  where us.id = p_user_id;
+  if not found then raise exception 'user_not_found'; end if;
+
+  if u.is_companion then
+    v_trainer := jsonb_build_object(
+      'listing', (
+        select jsonb_build_object(
+          'headline', cl.headline,
+          'served_area', cl.served_area,
+          'status', cl.status,
+          'rating_avg', cl.rating_avg,
+          'rating_count', cl.rating_count,
+          'offerings', coalesce((
+            select jsonb_agg(jsonb_build_object(
+              'activity', a.slug,
+              'tier', lo.tier::text,
+              'price_ntd', lo.price_ntd,
+              'is_free', lo.is_free,
+              'session_minutes', lo.session_minutes
+            ) order by lo.created_at)
+            from listing_offerings lo
+            join activities a on a.id = lo.activity_id
+            where lo.listing_id = cl.id
+          ), '[]'::jsonb)
+        )
+        from companion_listings cl
+        where cl.user_id = p_user_id
+      ),
+      'verifications', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'id', ver.id,
+          'doc_type', ver.doc_type,
+          'activity', a.slug,
+          'label', ver.label,
+          'status', ver.status,
+          'created_at', ver.created_at,
+          'reviewed_at', ver.reviewed_at
+        ) order by ver.created_at desc)
+        from verifications ver
+        left join activities a on a.id = ver.activity_id
+        where ver.user_id = p_user_id
+      ), '[]'::jsonb),
+      'money', jsonb_build_object(
+        'available_balance', trainer_available_balance(p_user_id),
+        'open_withdrawals_count', (
+          select count(*) from withdrawal_requests w
+          where w.trainer_id = p_user_id and w.status in ('requested', 'processing')
+        ),
+        'open_withdrawals_sum', coalesce((
+          select sum(w.amount) from withdrawal_requests w
+          where w.trainer_id = p_user_id and w.status in ('requested', 'processing')
+        ), 0),
+        'total_paid_out', coalesce((
+          select sum(w.amount) from withdrawal_requests w
+          where w.trainer_id = p_user_id and w.status = 'paid'
+        ), 0),
+        'completed_orders', (
+          select count(*) from bookings b
+          where b.companion_id = p_user_id and b.status = 'completed'
+        ),
+        'bank_code', u.bank_code,
+        'bank_name', u.bank_name,
+        'branch_name', u.branch_name,
+        'bank_account_holder', u.bank_account_holder,
+        'bank_account_mask', u.bank_account_mask,
+        'has_bank_account', u.bank_account_number is not null
+      )
+    );
+  end if;
+
+  return jsonb_build_object(
+    'id', u.id,
+    'display_name', u.display_name,
+    'photo_url', u.photo_url,
+    'email', u.auth_email,
+    'email_confirmed', u.email_confirmed_at is not null,
+    'is_admin', u.is_admin,
+    'is_companion', u.is_companion,
+    'created_at', u.created_at,
+    'updated_at', u.updated_at,
+    'last_sign_in_at', u.last_sign_in_at,
+    'profile', jsonb_build_object(
+      'bio', u.bio,
+      'gender', u.gender,
+      'age', case when u.birthdate is null then null
+                  else date_part('year', age(u.birthdate))::int end,
+      'home_area', u.home_area,
+      'locale', u.locale,
+      'experience_level', u.experience_level::text,
+      'weekly_target', u.weekly_target
+    ),
+    'setup', jsonb_build_object(
+      'profile_setup_status', u.profile_setup_status,
+      'onboarding_completed', u.onboarding_completed
+    ),
+    'fitness', jsonb_build_object(
+      'primary_activity', u.ob_about_you ->> 'primaryActivity',
+      'goal', coalesce(u.ob_goal, u.ob_about_you ->> 'goal'),
+      'experience', u.ob_training_preferences ->> 'experience'
+    ),
+    'activity', jsonb_build_object(
+      'bookings_made', (select count(*) from bookings b where b.seeker_id = p_user_id),
+      'bookings_received', (select count(*) from bookings b where b.companion_id = p_user_id),
+      'reviews_given', (select count(*) from reviews r where r.reviewer_id = p_user_id),
+      'saved_trainers', (select count(*) from saved_companions s where s.seeker_id = p_user_id)
+    ),
+    'safety', jsonb_build_object(
+      'blocked_by_me', (select count(*) from blocks b where b.blocker_id = p_user_id),
+      'blocked_me', (select count(*) from blocks b where b.blocked_id = p_user_id),
+      'reports_filed', (select count(*) from reports r where r.reporter_id = p_user_id),
+      'reports_received', (select count(*) from reports r where r.reported_id = p_user_id),
+      'consents', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'document', c.document_slug::text,
+          'version', c.version_label,
+          'accepted_at', c.accepted_at
+        ) order by c.accepted_at desc)
+        from consent_records c
+        where c.user_id = p_user_id
+      ), '[]'::jsonb)
+    ),
+    'trainer', v_trainer
+  );
+end $$;
+revoke all on function admin_user_detail(uuid) from public, anon;
+grant execute on function admin_user_detail(uuid) to authenticated;
+
+create or replace function set_user_admin(
+  p_user_id uuid,
+  p_is_admin boolean
+) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+  if p_user_id = auth.uid() then raise exception 'cannot change your own admin status'; end if;
+  update users set is_admin = p_is_admin where id = p_user_id;
+end;
+$$;
+revoke all on function set_user_admin(uuid, boolean) from public, anon;
+grant execute on function set_user_admin(uuid, boolean) to authenticated;
+
 create or replace function submit_verification(
   p_doc_type text,
   p_document_path text,
@@ -2886,7 +3208,18 @@ set search_path = public
 as $$
 declare
   p payments%rowtype;
+  b bookings%rowtype;
+  v_needs_refund boolean := false;
 begin
+  -- Booking first, then its payments. cancel_booking uses the same order.
+  select bk.* into b
+  from bookings bk
+  join payments pay on pay.booking_id = bk.id
+  where pay.merchant_order_no = p_merchant_order_no
+  for update of bk;
+
+  if not found then raise exception 'payment_order_not_found'; end if;
+
   select * into p
   from payments
   where merchant_order_no = p_merchant_order_no
@@ -2904,6 +3237,24 @@ begin
     return p.id;
   end if;
 
+  perform 1
+  from payments
+  where booking_id = b.id
+    and id <> p.id
+  order by id
+  for update;
+
+  v_needs_refund := p_next_status = 'paid' and (
+    b.status in ('cancelled', 'declined')
+    or exists (
+      select 1 from payments other
+      where other.booking_id = b.id
+        and other.id <> p.id
+        and other.status = 'paid'
+        and other.refund_status = 'none'
+    )
+  );
+
   update payments
   set notified_at = coalesce(notified_at, now()),
       provider_trade_no = coalesce(provider_trade_no, nullif(p_provider_trade_no, '')),
@@ -2913,14 +3264,35 @@ begin
       response_message = left(coalesce(nullif(p_response_message, ''), response_message, ''), 200),
       payment_instructions = case when p_instructions = '{}'::jsonb then payment_instructions else p_instructions end,
       status = p_next_status,
+      refund_status = case when v_needs_refund then 'refund_requested' else refund_status end,
+      settlement_eligibility_status = case
+        when v_needs_refund then 'ineligible'
+        else settlement_eligibility_status
+      end,
       paid_at = case when p_next_status = 'paid' then coalesce(paid_at, now()) else paid_at end,
       failed_at = case when p_next_status in ('failed', 'cancelled') then coalesce(failed_at, now()) else failed_at end,
       expired_at = case when p_next_status = 'expired' then coalesce(expired_at, now()) else expired_at end
   where id = p.id;
 
+  if v_needs_refund then
+    insert into payment_status_events
+      (payment_id, event_type, from_value, to_value, actor_id)
+    values (
+      p.id,
+      case
+        when b.status in ('cancelled', 'declined') then 'late_payment_on_closed_booking'
+        else 'duplicate_paid_attempt'
+      end,
+      'none',
+      'refund_requested',
+      null
+    );
+  end if;
+
   update bookings
   set status = case
-    when status in ('cancelled', 'completed') then status
+    when status in ('cancelled', 'completed', 'declined') then status
+    when v_needs_refund then status
     when p_next_status = 'paid' then 'accepted'
     when p_next_status in ('failed', 'cancelled', 'expired') then 'pending_payment'
     else 'payment_processing'
@@ -3204,11 +3576,15 @@ begin
       and pay.service_completed_at is null
       and b.scheduled_start is not null
       and b.scheduled_start + make_interval(mins => b.duration_min) <= now()
+    order by pay.id
+    for update of pay skip locked
   loop
     update payments
     set service_completed_at = now(),
         settlement_hold_until = now() + interval '24 hours'
-    where id = r.id;
+    where id = r.id
+      and service_completed_at is null;
+    if not found then continue; end if;
 
     insert into payment_status_events (payment_id, event_type, to_value, actor_id)
     values (r.id, 'service_completed_auto', now()::text, null);
@@ -3390,10 +3766,24 @@ as $$
     and pay.settlement_status = 'unsettled';
 $$;
 
+-- Eligible unsettled earnings, less withdrawals still requested or processing.
+create or replace function trainer_available_balance(p_trainer_id uuid)
+returns integer
+language sql stable security definer set search_path = public as $$
+  select greatest(
+    trainer_balance(p_trainer_id) - coalesce((
+      select sum(w.amount)
+      from withdrawal_requests w
+      where w.trainer_id = p_trainer_id
+        and w.status in ('requested', 'processing')
+    ), 0),
+    0
+  )::int;
+$$;
 
-grant execute on function my_trainer_balance() to authenticated;
+revoke all on function trainer_available_balance(uuid) from public, anon, authenticated;
 
--- Self-service wrapper (trainer's own balance only).
+-- The balance shown in the app is what can actually be withdrawn.
 create or replace function my_trainer_balance()
 returns int
 language sql
@@ -3401,7 +3791,7 @@ stable
 security definer
 set search_path = public
 as $$
-  select trainer_balance(auth.uid());
+  select trainer_available_balance(auth.uid());
 $$;
 grant execute on function my_trainer_balance() to authenticated;
 
@@ -3413,17 +3803,20 @@ set search_path = public
 as $$
 declare
   v_uid uuid := auth.uid();
-  v_balance int;
+  v_available int;
   v_mask text;
   v_id uuid;
 begin
   if v_uid is null then raise exception 'withdrawal_unauthenticated'; end if;
   if p_amount is null or p_amount <= 0 then raise exception 'invalid_amount'; end if;
 
-  v_balance := trainer_balance(v_uid);
-  if p_amount > v_balance then raise exception 'insufficient_balance'; end if;
+  -- Serialise this trainer's requests against each other.
+  select bank_account_mask into v_mask from users where id = v_uid for update;
+  if not found then raise exception 'withdrawal_unauthenticated'; end if;
 
-  select bank_account_mask into v_mask from users where id = v_uid;
+  v_available := trainer_available_balance(v_uid);
+  if p_amount > v_available then raise exception 'insufficient_balance'; end if;
+
   if v_mask is null then raise exception 'bank_details_missing'; end if;
 
   insert into withdrawal_requests (trainer_id, amount, bank_account_mask, status)
@@ -3571,7 +3964,8 @@ begin
     where b.companion_id = v_trainer_id
       and pay.settlement_eligibility_status = 'eligible'
       and pay.settlement_status = 'unsettled'
-    order by pay.service_completed_at asc
+    order by pay.service_completed_at asc, pay.id
+    for update of pay
   loop
     exit when remaining <= 0;
     update payments
@@ -3866,6 +4260,63 @@ grant execute on function confirm_simulated_payment(uuid, boolean) to authentica
 -- needed; payment_detail's `booking` join doesn't reference "newebpay"
 -- either, so it's already provider-agnostic.;
 
+-- A JSON field that must be absent/null or a number inside [lo, hi].
+create or replace function assert_json_number_in_range(
+  p_doc jsonb, p_key text, p_lo numeric, p_hi numeric
+) returns void
+language plpgsql immutable set search_path = public as $$
+declare v jsonb := p_doc -> p_key;
+begin
+  if v is null or jsonb_typeof(v) = 'null' then return; end if;
+  if jsonb_typeof(v) <> 'number' or (v #>> '{}')::numeric < p_lo or (v #>> '{}')::numeric > p_hi then
+    raise exception 'invalid % (expected a number between % and %)', p_key, p_lo, p_hi
+      using errcode = '22023';
+  end if;
+end $$;
+
+create or replace function validate_fitness_profile(
+  p_about_you jsonb,
+  p_training_preferences jsonb,
+  p_gym_equipment jsonb,
+  p_nutrition jsonb
+) returns void
+language plpgsql immutable set search_path = public as $$
+declare
+  v_doc jsonb;
+begin
+  foreach v_doc in array array[p_about_you, p_training_preferences, p_gym_equipment, p_nutrition] loop
+    if v_doc is not null and jsonb_typeof(v_doc) <> 'object' then
+      raise exception 'invalid profile data' using errcode = '22023';
+    end if;
+    if v_doc is not null and octet_length(v_doc::text) > 20000 then
+      raise exception 'profile data too large' using errcode = '22023';
+    end if;
+  end loop;
+
+  if p_about_you is not null then
+    perform assert_json_number_in_range(p_about_you, 'age', 13, 100);
+    perform assert_json_number_in_range(p_about_you, 'heightCm', 90, 275);
+    perform assert_json_number_in_range(p_about_you, 'weightKg', 25, 250);
+  end if;
+
+  if p_training_preferences is not null then
+    perform assert_json_number_in_range(p_training_preferences, 'durationMin', 15, 90);
+    perform assert_json_number_in_range(p_training_preferences, 'restTimerMinSec', 10, 300);
+    perform assert_json_number_in_range(p_training_preferences, 'restTimerMaxSec', 10, 300);
+  end if;
+
+  if p_nutrition is not null then
+    perform assert_json_number_in_range(p_nutrition, 'bmrKcal', 300, 6000);
+    perform assert_json_number_in_range(p_nutrition, 'maintenanceKcal', 300, 12000);
+    perform assert_json_number_in_range(p_nutrition, 'dailyCalories', 300, 12000);
+    perform assert_json_number_in_range(p_nutrition, 'proteinGrams', 10, 800);
+    perform assert_json_number_in_range(p_nutrition, 'proteinGPerKg', 0.5, 4);
+  end if;
+end $$;
+
+revoke all on function assert_json_number_in_range(jsonb, text, numeric, numeric) from public, anon, authenticated;
+revoke all on function validate_fitness_profile(jsonb, jsonb, jsonb, jsonb) from public, anon, authenticated;
+
 create or replace function save_onboarding_answers(
   p_goal text,
   p_gym_type text,
@@ -3879,6 +4330,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_updated_at timestamptz;
   v_gender text := p_about_you ->> 'gender';
+  v_experience text := p_training_preferences ->> 'experience';
 begin
   if auth.uid() is null then raise exception 'not authenticated'; end if;
   if p_nutrition is not null and jsonb_typeof(p_nutrition) <> 'object' then
@@ -3887,6 +4339,7 @@ begin
   if p_nutrition_status is not null and p_nutrition_status not in ('built', 'skipped') then
     raise exception 'invalid nutrition status';
   end if;
+  perform validate_fitness_profile(p_about_you, p_training_preferences, p_gym_equipment, p_nutrition);
 
   insert into user_onboarding (
     user_id, goal, gym_type, about_you, training_preferences, gym_equipment,
@@ -3901,7 +4354,9 @@ begin
   on conflict (user_id) do update set
     goal = excluded.goal,
     gym_type = excluded.gym_type,
-    about_you = excluded.about_you,
+    about_you = jsonb_strip_nulls(
+      jsonb_build_object('primaryActivity', user_onboarding.about_you -> 'primaryActivity')
+    ) || excluded.about_you,
     training_preferences = excluded.training_preferences,
     gym_equipment = excluded.gym_equipment,
     nutrition_status = coalesce(p_nutrition_status, user_onboarding.nutrition_status),
@@ -3915,6 +4370,14 @@ begin
     update users set gender = v_gender
     where id = auth.uid() and (gender is null or gender in ('male', 'female'))
       and gender is distinct from v_gender;
+  end if;
+
+  if v_experience in ('no_experience', 'beginner', 'intermediate', 'advanced') then
+    update users set
+      experience_level = (case v_experience when 'no_experience' then 'beginner' else v_experience end)::experience_level
+    where id = auth.uid()
+      and experience_level is distinct from
+        (case v_experience when 'no_experience' then 'beginner' else v_experience end)::experience_level;
   end if;
 
   return v_updated_at;
@@ -3945,6 +4408,15 @@ begin
     raise exception 'invalid label';
   end if;
   if p_plan is null then raise exception 'missing plan'; end if;
+  if octet_length(p_plan::text) > 262144
+     or octet_length(coalesce(p_onboarding_snapshot, '{}'::jsonb)::text) > 262144 then
+    raise exception 'plan too large';
+  end if;
+
+  perform 1 from users where id = auth.uid() for update;
+  if (select count(*) from user_training_plans where user_id = auth.uid()) >= 100 then
+    raise exception 'too many plans';
+  end if;
 
   insert into user_training_plans (user_id, label, plan, onboarding_snapshot, goal)
   values (
@@ -4053,6 +4525,10 @@ begin
     raise exception 'invalid label';
   end if;
   if p_plan is null then raise exception 'missing plan'; end if;
+  if octet_length(p_plan::text) > 262144
+     or octet_length(coalesce(p_onboarding_snapshot, '{}'::jsonb)::text) > 262144 then
+    raise exception 'plan too large';
+  end if;
 
   update user_training_plans set
     label = p_label,
@@ -5407,6 +5883,77 @@ as $$
   where id = auth.uid();
 $$;
 
+-- Bank account numbers are encrypted by the web server (AES-GCM, key in the
+-- server's ENCRYPTION_KEY, owner id as AAD — see apps/web/src/lib/crypto) before
+-- they reach the database. This stores the ciphertext and the mask the server
+-- computed; the plaintext never touches Postgres. Legacy plaintext is encrypted
+-- by backend/scripts/encrypt-bank-accounts.mjs.
+create or replace function save_bank_account_encrypted(
+  p_bank_code text,
+  p_bank_name text,
+  p_branch_name text,
+  p_account_cipher text,
+  p_account_mask text,
+  p_account_holder text
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_code text := trim(coalesce(p_bank_code, ''));
+  v_name text := trim(coalesce(p_bank_name, ''));
+  v_branch text := trim(coalesce(p_branch_name, ''));
+  v_holder text := trim(coalesce(p_account_holder, ''));
+begin
+  if v_uid is null then raise exception 'bank_unauthenticated'; end if;
+  if v_code !~ '^[0-9]{3,7}$' then raise exception 'bank_details_invalid'; end if;
+  if char_length(v_name) < 1 or char_length(v_name) > 80 then
+    raise exception 'bank_details_invalid';
+  end if;
+  if char_length(v_branch) < 1 or char_length(v_branch) > 80 then
+    raise exception 'bank_details_invalid';
+  end if;
+  if char_length(v_holder) < 1 or char_length(v_holder) > 80 then
+    raise exception 'bank_details_invalid';
+  end if;
+  -- Only ciphertext in the expected shape, and a mask that looks like one.
+  -- Postgres rejects a regex bound above 255, so the 40–400 base64 length
+  -- (same window the app tests) is checked with length() instead.
+  if p_account_cipher is null
+     or length(p_account_cipher) < 47
+     or length(p_account_cipher) > 407
+     or p_account_cipher !~ '^enc:v1:[A-Za-z0-9+/=]+$' then
+    raise exception 'bank_details_invalid';
+  end if;
+  if p_account_mask is null or p_account_mask !~ '^[*]{0,12}[0-9]{1,4}$|^[*]{1,4}$' then
+    raise exception 'bank_details_invalid';
+  end if;
+
+  update users
+  set bank_code = v_code,
+      bank_name = v_name,
+      branch_name = v_branch,
+      bank_account_number = p_account_cipher,
+      bank_account_mask = p_account_mask,
+      bank_account_holder = v_holder
+  where id = v_uid;
+  if not found then raise exception 'bank_unauthenticated'; end if;
+end $$;
+
+-- Admin: the stored (encrypted) account number of one user, for the web server to
+-- decrypt when an admin asks to reveal it. Never returns the plaintext itself.
+create or replace function admin_user_bank_secret(p_user_id uuid)
+returns text
+language plpgsql stable security definer set search_path = public as $$
+declare v text;
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+  select bank_account_number into v from users where id = p_user_id;
+  return v;
+end $$;
+
 -- ---------------------------------------------------------------------------
 -- Admin order list + detail, so refund / hold / service-completed are usable.
 -- ---------------------------------------------------------------------------
@@ -5526,6 +6073,13 @@ revoke all on function my_bank_account() from public, anon;
 revoke all on function admin_list_payments(text) from public, anon;
 revoke all on function admin_payment_detail(uuid) from public, anon;
 grant execute on function save_bank_account(text, text, text, text, text) to authenticated;
+-- The plaintext save is retired: accounts are saved through the web server, which
+-- encrypts them first (save_bank_account_encrypted).
+revoke execute on function save_bank_account(text, text, text, text, text) from authenticated;
+revoke all on function save_bank_account_encrypted(text, text, text, text, text, text) from public, anon;
+grant execute on function save_bank_account_encrypted(text, text, text, text, text, text) to authenticated;
+revoke all on function admin_user_bank_secret(uuid) from public, anon;
+grant execute on function admin_user_bank_secret(uuid) to authenticated;
 grant execute on function my_bank_account() to authenticated;
 grant execute on function admin_list_payments(text) to authenticated;
 grant execute on function admin_payment_detail(uuid) to authenticated;
@@ -5699,6 +6253,10 @@ create index if not exists withdrawal_settlements_payment_id_idx
   on public.withdrawal_settlements (payment_id);
 create index if not exists withdrawal_status_events_actor_id_idx
   on public.withdrawal_status_events (actor_id);
+create index if not exists user_onboarding_active_plan_idx on user_onboarding (active_plan_id);
+create index if not exists workout_sessions_plan_idx on workout_sessions (plan_id);
+create index if not exists workout_exercise_logs_plan_idx on workout_exercise_logs (plan_id);
+create index if not exists notifications_booking_idx on notifications (booking_id);
 
 -- Final ACL: revoke PUBLIC/anon/authenticated from every SECURITY DEFINER
 -- function, then grant by audience. Payment/cron/internal stay service_role
@@ -5717,6 +6275,9 @@ declare
     'run_settlement_cycle',
     'ensure_user_profile_row',
     'trainer_balance',
+    'trainer_available_balance',
+    'assert_account_deletable',
+    'save_bank_account',
     'rls_auto_enable',
     'handle_new_user',
     'notify_booking_event',
@@ -5757,5 +6318,23 @@ begin
         execute format('grant execute on function %s to anon', r.sig);
       end if;
     end if;
+  end loop;
+end $$;
+
+-- PostGIS st_estimatedextent is owned by the extension owner. Best-effort
+-- revoke; insufficient privilege is ignored. Reinstalling PostGIS into the
+-- extensions schema is tracked separately.
+do $$
+declare f regprocedure;
+begin
+  for f in
+    select p.oid::regprocedure from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'st_estimatedextent'
+  loop
+    begin
+      execute format('revoke execute on function %s from public, anon', f);
+    exception when insufficient_privilege then
+      raise notice 'could not revoke anon execute on % (owned by the extension owner)', f;
+    end;
   end loop;
 end $$;

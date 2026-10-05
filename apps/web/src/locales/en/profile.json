@@ -94,6 +94,7 @@
     "bannerRemoved": "Cover photo removed",
     "bannerFailed": "Couldn't update your cover photo. Please try again.",
     "accountDeleteFailed": "Couldn't delete your account. Please try again.",
+    "accountDeleteBlocked": "You can't delete your account while a payment, refund or withdrawal is still open. Finish or cancel it first, or contact support.",
     "signOutFailed": "Couldn't sign you out. Please try again."
   }
 }

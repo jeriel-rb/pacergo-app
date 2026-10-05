@@ -1,5 +1,6 @@
 import { isPlanGender, type FitnessProfile } from "./fitness-profile";
 import { DEFAULT_NUTRITION_RULES, type NutritionRules } from "./nutrition-rules";
+import { clampTrainingDays, isValidBodyMetric } from "./profile-limits";
 
 /** The slice of the Shared Fitness Profile nutrition depends on. Only these
  *  are stored with a result and compared for staleness, so e.g. an equipment
@@ -76,9 +77,10 @@ export interface NutritionTargets {
 export function missingNutritionInputs(profile: NutritionInputs): NutritionInput[] {
   const missing: NutritionInput[] = [];
   if (!isPlanGender(profile.gender)) missing.push("gender");
-  if (!profile.age) missing.push("age");
-  if (!profile.heightCm) missing.push("heightCm");
-  if (!profile.weightKg) missing.push("weightKg");
+  // Out-of-range values count as missing, so the flow asks for them again.
+  if (!isValidBodyMetric("age", profile.age)) missing.push("age");
+  if (!isValidBodyMetric("heightCm", profile.heightCm)) missing.push("heightCm");
+  if (!isValidBodyMetric("weightKg", profile.weightKg)) missing.push("weightKg");
   if (!profile.activityLevel) missing.push("activityLevel");
   if (!profile.goal) missing.push("goal");
   return missing;
@@ -88,7 +90,9 @@ const roundTo = (value: number, step: number) => Math.round(value / step) * step
 
 /**
  * Estimate daily calories and protein from the Shared Fitness Profile.
- * Pure and deterministic; returns null when a required input is missing.
+ * Pure and deterministic; returns null when a required input is missing or
+ * outside the plausible range in `PROFILE_LIMITS` (so a corrupt saved row can
+ * never produce negative or absurd targets).
  *
  * Calories: Mifflin-St Jeor BMR × (daily-activity factor + per-session
  * training factor) = maintenance, then × the goal factor, floored at a
@@ -100,10 +104,11 @@ export function calculateNutrition(
   rules: NutritionRules = DEFAULT_NUTRITION_RULES,
 ): NutritionTargets | null {
   const { gender, age, heightCm, weightKg, activityLevel, goal } = profile;
+  if (missingNutritionInputs(profile).length > 0) return null;
   if (!isPlanGender(gender) || !age || !heightCm || !weightKg || !activityLevel || !goal) return null;
 
   const experience = profile.experience ?? "beginner";
-  const sessions = profile.trainingDaysPerWeek ?? 0;
+  const sessions = clampTrainingDays(profile.trainingDaysPerWeek);
 
   const bmr =
     rules.bmr.weightCoef * weightKg +
@@ -160,4 +165,26 @@ export function nutritionNeedsRecalc(
 ): boolean {
   if (!saved) return calculateNutrition(profile, rules) !== null;
   return saved.rulesVersion !== rules.version || !sameInputs(saved.inputs, profile);
+}
+
+/** Is a saved `user_onboarding.nutrition` blob safe to show? It is client-written
+ *  JSON, so check the shape and that every number is finite and plausible; when
+ *  it isn't, callers treat it as "not saved" and recompute from the profile. */
+export function isValidSavedNutrition(value: unknown): value is NutritionTargets {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  const num = (x: unknown, min: number, max: number) =>
+    typeof x === "number" && Number.isFinite(x) && x >= min && x <= max;
+  return (
+    num(v.bmrKcal, 300, 6000) &&
+    num(v.maintenanceKcal, 300, 12000) &&
+    num(v.dailyCalories, 300, 12000) &&
+    num(v.proteinGrams, 10, 800) &&
+    num(v.proteinGPerKg, 0.5, 4) &&
+    num(v.rulesVersion, 0, 1_000_000) &&
+    Array.isArray(v.guidance) &&
+    v.guidance.length <= 20 &&
+    typeof v.inputs === "object" &&
+    v.inputs !== null
+  );
 }

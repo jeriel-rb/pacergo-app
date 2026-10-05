@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Loader2 } from "lucide-react";
+import { Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { MyReview } from "@/lib/reviews";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { SaveButton } from "@/shared/components/atoms/save-button";
 import {
   Dialog,
   DialogTrigger,
@@ -93,8 +94,14 @@ function ReviewDialog({
   const [comment, setComment] = useState(initial?.comment ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Compared with the saved review (`initial` is refreshed after a save) rather than a
+  // first-render baseline, since the fields re-sync every time the dialog opens.
+  // A brand-new review has nothing saved yet, so it can always be submitted.
+  const dirty =
+    !initial || rating !== initial.rating || comment.trim() !== (initial.comment ?? "").trim();
 
   async function save() {
+    if (!dirty || saving) return;
     setSaving(true);
     setError(null);
     try {
@@ -159,10 +166,13 @@ function ReviewDialog({
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Button onClick={save} disabled={saving} className="w-full gap-2">
-          {saving && <Loader2 size={16} className="animate-spin" />}
-          {t("review.submit")}
-        </Button>
+        <SaveButton
+          onClick={save}
+          dirty={dirty}
+          saving={saving}
+          className="w-full"
+          label={t("review.submit")}
+        />
       </DialogContent>
     </Dialog>
   );

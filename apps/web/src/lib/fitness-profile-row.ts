@@ -1,7 +1,10 @@
 import {
   GYM_EQUIPMENT_DEFAULT,
+  isValidSavedNutrition,
   ONBOARDING_ANSWERS_DEFAULT,
   TRAINING_PREFERENCES_DEFAULT,
+  sanitizeAboutYou,
+  sanitizeTrainingPreferences,
   upgradeLegacyEquipment,
   type GymEquipmentAnswers,
   type NutritionTargets,
@@ -40,14 +43,19 @@ interface FitnessProfileRow {
 
 /** Each slice is merged onto its defaults, so rows saved before a field
  *  existed (e.g. `activityLevel`, `trainingDays`) still type-check — and a
- *  user with no row yet gets all defaults. */
+ *  user with no row yet gets all defaults. The row is client-written JSON, so
+ *  out-of-range body facts, unknown frequencies and malformed nutrition blobs
+ *  are dropped rather than trusted. */
 export function parseFitnessProfileRow(data: unknown): SavedFitnessProfile {
   const row = (data ?? null) as FitnessProfileRow | null;
   return {
-    answers: { ...ONBOARDING_ANSWERS_DEFAULT, ...row?.about_you },
-    trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, ...row?.training_preferences },
+    answers: sanitizeAboutYou({ ...ONBOARDING_ANSWERS_DEFAULT, ...row?.about_you }),
+    trainingPreferences: sanitizeTrainingPreferences(
+      { ...TRAINING_PREFERENCES_DEFAULT, ...row?.training_preferences },
+      TRAINING_PREFERENCES_DEFAULT,
+    ),
     gymEquipment: upgradeLegacyEquipment({ ...GYM_EQUIPMENT_DEFAULT, ...row?.gym_equipment }),
-    nutrition: row?.nutrition ?? null,
+    nutrition: isValidSavedNutrition(row?.nutrition) ? row.nutrition : null,
     nutritionStatus: row?.nutrition_status ?? null,
     updatedAt: row?.updated_at ?? null,
   };

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +14,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/components/ui/toast";
+import { SaveButton } from "@/shared/components/atoms/save-button";
+import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { changePassword } from "./profile-actions";
 
 export function ChangePasswordDialog({
@@ -30,6 +31,7 @@ export function ChangePasswordDialog({
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { dirty } = useFormDirty({ password, confirm });
 
   function reset() {
     setPassword("");
@@ -45,6 +47,7 @@ export function ChangePasswordDialog({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!dirty || loading) return;
     if (password !== confirm) {
       setError(t("changePasswordDialog.mismatch"));
       return;
@@ -114,10 +117,12 @@ export function ChangePasswordDialog({
                 {t("cancel")}
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 size={16} className="animate-spin" />}
-              {t("changePasswordDialog.submit")}
-            </Button>
+            <SaveButton
+              type="submit"
+              dirty={dirty}
+              saving={loading}
+              label={t("changePasswordDialog.submit")}
+            />
           </DialogFooter>
         </form>
       </DialogContent>

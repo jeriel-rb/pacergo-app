@@ -1,11 +1,12 @@
-import { redirectLocalized } from "@/lib/locale-redirect";
+import { getVerificationQueue } from "@/lib/admin";
+import { AdminVerificationsView } from "@/features/admin/admin-verifications-view";
 
-type AdminVerificationsParams = { params: Promise<{ locale: string }> };
+// Per-request so the queue reflects decisions immediately after router.refresh().
+export const dynamic = "force-dynamic";
 
-/** Legacy path — trainer requests live at `/admin`. */
-export default async function AdminVerificationsPage({
-  params,
-}: AdminVerificationsParams) {
-  const { locale } = await params;
-  redirectLocalized("/admin", locale);
+/** Trainer requests: the full certification / competition-proof review queue.
+ *  Admin gate lives in the (admin) layout. */
+export default async function AdminVerificationsPage() {
+  const queue = await getVerificationQueue();
+  return <AdminVerificationsView queue={queue} />;
 }

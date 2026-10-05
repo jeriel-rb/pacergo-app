@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "./supabase/server";
 import { SUPABASE_CONFIGURED } from "./supabase/env";
+import { readAccountNumber } from "./crypto/bank-account";
 
 export interface TrainerOrder {
   payment_id: string;
@@ -60,6 +61,29 @@ const EMPTY_EARNINGS: EarningsData = {
   bank: null,
 };
 
+/** The stored account number is ciphertext; decrypt it for its owner so the
+ *  form can show what they saved. If it can't be decrypted (key missing or
+ *  changed) the number is left blank — the mask still shows — rather than
+ *  failing the whole page. */
+async function decryptOwnBank(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  bank: BankAccount | null,
+): Promise<BankAccount | null> {
+  if (!bank?.bank_account_number) return bank;
+  const { data } = await supabase.auth.getUser();
+  const userId = data.user?.id;
+  if (!userId) return { ...bank, bank_account_number: null };
+  try {
+    return {
+      ...bank,
+      bank_account_number: await readAccountNumber(userId, bank.bank_account_number),
+    };
+  } catch {
+    console.warn("bank_account_decrypt_failed");
+    return { ...bank, bank_account_number: null };
+  }
+}
+
 export async function getMyEarnings(): Promise<EarningsData> {
   if (!SUPABASE_CONFIGURED) return EMPTY_EARNINGS;
   const supabase = await createSupabaseServerClient();
@@ -75,6 +99,6 @@ export async function getMyEarnings(): Promise<EarningsData> {
     balance: (balanceRes.data as number | null) ?? 0,
     orders: (ordersRes.data as TrainerOrder[] | null) ?? [],
     withdrawals: (withdrawalsRes.data as MyWithdrawalRequest[] | null) ?? [],
-    bank: (bankRes.data as BankAccount | null) ?? null,
+    bank: await decryptOwnBank(supabase, bankRes.data as BankAccount | null),
   };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -8,6 +9,8 @@ import type { GeneratedDay, GeneratedExercise } from "@pacergo/shared";
 import type { PlanRestTimer } from "@/lib/plan-view.server";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/shared/components/atoms/confirm-dialog";
+import { useToast } from "@/shared/components/ui/toast";
 import { RestCountdown } from "./rest-countdown";
 import { useExerciseSummary } from "./exercise-summary";
 import { useWorkoutProgress } from "./use-workout-progress";
@@ -36,6 +39,8 @@ export function DailyWorkoutView({
   const locale = useLocale();
   const pathname = usePathname();
   const session = day.session;
+  const toast = useToast();
+  const [resetOpen, setResetOpen] = React.useState(false);
 
   const overviewPath = pathname.replace(/\/day\/\d+$/, "");
   const { progress, rest, left, nudge, stop, reset } = useWorkoutProgress({
@@ -47,7 +52,8 @@ export function DailyWorkoutView({
   });
 
   function onReset() {
-    if (window.confirm(t("workout.resetConfirm"))) reset();
+    reset();
+    toast.show(t("toast.workoutReset"), "success");
   }
 
   const totals = session ? sessionProgress(session, progress) : { done: 0, total: 0 };
@@ -104,13 +110,25 @@ export function DailyWorkoutView({
               {totals.done > 0 && (
                 <button
                   type="button"
-                  onClick={onReset}
+                  onClick={() => setResetOpen(true)}
                   className="flex shrink-0 items-center gap-1 rounded-full px-2 py-1 font-medium text-muted-foreground transition-colors hover:bg-accent"
                 >
                   <RotateCcw size={12} aria-hidden />
                   {t("workout.reset")}
                 </button>
               )}
+              {/* Outside the conditional: resetting empties `done`, which would
+                  otherwise unmount the dialog mid-close. */}
+              <ConfirmDialog
+                open={resetOpen}
+                onOpenChange={setResetOpen}
+                title={t("workout.resetTitle")}
+                description={t("workout.resetConfirm")}
+                confirmLabel={t("workout.resetCta")}
+                cancelLabel={t("workout.resetCancel")}
+                destructive
+                onConfirm={onReset}
+              />
             </div>
             <div
               className="h-1.5 w-full overflow-hidden rounded-full bg-muted"

@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "./supabase/server";
 import { SUPABASE_CONFIGURED } from "./supabase/env";
+import { readAccountNumber } from "./crypto/bank-account";
 
 export interface AdminVerification {
   id: string;
@@ -125,14 +126,134 @@ export async function getPayoutDetail(id: string): Promise<PayoutDetail | null> 
     p_id: id,
   });
   if (error || !data) return null;
-  return data as PayoutDetail;
+  const detail = data as PayoutDetail;
+  // The stored number is ciphertext bound to the trainer; decrypt it here, on the
+  // server, for this admin-only page. Unreadable → shown as missing, not a crash.
+  if (detail.bank_account_number) {
+    try {
+      detail.bank_account_number = await readAccountNumber(
+        detail.trainer_id,
+        detail.bank_account_number,
+      );
+    } catch {
+      console.warn("bank_account_decrypt_failed");
+      detail.bank_account_number = null;
+    }
+  }
+  return detail;
 }
 
-export const MEMBERS_PAGE_SIZE = 20;
+export const MEMBERS_PAGE_SIZE = 12;
 
 export interface AdminUsersPage {
   users: AdminUser[];
   total: number;
+}
+
+export type AdminUserRole = "member" | "trainer" | "admin";
+
+/** Everything the admin user sheet shows (admin_user_detail RPC). Counts and
+ *  masked values only — no push token, coordinates, birthdate or messages. */
+export interface AdminUserDetail {
+  id: string;
+  display_name: string;
+  photo_url: string | null;
+  email: string | null;
+  email_confirmed: boolean;
+  is_admin: boolean;
+  is_companion: boolean;
+  created_at: string;
+  updated_at: string | null;
+  last_sign_in_at: string | null;
+  profile: {
+    bio: string | null;
+    gender: string | null;
+    age: number | null;
+    home_area: string | null;
+    locale: string | null;
+    experience_level: string | null;
+    weekly_target: number | null;
+  };
+  setup: {
+    profile_setup_status: "completed" | "skipped" | null;
+    onboarding_completed: boolean;
+  };
+  fitness: {
+    primary_activity: string | null;
+    goal: string | null;
+    experience: string | null;
+  };
+  activity: {
+    bookings_made: number;
+    bookings_received: number;
+    reviews_given: number;
+    saved_trainers: number;
+  };
+  safety: {
+    blocked_by_me: number;
+    blocked_me: number;
+    reports_filed: number;
+    reports_received: number;
+    consents: { document: string; version: string; accepted_at: string }[];
+  };
+  /** Only for trainers. */
+  trainer: {
+    listing: {
+      headline: string | null;
+      served_area: string | null;
+      status: "draft" | "active" | "paused";
+      rating_avg: number;
+      rating_count: number;
+      offerings: {
+        activity: string;
+        tier: string;
+        price_ntd: number;
+        is_free: boolean;
+        session_minutes: number;
+      }[];
+    } | null;
+    verifications: {
+      id: string;
+      doc_type: string;
+      activity: string | null;
+      label: string | null;
+      status: "pending" | "approved" | "rejected";
+      created_at: string;
+      reviewed_at: string | null;
+    }[];
+    money: {
+      available_balance: number;
+      open_withdrawals_count: number;
+      open_withdrawals_sum: number;
+      total_paid_out: number;
+      completed_orders: number;
+      bank_code: string | null;
+      bank_name: string | null;
+      branch_name: string | null;
+      bank_account_holder: string | null;
+      /** Masked, e.g. "********0912". The full number is fetched on demand. */
+      bank_account_mask: string | null;
+      has_bank_account: boolean;
+    };
+  } | null;
+}
+
+/** Headline numbers for the admin dashboard (admin_dashboard_stats RPC). */
+export interface AdminDashboardStats {
+  total_users: number;
+  total_trainers: number;
+  total_admins: number;
+  new_users_30d: number;
+}
+
+/** Dashboard KPI counts. Null when the RPC isn't available (older database),
+ *  so the page can fall back to what the other lists already know. */
+export async function getAdminDashboardStats(): Promise<AdminDashboardStats | null> {
+  if (!SUPABASE_CONFIGURED) return null;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("admin_dashboard_stats");
+  if (error || !data) return null;
+  return data as AdminDashboardStats;
 }
 
 /** One page of users with their role flags (member / trainer / admin), admins
@@ -140,6 +261,7 @@ export interface AdminUsersPage {
 export async function getAllUsers(
   page = 0,
   search = "",
+  role?: AdminUserRole,
 ): Promise<AdminUsersPage> {
   if (!SUPABASE_CONFIGURED) return { users: [], total: 0 };
   const supabase = await createSupabaseServerClient();
@@ -147,6 +269,7 @@ export async function getAllUsers(
     p_limit: MEMBERS_PAGE_SIZE,
     p_offset: page * MEMBERS_PAGE_SIZE,
     p_search: search.trim() || null,
+    ...(role ? { p_role: role } : {}),
   });
   if (error || !data) return { users: [], total: 0 };
   return data as AdminUsersPage;

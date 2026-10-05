@@ -37,10 +37,12 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
   junction once: `cmd /c mklink /J supabase backend` (gitignored). On macOS/Linux:
   `ln -s backend supabase`.
 - **Core migrations:** `0001_init.sql` (schema/types/functions/RPCs only) then
-  `0002_policies.sql` (all RLS + storage policies, commented). Add further
-  changes as `YYYYMMDDHHMMSS_name.sql` after those. Keep new RLS in
-  `0002_policies.sql` (or a follow-up that updates it) so policies stay
-  centralized — do not scatter CREATE POLICY across feature migrations.
+  `0002_policies.sql` (all RLS + storage policies). Fold further schema changes
+  into `0001_init.sql` and further policies into `0002_policies.sql`. Live
+  history on the linked project is `0001` then `0002`; after folding a file
+  in, `supabase migration repair --status reverted <version>` drops the old
+  history row. Do not `db reset` the linked project. Changing `0001` does not
+  re-run it on a remote where `0001` is already applied.
 - **Exercises:** `backend/seeds/03_ai_plan_exercises.sql` is GENERATED — one row per
   catalog exercise (302, kebab-case slugs). Regenerate with
   `node apps/web/scripts/generate-exercises-seed.mjs`; hand-written steps/tips live in
@@ -58,6 +60,38 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
   (with art + instructions) rather than reusing strength/core moves. Bump
   `PLAN_RULES_VERSION` when generation output changes; the plan overview then offers to
   update older plans.
+
+## Sensitive fields (bank account numbers)
+
+- Stored **encrypted**, same scheme as Optserv: AES-GCM in the Next.js server
+  (`apps/web/src/lib/crypto/field-encryption.ts`), key from the server-only
+  `ENCRYPTION_KEY` env, ciphertext `enc:v1:<base64(iv‖ct‖tag)>` in
+  `users.bank_account_number`, the owner's user id bound as AAD. Postgres never
+  sees the plaintext; `bank_account_mask` (e.g. `********0912`) is computed by the
+  server and stored beside it.
+- **Write**: `POST /api/studio/bank-account` → `save_bank_account_encrypted`. The
+  old plaintext `save_bank_account` RPC is revoked.
+- **Read**: owner's page (`getMyEarnings`) and the admin payout page
+  (`getPayoutDetail`) decrypt server-side; the admin **user sheet** shows the mask and
+  reveals the full number only on "Show" via
+  `GET /api/admin/users/[id]/bank-account` (admin-gated in the DB by
+  `admin_user_bank_secret`; `no-store`; logs ids only, never the number).
+- Legacy plaintext values still read fine (no prefix = returned as is). After
+  setting `ENCRYPTION_KEY` and applying the migration, run **once**
+  `node backend/scripts/encrypt-bank-accounts.mjs --dry-run`, then without
+  `--dry-run` (needs `ENCRYPTION_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`).
+  It is idempotent and prints counts only.
+- Don't rotate or lose `ENCRYPTION_KEY` casually: existing ciphertext becomes
+  unreadable (the UI then shows the number as missing, never a crash).
+
+## Profile validation
+
+- Body facts (age 13–100, height 90–275 cm, weight 25–250 kg) are bounded by
+  `PROFILE_LIMITS` in `packages/shared/src/nutrition/profile-limits.ts`. The same
+  bounds are enforced server-side in `validate_fitness_profile()` (called by
+  `save_onboarding_answers`) — change both together. `parseFitnessProfileRow`
+  sanitizes the saved row on the way in; `calculateNutrition` returns null
+  outside the bounds.
 
 ## Conventions / gotchas
 

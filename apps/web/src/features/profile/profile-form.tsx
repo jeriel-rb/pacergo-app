@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { Loader2, Check } from "lucide-react";
 import type { UserProfile } from "@pacergo/shared";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Button } from "@/shared/components/ui/button";
+import { SaveButton } from "@/shared/components/atoms/save-button";
 import { useToast } from "@/shared/components/ui/toast";
+import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { updateProfileFields } from "./profile-actions";
 
 /** Editable profile fields: name, bio, home area. (Gender and training level
@@ -28,13 +28,13 @@ export function ProfileForm({
   const [bio, setBio] = useState(profile.bio ?? "");
   const [homeArea, setHomeArea] = useState(profile.home_area ?? "");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { dirty, markClean } = useFormDirty({ displayName, bio, homeArea });
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!dirty || saving) return;
     setError(null);
-    setSaved(false);
     setSaving(true);
     try {
       await updateProfileFields({
@@ -42,10 +42,9 @@ export function ProfileForm({
         bio: bio.trim() || null,
         home_area: homeArea.trim() || null,
       });
-      setSaved(true);
+      markClean();
       toast.show(t("toast.profileSaved"), "success");
       router.refresh();
-      window.setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("genericError"));
       toast.show(t("toast.profileSaveFailed"), "destructive");
@@ -85,11 +84,7 @@ export function ProfileForm({
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Button type="submit" disabled={saving || disabled} className="gap-2">
-        {saving && <Loader2 size={16} className="animate-spin" />}
-        {saved && !saving && <Check size={16} />}
-        {saved && !saving ? t("saved") : t("save")}
-      </Button>
+      <SaveButton type="submit" dirty={dirty} saving={saving} disabled={disabled} label={t("save")} />
     </form>
   );
 }

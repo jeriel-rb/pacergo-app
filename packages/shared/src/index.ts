@@ -32,6 +32,7 @@ export * from './onboarding/equipment-catalog';
 export * from './nutrition/fitness-profile';
 export * from './nutrition/nutrition-rules';
 export * from './nutrition/calculate-nutrition';
+export * from './nutrition/profile-limits';
 
 export * from './booking/state-machine';
 

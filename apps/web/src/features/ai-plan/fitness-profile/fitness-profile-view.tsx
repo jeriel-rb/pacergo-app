@@ -10,7 +10,6 @@ import {
   CalendarDays,
   ChevronRight,
   Dumbbell,
-  Loader2,
   Ruler,
   Target,
   Timer,
@@ -31,6 +30,8 @@ import {
   type TrainingPreferencesAnswers,
 } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
+import { SaveButton } from "@/shared/components/atoms/save-button";
+import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
 import { useToast } from "@/shared/components/ui/toast";
 import { OptionCard } from "@/shared/components/atoms/option-card";
@@ -92,28 +93,22 @@ export function FitnessProfileView({
   const pathname = usePathname();
   const toast = useToast();
 
-  const initial = React.useRef({
-    answers: initialAnswers,
-    tp: saved.trainingPreferences,
-    ge: saved.gymEquipment,
-  });
   const [answers, setAnswers] = React.useState<OnboardingAnswers>(initialAnswers);
   const [tp, setTp] = React.useState<TrainingPreferencesAnswers>(saved.trainingPreferences);
   const [ge, setGe] = React.useState<GymEquipmentAnswers>(saved.gymEquipment);
   const [openField, setOpenField] = React.useState<FieldKey | null>(null);
   const [saving, setSaving] = React.useState(false);
 
-  const dirty =
-    JSON.stringify([answers, tp, ge]) !==
-    JSON.stringify([initial.current.answers, initial.current.tp, initial.current.ge]);
+  const { dirty, markClean } = useFormDirty({ answers, tp, ge });
   const daysIncomplete = !trainingDaysComplete(tp.daysPerWeek, tp.trainingDays);
   const nutritionHref = pathname.replace(/\/fitness-profile$/, "/nutrition");
 
   async function onSave() {
+    if (!dirty || saving) return;
     setSaving(true);
     try {
       await saveOnboardingAnswers({ userId, answers, trainingPreferences: tp, gymEquipment: ge });
-      initial.current = { answers, tp, ge };
+      markClean();
       // Plan-relevant changes also bring the active plan up to date. Saving
       // the profile already succeeded, so a failure here is reported, not fatal.
       let planUpdated = false;
@@ -234,10 +229,16 @@ export function FitnessProfileView({
 
       <p className="text-xs text-muted-foreground">{t("fitnessProfile.note")}</p>
 
-      <Button size="lg" className="w-full" onClick={onSave} disabled={saving || !dirty || daysIncomplete}>
-        {saving && <Loader2 size={16} className="animate-spin" />}
-        {saving ? t("fitnessProfile.saving") : t("fitnessProfile.save")}
-      </Button>
+      <SaveButton
+        size="lg"
+        className="w-full"
+        onClick={onSave}
+        dirty={dirty}
+        saving={saving}
+        disabled={daysIncomplete}
+        label={t("fitnessProfile.save")}
+        savingLabel={t("fitnessProfile.saving")}
+      />
 
       {!dirty && saved.nutritionStatus === "built" && (
         <Link href={nutritionHref} className="text-center text-sm font-semibold text-primary hover:underline">

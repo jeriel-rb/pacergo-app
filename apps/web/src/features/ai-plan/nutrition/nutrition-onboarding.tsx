@@ -12,6 +12,7 @@ import {
   type OnboardingAnswers,
 } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
 import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { ProgressBar } from "@/shared/components/atoms/progress-bar";
 import { StepScreen } from "@/features/ai-plan/onboarding/step-screen";
@@ -70,6 +71,7 @@ export function NutritionOnboarding({
 }) {
   const { t } = useTranslation(["plan", "onboarding"]);
   const router = useRouter();
+  const toast = useToast();
   const [answers, setAnswers] = React.useState(initialAnswers);
   const [steps, setSteps] = React.useState<BodyField[] | null>(null);
   const [index, setIndex] = React.useState(0);
@@ -87,11 +89,13 @@ export function NutritionOnboarding({
         gymEquipment: saved.gymEquipment,
         nutritionStatus: "built",
       });
+      toast.show(t("toast.nutritionBuilt"), "success");
       // The page re-renders as the saved result.
       router.refresh();
     } catch {
       setError(true);
       setBusy(null);
+      toast.show(t("toast.nutritionBuildFailed"), "destructive");
     }
   }
 
@@ -117,6 +121,7 @@ export function NutritionOnboarding({
     } catch {
       setError(true);
       setBusy(null);
+      toast.show(t("toast.nutritionSkipFailed"), "destructive");
     }
   }
 

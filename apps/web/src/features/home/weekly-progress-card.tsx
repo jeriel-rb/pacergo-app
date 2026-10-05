@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Minus, Plus, Loader2 } from "lucide-react";
+import { Pencil, Minus, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
+import { SaveButton } from "@/shared/components/atoms/save-button";
 import {
   Dialog,
   DialogTrigger,
@@ -90,6 +90,7 @@ function TargetEditor({ current }: { current: number }) {
   const [saving, setSaving] = useState(false);
 
   async function save() {
+    if (value === current || saving) return;
     setSaving(true);
     try {
       await setWeeklyTarget(value);
@@ -149,10 +150,13 @@ function TargetEditor({ current }: { current: number }) {
           </button>
         </div>
 
-        <Button onClick={save} disabled={saving} className="w-full gap-2">
-          {saving && <Loader2 size={16} className="animate-spin" />}
-          {t("weeklyTarget.save")}
-        </Button>
+        <SaveButton
+          onClick={save}
+          dirty={value !== current}
+          saving={saving}
+          className="w-full"
+          label={t("weeklyTarget.save")}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -1,16 +1,21 @@
-import { Download, Receipt, ShieldCheck, Wallet } from "lucide-react";
+import { Download, LayoutDashboard, Receipt, ShieldCheck, Wallet } from "lucide-react";
 import { isRouteActive, type ShellNavItem } from "./shell-nav-item";
 
 export interface AdminNavItem extends ShellNavItem {
   /** Matches a key in the `admin.nav` i18n namespace. */
-  key: "verifications" | "orders" | "payouts" | "exports";
+  key: "dashboard" | "verifications" | "orders" | "payouts" | "exports";
 }
 
-/** Default admin landing is trainer requests at `/admin`. */
+/** Default admin landing is the dashboard at `/admin`. */
 export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   {
-    key: "verifications",
+    key: "dashboard",
     href: "/admin",
+    icon: LayoutDashboard,
+  },
+  {
+    key: "verifications",
+    href: "/admin/verifications",
     icon: ShieldCheck,
   },
   {
@@ -30,14 +35,26 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   },
 ];
 
+/** The phone bottom bar: the same items, with the dashboard in the middle so it
+ *  is the easiest to reach (the sidebar keeps it first). */
+export function adminBottomNavItems(
+  items: readonly AdminNavItem[] = ADMIN_NAV_ITEMS,
+): AdminNavItem[] {
+  const dashboard = items.find((i) => i.key === "dashboard");
+  if (!dashboard) return [...items];
+  const rest = items.filter((i) => i !== dashboard);
+  const middle = Math.floor(items.length / 2);
+  return [...rest.slice(0, middle), dashboard, ...rest.slice(middle)];
+}
+
 /** Whether `href` is the active admin route given the locale-stripped pathname. */
 export function isAdminNavItemActive(
   strippedPath: string,
   href: string,
 ): boolean {
-  if (href === "/admin") {
+  if (href === "/admin") return strippedPath === "/admin";
+  if (href === "/admin/verifications") {
     return (
-      strippedPath === "/admin" ||
       strippedPath === "/admin/verifications" ||
       strippedPath.startsWith("/admin/verifications/")
     );

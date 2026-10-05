@@ -16,6 +16,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { regeneratePlanUnderCurrentRules } from "@/lib/plans";
 import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/shared/components/ui/toast";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { NutritionLinkCard } from "@/features/ai-plan/nutrition/nutrition-link-card";
 
@@ -40,6 +41,7 @@ export function PlanOverviewView({
   const { t } = useTranslation(["plan", "onboarding"]);
   const locale = useLocale();
   const router = useRouter();
+  const toast = useToast();
   // Plans built under older rules (e.g. a plank / glute-bridge "cooldown") can
   // be refreshed in place; the plan's settings stay as they are.
   const outdated = (plan.rulesVersion ?? 0) < PLAN_RULES_VERSION;
@@ -51,9 +53,11 @@ export function PlanOverviewView({
     setUpdateError(false);
     try {
       await regeneratePlanUnderCurrentRules(planId);
+      toast.show(t("toast.planRulesUpdated"), "success");
       router.refresh();
     } catch {
       setUpdateError(true);
+      toast.show(t("toast.planRulesUpdateFailed"), "destructive");
     } finally {
       setUpdating(false);
     }

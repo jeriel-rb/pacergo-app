@@ -1,8 +1,9 @@
 {
   "nav": {
+    "dashboard": "Dashboard",
+    "verifications": "Trainer requests",
     "console": "Admin console",
     "menu": "Admin menu",
-    "verifications": "Trainer requests",
     "orders": "Orders",
     "payouts": "Payouts",
     "exports": "CSV export",
@@ -31,7 +32,8 @@
     "orderUpdated": "Order updated",
     "orderUpdateFailed": "Couldn't update that order. Please try again.",
     "payoutUpdated": "Payout status updated",
-    "payoutUpdateFailed": "Couldn't update that payout. Please try again."
+    "payoutUpdateFailed": "Couldn't update that payout. Please try again.",
+    "exportDownloaded": "Export downloaded"
   },
   "prevPage": "Previous",
   "nextPage": "Next",
@@ -122,13 +124,13 @@
   },
   "orders": {
     "title": "Orders",
-    "subtitle": "Record refunds, holds, and service completion on the simulated ledger. No money leaves the platform.",
+    "subtitle": "Review orders and record refunds, holds and service completion. Payments are made by manual transfer outside Pacergo.",
     "empty": "No orders match this filter.",
     "unknown": "Unknown",
     "amount": "Amount",
     "withTrainer": "With {{name}}",
     "actions": "Ledger actions",
-    "actionsNotice": "These update the order record only. A refund here does not call a payment provider.",
+    "actionsNotice": "This only updates the order record in Pacergo. Any refund or payout is sent by manual transfer, outside the platform.",
     "reasonPlaceholder": "Reason note (required)…",
     "reasonRequired": "This action requires a reason note.",
     "history": "History",
@@ -162,7 +164,7 @@
       "refunded": "Refunded"
     },
     "provider": {
-      "simulated": "Simulated",
+      "simulated": "Manual transfer",
       "newebpay": "Manual transfer"
     },
     "settlement": {
@@ -176,13 +178,14 @@
     "fields": {
       "status": "Payment",
       "refund": "Refund",
-      "provider": "Provider",
+      "provider": "Payment method",
       "fee": "Platform fee",
       "processing": "Processing fee",
       "payable": "Trainer payable",
       "settlement": "Settlement",
       "service": "Service completed",
-      "hold": "Admin hold"
+      "hold": "Admin hold",
+      "created": "Created"
     },
     "action": {
       "cancel": "Cancel attempt",
@@ -204,6 +207,232 @@
       "admin_refund_status_changed": "Refund status changed",
       "booking_cancelled_open_attempt": "Open attempt cancelled with booking",
       "booking_cancelled_refund_requested": "Refund requested because the booking was cancelled"
+    },
+    "columns": {
+      "order": "Order",
+      "amount": "Amount",
+      "status": "Status",
+      "provider": "Payment method",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "menu": "Order actions",
+    "sheet": {
+      "title": "Order details",
+      "loadError": "Couldn't load this order.",
+      "retry": "Try again"
+    },
+    "historyColumns": {
+      "event": "Event",
+      "by": "By",
+      "when": "When",
+      "note": "Note"
+    },
+    "dialog": {
+      "title": "{{action}}?",
+      "cancel": "Cancel"
+    },
+    "statusFilter": "Filter by status",
+    "searchPlaceholder": "Search by name…",
+    "noMatches": "No orders match your search."
+  },
+  "pagination": {
+    "total": "{{count}} total",
+    "rowsPerPage": "Rows per page",
+    "first": "First page",
+    "last": "Last page"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "stats": {
+      "totalUsers": "Total users",
+      "newUsers": "+{{count}} in the last 30 days",
+      "trainers": "Trainers",
+      "trainersShare": "{{percent}}% of all users",
+      "pendingRequests": "Pending trainer requests",
+      "requestsBreakdown": "{{approved}} approved · {{rejected}} rejected",
+      "openPayouts": "Open payouts",
+      "openPayoutsSub": "{{count}} awaiting transfer"
+    },
+    "requests": {
+      "title": "Trainer requests",
+      "empty": "No trainer requests pending review",
+      "dialog": {
+        "approveTitle": "Approve this request?",
+        "rejectTitle": "Reject this request?",
+        "description": "{{name}} will be notified of your decision.",
+        "cancel": "Cancel"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Everyone on Pacergo — search, filter by role, and manage admin access",
+      "roleFilter": "Filter by role",
+      "role": {
+        "all": "All roles",
+        "member": "Members",
+        "trainer": "Trainers",
+        "admin": "Admins"
+      },
+      "columns": {
+        "user": "User",
+        "role": "Role",
+        "joined": "Joined",
+        "actions": "Actions"
+      }
+    },
+    "payouts": {
+      "title": "Payouts",
+      "empty": "No payout requests pending",
+      "dialog": {
+        "title": "{{action}}?",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "verifications": {
+    "title": "Trainer requests",
+    "subtitle": "Review certification, qualification-proof and competition-experience requests",
+    "searchPlaceholder": "Search by name…",
+    "filter": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "all": "All"
+    },
+    "columns": {
+      "trainer": "Trainer",
+      "activity": "Activity",
+      "type": "Type",
+      "status": "Status",
+      "submitted": "Submitted",
+      "reviewed": "Reviewed",
+      "actions": "Actions"
+    },
+    "empty": "No requests in this view.",
+    "noMatches": "No requests match your search.",
+    "statusFilter": "Filter by status",
+    "viewPdf": "View PDF"
+  },
+  "users": {
+    "sheet": {
+      "title": "User details",
+      "loadError": "Couldn't load this user.",
+      "retry": "Try again",
+      "verified": "Verified",
+      "unverified": "Not verified",
+      "yes": "Yes",
+      "no": "No",
+      "free": "Free",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "consents": "Accepted documents",
+      "noConsents": "No documents accepted yet",
+      "noOfferings": "No offerings yet",
+      "noListing": "This trainer hasn't created a listing yet.",
+      "noVerifications": "No verification requests",
+      "noReviews": "No reviews yet",
+      "ratingValue": "★ {{avg}} · {{count}} reviews",
+      "openWithdrawalsValue": "{{count}} · {{amount}}",
+      "sections": {
+        "account": "Account",
+        "profile": "Profile",
+        "fitness": "Fitness profile",
+        "activity": "Activity",
+        "safety": "Trust & safety",
+        "listing": "Trainer listing",
+        "verifications": "Verification history",
+        "earnings": "Earnings & payouts"
+      },
+      "fields": {
+        "email": "Email",
+        "joined": "Joined",
+        "lastSignIn": "Last signed in",
+        "updated": "Last updated",
+        "gender": "Gender",
+        "age": "Age",
+        "homeArea": "Home area",
+        "language": "Language",
+        "experience": "Experience level",
+        "weeklyTarget": "Weekly workout target",
+        "profileSetup": "Profile setup",
+        "onboarding": "Onboarding completed",
+        "mainActivity": "Main activity",
+        "goal": "Goal",
+        "fitnessLevel": "Training level",
+        "headline": "Headline",
+        "servedArea": "Service area",
+        "listingStatus": "Listing status",
+        "rating": "Rating",
+        "bankCode": "Bank code",
+        "bank": "Bank",
+        "branch": "Branch",
+        "accountHolder": "Account holder",
+        "account": "Account number",
+        "role": "Role",
+        "bio": "Bio"
+      },
+      "stats": {
+        "bookingsMade": "Bookings made",
+        "bookingsReceived": "Bookings received",
+        "reviewsGiven": "Reviews given",
+        "savedTrainers": "Saved trainers",
+        "blockedByThem": "Users they blocked",
+        "blockedThem": "Blocked by others",
+        "reportsFiled": "Reports filed",
+        "reportsReceived": "Reports received",
+        "available": "Available balance",
+        "openWithdrawals": "Open withdrawals",
+        "paidOut": "Total paid out",
+        "ordersCompleted": "Orders completed"
+      },
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "language": {
+        "en": "English",
+        "zh": "中文"
+      },
+      "experience": {
+        "no_experience": "No experience",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "setup": {
+        "completed": "Completed",
+        "skipped": "Skipped",
+        "notShown": "Not shown yet"
+      },
+      "activity": {
+        "gym": "Gym",
+        "running": "Running",
+        "hiking": "Hiking",
+        "other": "Other"
+      },
+      "goal": {
+        "lose_weight": "Lose weight",
+        "build_muscle": "Build muscle",
+        "stay_healthy": "Stay healthy"
+      },
+      "document": {
+        "terms_of_service": "Terms of Service",
+        "privacy_policy": "Privacy Policy",
+        "risk_disclosure": "Risk Disclosure",
+        "partner_conduct_rules": "Partner Conduct Rules"
+      },
+      "listingStatus": {
+        "draft": "Draft",
+        "active": "Active",
+        "paused": "Paused"
+      },
+      "consentValue": "Version {{version}} · {{date}}",
+      "submittedOn": "Submitted {{date}}",
+      "showAccount": "Show",
+      "hideAccount": "Hide",
+      "revealError": "Couldn't reveal it"
     }
   }
 }

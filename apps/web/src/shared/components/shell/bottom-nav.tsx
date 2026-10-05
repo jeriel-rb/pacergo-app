@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { UserProfile } from "@pacergo/shared";
 import { NAV_ITEMS, isNavItemActive, type NavItem } from "./nav-items";
 import {
-  ADMIN_NAV_ITEMS,
+  adminBottomNavItems,
   isAdminNavItemActive,
 } from "./admin-nav-items";
 import type { ShellNavItem } from "./shell-nav-item";
@@ -35,7 +35,7 @@ export function BottomNav({
   const { t } = useTranslation(isAdmin ? "admin" : "nav");
   // myPlans is sidebar-only — see nav-items.ts.
   const items: ShellNavItem[] = isAdmin
-    ? ADMIN_NAV_ITEMS
+    ? adminBottomNavItems()
     : NAV_ITEMS.filter((item) => item.key !== "myPlans" && item.key !== "nutrition" && item.key !== "fitnessProfile");
   const isItemActive = isAdmin ? isAdminNavItemActive : isNavItemActive;
   const labelFor = (key: string) =>
@@ -74,6 +74,27 @@ export function BottomNav({
 
           const active = isItemActive(stripped, item.href);
           const href = getLocalizedPath(item.href, locale);
+
+          // Admin console: icons only. The page's own title says where you are;
+          // the label stays as the accessible name and tooltip.
+          if (isAdmin) {
+            return (
+              <li key={item.key}>
+                <Link
+                  href={href}
+                  aria-label={label}
+                  aria-current={active ? "page" : undefined}
+                  title={label}
+                  className="flex h-11 w-14 items-center justify-center rounded-xl transition-colors hover:bg-accent/60"
+                >
+                  <Icon
+                    size={24}
+                    className={active ? "text-primary" : "text-muted-foreground"}
+                  />
+                </Link>
+              </li>
+            );
+          }
 
           if (item.comingSoon) {
             return (

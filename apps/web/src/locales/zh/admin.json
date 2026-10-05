@@ -1,8 +1,9 @@
 {
   "nav": {
+    "dashboard": "儀表板",
+    "verifications": "陪練師申請",
     "console": "管理後台",
     "menu": "管理選單",
-    "verifications": "陪練師申請",
     "orders": "訂單",
     "payouts": "撥款管理",
     "exports": "CSV 匯出",
@@ -31,7 +32,8 @@
     "orderUpdated": "訂單已更新",
     "orderUpdateFailed": "無法更新該訂單，請再試一次。",
     "payoutUpdated": "已更新提款狀態",
-    "payoutUpdateFailed": "無法更新該筆提款，請再試一次。"
+    "payoutUpdateFailed": "無法更新該筆提款，請再試一次。",
+    "exportDownloaded": "已下載匯出檔"
   },
   "prevPage": "上一頁",
   "nextPage": "下一頁",
@@ -122,13 +124,13 @@
   },
   "orders": {
     "title": "訂單",
-    "subtitle": "在模擬帳本上記錄退款、暫停與服務完成。不會向金流或銀行送出款項。",
+    "subtitle": "查看訂單，並記錄退款、暫停與服務完成。款項以手動轉帳方式於 Pacergo 平台外完成。",
     "empty": "沒有符合此篩選的訂單。",
     "unknown": "未知",
     "amount": "金額",
     "withTrainer": "陪練師：{{name}}",
     "actions": "帳本操作",
-    "actionsNotice": "這些操作只更新訂單紀錄，不會呼叫金流服務商。",
+    "actionsNotice": "此操作只會更新 Pacergo 內的訂單紀錄。退款與撥款皆以手動轉帳於平台外處理。",
     "reasonPlaceholder": "原因說明（必填）…",
     "reasonRequired": "此操作需要填寫原因。",
     "history": "歷程",
@@ -162,7 +164,7 @@
       "refunded": "已退款"
     },
     "provider": {
-      "simulated": "模擬付款",
+      "simulated": "手動轉帳",
       "newebpay": "手動轉帳"
     },
     "settlement": {
@@ -182,7 +184,8 @@
       "payable": "陪練師應收",
       "settlement": "結算",
       "service": "服務完成",
-      "hold": "管理員暫停"
+      "hold": "管理員暫停",
+      "created": "建立時間"
     },
     "action": {
       "cancel": "取消付款嘗試",
@@ -204,6 +207,231 @@
       "admin_refund_status_changed": "退款狀態已變更",
       "booking_cancelled_open_attempt": "預約取消，未完成的付款一併取消",
       "booking_cancelled_refund_requested": "預約取消，已申請退款"
+    },
+    "columns": {
+      "order": "訂單",
+      "amount": "金額",
+      "status": "狀態",
+      "provider": "付款方式",
+      "created": "建立時間",
+      "actions": "操作"
+    },
+    "menu": "訂單操作",
+    "sheet": {
+      "title": "訂單詳情",
+      "loadError": "無法載入此訂單。",
+      "retry": "重試"
+    },
+    "historyColumns": {
+      "event": "事件",
+      "by": "操作者",
+      "when": "時間",
+      "note": "備註"
+    },
+    "dialog": {
+      "title": "確定要「{{action}}」嗎？",
+      "cancel": "取消"
+    },
+    "statusFilter": "依狀態篩選",
+    "searchPlaceholder": "搜尋名稱…",
+    "noMatches": "沒有符合搜尋的訂單。"
+  },
+  "pagination": {
+    "total": "共 {{count}} 筆",
+    "rowsPerPage": "每頁筆數",
+    "first": "第一頁",
+    "last": "最後一頁"
+  },
+  "dashboard": {
+    "title": "儀表板",
+    "stats": {
+      "totalUsers": "總使用者數",
+      "newUsers": "近 30 天新增 {{count}} 位",
+      "trainers": "陪練師",
+      "trainersShare": "佔所有使用者 {{percent}}%",
+      "pendingRequests": "待審核陪練師申請",
+      "requestsBreakdown": "已核准 {{approved}} · 已拒絕 {{rejected}}",
+      "openPayouts": "待處理撥款",
+      "openPayoutsSub": "{{count}} 筆等待匯款"
+    },
+    "requests": {
+      "title": "陪練師申請",
+      "empty": "目前沒有待審核的陪練師申請",
+      "dialog": {
+        "approveTitle": "核准此申請？",
+        "rejectTitle": "拒絕此申請？",
+        "description": "{{name}} 會收到你的審核結果。",
+        "cancel": "取消"
+      }
+    },
+    "users": {
+      "title": "使用者",
+      "subtitle": "所有 Pacergo 使用者——搜尋、依角色篩選並管理管理員權限",
+      "roleFilter": "依角色篩選",
+      "role": {
+        "all": "所有角色",
+        "member": "一般會員",
+        "trainer": "陪練師",
+        "admin": "管理員"
+      },
+      "columns": {
+        "user": "使用者",
+        "role": "角色",
+        "joined": "加入時間",
+        "actions": "操作"
+      }
+    },
+    "payouts": {
+      "title": "撥款",
+      "empty": "目前沒有待處理的撥款申請",
+      "dialog": {
+        "title": "確定要「{{action}}」嗎？",
+        "cancel": "取消"
+      }
+    }
+  },
+  "verifications": {
+    "title": "陪練師申請",
+    "subtitle": "審核教練證／資格證明與比賽經驗申請",
+    "searchPlaceholder": "搜尋名稱…",
+    "filter": {
+      "pending": "待審核",
+      "approved": "已核准",
+      "rejected": "已拒絕",
+      "all": "全部"
+    },
+    "columns": {
+      "trainer": "陪練師",
+      "activity": "運動項目",
+      "type": "類型",
+      "status": "狀態",
+      "submitted": "提交時間",
+      "reviewed": "審核時間",
+      "actions": "操作"
+    },
+    "empty": "此分類目前沒有申請。",
+    "noMatches": "沒有符合搜尋的申請。",
+    "statusFilter": "依狀態篩選",
+    "viewPdf": "查看 PDF"
+  },
+  "users": {
+    "sheet": {
+      "title": "使用者詳情",
+      "loadError": "無法載入此使用者。",
+      "retry": "重試",
+      "verified": "已驗證",
+      "unverified": "未驗證",
+      "yes": "是",
+      "no": "否",
+      "free": "免費",
+      "minutes_other": "{{count}} 分鐘",
+      "consents": "已同意的文件",
+      "noConsents": "尚未同意任何文件",
+      "noOfferings": "尚無服務項目",
+      "noListing": "此陪練師尚未建立刊登資料。",
+      "noVerifications": "沒有審核申請",
+      "noReviews": "尚無評價",
+      "ratingValue": "★ {{avg}} · {{count}} 則評價",
+      "openWithdrawalsValue": "{{count}} 筆 · {{amount}}",
+      "sections": {
+        "account": "帳號",
+        "profile": "個人資料",
+        "fitness": "健身檔案",
+        "activity": "活動紀錄",
+        "safety": "信任與安全",
+        "listing": "陪練師刊登",
+        "verifications": "審核紀錄",
+        "earnings": "收入與撥款"
+      },
+      "fields": {
+        "email": "電子郵件",
+        "joined": "加入時間",
+        "lastSignIn": "上次登入",
+        "updated": "上次更新",
+        "gender": "性別",
+        "age": "年齡",
+        "homeArea": "所在地區",
+        "language": "語言",
+        "experience": "經驗等級",
+        "weeklyTarget": "每週訓練目標",
+        "profileSetup": "資料設定",
+        "onboarding": "已完成新手引導",
+        "mainActivity": "主要運動",
+        "goal": "目標",
+        "fitnessLevel": "訓練程度",
+        "headline": "標題",
+        "servedArea": "服務地區",
+        "listingStatus": "刊登狀態",
+        "rating": "評價",
+        "bankCode": "銀行代碼",
+        "bank": "銀行",
+        "branch": "分行",
+        "accountHolder": "戶名",
+        "account": "帳號",
+        "role": "角色",
+        "bio": "自我介紹"
+      },
+      "stats": {
+        "bookingsMade": "發出的預約",
+        "bookingsReceived": "收到的預約",
+        "reviewsGiven": "給出的評價",
+        "savedTrainers": "收藏的陪練師",
+        "blockedByThem": "封鎖的使用者",
+        "blockedThem": "被封鎖次數",
+        "reportsFiled": "提出的檢舉",
+        "reportsReceived": "被檢舉次數",
+        "available": "可提領餘額",
+        "openWithdrawals": "處理中提領",
+        "paidOut": "累計已撥款",
+        "ordersCompleted": "已完成訂單"
+      },
+      "gender": {
+        "male": "男",
+        "female": "女",
+        "other": "其他"
+      },
+      "language": {
+        "en": "English",
+        "zh": "中文"
+      },
+      "experience": {
+        "no_experience": "完全新手",
+        "beginner": "初學者",
+        "intermediate": "中階",
+        "advanced": "進階"
+      },
+      "setup": {
+        "completed": "已完成",
+        "skipped": "已略過",
+        "notShown": "尚未顯示"
+      },
+      "activity": {
+        "gym": "健身房",
+        "running": "跑步",
+        "hiking": "登山",
+        "other": "其他"
+      },
+      "goal": {
+        "lose_weight": "減重",
+        "build_muscle": "增肌",
+        "stay_healthy": "保持健康"
+      },
+      "document": {
+        "terms_of_service": "服務條款",
+        "privacy_policy": "隱私權政策",
+        "risk_disclosure": "風險揭露",
+        "partner_conduct_rules": "夥伴行為準則"
+      },
+      "listingStatus": {
+        "draft": "草稿",
+        "active": "上架中",
+        "paused": "已暫停"
+      },
+      "consentValue": "版本 {{version}} · {{date}}",
+      "submittedOn": "{{date}} 提交",
+      "showAccount": "顯示",
+      "hideAccount": "隱藏",
+      "revealError": "無法顯示"
     }
   }
 }

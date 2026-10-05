@@ -22,7 +22,7 @@ export default async function AdminLayout({
         </div>
       }
       bottomNav={<BottomNav variant="admin" />}
-      mainClassName="mx-auto w-full max-w-md px-4 pb-28 pt-4 lg:max-w-4xl lg:px-10 lg:pb-16 lg:pt-10"
+      mainClassName="mx-auto w-full max-w-md px-4 pb-28 pt-4 md:max-w-none lg:h-dvh lg:overflow-y-auto lg:p-6"
     >
       {children}
     </AppShell>

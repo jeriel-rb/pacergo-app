@@ -1,6 +1,16 @@
 {
   "back": "返回",
   "notFound": "找不到此計畫。",
+  "toast": {
+    "planUpdated": "計畫已更新",
+    "planUpdateFailed": "無法更新計畫，請再試一次。",
+    "planRulesUpdated": "計畫已更新至最新版本",
+    "planRulesUpdateFailed": "無法更新計畫，請再試一次。",
+    "workoutReset": "已清除訓練進度",
+    "nutritionBuilt": "營養計畫已準備好",
+    "nutritionBuildFailed": "無法建立營養計畫，請再試一次。",
+    "nutritionSkipFailed": "無法略過營養計畫，請再試一次。"
+  },
   "overview": {
     "week": "第 {{number}} 週",
     "restDay": "休息日",
@@ -38,6 +48,9 @@
     "setLabel": "第 {{number}} 組",
     "reset": "重設",
     "resetConfirm": "要清除這次訓練已勾選的組數嗎？",
+    "resetTitle": "重設這次訓練？",
+    "resetCta": "清除組數",
+    "resetCancel": "取消",
     "complete": {
       "title": "訓練完成",
       "body": "共 {{total}} 組全部完成，做得好！"

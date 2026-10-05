@@ -1,9 +1,16 @@
 "use client";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { AdminUsersPage } from "@/lib/admin";
+import type {
+  AdminOrderDetail,
+  AdminUserDetail,
+  AdminUserRole,
+  AdminUsersPage,
+} from "@/lib/admin";
 
-const MEMBERS_PAGE_SIZE = 20;
+/** Must match `MEMBERS_PAGE_SIZE` in `@/lib/admin` (server-only, so it can't be
+ *  imported into client components). */
+export const MEMBERS_PAGE_SIZE = 12;
 
 /** Approve or reject a certification request (admin-only RPC). */
 export async function reviewVerification(
@@ -38,15 +45,40 @@ export async function setUserAdmin(
 export async function fetchUsersPage(
   page: number,
   search = "",
+  role?: AdminUserRole,
+  pageSize = MEMBERS_PAGE_SIZE,
 ): Promise<AdminUsersPage> {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase.rpc("list_all_users", {
-    p_limit: MEMBERS_PAGE_SIZE,
-    p_offset: page * MEMBERS_PAGE_SIZE,
+    p_limit: pageSize,
+    p_offset: page * pageSize,
     p_search: search.trim() || null,
+    ...(role ? { p_role: role } : {}),
   });
   if (error || !data) throw new Error(error?.message ?? "members");
   return data as AdminUsersPage;
+}
+
+/** One user's full bank account number, decrypted by the server for an admin who
+ *  asked to reveal it. Never cached. Throws a short error code
+ *  ("forbidden" | "not_found" | "decrypt_failed" | ...). */
+export async function fetchBankAccountNumber(userId: string): Promise<string> {
+  const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/bank-account`, {
+    cache: "no-store",
+  });
+  const body = (await res.json().catch(() => null)) as
+    | { accountNumber?: string | null; error?: string }
+    | null;
+  if (!res.ok || !body?.accountNumber) throw new Error(body?.error ?? "reveal_failed");
+  return body.accountNumber;
+}
+
+/** One user's full detail for the sheet (admin-only RPC). */
+export async function fetchUserDetail(id: string): Promise<AdminUserDetail> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("admin_user_detail", { p_user_id: id });
+  if (error || !data) throw new Error(error?.message ?? "user");
+  return data as AdminUserDetail;
 }
 
 /** Short-lived signed URL for a private verification document (admins only). */
@@ -74,6 +106,14 @@ export async function setWithdrawalStatus(
     p_reason: reason || null,
   });
   if (error) throw new Error(error.message);
+}
+
+/** One order plus its ledger history, fetched from the browser (admin-only RPC). */
+export async function fetchOrderDetail(id: string): Promise<AdminOrderDetail> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("admin_payment_detail", { p_id: id });
+  if (error || !data) throw new Error(error?.message ?? "order");
+  return data as AdminOrderDetail;
 }
 
 /** B-5: admin-only cancel / refund-status recording on a payment. */

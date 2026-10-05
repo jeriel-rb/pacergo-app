@@ -20,15 +20,18 @@ export interface BankAccountInput {
   accountHolder: string;
 }
 
-/** Saves the signed-in trainer's payout account. The mask is derived in the DB. */
+/** Saves the signed-in trainer's payout account. The web server encrypts the
+ *  account number before it is stored, so it is sent to our own API route — not
+ *  straight to the database. Throws an Error whose message is a short code
+ *  (e.g. "bank_details_invalid"). */
 export async function saveBankAccount(input: BankAccountInput): Promise<void> {
-  const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.rpc("save_bank_account", {
-    p_bank_code: input.bankCode,
-    p_bank_name: input.bankName,
-    p_branch_name: input.branchName,
-    p_account_number: input.accountNumber,
-    p_account_holder: input.accountHolder,
+  const res = await fetch("/api/studio/bank-account", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
   });
-  if (error) throw new Error(error.message);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "bank_save_failed");
+  }
 }

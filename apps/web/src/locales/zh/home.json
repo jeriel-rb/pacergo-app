@@ -37,6 +37,8 @@
   "recommended": "推薦陪練師",
   "viewAll": "查看全部",
   "saveTrainer": "收藏陪練師",
+  "moreActivities": "還提供",
+  "moreActivitiesAria": "顯示另外 {{count}} 項運動",
   "unsaveTrainer": "取消收藏",
   "toast": {
     "saveFailed": "無法收藏該陪練師，請再試一次。",

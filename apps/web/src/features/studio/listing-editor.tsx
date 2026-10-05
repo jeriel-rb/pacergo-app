@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { ListingStatus, StudioListing } from "@/lib/studio";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Button } from "@/shared/components/ui/button";
+import { SaveButton } from "@/shared/components/atoms/save-button";
 import { useToast } from "@/shared/components/ui/toast";
+import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { cn } from "@/lib/utils";
 import { upsertMyListing } from "./studio-actions";
 import { ConsentCheckboxRow } from "@/features/legal/consent-checkbox-row";
@@ -29,7 +29,6 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
   const [area, setArea] = useState(listing?.served_area ?? "");
   const [status, setStatus] = useState<ListingStatus>(listing?.status ?? "draft");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // A10: partner conduct rules only apply once someone becomes a trainer —
@@ -38,15 +37,19 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
   const isFirstListing = listing === null;
   const [conductChecked, setConductChecked] = useState(false);
 
+  const { dirty, markClean } = useFormDirty({ headline, bio, area, status });
+  // Creating the very first listing is always a change (there's nothing saved yet).
+  const canSave = isFirstListing || dirty;
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!canSave || saving) return;
     if (isFirstListing && !conductChecked) {
       setError(t("listing.conductRequired"));
       return;
     }
     setSaving(true);
     setError(null);
-    setSaved(false);
     try {
       await upsertMyListing({
         headline: headline.trim() || null,
@@ -54,10 +57,9 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
         servedArea: area.trim() || null,
         status,
       });
-      setSaved(true);
+      markClean();
       toast.show(t("toast.listingSaved"), "success");
       router.refresh();
-      window.setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
       toast.show(t("toast.listingSaveFailed"), "destructive");
@@ -160,11 +162,7 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Button type="submit" disabled={saving} className="gap-2">
-          {saving && <Loader2 size={16} className="animate-spin" />}
-          {saved && !saving && <Check size={16} />}
-          {saved && !saving ? t("saved") : t("save")}
-        </Button>
+        <SaveButton type="submit" dirty={canSave} saving={saving} label={t("save")} />
       </form>
     </Card>
   );

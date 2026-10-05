@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/components/ui/toast";
+import { SaveButton } from "@/shared/components/atoms/save-button";
+import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { buildAuthCallbackUrl, getTrustedAppOrigin } from "@/lib/auth-callback";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { changeEmail } from "./profile-actions";
@@ -36,6 +37,7 @@ export function ChangeEmailDialog({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { dirty } = useFormDirty(email.trim());
 
   function reset() {
     setEmail("");
@@ -50,6 +52,7 @@ export function ChangeEmailDialog({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!dirty || loading || email.trim() === currentEmail) return;
     setError(null);
     setLoading(true);
     try {
@@ -108,10 +111,13 @@ export function ChangeEmailDialog({
                 {t("cancel")}
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 size={16} className="animate-spin" />}
-              {t("changeEmailDialog.submit")}
-            </Button>
+            <SaveButton
+              type="submit"
+              dirty={dirty}
+              saving={loading}
+              disabled={email.trim() === currentEmail}
+              label={t("changeEmailDialog.submit")}
+            />
           </DialogFooter>
         </form>
       </DialogContent>

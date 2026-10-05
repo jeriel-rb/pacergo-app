@@ -5,19 +5,26 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { MapPin, Star } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { TrainerSummary } from "@pacergo/shared";
+import { ACTIVITY_META, type TrainerSummary } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
+import { CursorTooltip } from "@/shared/components/atoms/cursor-tooltip";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { TierBadge } from "@/shared/components/atoms/tier-badge";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { RatingStars } from "@/shared/components/atoms/rating-stars";
-import { ActivityIconCircle } from "@/shared/components/atoms/activity";
+import { ActivityIcon, ActivityIconCircle } from "@/shared/components/atoms/activity";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { toggleSaved } from "@/features/saved/saved-actions";
 import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 type Locale = "zh" | "en";
+
+/** A card has room for four activity circles. Up to four activities are all shown;
+ *  with more, the last slot becomes a "+N" badge (so three icons + the badge) and
+ *  the rest go in its tooltip. Either way the row is one line, so every card keeps
+ *  the same height. */
+const ACTIVITY_SLOTS = 4;
 
 const GRADIENT = "linear-gradient(135deg, var(--hero-from), var(--hero-to))";
 
@@ -37,6 +44,11 @@ export function TrainerCard({
   const pathname = usePathname();
   const routeLocale = getCurrentLocale(pathname);
   const href = getLocalizedPath(`/trainers/${trainer.id}`, routeLocale);
+  const overflow = trainer.activities.length > ACTIVITY_SLOTS;
+  const visibleActivities = overflow
+    ? trainer.activities.slice(0, ACTIVITY_SLOTS - 1)
+    : trainer.activities;
+  const hiddenActivities = overflow ? trainer.activities.slice(ACTIVITY_SLOTS - 1) : [];
   const [saved, setSaved] = useState(initialSaved);
   const toast = useToast();
 
@@ -112,10 +124,39 @@ export function TrainerCard({
               count={trainer.rating_count}
               size={12}
             />
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {trainer.activities.map((slug) => (
-                <ActivityIconCircle key={slug} slug={slug} />
+            <div className="flex h-8 flex-nowrap items-center gap-1.5 pt-1">
+              {visibleActivities.map((slug) => (
+                <ActivityIconCircle key={slug} slug={slug} className="h-7 w-7 shrink-0" />
               ))}
+              {hiddenActivities.length > 0 && (
+                <CursorTooltip
+                  label={t("moreActivitiesAria", { count: hiddenActivities.length })}
+                  className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-medium text-foreground/70 transition-colors hover:bg-accent hover:text-foreground"
+                  tooltipClassName="min-w-40"
+                  content={
+                    <>
+                      <p className="px-2 pb-1 pt-0.5 text-xs font-medium text-muted-foreground">
+                        {t("moreActivities")}
+                      </p>
+                      <ul className="space-y-0.5">
+                        {hiddenActivities.map((slug) => (
+                          <li
+                            key={slug}
+                            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+                          >
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-foreground/70">
+                              <ActivityIcon slug={slug} size={14} />
+                            </span>
+                            {ACTIVITY_META[slug][locale]}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  }
+                >
+                  +{hiddenActivities.length}
+                </CursorTooltip>
+              )}
             </div>
           </div>
         </div>

@@ -46,12 +46,15 @@ const sheetVariants = cva(
 
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
+    VariantProps<typeof sheetVariants> {
+  /** Extra classes for the close (X) button, e.g. to line it up with a header. */
+  closeClassName?: string;
+}
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => {
+>(({ side = "right", className, closeClassName, children, ...props }, ref) => {
   const { t } = useTranslation("common");
   return (
   <SheetPortal>
@@ -62,7 +65,12 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus:outline-none">
+      <SheetPrimitive.Close
+        className={cn(
+          "absolute right-4 top-4 rounded-full p-1 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus:outline-none",
+          closeClassName,
+        )}
+      >
         <X size={18} />
         <span className="sr-only">{t("close")}</span>
       </SheetPrimitive.Close>

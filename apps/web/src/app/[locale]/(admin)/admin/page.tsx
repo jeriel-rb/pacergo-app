@@ -1,14 +1,24 @@
-import { getAllUsers, getVerificationQueue } from "@/lib/admin";
-import { AdminView } from "@/features/admin/admin-view";
+import {
+  getAdminDashboardStats,
+  getAllUsers,
+  getPayoutList,
+  getVerificationQueue,
+} from "@/lib/admin";
+import { AdminDashboardView } from "@/features/admin/dashboard/admin-dashboard-view";
 
-// Per-request so the queue/members reflect changes immediately after router.refresh().
+// Per-request so the numbers reflect changes immediately after router.refresh().
 export const dynamic = "force-dynamic";
 
-/** Default admin landing — trainer verification queue. Admin gate lives in the (admin) layout. */
+/** Admin console landing — overview of members, trainer requests and payouts.
+ *  Admin gate lives in the (admin) layout. */
 export default async function AdminPage() {
-  const [queue, usersPage] = await Promise.all([
+  const [stats, queue, usersPage, payouts] = await Promise.all([
+    getAdminDashboardStats(),
     getVerificationQueue(),
     getAllUsers(0),
+    getPayoutList(),
   ]);
-  return <AdminView queue={queue} usersPage={usersPage} />;
+  return (
+    <AdminDashboardView stats={stats} queue={queue} usersPage={usersPage} payouts={payouts} />
+  );
 }

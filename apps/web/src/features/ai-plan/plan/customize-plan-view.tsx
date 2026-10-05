@@ -14,7 +14,6 @@ import {
   Ban,
   Crosshair,
   Hourglass,
-  Loader2,
   Shuffle,
   Target,
   Timer,
@@ -57,6 +56,9 @@ import { CardioPicker } from "@/features/ai-plan/onboarding/cardio-picker";
 import { EquipmentPicker } from "@/features/ai-plan/onboarding/equipment-picker";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/components/ui/button";
+import { useToast } from "@/shared/components/ui/toast";
+import { SaveButton } from "@/shared/components/atoms/save-button";
+import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { Switch } from "@/shared/components/ui/switch";
 import { RangeSlider } from "@/shared/components/ui/range-slider";
 import { OptionCard } from "@/shared/components/atoms/option-card";
@@ -138,6 +140,7 @@ export function CustomizePlanView({
   const { t } = useTranslation(["plan", "onboarding"]);
   const format = useDurationFormat();
   const router = useRouter();
+  const toast = useToast();
   const pathname = usePathname();
   // Explicit, locale-preserving targets — `pathname` already carries
   // whatever locale prefix (or lack of one, for zh) is currently active, so
@@ -165,6 +168,8 @@ export function CustomizePlanView({
   const recommended = recommendSplit({ answers, trainingPreferences: tp, gymEquipment: ge }).split;
   // What this screen opened with — to tell which fields the user changed.
   const opened = React.useRef({ tp, ge, goal: answers.goal });
+  // "Update" stays disabled until the user actually changes the goal or settings.
+  const { dirty } = useFormDirty({ goal: answers.goal, tp, ge });
   const [openField, setOpenField] = React.useState<FieldKey | null>(null);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState(false);
@@ -215,6 +220,7 @@ export function CustomizePlanView({
   };
 
   async function handleUpdate() {
+    if (!dirty || saving) return;
     setSaving(true);
     setError(false);
     try {
@@ -225,11 +231,13 @@ export function CustomizePlanView({
       const snapshot: PlanOnboardingSnapshot = { answers, trainingPreferences, gymEquipment: ge };
       await updateTrainingPlan({ id: planId, label, plan, onboardingSnapshot: snapshot });
       await syncSharedProfile(trainingPreferences);
+      toast.show(t("toast.planUpdated"), "success");
       router.push(planOverviewHref);
       router.refresh();
     } catch {
       setError(true);
       setSaving(false);
+      toast.show(t("toast.planUpdateFailed"), "destructive");
     }
   }
 
@@ -349,10 +357,16 @@ export function CustomizePlanView({
         >
           {t("back")}
         </Button>
-        <Button size="lg" className="flex-1" onClick={handleUpdate} disabled={saving || daysIncomplete}>
-          {saving && <Loader2 size={16} className="animate-spin" />}
-          {saving ? t("update.saving") : t("update.save")}
-        </Button>
+        <SaveButton
+          size="lg"
+          className="flex-1"
+          onClick={handleUpdate}
+          dirty={dirty}
+          saving={saving}
+          disabled={daysIncomplete}
+          label={t("update.save")}
+          savingLabel={t("update.saving")}
+        />
       </div>
 
       <FieldEditorDialog

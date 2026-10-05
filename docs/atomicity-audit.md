@@ -6,6 +6,10 @@ database function that writes data, plus the web code that calls them in sequenc
 Also covers the AI plan security review that preceded it (section 6), so all findings from
 that work are in one place.
 
+> **Status (2026-10-05):** all seven findings below were re-checked against `0001_init.sql`
+> and are fixed. Only the two **Blocked** items in section 6 (PostGIS, leaked-password
+> protection) remain open, and they need a Supabase dashboard or support change, not a migration.
+
 ## 1. Summary
 
 Every write function is a PL/pgSQL function, so each call is **one transaction** — a function

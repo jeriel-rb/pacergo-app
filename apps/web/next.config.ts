@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Deployed via Vercel (apps/web root).
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_SUPABASE_URL:

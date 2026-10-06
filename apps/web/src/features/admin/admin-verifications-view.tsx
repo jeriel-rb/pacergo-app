@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, FileText, X } from "lucide-react";
+import { Check, FileText, PanelRight, X } from "lucide-react";
 import { formatInAppTimeZone } from "@pacergo/shared";
 import type { AdminVerification } from "@/lib/admin";
 import { ActionMenu, type ActionMenuItem } from "@/shared/components/atoms/action-menu";
@@ -24,6 +24,7 @@ import { useLocale } from "@/shared/hooks/use-locale";
 import { getCertSignedUrl } from "./admin-actions";
 import { MessageRow, TableFrame } from "./dashboard/dashboard-parts";
 import { ReviewDialog, type Decision } from "./dashboard/trainer-requests-card";
+import { TrainerRequestSheet } from "./trainer-request-sheet";
 
 type StatusFilter = "pending" | "approved" | "rejected" | "all";
 const FILTERS: StatusFilter[] = ["pending", "approved", "rejected", "all"];
@@ -32,6 +33,15 @@ const STATUS_TONE: Record<AdminVerification["status"], StatusTone> = {
   approved: "success",
   rejected: "danger",
 };
+
+/** A certification is a Tier B request, competition proof is Tier A, and a
+ *  first application is Tier C. */
+function tierOf(docType: string | null): "A" | "B" | "C" | null {
+  if (docType === "competition") return "A";
+  if (docType === "certification") return "B";
+  if (docType === "application") return "C";
+  return null;
+}
 
 /** Trainer requests: every certification / competition-proof request, filterable
  *  by state and searchable by name. All also lists users who already have the
@@ -48,6 +58,7 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
   const [review, setReview] = useState<{ item: AdminVerification; decision: Decision } | null>(
     null,
   );
+  const [openRequest, setOpenRequest] = useState<AdminVerification | null>(null);
   const [docBusy, setDocBusy] = useState<string | null>(null);
 
   const rows = useMemo(() => {
@@ -81,9 +92,33 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
     }
   }
 
-  /** "⋯" menu items: View PDF whenever there is a document; Approve / Reject only
-   *  while the request is pending. */
+  /** "⋯" menu. A pending request can be approved or rejected. An approved one
+   *  only opens its detail sheet, with View PDF under that for Tier A and B. */
   function menuItems(v: AdminVerification): ActionMenuItem[] {
+    if (v.status === "approved") {
+      const items: ActionMenuItem[] = [
+        {
+          key: "detail",
+          label: t("verifications.seeDetails"),
+          icon: <PanelRight />,
+          onSelect: () => setOpenRequest(v),
+        },
+      ];
+      if (
+        v.document_path &&
+        (v.doc_type === "certification" || v.doc_type === "competition")
+      ) {
+        items.push({
+          key: "view",
+          label: t("verifications.viewPdf"),
+          icon: <FileText />,
+          disabled: docBusy === v.id,
+          onSelect: () => void openDoc(v),
+        });
+      }
+      return items;
+    }
+
     const items: ActionMenuItem[] = [];
     if (v.document_path) {
       items.push({
@@ -167,15 +202,27 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
               visible.map((v) => {
                 const items = menuItems(v);
                 return (
-                  <TableRow key={v.id}>
+                  <TableRow
+                    key={v.id}
+                    tabIndex={0}
+                    onClick={() => setOpenRequest(v)}
+                    onKeyDown={(e) => {
+                      if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                        e.preventDefault();
+                        setOpenRequest(v);
+                      }
+                    }}
+                    className="cursor-pointer focus-visible:bg-muted/40 focus-visible:outline-none"
+                  >
                     <TableCell>
                       <div className="flex min-w-0 items-center gap-2.5">
                         <InitialAvatar name={v.display_name} src={v.photo_url} size={32} />
                         <div className="min-w-0">
                           <p className="max-w-[200px] truncate font-medium">{v.display_name}</p>
-                          {v.label && (
+                          {tierOf(v.doc_type) && (
                             <p className="max-w-[200px] truncate text-xs text-muted-foreground">
-                              {v.label}
+                              {t(`verifications.tier.${tierOf(v.doc_type)}`)}
+                              {v.label ? ` · ${v.label}` : ""}
                             </p>
                           )}
                         </div>
@@ -188,7 +235,9 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
                       {stamp(v.created_at)}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {v.reviewed_at ? stamp(v.reviewed_at) : "—"}
+                      {v.reviewed_at
+                        ? `${stamp(v.reviewed_at)}${v.reviewer_name ? ` · ${v.reviewer_name}` : ""}`
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       {items.length > 0 && (
@@ -215,6 +264,12 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
         }}
       />
 
+      <TrainerRequestSheet
+        request={openRequest}
+        onOpenChange={(open) => !open && setOpenRequest(null)}
+        onDecide={(decision) => openRequest && setReview({ item: openRequest, decision })}
+        onViewPdf={() => openRequest && void openDoc(openRequest)}
+      />
       <ReviewDialog state={review} onClose={() => setReview(null)} />
     </div>
   );

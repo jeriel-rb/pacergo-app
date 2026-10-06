@@ -5,7 +5,8 @@
   "switchTrainer": "切換陪練員",
   "hero": {
     "title": "找到你的訓練夥伴",
-    "subtitle": "6+ 位專業陪練等你",
+    "subtitle_one": "{{count}} 位專業陪練等你",
+    "subtitle_other": "{{count}} 位專業陪練等你",
     "cta": "立即探索"
   },
   "actions": {

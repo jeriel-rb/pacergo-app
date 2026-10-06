@@ -346,6 +346,7 @@ export function UserSheet({
 
     if (d.trainer) {
       const { listing, verifications, money } = d.trainer;
+      const certificates = verifications.filter((v) => v.doc_type === "certification");
       items.push(
         {
           id: "listing",
@@ -385,6 +386,32 @@ export function UserSheet({
             </div>
           ) : (
             <EmptyRow>{t("users.sheet.noListing")}</EmptyRow>
+          ),
+        },
+        {
+          id: "certificates",
+          title: t("users.sheet.sections.certificates"),
+          children: (
+            <div className="space-y-2">
+              {certificates.length === 0 ? (
+                <EmptyRow>{t("users.sheet.noCertificates")}</EmptyRow>
+              ) : (
+                certificates.map((v) => (
+                    <InfoRow
+                      key={v.id}
+                      icon={Award}
+                      label={text(v.label) === "—" ? activityName(v.activity) : text(v.label)}
+                    >
+                      {activityName(v.activity)}
+                      {" · "}
+                      <StatusBadge tone={VERIFICATION_TONE[v.status] ?? "muted"} className="mx-1 align-middle">
+                        {t(v.status)}
+                      </StatusBadge>
+                      {t("users.sheet.submittedOn", { date: date(v.created_at) })}
+                    </InfoRow>
+                  ))
+              )}
+            </div>
           ),
         },
         {

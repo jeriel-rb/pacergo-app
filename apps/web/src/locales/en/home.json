@@ -5,7 +5,8 @@
   "switchTrainer": "Switch trainer",
   "hero": {
     "title": "Find your training partner",
-    "subtitle": "6+ pro trainers waiting for you",
+    "subtitle_one": "{{count}} pro trainer waiting for you",
+    "subtitle_other": "{{count}} pro trainers waiting for you",
     "cta": "Browse trainers"
   },
   "actions": {

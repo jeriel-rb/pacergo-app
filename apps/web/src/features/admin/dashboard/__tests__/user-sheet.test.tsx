@@ -192,14 +192,14 @@ describe("UserSheet", () => {
 
   it("has no trainer sections for a regular member", () => {
     renderSheet();
-    for (const name of ["Trainer listing", "Verification history", "Earnings & payouts"]) {
+    for (const name of ["Trainer listing", "Certificates", "Verification history", "Earnings & payouts"]) {
       expect(screen.queryByRole("button", { name: new RegExp(`^${name}`) })).not.toBeInTheDocument();
     }
   });
 
   it("adds the trainer sections — all open too — for a trainer", () => {
     renderSheet({ detail: trainer });
-    for (const name of ["Trainer listing", "Verification history", "Earnings & payouts"]) {
+    for (const name of ["Trainer listing", "Certificates", "Verification history", "Earnings & payouts"]) {
       expect(section(name)).toHaveAttribute("aria-expanded", "true");
     }
     const listing = screen.getByRole("region", { name: "Trainer listing" });
@@ -208,6 +208,9 @@ describe("UserSheet", () => {
     expect(within(listing).getByText("★ 4.8 · 12 reviews")).toBeInTheDocument();
     expect(within(listing).getByText(/NT\$1,200/)).toBeInTheDocument();
     expect(within(listing).getByText(/60 min/)).toBeInTheDocument();
+    const certificates = screen.getByRole("region", { name: "Certificates" });
+    expect(within(certificates).getByText("NASM-CPT")).toBeInTheDocument();
+    expect(within(certificates).getByText("Approved")).toBeInTheDocument();
     const verifications = screen.getByRole("region", { name: "Verification history" });
     expect(within(verifications).getByText("Approved")).toBeInTheDocument();
     expect(within(verifications).getByText(/Submitted/)).toBeInTheDocument();
@@ -219,6 +222,43 @@ describe("UserSheet", () => {
     expect(within(earnings).getByText("Taiwan Bank")).toBeInTheDocument();
     expect(within(earnings).getByText("Da'an")).toBeInTheDocument();
     expect(within(earnings).getByText("Tom Trainer")).toBeInTheDocument();
+  });
+
+  it("lists every certificate the trainer has, open by default", () => {
+    renderSheet({
+      detail: {
+        ...trainer,
+        trainer: {
+          ...trainer.trainer!,
+          verifications: [
+            ...trainer.trainer!.verifications,
+            {
+              id: "v2",
+              doc_type: "certification",
+              activity: "running",
+              label: "ACE Running",
+              status: "pending",
+              created_at: "2026-10-01T08:00:00Z",
+              reviewed_at: null,
+            },
+            {
+              id: "v3",
+              doc_type: "competition",
+              activity: "gym",
+              label: "Hyrox race",
+              status: "approved",
+              created_at: "2026-09-12T08:00:00Z",
+              reviewed_at: "2026-09-13T08:00:00Z",
+            },
+          ],
+        },
+      },
+    });
+    const certificates = screen.getByRole("region", { name: "Certificates" });
+    expect(section("Certificates")).toHaveAttribute("aria-expanded", "true");
+    expect(within(certificates).getByText("NASM-CPT")).toBeInTheDocument();
+    expect(within(certificates).getByText("ACE Running")).toBeInTheDocument();
+    expect(within(certificates).queryByText("Hyrox race")).not.toBeInTheDocument();
   });
 
   it("does not show how many chats a user has", () => {

@@ -4,7 +4,13 @@
   "viewRequests": "View booking requests",
   "intro": {
     "title": "Become a trainer",
-    "body": "Fill in your listing below, set the status to \"Active\", and add at least one plan — then seekers can find and book you."
+    "body": "Fill in your listing below, set the status to \"Active\", and add at least one plan — then submit it for an admin to review."
+  },
+  "application": {
+    "pendingTitle": "Application under review",
+    "pendingBody": "An admin is reviewing your trainer application. You'll become a Tier C trainer once it's approved.",
+    "rejectedTitle": "Application not approved",
+    "rejectedBody": "An admin did not approve this application. Update your listing and submit it again."
   },
   "save": "Save",
   "saved": "Saved",
@@ -47,7 +53,8 @@
     "area": "Service area",
     "areaPlaceholder": "e.g. Xinyi, Taipei",
     "status": "Status",
-    "conductRequired": "Please agree to the Partner Conduct Rules to publish your first listing."
+    "conductRequired": "Please agree to the Partner Conduct Rules to publish your first listing.",
+    "needPlanAndAvailability": "Add a price plan and at least one availability slot before saving. Every tier, including Tier C, needs a price so you appear in recommended trainers."
   },
   "offerings": {
     "title": "Plans & pricing",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,7 @@ import { Button } from "@/shared/components/ui/button";
 import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { addAvailability, removeAvailability } from "./studio-actions";
+import { ListingSaveBar, useEnsureDraftListing, useStudioDraftRegistration } from "./listing-editor";
 
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -35,6 +36,24 @@ export function AvailabilityEditor({
   const { t } = useTranslation(["studio", "trainer"]);
   const router = useRouter();
   const toast = useToast();
+  const ensureDraftListing = useEnsureDraftListing();
+  const registerDraft = useStudioDraftRegistration();
+  const canEdit = hasListing || Boolean(ensureDraftListing);
+  const [touched, setTouched] = useState(false);
+  const [extra, setExtra] = useState<StudioAvailability[]>([]);
+  const visibleSlots = [
+    ...availability,
+    ...extra.filter(
+      (row) =>
+        !availability.some(
+          (a) =>
+            a.id === row.id ||
+            (a.weekday === row.weekday &&
+              a.start_minute === row.start_minute &&
+              a.end_minute === row.end_minute),
+        ),
+    ),
+  ];
   const weekdays = t("trainer:weekdaysShort", { returnObjects: true }) as string[];
 
   const [weekday, setWeekday] = useState(1);
@@ -42,6 +61,57 @@ export function AvailabilityEditor({
   const [end, setEnd] = useState("20:00");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const startMinute = toMinutes(start);
+  const endMinute = toMinutes(end);
+  const rangeValid = endMinute > startMinute;
+  const matchesSaved = visibleSlots.some(
+    (a) => a.weekday === weekday && a.start_minute === startMinute && a.end_minute === endMinute,
+  );
+  const canCommitSlot = touched && canEdit && rangeValid && !matchesSaved;
+  const slotRef = useRef({
+    canCommitSlot,
+    hasListing,
+    weekday,
+    startMinute,
+    endMinute,
+    ensureDraftListing,
+  });
+  slotRef.current = {
+    canCommitSlot,
+    hasListing,
+    weekday,
+    startMinute,
+    endMinute,
+    ensureDraftListing,
+  };
+
+  const flushSlot = useCallback(async () => {
+    const d = slotRef.current;
+    if (!d.canCommitSlot) return;
+    if (!d.hasListing) await d.ensureDraftListing?.();
+    const id = await addAvailability({
+      weekday: d.weekday,
+      startMinute: d.startMinute,
+      endMinute: d.endMinute,
+    });
+    setExtra((prev) => [
+      ...prev,
+      {
+        id,
+        weekday: d.weekday,
+        start_minute: d.startMinute,
+        end_minute: d.endMinute,
+      },
+    ]);
+    registerDraft?.noteSaved("availability");
+    setTouched(false);
+  }, [registerDraft]);
+
+  useEffect(() => {
+    registerDraft?.registerAvailability(flushSlot, canCommitSlot);
+    return () => registerDraft?.registerAvailability(null, false);
+  }, [registerDraft, flushSlot, canCommitSlot]);
 
   async function add() {
     const s = toMinutes(start);
@@ -53,7 +123,14 @@ export function AvailabilityEditor({
     setBusy(true);
     setError(null);
     try {
-      await addAvailability({ weekday, startMinute: s, endMinute: e });
+      if (!hasListing) await ensureDraftListing?.();
+      const id = await addAvailability({ weekday, startMinute: s, endMinute: e });
+      setExtra((prev) => [
+        ...prev,
+        { id, weekday, start_minute: s, end_minute: e },
+      ]);
+      registerDraft?.noteSaved("availability");
+      setTouched(false);
       toast.show(t("studio:toast.availabilityAdded"), "success");
       router.refresh();
     } catch (err) {
@@ -67,6 +144,7 @@ export function AvailabilityEditor({
   async function remove(id: string) {
     setBusy(true);
     try {
+      setExtra((prev) => prev.filter((row) => row.id !== id));
       await removeAvailability(id);
       toast.show(t("studio:toast.availabilityRemoved"), "success");
       router.refresh();
@@ -86,19 +164,19 @@ export function AvailabilityEditor({
         </p>
       </div>
 
-      {!hasListing ? (
+      {!canEdit ? (
         <p className="text-sm text-muted-foreground">
           {t("studio:offerings.needListing")}
         </p>
       ) : (
         <>
           <div className="space-y-2">
-            {availability.length === 0 && (
+            {visibleSlots.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 {t("studio:availability.empty")}
               </p>
             )}
-            {availability.map((a) => (
+            {visibleSlots.map((a) => (
               <div
                 key={a.id}
                 className="flex items-center justify-between gap-2 rounded-lg border border-border p-3 text-sm"
@@ -134,7 +212,10 @@ export function AvailabilityEditor({
                     key={d}
                     type="button"
                     aria-pressed={weekday === d}
-                    onClick={() => setWeekday(d)}
+                    onClick={() => {
+                      setTouched(true);
+                      setWeekday(d);
+                    }}
                     className={cn(
                       "h-9 min-w-9 rounded-full px-2 text-xs font-medium transition-colors",
                       weekday === d
@@ -152,13 +233,19 @@ export function AvailabilityEditor({
                 type="time"
                 label={t("studio:availability.start")}
                 value={start}
-                onChange={(e) => setStart(e.target.value)}
+                onChange={(e) => {
+                  setTouched(true);
+                  setStart(e.target.value);
+                }}
               />
               <Input
                 type="time"
                 label={t("studio:availability.end")}
                 value={end}
-                onChange={(e) => setEnd(e.target.value)}
+                onChange={(e) => {
+                  setTouched(true);
+                  setEnd(e.target.value);
+                }}
               />
             </div>
 
@@ -181,6 +268,8 @@ export function AvailabilityEditor({
           </div>
         </>
       )}
+
+      <ListingSaveBar />
     </Card>
   );
 }

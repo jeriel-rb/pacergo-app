@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import i18next from "i18next";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import en from "@/locales/en/studio.json";
@@ -45,24 +45,11 @@ describe("VerificationGate — name is required", () => {
     expect(screen.getByText("*")).toBeInTheDocument();
   });
 
-  it("cannot be submitted with a file but no name", () => {
+  it("lets the certificate be chosen here, and leaves sending it to the bottom button", () => {
     const { container } = renderGate();
     pickPdf(container);
-    expect(screen.getByRole("button", { name: "Submit for review" })).toBeDisabled();
-    fireEvent.change(screen.getByLabelText(/Certification name/), { target: { value: "   " } });
-    expect(screen.getByRole("button", { name: "Submit for review" })).toBeDisabled();
+    expect(screen.getByText("cert.pdf")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Submit for review" })).not.toBeInTheDocument();
     expect(submitVerificationDoc).not.toHaveBeenCalled();
-  });
-
-  it("submits the trimmed name once it is filled in", async () => {
-    const { container } = renderGate();
-    pickPdf(container);
-    fireEvent.change(screen.getByLabelText(/Certification name/), { target: { value: " NASM-CPT " } });
-    fireEvent.click(screen.getByRole("button", { name: "Submit for review" }));
-    await waitFor(() =>
-      expect(submitVerificationDoc).toHaveBeenCalledWith(
-        expect.objectContaining({ label: "NASM-CPT", docType: "certification" }),
-      ),
-    );
   });
 });

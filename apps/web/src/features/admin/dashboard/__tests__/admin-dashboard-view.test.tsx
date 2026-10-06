@@ -200,24 +200,27 @@ describe("AdminDashboardView — trainer requests card", () => {
     expect(within(card).queryByRole("button", { name: /Pending|Approved|Rejected/ })).not.toBeInTheDocument();
   });
 
-  it("puts Reject on the left and Approve on the right (View PDF first)", () => {
-    renderView();
+  function openRequestMenu() {
     const item = within(panel("Trainer requests")).getAllByRole("listitem")[0]!;
-    const names = within(item).getAllByRole("button").map((b) => b.getAttribute("aria-label"));
-    expect(names).toEqual(["View document (PDF)", "Reject", "Approve"]);
-  });
+    fireEvent.click(within(item).getByRole("button", { name: "Request actions" }));
+    return item;
+  }
 
-  it("offers view / approve / reject on each request", () => {
+  it("opens view, approve, and reject from the row menu", () => {
     renderView();
-    const card = panel("Trainer requests");
-    expect(within(card).getByRole("button", { name: /View document/ })).toBeInTheDocument();
-    expect(within(card).getByRole("button", { name: "Approve" })).toBeInTheDocument();
-    expect(within(card).getByRole("button", { name: "Reject" })).toBeInTheDocument();
+    const item = openRequestMenu();
+    expect(within(item).getAllByRole("button")).toHaveLength(1);
+    expect(screen.getAllByRole("menuitem").map((i) => i.textContent)).toEqual([
+      "View PDF",
+      "Approve",
+      "Reject",
+    ]);
   });
 
   it("approving confirms in a dialog, calls the RPC with the note, then refreshes", async () => {
     renderView();
-    fireEvent.click(within(panel("Trainer requests")).getByRole("button", { name: "Approve" }));
+    openRequestMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Approve" }));
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("Approve this request?")).toBeInTheDocument();
     fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: " looks good " } });
@@ -229,7 +232,8 @@ describe("AdminDashboardView — trainer requests card", () => {
 
   it("rejecting sends the rejected status with the note", async () => {
     renderView();
-    fireEvent.click(within(panel("Trainer requests")).getByRole("button", { name: "Reject" }));
+    openRequestMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Reject" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: "blurry" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Reject" }));
@@ -239,7 +243,8 @@ describe("AdminDashboardView — trainer requests card", () => {
   it("keeps the dialog open and reports a failed review", async () => {
     reviewVerification.mockRejectedValueOnce(new Error("forbidden"));
     renderView();
-    fireEvent.click(within(panel("Trainer requests")).getByRole("button", { name: "Approve" }));
+    openRequestMenu();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Approve" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "Approve" }));
     await waitFor(() =>

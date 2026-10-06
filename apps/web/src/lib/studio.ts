@@ -47,6 +47,8 @@ export interface MyListing {
   verifications: VerificationMap;
   /** Per-activity competition-experience status (additionally unlocks Tier A). */
   competitions: VerificationMap;
+  /** First-time Tier C trainer request. Null until they submit. */
+  application: { status: VerificationStatus; notes: string | null } | null;
   listing: StudioListing | null;
   offerings: StudioOffering[];
   availability: StudioAvailability[];
@@ -56,6 +58,7 @@ const EMPTY: MyListing = {
   is_companion: false,
   verifications: {},
   competitions: {},
+  application: null,
   listing: null,
   offerings: [],
   availability: [],
@@ -71,6 +74,7 @@ export async function getMyListing(): Promise<MyListing> {
     is_companion: r.is_companion ?? false,
     verifications: r.verifications ?? {},
     competitions: r.competitions ?? {},
+    application: r.application ?? null,
     listing: r.listing ?? null,
     offerings: r.offerings ?? [],
     availability: r.availability ?? [],

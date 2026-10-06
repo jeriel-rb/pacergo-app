@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -24,6 +24,7 @@ import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { addOffering, removeOffering } from "./studio-actions";
 import { VerificationGate } from "./certification-gate";
+import { useEnsureDraftListing, useStudioDraftRegistration } from "./listing-editor";
 
 const ACTIVITIES: ActivitySlug[] = ["gym", "walking", "running", "hiking", "hyrox"];
 
@@ -43,35 +44,48 @@ export function OfferingsEditor({
   const locale = useLocale();
   const router = useRouter();
   const toast = useToast();
+  const ensureDraftListing = useEnsureDraftListing();
+  const registerDraft = useStudioDraftRegistration();
+  const canEdit = hasListing || Boolean(ensureDraftListing);
+  const [touched, setTouched] = useState(false);
+  const [extra, setExtra] = useState<StudioOffering[]>([]);
 
-  const usedActivities = new Set(offerings.map((o) => o.activity));
-  const availableActivities = ACTIVITIES.filter((a) => !usedActivities.has(a));
+  const visibleOfferings = ACTIVITIES.flatMap((slug) => {
+    const updated = extra.find((row) => row.activity === slug);
+    if (updated) return [updated];
+    const saved = offerings.find((row) => row.activity === slug);
+    return saved ? [saved] : [];
+  });
 
-  const [activity, setActivity] = useState<ActivitySlug>(
-    availableActivities[0] ?? "gym",
-  );
+  const [activity, setActivity] = useState<ActivitySlug>(ACTIVITIES[0] ?? "gym");
   const [tier, setTier] = useState<Tier>("C");
   const [price, setPrice] = useState(String(TIER_PRICE_FLOORS.C));
   const [minutes, setMinutes] = useState("60");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Keep the selected activity within what's still addable (one tier per activity).
-  useEffect(() => {
-    if (availableActivities.length > 0 && !availableActivities.includes(activity)) {
-      setActivity(availableActivities[0]);
-    }
-  }, [availableActivities, activity]);
+  function selectActivity(next: ActivitySlug) {
+    setActivity(next);
+    const saved = visibleOfferings.find((row) => row.activity === next);
+    if (!saved) return;
+    setTier(saved.tier);
+    setPrice(String(saved.price_ntd));
+    setMinutes(String(saved.session_minutes));
+    setTouched(false);
+  }
 
-  // Certified tiers (B & A) require an approved certification *for the selected
-  // activity*; Tier A additionally requires approved competition experience.
-  // Tier C is open. Cert is gated first, then competition (A only).
+  // A Tier B certificate (pending or approved) is not asked for again. Tier A
+  // then collects only the competition document. A missing or rejected
+  // certificate still has to be uploaded first. Tier C is open.
   const activityCertStatus = verifications[activity]?.status;
   const activityCompStatus = competitions[activity]?.status;
+  const certOnFile = activityCertStatus === "pending" || activityCertStatus === "approved";
+  const needsComp =
+    TIER_REQUIRES_COMPETITION[tier] && certOnFile && activityCompStatus !== "approved";
+  // Pending still shows the review note, not a second upload. Approved opens the price form.
   const certRequired =
-    TIER_REQUIRES_CERT[tier] && activityCertStatus !== "approved";
-  const competitionRequired =
-    TIER_REQUIRES_COMPETITION[tier] && activityCompStatus !== "approved";
+    TIER_REQUIRES_CERT[tier] && !needsComp && activityCertStatus !== "approved";
+  const competitionRequired = needsComp;
 
   const floor = TIER_PRICE_FLOORS[tier];
   const priceHint = t("offerings.priceHintFloor", { tier, min: floor });
@@ -79,21 +93,100 @@ export function OfferingsEditor({
 
   /** Switching tier: reset the price to that tier's floor so it's in-band. */
   function selectTier(next: Tier) {
+    setTouched(true);
     setTier(next);
-    setPrice(String(TIER_PRICE_FLOORS[next]));
+    const saved = visibleOfferings.find((row) => row.activity === activity);
+    setPrice(
+      String(saved && saved.tier === next ? saved.price_ntd : TIER_PRICE_FLOORS[next]),
+    );
   }
+
+  const priceNtd = parseInt(price, 10) || 0;
+  const sessionMinutes = parseInt(minutes, 10) || 60;
+  const matchesSaved = visibleOfferings.some(
+    (o) =>
+      o.activity === activity &&
+      o.tier === tier &&
+      o.price_ntd === priceNtd &&
+      o.session_minutes === sessionMinutes,
+  );
+  const canCommitPlan =
+    touched && canEdit && !certRequired && !competitionRequired && priceValid && !matchesSaved;
+  const planRef = useRef({
+    canCommitPlan,
+    hasListing,
+    activity,
+    tier,
+    priceNtd,
+    sessionMinutes,
+    ensureDraftListing,
+  });
+  planRef.current = {
+    canCommitPlan,
+    hasListing,
+    activity,
+    tier,
+    priceNtd,
+    sessionMinutes,
+    ensureDraftListing,
+  };
+
+  const flushPlan = useCallback(async () => {
+    const d = planRef.current;
+    if (!d.canCommitPlan) return;
+    if (!d.hasListing) await d.ensureDraftListing?.();
+    const id = await addOffering({
+      activity: d.activity,
+      tier: d.tier,
+      priceNtd: d.priceNtd,
+      isFree: false,
+      sessionMinutes: d.sessionMinutes,
+    });
+    setExtra((prev) => [
+      ...prev,
+      {
+        id,
+        activity: d.activity,
+        tier: d.tier,
+        price_ntd: d.priceNtd,
+        is_free: false,
+        session_minutes: d.sessionMinutes,
+      },
+    ]);
+    registerDraft?.noteSaved("offering");
+    setTouched(false);
+  }, [registerDraft]);
+
+  useEffect(() => {
+    registerDraft?.registerOffering(flushPlan, canCommitPlan);
+    return () => registerDraft?.registerOffering(null, false);
+  }, [registerDraft, flushPlan, canCommitPlan]);
 
   async function add() {
     setBusy(true);
     setError(null);
     try {
-      await addOffering({
+      if (!hasListing) await ensureDraftListing?.();
+      const id = await addOffering({
         activity,
         tier,
         priceNtd: parseInt(price, 10) || 0,
         isFree: false,
         sessionMinutes: parseInt(minutes, 10) || 60,
       });
+      setExtra((prev) => [
+        ...prev,
+        {
+          id,
+          activity,
+          tier,
+          price_ntd: parseInt(price, 10) || 0,
+          is_free: false,
+          session_minutes: parseInt(minutes, 10) || 60,
+        },
+      ]);
+      registerDraft?.noteSaved("offering");
+      setTouched(false);
       toast.show(t("toast.offeringAdded"), "success");
       router.refresh();
     } catch (e) {
@@ -107,6 +200,7 @@ export function OfferingsEditor({
   async function remove(id: string) {
     setBusy(true);
     try {
+      setExtra((prev) => prev.filter((row) => row.id !== id));
       await removeOffering(id);
       toast.show(t("toast.offeringRemoved"), "success");
       router.refresh();
@@ -124,15 +218,15 @@ export function OfferingsEditor({
         <p className="text-sm text-muted-foreground">{t("offerings.subtitle")}</p>
       </div>
 
-      {!hasListing ? (
+      {!canEdit ? (
         <p className="text-sm text-muted-foreground">{t("offerings.needListing")}</p>
       ) : (
         <>
           <div className="space-y-2">
-            {offerings.length === 0 && (
+            {visibleOfferings.length === 0 && (
               <p className="text-sm text-muted-foreground">{t("offerings.empty")}</p>
             )}
-            {offerings.map((o) => (
+            {visibleOfferings.map((o) => (
               <div
                 key={o.id}
                 className="flex items-center justify-between gap-2 rounded-lg border border-border p-3 text-sm"
@@ -169,21 +263,15 @@ export function OfferingsEditor({
             ))}
           </div>
 
-          {availableActivities.length === 0 ? (
-            <p className="border-t border-border pt-4 text-sm text-muted-foreground">
-              {t("offerings.allAdded")}
-            </p>
-          ) : (
-            <div className="space-y-3 border-t border-border pt-4">
+          <div className="space-y-3 border-t border-border pt-4">
               <ChipRow
                 label={t("offerings.activity")}
                 options={ACTIVITIES.map((a) => ({
                   value: a,
                   label: ACTIVITY_META[a][locale],
-                  disabled: usedActivities.has(a),
                 }))}
                 value={activity}
-                onChange={setActivity}
+                onChange={selectActivity}
               />
               <ChipRow
                 label={t("offerings.tier")}
@@ -214,14 +302,20 @@ export function OfferingsEditor({
                       type="number"
                       label={t("offerings.price")}
                       value={price}
-                      onChange={(e) => setPrice(e.target.value)}
+                      onChange={(e) => {
+                        setTouched(true);
+                        setPrice(e.target.value);
+                      }}
                       min={floor}
                     />
                     <Input
                       type="number"
                       label={t("offerings.minutes")}
                       value={minutes}
-                      onChange={(e) => setMinutes(e.target.value)}
+                      onChange={(e) => {
+                        setTouched(true);
+                        setMinutes(e.target.value);
+                      }}
                       min={15}
                       step={15}
                     />
@@ -255,8 +349,7 @@ export function OfferingsEditor({
                   </Button>
                 </>
               )}
-            </div>
-          )}
+          </div>
         </>
       )}
     </Card>

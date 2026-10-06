@@ -166,7 +166,7 @@ export function HomeView({
           <HeroBanner
             href={trainersHref}
             title={t("hero.title")}
-            subtitle={t("hero.subtitle")}
+            subtitle={t("hero.subtitle", { count: trainers.length })}
             cta={t("hero.cta")}
           />
 

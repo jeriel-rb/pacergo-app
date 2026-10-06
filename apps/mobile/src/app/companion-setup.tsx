@@ -87,9 +87,15 @@ export default function CompanionSetup() {
         headline: store.headline || null,
         bio_long: null,
         served_area: store.servedArea || null,
-        status: 'active',
+        status: 'draft',
       });
       await saveOfferings.mutateAsync({ offerings: store.offerings });
+      await saveListing.mutateAsync({
+        headline: store.headline || null,
+        bio_long: null,
+        served_area: store.servedArea || null,
+        status: 'active',
+      });
       store.reset();
       Alert.alert('Pacergo', t('companionSetup.saved'));
       router.replace('/companion-dashboard');

@@ -45,7 +45,8 @@
   "submitted": "{{date}} 送出",
   "docType": {
     "certification": "教練證／資格證明",
-    "competition": "比賽經驗"
+    "competition": "比賽經驗",
+    "application": "C 級陪練"
   },
   "expected": {
     "coachCert": "審核標準：此項目需教練證照，台灣認可的教練證照皆可（例如：NASM-CPT、ACE……等）。",
@@ -111,6 +112,7 @@
     "noMatches": "沒有符合搜尋的撥款申請。",
     "statusFilter": "依狀態篩選",
     "menu": "撥款操作",
+    "seeDetails": "查看詳情",
     "columns": {
       "trainer": "陪練",
       "amount": "金額",
@@ -348,7 +350,27 @@
     "noMatches": "沒有符合搜尋的申請。",
     "statusFilter": "依狀態篩選",
     "viewPdf": "查看 PDF",
-    "menu": "申請操作"
+    "seeDetails": "查看詳情",
+    "menu": "申請操作",
+    "tier": {
+      "A": "A 級陪練",
+      "B": "B 級陪練",
+      "C": "C 級陪練"
+    },
+    "sheet": {
+      "title": "陪練申請",
+      "loadError": "無法載入此申請。",
+      "retry": "重試",
+      "noListing": "此申請人尚未儲存刊登資料。",
+      "noPlans": "尚無方案。",
+      "noAvailability": "尚無可預約時段。",
+      "weekdays": ["日", "一", "二", "三", "四", "五", "六"],
+      "sections": {
+        "listing": "刊登",
+        "plans": "方案與價格",
+        "availability": "可預約時段"
+      }
+    }
   },
   "users": {
     "sheet": {
@@ -365,6 +387,7 @@
       "noConsents": "尚未同意任何文件",
       "noOfferings": "尚無服務項目",
       "noListing": "此陪練尚未建立刊登資料。",
+      "noCertificates": "尚無證照",
       "noVerifications": "沒有審核申請",
       "noReviews": "尚無評價",
       "ratingValue": "★ {{avg}} · {{count}} 則評價",
@@ -376,6 +399,7 @@
         "activity": "活動紀錄",
         "safety": "信任與安全",
         "listing": "陪練刊登",
+        "certificates": "證照",
         "verifications": "審核紀錄",
         "earnings": "收入與撥款"
       },

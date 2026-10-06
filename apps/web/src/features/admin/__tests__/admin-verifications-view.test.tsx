@@ -19,9 +19,22 @@ vi.mock("next/navigation", () => ({
 
 const reviewVerification = vi.fn().mockResolvedValue(undefined);
 const getCertSignedUrl = vi.fn().mockResolvedValue("https://example.test/doc.pdf");
+const fetchTrainerApplication = vi.fn().mockResolvedValue({
+  listing: {
+    headline: "Morning runs",
+    bio_long: "Easy pace along the river",
+    served_area: "Da'an",
+    status: "active",
+  },
+  offerings: [
+    { activity: "running", tier: "B", price_ntd: 800, is_free: false, session_minutes: 60 },
+  ],
+  availability: [{ weekday: 1, start_minute: 18 * 60, end_minute: 20 * 60 }],
+});
 vi.mock("../admin-actions", () => ({
   reviewVerification: (...a: unknown[]) => reviewVerification(...a),
   getCertSignedUrl: (...a: unknown[]) => getCertSignedUrl(...a),
+  fetchTrainerApplication: (...a: unknown[]) => fetchTrainerApplication(...a),
 }));
 
 const toastShow = vi.fn();
@@ -117,6 +130,30 @@ describe("AdminVerificationsView", () => {
     expect(select.className).toContain("[&>svg:last-child]:ml-auto");
   });
 
+  it("opens a sheet with the listing, plans, and availability", async () => {
+    renderView();
+    fireEvent.click(screen.getByText("Alice Chen").closest("tr")!);
+    const sheet = await screen.findByRole("dialog");
+    expect(fetchTrainerApplication).toHaveBeenCalledWith("u1");
+    expect(await within(sheet).findByText("Morning runs")).toBeInTheDocument();
+    expect(within(sheet).getByText("Easy pace along the river")).toBeInTheDocument();
+    expect(within(sheet).getByText("Da'an")).toBeInTheDocument();
+    expect(within(sheet).getByText(/NT\$800/)).toBeInTheDocument();
+    expect(within(sheet).getByText(/18:00–20:00/)).toBeInTheDocument();
+    for (const name of ["Listing", "Plans & pricing", "Availability"]) {
+      expect(within(sheet).getByRole("button", { name: new RegExp(`^${name}`) })).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+    }
+    const approve = within(sheet).getByRole("button", { name: "Approve" });
+    const footer = approve.parentElement!;
+    expect(footer.className).toContain("justify-end");
+    expect(footer.className).not.toContain("border-t");
+    expect(within(sheet).getByRole("button", { name: "Reject" })).toBeInTheDocument();
+    expect(within(sheet).getByRole("button", { name: "View PDF" })).toBeInTheDocument();
+  });
+
   it("opens the PDF from the row's ⋯ menu", async () => {
     const open = vi.spyOn(window, "open").mockImplementation(() => null);
     renderView();
@@ -127,7 +164,7 @@ describe("AdminVerificationsView", () => {
     open.mockRestore();
   });
 
-  it("menu: pending has View PDF, Approve and Reject; approved and rejected only View PDF", async () => {
+  it("menu: pending can be reviewed; an approved Tier B opens details, then the PDF", async () => {
     renderView();
     const names = () => screen.getAllByRole("menuitem").map((i) => i.textContent);
     openMenu("Alice Chen");
@@ -135,7 +172,9 @@ describe("AdminVerificationsView", () => {
     fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("menuitem")).not.toBeInTheDocument());
     openMenu("Bob Lin");
-    expect(names()).toEqual(["View PDF"]);
+    expect(names()).toEqual(["See details", "View PDF"]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "See details" }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("menuitem")).not.toBeInTheDocument());
     openMenu("Cara Wu");
@@ -149,10 +188,17 @@ describe("AdminVerificationsView", () => {
     expect(screen.getAllByRole("menuitem").map((i) => i.textContent)).toEqual(["Approve", "Reject"]);
   });
 
-  it("shows only the trainer's name when there is no certification name (no placeholder text)", () => {
-    const { container } = renderView("en", [v({ id: "v8", display_name: "Gus Pan", label: null })]);
-    expect(screen.getByText("Gus Pan")).toBeInTheDocument();
-    expect(container.textContent).not.toMatch(/no name given/i);
+  it("shows the tier under the trainer name for a certificate request", () => {
+    renderView("en", [
+      v({ id: "v8", display_name: "Gus Pan", label: null }),
+      v({ id: "v10", display_name: "Hana Su", doc_type: "competition", label: "Marathon podium" }),
+      v({ id: "v11", display_name: "Ian Wu", doc_type: "application", label: null }),
+    ]);
+    expect(within(screen.getByText("Gus Pan").closest("tr")!).getByText("Tier B trainer")).toBeInTheDocument();
+    expect(
+      within(screen.getByText("Hana Su").closest("tr")!).getByText("Tier A trainer · Marathon podium"),
+    ).toBeInTheDocument();
+    expect(within(screen.getByText("Ian Wu").closest("tr")!).getByText("Tier C trainer")).toBeInTheDocument();
   });
 
   it("has no inline action buttons or links in the rows", () => {
@@ -184,7 +230,9 @@ describe("AdminVerificationsView", () => {
     ]);
     const row = screen.getByText("Eve Ko").closest("tr")!;
     expect(within(row).getByText("Approved")).toBeInTheDocument();
-    expect(within(row).queryByRole("button", { name: "Request actions" })).not.toBeInTheDocument();
+    fireEvent.click(within(row).getByRole("button", { name: "Request actions" }));
+    expect(screen.getAllByRole("menuitem").map((i) => i.textContent)).toEqual(["See details"]);
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
     chooseStatus(/^Pending$/);
     expect(screen.queryByText("Eve Ko")).not.toBeInTheDocument();
     chooseStatus(/^Approved$/);

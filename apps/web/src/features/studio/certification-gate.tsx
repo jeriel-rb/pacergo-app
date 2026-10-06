@@ -1,16 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Clock, FileUp, Loader2, ShieldAlert } from "lucide-react";
+import { Clock, FileUp, ShieldAlert } from "lucide-react";
 import { isExperienceQualified, type ActivitySlug, type Tier } from "@pacergo/shared";
 import type { VerificationStatus } from "@/lib/studio";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { useToast } from "@/shared/components/ui/toast";
 import { validateCertFile, type VerificationDocType } from "./certification";
 import { submitVerificationDoc } from "./studio-actions";
+import { useReviewDraftSlot } from "./listing-editor";
 
 /**
  * Per-activity verification gate for the certified tiers. Handles both document
@@ -37,12 +36,10 @@ export function VerificationGate({
   tier?: Tier;
 }) {
   const { t } = useTranslation("studio");
-  const router = useRouter();
-  const toast = useToast();
+  const setReviewDraft = useReviewDraftSlot()?.setDraft;
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [label, setLabel] = useState("");
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Copy prefix: competitions `comp.*`; certifications `cert.*`, or `certExp.*`
@@ -53,6 +50,18 @@ export function VerificationGate({
   const k = docType === "competition" ? "comp" : isExperience ? "certExp" : "cert";
   const m = docType === "competition" ? "comp" : "cert";
   const showTierANote = docType === "certification" && tier === "A";
+
+  useEffect(() => {
+    if (!setReviewDraft || status === "pending") return;
+    setReviewDraft({
+      ready: Boolean(file && label.trim()),
+      submit: async () => {
+        if (!file || !label.trim()) return;
+        await submitVerificationDoc({ docType, activity, file, label: label.trim() });
+      },
+    });
+    return () => setReviewDraft(null);
+  }, [setReviewDraft, status, file, label, docType, activity]);
 
   if (status === "pending") {
     return (
@@ -80,31 +89,6 @@ export function VerificationGate({
     }
     setError(null);
     setFile(f);
-  }
-
-  async function submit() {
-    if (!label.trim()) {
-      setError(t(`${m}.needLabel`));
-      return;
-    }
-    if (!file) {
-      setError(t(`${m}.needFile`));
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      await submitVerificationDoc({ docType, activity, file, label: label.trim() });
-      setFile(null);
-      setLabel("");
-      toast.show(t("toast.verificationSubmitted"), "success");
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("error"));
-      toast.show(t("toast.verificationSubmitFailed"), "destructive");
-    } finally {
-      setBusy(false);
-    }
   }
 
   return (
@@ -163,16 +147,6 @@ export function VerificationGate({
       </Button>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
-
-      <Button
-        type="button"
-        onClick={submit}
-        disabled={busy || !file || !label.trim()}
-        className="w-full gap-2"
-      >
-        {busy && <Loader2 size={16} className="animate-spin" />}
-        {t(`${m}.submit`)}
-      </Button>
     </div>
   );
 }

@@ -8,6 +8,13 @@ import {
   type VerificationDocType,
 } from "./certification";
 
+/** First-time Tier C request. An admin has to approve it before the member is a trainer. */
+export async function submitTrainerApplication(): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("submit_trainer_application");
+  if (error) throw new Error(error.message);
+}
+
 export async function upsertMyListing(input: {
   headline: string | null;
   bioLong: string | null;
@@ -30,9 +37,9 @@ export async function addOffering(input: {
   priceNtd: number;
   isFree: boolean;
   sessionMinutes: number;
-}): Promise<void> {
+}): Promise<string> {
   const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.rpc("add_offering", {
+  const { data, error } = await supabase.rpc("add_offering", {
     p_activity_slug: input.activity,
     p_tier: input.tier,
     p_price_ntd: input.priceNtd,
@@ -40,6 +47,7 @@ export async function addOffering(input: {
     p_session_minutes: input.sessionMinutes,
   });
   if (error) throw new Error(error.message);
+  return data as string;
 }
 
 export async function removeOffering(id: string): Promise<void> {
@@ -52,14 +60,15 @@ export async function addAvailability(input: {
   weekday: number;
   startMinute: number;
   endMinute: number;
-}): Promise<void> {
+}): Promise<string> {
   const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.rpc("add_availability", {
+  const { data, error } = await supabase.rpc("add_availability", {
     p_weekday: input.weekday,
     p_start_minute: input.startMinute,
     p_end_minute: input.endMinute,
   });
   if (error) throw new Error(error.message);
+  return data as string;
 }
 
 export async function removeAvailability(id: string): Promise<void> {

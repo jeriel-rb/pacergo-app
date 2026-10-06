@@ -2,6 +2,28 @@ import { createSupabaseServerClient } from "./supabase/server";
 import { SUPABASE_CONFIGURED } from "./supabase/env";
 import { readAccountNumber } from "./crypto/bank-account";
 
+/** Listing, plans, and weekly slots saved with a trainer request. */
+export interface TrainerApplication {
+  listing: {
+    headline: string | null;
+    bio_long: string | null;
+    served_area: string | null;
+    status: "draft" | "active" | "paused";
+  } | null;
+  offerings: {
+    activity: string;
+    tier: string;
+    price_ntd: number;
+    is_free: boolean;
+    session_minutes: number;
+  }[];
+  availability: {
+    weekday: number;
+    start_minute: number;
+    end_minute: number;
+  }[];
+}
+
 export interface AdminVerification {
   id: string;
   user_id: string;
@@ -15,6 +37,7 @@ export interface AdminVerification {
   notes: string | null;
   created_at: string;
   reviewed_at: string | null;
+  reviewer_name?: string | null;
 }
 
 export interface AdminUser {

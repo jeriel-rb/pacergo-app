@@ -2,9 +2,15 @@
   "title": "陪練後台",
   "subtitle": "管理你的服務介紹、方案與可預約時段",
   "viewRequests": "查看預約請求",
+  "application": {
+    "pendingTitle": "申請審核中",
+    "pendingBody": "管理員正在審核你的陪練申請。核准後，你就會成為 C 級陪練。",
+    "rejectedTitle": "申請未通過",
+    "rejectedBody": "管理員未核准這次申請。請更新刊登資料後再送出審核。"
+  },
   "intro": {
     "title": "成為陪練",
-    "body": "填寫下方的服務介紹並將狀態設為「上架中」，再新增至少一個方案，學員就能搜尋並預約你。"
+    "body": "填寫下方的服務介紹並將狀態設為「上架中」，再新增至少一個方案，然後送出給管理員審核。"
   },
   "save": "儲存",
   "saved": "已儲存",
@@ -47,7 +53,8 @@
     "area": "服務區域",
     "areaPlaceholder": "例如：台北市信義區",
     "status": "上架狀態",
-    "conductRequired": "請先同意夥伴合作與行為準則，才能發佈您的第一筆刊登。"
+    "conductRequired": "請先同意夥伴合作與行為準則，才能發佈您的第一筆刊登。",
+    "needPlanAndAvailability": "儲存前請先新增收費方案，並設定至少一個可預約時段。包含 C 級也需要價格，這樣才會出現在推薦陪練。"
   },
   "offerings": {
     "title": "方案與價格",

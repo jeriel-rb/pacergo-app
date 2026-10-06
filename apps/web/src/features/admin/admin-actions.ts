@@ -7,6 +7,7 @@ import type {
   AdminUserRole,
   AdminUsersPage,
   PayoutDetail,
+  TrainerApplication,
 } from "@/lib/admin";
 
 /** Must match `MEMBERS_PAGE_SIZE` in `@/lib/admin` (server-only, so it can't be
@@ -82,6 +83,16 @@ export async function fetchPayoutDetail(id: string): Promise<PayoutDetail> {
   const { data, error } = await supabase.rpc("admin_withdrawal_detail", { p_id: id });
   if (error || !data) throw new Error(error?.message ?? "payout");
   return { ...(data as PayoutDetail), bank_account_number: null };
+}
+
+/** Listing, plans, and availability saved with a trainer request (admin-only RPC). */
+export async function fetchTrainerApplication(userId: string): Promise<TrainerApplication> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("admin_trainer_application", {
+    p_user_id: userId,
+  });
+  if (error || !data) throw new Error(error?.message ?? "application");
+  return data as TrainerApplication;
 }
 
 /** One user's full detail for the sheet (admin-only RPC). */

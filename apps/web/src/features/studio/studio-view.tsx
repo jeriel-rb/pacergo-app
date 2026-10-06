@@ -18,6 +18,7 @@ export function StudioView({ data }: { data: MyListing }) {
   const sessionsHref = getLocalizedPath("/sessions", getCurrentLocale(pathname));
   const earningsHref = getLocalizedPath("/studio/earnings", getCurrentLocale(pathname));
   const hasListing = data.listing !== null;
+  const established = data.is_companion || data.application?.status === "approved";
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -26,7 +27,25 @@ export function StudioView({ data }: { data: MyListing }) {
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </header>
 
-      {!data.is_companion && (
+      {!established && data.application?.status === "pending" && (
+        <Card className="space-y-1.5 border-amber-500/30 bg-amber-500/10 p-5">
+          <p className="font-semibold text-amber-700 dark:text-amber-300">
+            {t("application.pendingTitle")}
+          </p>
+          <p className="text-sm text-amber-700/90 dark:text-amber-300/90">
+            {t("application.pendingBody")}
+          </p>
+        </Card>
+      )}
+
+      {!established && data.application?.status === "rejected" && (
+        <Card className="space-y-1.5 border-destructive/30 bg-destructive/5 p-5">
+          <p className="font-semibold">{t("application.rejectedTitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("application.rejectedBody")}</p>
+        </Card>
+      )}
+
+      {!established && data.application?.status !== "pending" && (
         <Card className="space-y-1.5 border-primary/20 bg-primary/5 p-5">
           <p className="font-semibold">{t("intro.title")}</p>
           <p className="text-sm text-muted-foreground">{t("intro.body")}</p>
@@ -64,17 +83,24 @@ export function StudioView({ data }: { data: MyListing }) {
         </Card>
       </Link>
 
-      <ListingEditor listing={data.listing} />
-      <OfferingsEditor
-        offerings={data.offerings}
-        hasListing={hasListing}
-        verifications={data.verifications}
-        competitions={data.competitions}
-      />
-      <AvailabilityEditor
-        availability={data.availability}
-        hasListing={hasListing}
-      />
+      <ListingEditor
+        listing={data.listing}
+        hasPricing={data.offerings.length > 0}
+        hasAvailability={data.availability.length > 0}
+        isCompanion={established}
+        applicationStatus={data.application?.status ?? null}
+      >
+        <OfferingsEditor
+          offerings={data.offerings}
+          hasListing={hasListing}
+          verifications={data.verifications}
+          competitions={data.competitions}
+        />
+        <AvailabilityEditor
+          availability={data.availability}
+          hasListing={hasListing}
+        />
+      </ListingEditor>
     </div>
   );
 }

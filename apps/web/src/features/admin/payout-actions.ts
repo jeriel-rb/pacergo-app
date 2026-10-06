@@ -10,7 +10,7 @@ export const PAYOUT_TRANSITIONS: Record<
 > = {
   requested: { forward: ["processing"], corrections: ["rejected", "cancelled"] },
   processing: { forward: ["paid"], corrections: ["rejected", "cancelled", "requested"] },
-  paid: { forward: [], corrections: ["processing"] },
+  paid: { forward: [], corrections: [] },
   rejected: { forward: [], corrections: ["requested"] },
   cancelled: { forward: [], corrections: ["requested"] },
 };

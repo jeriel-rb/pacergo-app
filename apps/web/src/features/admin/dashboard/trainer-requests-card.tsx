@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Check, FileText, Loader2, X } from "lucide-react";
+import { ActionMenu, type ActionMenuItem } from "@/shared/components/atoms/action-menu";
 import {
   ACTIVITY_META,
   formatInAppTimeZone,
@@ -51,6 +52,35 @@ export function TrainerRequestsCard({
   const stamp = (iso: string) =>
     formatInAppTimeZone(iso, locale, { year: "numeric", month: "short", day: "numeric" });
 
+  function rowActions(v: AdminVerification): ActionMenuItem[] {
+    const items: ActionMenuItem[] = [];
+    if (v.document_path) {
+      items.push({
+        key: "view",
+        label: t("verifications.viewPdf"),
+        icon: docBusy === v.id ? <Loader2 className="animate-spin" /> : <FileText />,
+        disabled: docBusy === v.id,
+        onSelect: () => void openDoc(v),
+      });
+    }
+    items.push(
+      {
+        key: "approve",
+        label: t("approve"),
+        icon: <Check />,
+        onSelect: () => setReview({ item: v, decision: "approved" }),
+      },
+      {
+        key: "reject",
+        label: t("reject"),
+        icon: <X />,
+        destructive: true,
+        onSelect: () => setReview({ item: v, decision: "rejected" }),
+      },
+    );
+    return items;
+  }
+
   async function openDoc(v: AdminVerification) {
     if (!v.document_path) return;
     setDocBusy(v.id);
@@ -86,45 +116,11 @@ export function TrainerRequestsCard({
                   )}
                   <p className="mt-0.5 text-xs text-muted-foreground">{stamp(v.created_at)}</p>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openDoc(v)}
-                    disabled={docBusy === v.id}
-                    aria-label={t("viewDoc")}
-                    title={t("viewDoc")}
-                    className="h-8 w-8 p-0"
-                  >
-                    {docBusy === v.id ? (
-                      <Loader2 size={15} className="animate-spin" />
-                    ) : (
-                      <FileText size={15} />
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setReview({ item: v, decision: "rejected" })}
-                    aria-label={t("reject")}
-                    title={t("reject")}
-                    className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <X size={15} />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setReview({ item: v, decision: "approved" })}
-                    aria-label={t("approve")}
-                    title={t("approve")}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Check size={15} />
-                  </Button>
-                </div>
+                <ActionMenu
+                  label={t("verifications.menu")}
+                  items={rowActions(v)}
+                  className="shrink-0"
+                />
               </li>
             );
           })}

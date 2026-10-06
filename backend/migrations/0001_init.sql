@@ -299,8 +299,8 @@ create table if not exists availability_blocks (
 create table if not exists verifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references users (id) on delete cascade,
-  doc_type text not null check (doc_type in ('certification', 'id')),
-  document_path text not null,
+  doc_type text not null check (doc_type in ('certification', 'competition', 'id', 'application')),
+  document_path text,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   notes text,
   reviewed_by uuid,
@@ -2177,6 +2177,13 @@ language sql security definer set search_path = public stable as $$
         'start_minute', av.start_minute, 'end_minute', av.end_minute
       ) order by av.weekday, av.start_minute), '[]'::jsonb)
       from availability av where av.user_id = auth.uid()
+    ),
+    'application', (
+      select jsonb_build_object('status', ver.status, 'notes', ver.notes)
+      from verifications ver
+      where ver.user_id = auth.uid() and ver.doc_type = 'application'
+      order by ver.created_at desc
+      limit 1
     )
   );
 $$;
@@ -2191,19 +2198,36 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_uid uuid := auth.uid();
   v_id uuid;
+  v_status text := p_status;
 begin
   if v_uid is null then raise exception 'not authenticated'; end if;
-  if p_status not in ('draft', 'active', 'paused') then
+  if v_status not in ('draft', 'active', 'paused') then
     raise exception 'invalid status';
   end if;
   if char_length(coalesce(p_headline, '')) > 120 then raise exception 'headline too long'; end if;
   if char_length(coalesce(p_bio_long, '')) > 4000 then raise exception 'bio too long'; end if;
   if char_length(coalesce(p_served_area, '')) > 120 then raise exception 'served area too long'; end if;
 
-  update users set is_companion = true where id = v_uid;
+  -- Going live needs a price plan (any tier, including C). The home feed
+  -- joins offerings, so an active listing with no plan never appears.
+  -- A member is not a trainer until an admin approves the application
+  -- (or a certification). Until then the listing cannot go live.
+  if v_status = 'active' and not exists (
+    select 1 from users where id = v_uid and is_companion
+  ) then
+    v_status := 'draft';
+  end if;
+
+  if v_status = 'active' and not exists (
+    select 1 from listing_offerings o
+    join companion_listings cl on cl.id = o.listing_id
+    where cl.user_id = v_uid
+  ) then
+    raise exception 'setup_required';
+  end if;
 
   insert into companion_listings (user_id, headline, bio_long, served_area, status)
-  values (v_uid, p_headline, p_bio_long, p_served_area, p_status)
+  values (v_uid, p_headline, p_bio_long, p_served_area, v_status)
   on conflict (user_id) do update set
     headline = excluded.headline,
     bio_long = excluded.bio_long,
@@ -2667,6 +2691,53 @@ end $$;
 revoke all on function admin_user_detail(uuid) from public, anon;
 grant execute on function admin_user_detail(uuid) to authenticated;
 
+-- What an applicant filled in when asking to become a trainer: listing text,
+-- price plans, and weekly slots. Admins read this from the trainer-request sheet.
+create or replace function admin_trainer_application(p_user_id uuid)
+returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not is_platform_admin() then raise exception 'forbidden'; end if;
+
+  return jsonb_build_object(
+    'listing', (
+      select jsonb_build_object(
+        'headline', cl.headline,
+        'bio_long', cl.bio_long,
+        'served_area', cl.served_area,
+        'status', cl.status
+      )
+      from companion_listings cl
+      where cl.user_id = p_user_id
+    ),
+    'offerings', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'activity', a.slug,
+        'tier', lo.tier::text,
+        'price_ntd', lo.price_ntd,
+        'is_free', lo.is_free,
+        'session_minutes', lo.session_minutes
+      ) order by lo.created_at)
+      from listing_offerings lo
+      join companion_listings cl on cl.id = lo.listing_id
+      join activities a on a.id = lo.activity_id
+      where cl.user_id = p_user_id
+    ), '[]'::jsonb),
+    'availability', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'weekday', av.weekday,
+        'start_minute', av.start_minute,
+        'end_minute', av.end_minute
+      ) order by av.weekday, av.start_minute)
+      from availability av
+      where av.user_id = p_user_id
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+revoke all on function admin_trainer_application(uuid) from public, anon;
+grant execute on function admin_trainer_application(uuid) to authenticated;
+
 create or replace function set_user_admin(
   p_user_id uuid,
   p_is_admin boolean
@@ -2709,6 +2780,18 @@ begin
   if p_doc_type in ('certification', 'competition') then
     select id into v_activity from activities where slug = p_activity_slug;
     if not found then raise exception 'unknown activity'; end if;
+
+    -- Submit for review is the only write into the trainer-request queue.
+    -- A price plan and a bookable slot have to exist before that write.
+    if not exists (
+      select 1 from listing_offerings o
+      join companion_listings cl on cl.id = o.listing_id
+      where cl.user_id = v_uid
+    ) or not exists (
+      select 1 from availability av where av.user_id = v_uid
+    ) then
+      raise exception 'setup_required';
+    end if;
   end if;
 
   if exists (
@@ -2749,14 +2832,16 @@ begin
       'status', ver.status,
       'notes', ver.notes,
       'created_at', ver.created_at,
-      'reviewed_at', ver.reviewed_at
+      'reviewed_at', ver.reviewed_at,
+      'reviewer_name', reviewer.display_name
     ) as obj,
     case ver.status when 'pending' then 0 when 'approved' then 1 else 2 end as ord,
     ver.created_at
     from verifications ver
     join users u on u.id = ver.user_id
     left join activities a on a.id = ver.activity_id
-    where ver.doc_type in ('certification', 'competition')
+    left join users reviewer on reviewer.id = ver.reviewed_by
+    where ver.doc_type in ('certification', 'competition', 'application')
 
     union all
 
@@ -2776,7 +2861,8 @@ begin
       'status', 'approved',
       'notes', null,
       'created_at', u.created_at,
-      'reviewed_at', null
+      'reviewed_at', null,
+      'reviewer_name', null
     ) as obj,
     1 as ord,
     u.created_at
@@ -2785,7 +2871,7 @@ begin
       and not exists (
         select 1 from verifications ver
         where ver.user_id = u.id
-          and ver.doc_type in ('certification', 'competition')
+          and ver.doc_type in ('certification', 'competition', 'application')
       )
   ) s;
   return v;
@@ -2813,6 +2899,49 @@ begin
   returning * into v_ver;
   if not found then raise exception 'verification not found'; end if;
 
+  -- Approving a first trainer application, or a certification for someone who
+  -- is not a trainer yet, is what grants the trainer role.
+  if p_status = 'approved' and v_ver.doc_type in ('application', 'certification') then
+    if not exists (select 1 from users where id = v_ver.user_id and is_companion) then
+      update companion_listings
+      set status = 'active'
+      where user_id = v_ver.user_id and status = 'draft';
+    end if;
+    update users set is_companion = true where id = v_ver.user_id;
+  end if;
+
+  -- The home card reads the plan's tier. Approving a certification promotes
+  -- that activity from C to B; approving competition proof promotes it to A.
+  -- A price under the new floor is raised to the floor.
+  if p_status = 'approved' and v_ver.doc_type = 'certification' and v_ver.activity_id is not null then
+    update listing_offerings o
+    set tier = 'B',
+        price_ntd = greatest(o.price_ntd, 800)
+    from companion_listings cl
+    where o.listing_id = cl.id
+      and cl.user_id = v_ver.user_id
+      and o.activity_id = v_ver.activity_id
+      and o.tier = 'C';
+  end if;
+
+  if p_status = 'approved' and v_ver.doc_type = 'competition' and v_ver.activity_id is not null then
+    update listing_offerings o
+    set tier = 'A',
+        price_ntd = greatest(o.price_ntd, 1200)
+    from companion_listings cl
+    where o.listing_id = cl.id
+      and cl.user_id = v_ver.user_id
+      and o.activity_id = v_ver.activity_id
+      and o.tier in ('B', 'C')
+      and exists (
+        select 1 from verifications cert
+        where cert.user_id = v_ver.user_id
+          and cert.activity_id = v_ver.activity_id
+          and cert.doc_type = 'certification'
+          and cert.status = 'approved'
+      );
+  end if;
+
   -- Tell the applicant. The payload carries the reviewer's reason so the
   -- notifications page can show why a request was rejected.
   select slug into v_activity from activities where id = v_ver.activity_id;
@@ -2832,6 +2961,39 @@ begin
 end $$;
 
 -- upsert_my_listing: length caps for the free-text fields.;
+
+create or replace function submit_trainer_application()
+returns uuid
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_id uuid;
+begin
+  if v_uid is null then raise exception 'not authenticated'; end if;
+  if not exists (
+    select 1 from listing_offerings o
+    join companion_listings cl on cl.id = o.listing_id
+    where cl.user_id = v_uid
+  ) or not exists (
+    select 1 from availability av where av.user_id = v_uid
+  ) then
+    raise exception 'setup_required';
+  end if;
+  if exists (
+    select 1 from verifications
+    where user_id = v_uid
+      and doc_type = 'application'
+      and status in ('pending', 'approved')
+  ) then
+    raise exception 'a submission for this is already pending or approved';
+  end if;
+
+  insert into verifications (user_id, doc_type, document_path, label, activity_id, status)
+  values (v_uid, 'application', null, null, null, 'pending')
+  returning id into v_id;
+  return v_id;
+end;
+$$;
 
 create or replace function complete_onboarding(
   p_display_name text,

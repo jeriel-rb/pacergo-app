@@ -1,25 +1,112 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import type { ListingStatus, StudioListing } from "@/lib/studio";
+import type { ListingStatus, StudioListing, VerificationStatus } from "@/lib/studio";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { SaveButton } from "@/shared/components/atoms/save-button";
+import { Button } from "@/shared/components/ui/button";
 import { useToast } from "@/shared/components/ui/toast";
 import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { cn } from "@/lib/utils";
-import { upsertMyListing } from "./studio-actions";
+import { submitTrainerApplication, upsertMyListing } from "./studio-actions";
 import { ConsentCheckboxRow } from "@/features/legal/consent-checkbox-row";
 import { CONSENT_VERSIONS } from "@/lib/consent";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const STATUSES: ListingStatus[] = ["draft", "active", "paused"];
 
-/** Edit the trainer's listing: headline, bio, served area, publish status. */
-export function ListingEditor({ listing }: { listing: StudioListing | null }) {
+const ListingDraftContext = createContext<(() => Promise<void>) | null>(null);
+
+export type ReviewDraft = {
+  /** Certificate name and PDF are both filled in. */
+  ready: boolean;
+  submit: () => Promise<void>;
+};
+
+const ReviewDraftContext = createContext<{
+  draft: ReviewDraft | null;
+  setDraft: (draft: ReviewDraft | null) => void;
+} | null>(null);
+
+/** The tier card registers the certificate here. The bottom button is what sends it. */
+export function useReviewDraftSlot() {
+  return useContext(ReviewDraftContext);
+}
+
+type DraftFlush = () => Promise<void>;
+
+const StudioDraftContext = createContext<{
+  registerOffering: (flush: DraftFlush | null, pending: boolean) => void;
+  registerAvailability: (flush: DraftFlush | null, pending: boolean) => void;
+  /** A plan or slot was stored. The list can show it before the page reloads. */
+  noteSaved: (which: "offering" | "availability") => void;
+} | null>(null);
+
+/** Plans and availability register here so Save and Submit for review write them too. */
+export function useStudioDraftRegistration() {
+  return useContext(StudioDraftContext);
+}
+
+const ListingSaveContext = createContext<{
+  ready: boolean;
+  saving: boolean;
+  error: string | null;
+  hint: string | null;
+  /** Save for Tier C. Submit for review while a Tier B or A certificate is open. */
+  label: string;
+} | null>(null);
+
+const LISTING_FORM_ID = "studio-listing-form";
+
+/** Bottom of the availability card. Save, or Submit for review when a certificate is open. */
+export function ListingSaveBar() {
+  const save = useContext(ListingSaveContext);
+  if (!save) return null;
+  return (
+    <div className="space-y-3">
+      {save.hint && <p className="text-sm text-muted-foreground">{save.hint}</p>}
+      {save.error && <p className="text-sm text-destructive">{save.error}</p>}
+      <div className="flex sm:justify-end">
+        <Button
+          type="submit"
+          form={LISTING_FORM_ID}
+          disabled={save.saving || !save.ready}
+          className="w-full gap-2 sm:w-auto"
+        >
+          {save.saving && <Loader2 size={16} className="animate-spin" />}
+          {save.label}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** Saves the listing as a draft so a plan or time slot can be stored first. */
+export function useEnsureDraftListing() {
+  return useContext(ListingDraftContext);
+}
+
+/** Edit the trainer's listing. Submit for review lives on the availability card. */
+export function ListingEditor({
+  listing,
+  hasPricing,
+  hasAvailability,
+  isCompanion = true,
+  applicationStatus = null,
+  children,
+}: {
+  listing: StudioListing | null;
+  hasPricing: boolean;
+  hasAvailability: boolean;
+  /** False until an admin approves the first trainer request. */
+  isCompanion?: boolean;
+  applicationStatus?: VerificationStatus | null;
+  children?: ReactNode;
+}) {
   const { t } = useTranslation("studio");
   const router = useRouter();
   const toast = useToast();
@@ -36,14 +123,75 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
   // already agreed on an earlier save; don't re-ask on every edit).
   const isFirstListing = listing === null;
   const [conductChecked, setConductChecked] = useState(false);
+  const [reviewDraft, setReviewDraft] = useState<ReviewDraft | null>(null);
+  const [offeringPending, setOfferingPending] = useState(false);
+  const [availabilityPending, setAvailabilityPending] = useState(false);
+  const [savedPricing, setSavedPricing] = useState(hasPricing);
+  const [savedAvailability, setSavedAvailability] = useState(hasAvailability);
+  const offeringFlushRef = useRef<DraftFlush | null>(null);
+  const availabilityFlushRef = useRef<DraftFlush | null>(null);
+
+  const registerOffering = useCallback((flush: DraftFlush | null, pending: boolean) => {
+    offeringFlushRef.current = flush;
+    setOfferingPending((prev) => (prev === pending ? prev : pending));
+  }, []);
+  const registerAvailability = useCallback((flush: DraftFlush | null, pending: boolean) => {
+    availabilityFlushRef.current = flush;
+    setAvailabilityPending((prev) => (prev === pending ? prev : pending));
+  }, []);
+  const noteSaved = useCallback((which: "offering" | "availability") => {
+    if (which === "offering") setSavedPricing(true);
+    else setSavedAvailability(true);
+  }, []);
+  const drafts = useMemo(
+    () => ({ registerOffering, registerAvailability, noteSaved }),
+    [registerOffering, registerAvailability, noteSaved],
+  );
 
   const { dirty, markClean } = useFormDirty({ headline, bio, area, status });
-  // Creating the very first listing is always a change (there's nothing saved yet).
-  const canSave = isFirstListing || dirty;
+  const profileReady =
+    (hasPricing || savedPricing || offeringPending) &&
+    (hasAvailability || savedAvailability || availabilityPending);
+  // Tier C has no certificate card, so this stays a listing save. Selecting
+  // Tier B or A mounts the certificate card, which registers a draft and
+  // turns the same button into the trainer-request submit.
+  const reviewing = reviewDraft != null;
+  // A filled certificate is a change. Listing text, a new plan, or a new
+  // slot are the others. Unchanged data must not be written again.
+  const hasChange =
+    dirty || offeringPending || availabilityPending || Boolean(reviewDraft?.ready);
+  // An approved trainer edits with Save. Submit for review is the first
+  // application, or a Tier A/B upload that is not already on file.
+  const established = isCompanion || applicationStatus === "approved";
+  const needsApplication = !established;
+  const awaitingReview = needsApplication && applicationStatus === "pending";
+  const ready =
+    profileReady &&
+    !awaitingReview &&
+    (reviewing ? Boolean(reviewDraft?.ready) : needsApplication || hasChange);
+  const hint = reviewing && !reviewDraft?.ready ? t("cert.needFile") : null;
+  const label = needsApplication || reviewing ? t("cert.submit") : t("save");
+
+  const ensureDraftListing = useCallback(async () => {
+    await upsertMyListing({
+      headline: headline.trim() || null,
+      bioLong: bio.trim() || null,
+      servedArea: area.trim() || null,
+      status: status === "active" ? "draft" : status,
+    });
+  }, [headline, bio, area, status]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSave || saving) return;
+    if (saving || !ready) return;
+    if (!profileReady) {
+      setError(t("listing.needPlanAndAvailability"));
+      return;
+    }
+    if (reviewDraft && !reviewDraft.ready) {
+      setError(t("cert.needFile"));
+      return;
+    }
     if (isFirstListing && !conductChecked) {
       setError(t("listing.conductRequired"));
       return;
@@ -51,18 +199,44 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
     setSaving(true);
     setError(null);
     try {
-      await upsertMyListing({
+      const fields = {
         headline: headline.trim() || null,
         bioLong: bio.trim() || null,
         servedArea: area.trim() || null,
-        status,
+      };
+      // An active listing cannot be stored before a price plan exists, so a
+      // plan still sitting in the form is written first, then the listing
+      // goes active.
+      const becoming = needsApplication && !reviewDraft?.ready;
+      const planStillPending = !becoming && status === "active" && !hasPricing;
+      await upsertMyListing({
+        ...fields,
+        status: becoming || planStillPending ? "draft" : status,
       });
+      await offeringFlushRef.current?.();
+      await availabilityFlushRef.current?.();
+      if (planStillPending) {
+        await upsertMyListing({ ...fields, status: "active" });
+      }
+      if (reviewDraft?.ready) await reviewDraft.submit();
+      else if (needsApplication) await submitTrainerApplication();
       markClean();
-      toast.show(t("toast.listingSaved"), "success");
+      toast.show(
+        reviewDraft?.ready || needsApplication
+          ? t("toast.verificationSubmitted")
+          : t("toast.listingSaved"),
+        "success",
+      );
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("error"));
-      toast.show(t("toast.listingSaveFailed"), "destructive");
+      const raw = err instanceof Error ? err.message : "";
+      setError(raw.includes("setup_required") ? t("listing.needPlanAndAvailability") : raw || t("error"));
+      toast.show(
+        reviewing || needsApplication
+          ? t("toast.verificationSubmitFailed")
+          : t("toast.listingSaveFailed"),
+        "destructive",
+      );
       return;
     } finally {
       setSaving(false);
@@ -90,13 +264,18 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
   }
 
   return (
+    <ListingDraftContext.Provider value={ensureDraftListing}>
+    <StudioDraftContext.Provider value={drafts}>
+    <ReviewDraftContext.Provider value={{ draft: reviewDraft, setDraft: setReviewDraft }}>
+    <ListingSaveContext.Provider value={{ ready, saving, error, hint, label }}>
+    <form id={LISTING_FORM_ID} onSubmit={onSubmit} className="contents">
     <Card className="space-y-4 p-5">
       <div>
         <h2 className="font-semibold">{t("listing.title")}</h2>
         <p className="text-sm text-muted-foreground">{t("listing.subtitle")}</p>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <div className="space-y-4">
         <Input
           label={t("listing.headline")}
           value={headline}
@@ -159,11 +338,13 @@ export function ListingEditor({ listing }: { listing: StudioListing | null }) {
             ]}
           />
         )}
-
-        {error && <p className="text-sm text-destructive">{error}</p>}
-
-        <SaveButton type="submit" dirty={canSave} saving={saving} label={t("save")} />
-      </form>
+      </div>
     </Card>
+    {children}
+    </form>
+    </ListingSaveContext.Provider>
+    </ReviewDraftContext.Provider>
+    </StudioDraftContext.Provider>
+    </ListingDraftContext.Provider>
   );
 }

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Ban, CircleCheck, Clock, ListFilter, Undo2, X } from "lucide-react";
+import { Ban, CircleCheck, Clock, FileText, ListFilter, Undo2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatInAppTimeZone } from "@pacergo/shared";
 import type { PayoutDetail, PayoutList, PayoutListRow, PayoutStatus } from "@/lib/admin";
@@ -129,8 +129,19 @@ export function AdminPayoutsView({
   const visible = matching.slice(current * pageSize, (current + 1) * pageSize);
 
   /** The "⋯" menu for one payout: every status change valid from its current
-   *  status (forward steps first, then corrections). Details open from the row. */
+   *  status (forward steps first, then corrections). A paid transfer is finished,
+   *  so its menu only opens the detail sheet. */
   function menuItems(r: PayoutListRow): ActionMenuItem[] {
+    if (r.status === "paid") {
+      return [
+        {
+          key: "detail",
+          label: t("payouts.seeDetails"),
+          icon: <FileText />,
+          onSelect: () => openSheet(r.id),
+        },
+      ];
+    }
     const { forward, corrections } = PAYOUT_TRANSITIONS[r.status];
     const summary = `${r.trainer_name} · ${ntd(r.amount)}`;
     return [...forward, ...corrections].map((to) => ({

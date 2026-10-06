@@ -45,7 +45,8 @@
   "submitted": "Submitted {{date}}",
   "docType": {
     "certification": "Certification / qualification proof",
-    "competition": "Competition"
+    "competition": "Competition",
+    "application": "Tier C trainer"
   },
   "expected": {
     "coachCert": "Review bar: this activity requires a coaching licence — any Taiwan-recognized certification (e.g. NASM-CPT, ACE, etc.).",
@@ -111,6 +112,7 @@
     "noMatches": "No payouts match your search.",
     "statusFilter": "Filter by status",
     "menu": "Payout actions",
+    "seeDetails": "See details",
     "columns": {
       "trainer": "Trainer",
       "amount": "Amount",
@@ -348,7 +350,27 @@
     "noMatches": "No requests match your search.",
     "statusFilter": "Filter by status",
     "viewPdf": "View PDF",
-    "menu": "Request actions"
+    "seeDetails": "See details",
+    "menu": "Request actions",
+    "tier": {
+      "A": "Tier A trainer",
+      "B": "Tier B trainer",
+      "C": "Tier C trainer"
+    },
+    "sheet": {
+      "title": "Trainer request",
+      "loadError": "Couldn't load this application.",
+      "retry": "Try again",
+      "noListing": "This applicant hasn't saved a listing yet.",
+      "noPlans": "No plans yet.",
+      "noAvailability": "No availability yet.",
+      "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "sections": {
+        "listing": "Listing",
+        "plans": "Plans & pricing",
+        "availability": "Availability"
+      }
+    }
   },
   "users": {
     "sheet": {
@@ -366,6 +388,7 @@
       "noConsents": "No documents accepted yet",
       "noOfferings": "No offerings yet",
       "noListing": "This trainer hasn't created a listing yet.",
+      "noCertificates": "No certificates yet",
       "noVerifications": "No verification requests",
       "noReviews": "No reviews yet",
       "ratingValue": "★ {{avg}} · {{count}} reviews",
@@ -377,6 +400,7 @@
         "activity": "Activity",
         "safety": "Trust & safety",
         "listing": "Trainer listing",
+        "certificates": "Certificates",
         "verifications": "Verification history",
         "earnings": "Earnings & payouts"
       },

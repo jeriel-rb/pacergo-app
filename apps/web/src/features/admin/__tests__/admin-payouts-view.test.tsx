@@ -225,6 +225,15 @@ describe("AdminPayoutsView", () => {
     expect(menuOf("Alice Chen")).toEqual(["Mark Processing", "Reject", "Cancel"]);
   });
 
+  it("menu: a paid payout only opens its details", async () => {
+    renderView();
+    expect(menuOf("Bob Lin")).toEqual(["See details"]);
+    fireEvent.click(screen.getByRole("menuitem", { name: "See details" }));
+    const sheet = await screen.findByRole("dialog");
+    expect(await within(sheet).findByText("CTBC")).toBeInTheDocument();
+    expect(within(sheet).queryByRole("button", { name: "Mark Processing" })).not.toBeInTheDocument();
+  });
+
   it("menu: offers only the changes that are valid from each status", () => {
     renderView();
     expect(menuOf("Cara Wu")).toEqual([

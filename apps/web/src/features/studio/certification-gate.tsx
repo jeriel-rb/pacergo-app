@@ -83,6 +83,10 @@ export function VerificationGate({
   }
 
   async function submit() {
+    if (!label.trim()) {
+      setError(t(`${m}.needLabel`));
+      return;
+    }
     if (!file) {
       setError(t(`${m}.needFile`));
       return;
@@ -127,7 +131,15 @@ export function VerificationGate({
       )}
 
       <Input
-        label={t(`${k}.label`)}
+        label={
+          <>
+            {t(`${k}.label`)}
+            <span className="ml-0.5 text-destructive" aria-hidden="true">
+              *
+            </span>
+          </>
+        }
+        required
         placeholder={t(`${k}.labelPlaceholder`)}
         value={label}
         onChange={(e) => setLabel(e.target.value)}
@@ -155,7 +167,7 @@ export function VerificationGate({
       <Button
         type="button"
         onClick={submit}
-        disabled={busy || !file}
+        disabled={busy || !file || !label.trim()}
         className="w-full gap-2"
       >
         {busy && <Loader2 size={16} className="animate-spin" />}

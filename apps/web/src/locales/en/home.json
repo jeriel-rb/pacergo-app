@@ -49,6 +49,7 @@
   "category": {
     "all": "All",
     "gym": "Fitness",
+    "walking": "Walking",
     "running": "Running",
     "hiking": "Hiking",
     "hyrox": "Hyrox"

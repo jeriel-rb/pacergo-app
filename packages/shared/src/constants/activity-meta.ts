@@ -9,6 +9,7 @@ export const ACTIVITY_META: Record<
   { icon: string; zh: string; en: string }
 > = {
   gym: { icon: 'dumbbell', zh: '健身', en: 'Gym' },
+  walking: { icon: 'person-standing', zh: '健走', en: 'Walking' },
   running: { icon: 'footprints', zh: '陪跑', en: 'Running' },
   hiking: { icon: 'mountain', zh: '陪爬', en: 'Hiking' },
   hyrox: { icon: 'timer', zh: 'Hyrox', en: 'Hyrox' },

@@ -76,7 +76,8 @@
     "needFile": "請選擇要上傳的 PDF。",
     "hintType": "認證文件必須為 PDF 檔。",
     "hintSize": "PDF 需小於 8MB。",
-    "tierANote": "A 級（附加比賽經驗證明）：此項審核通過後，還需上傳比賽得獎證明，才會解鎖 A 級。"
+    "tierANote": "A 級（附加比賽經驗證明）：此項審核通過後，還需上傳比賽得獎證明，才會解鎖 A 級。",
+    "needLabel": "請輸入認證名稱。"
   },
   "certExp": {
     "title": "需要 {{activity}} 的資格證明",
@@ -98,7 +99,8 @@
     "rejected": "上次送出的證明未通過，請上傳有效的比賽經驗證明。",
     "needFile": "請選擇要上傳的 PDF。",
     "hintType": "證明文件必須為 PDF 檔。",
-    "hintSize": "PDF 需小於 8MB。"
+    "hintSize": "PDF 需小於 8MB。",
+    "needLabel": "請輸入名稱。"
   },
   "availability": {
     "title": "可預約時段",

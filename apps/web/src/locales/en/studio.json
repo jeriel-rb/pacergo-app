@@ -76,7 +76,8 @@
     "needFile": "Please choose a PDF to upload.",
     "hintType": "Certification must be a PDF file.",
     "hintSize": "PDF must be under 8 MB.",
-    "tierANote": "Tier A (plus competition proof): once this is approved, you'll also upload proof of a competition result to unlock Tier A."
+    "tierANote": "Tier A (plus competition proof): once this is approved, you'll also upload proof of a competition result to unlock Tier A.",
+    "needLabel": "Please enter the certification name."
   },
   "certExp": {
     "title": "{{activity}} qualification proof required",
@@ -98,7 +99,8 @@
     "rejected": "Your last submission was rejected. Please upload valid competition proof.",
     "needFile": "Please choose a PDF to upload.",
     "hintType": "Proof must be a PDF file.",
-    "hintSize": "PDF must be under 8 MB."
+    "hintSize": "PDF must be under 8 MB.",
+    "needLabel": "Please enter a name."
   },
   "availability": {
     "title": "Availability",

@@ -38,7 +38,7 @@ export const TIER_REQUIRES_CERT: Record<Tier, boolean> = {
 
 /**
  * Which tiers additionally require approved competition experience (per
- * activity). Only Tier A — the "社群頂流" top tier.
+ * activity). Only Tier A — the "高階專業" top tier.
  */
 export const TIER_REQUIRES_COMPETITION: Record<Tier, boolean> = {
   A: true,
@@ -63,6 +63,7 @@ export type QualificationKind = 'coach-cert' | 'experience';
 
 export const ACTIVITY_QUALIFICATION: Record<ActivitySlug, QualificationKind> = {
   gym: 'coach-cert',
+  walking: 'experience',
   running: 'experience',
   hiking: 'experience',
   hyrox: 'experience',

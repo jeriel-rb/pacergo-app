@@ -2,14 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Check, Loader2, X } from "lucide-react";
-import {
-  ACTIVITY_META,
-  formatInAppTimeZone,
-  type ActivitySlug,
-} from "@pacergo/shared";
+import { Check, FileText, X } from "lucide-react";
+import { formatInAppTimeZone } from "@pacergo/shared";
 import type { AdminVerification } from "@/lib/admin";
-import { Button } from "@/shared/components/ui/button";
+import { ActionMenu, type ActionMenuItem } from "@/shared/components/atoms/action-menu";
 import { ListFilter } from "lucide-react";
 import { FilterSelect, TableSearch, TableToolbar } from "@/shared/components/atoms/table-toolbar";
 import {
@@ -38,8 +34,9 @@ const STATUS_TONE: Record<AdminVerification["status"], StatusTone> = {
 };
 
 /** Trainer requests: every certification / competition-proof request, filterable
- *  by state and searchable by name. Pending ones are approved or rejected here;
- *  decided ones stay listed so it is clear what was approved and what was rejected. */
+ *  by state and searchable by name. All also lists users who already have the
+ *  trainer role; those added directly show as approved. Pending ones are
+ *  approved or rejected here; decided ones stay listed. */
 export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
@@ -72,6 +69,7 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
     formatInAppTimeZone(iso, locale, { year: "numeric", month: "short", day: "numeric" });
 
   async function openDoc(v: AdminVerification) {
+    if (!v.document_path) return;
     setDocBusy(v.id);
     try {
       const url = await getCertSignedUrl(v.document_path);
@@ -81,6 +79,39 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
     } finally {
       setDocBusy(null);
     }
+  }
+
+  /** "⋯" menu items: View PDF whenever there is a document; Approve / Reject only
+   *  while the request is pending. */
+  function menuItems(v: AdminVerification): ActionMenuItem[] {
+    const items: ActionMenuItem[] = [];
+    if (v.document_path) {
+      items.push({
+        key: "view",
+        label: t("verifications.viewPdf"),
+        icon: <FileText />,
+        disabled: docBusy === v.id,
+        onSelect: () => void openDoc(v),
+      });
+    }
+    if (v.status === "pending") {
+      items.push(
+        {
+          key: "approve",
+          label: t("approve"),
+          icon: <Check />,
+          onSelect: () => setReview({ item: v, decision: "approved" }),
+        },
+        {
+          key: "reject",
+          label: t("reject"),
+          icon: <X />,
+          destructive: true,
+          onSelect: () => setReview({ item: v, decision: "rejected" }),
+        },
+      );
+    }
+    return items;
   }
 
   return (
@@ -117,8 +148,6 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>{t("verifications.columns.trainer")}</TableHead>
-              <TableHead>{t("verifications.columns.activity")}</TableHead>
-              <TableHead>{t("verifications.columns.type")}</TableHead>
               <TableHead>{t("verifications.columns.status")}</TableHead>
               <TableHead>{t("verifications.columns.submitted")}</TableHead>
               <TableHead>{t("verifications.columns.reviewed")}</TableHead>
@@ -127,7 +156,7 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
           </TableHeader>
           <TableBody>
             {visible.length === 0 ? (
-              <MessageRow colSpan={7}>
+              <MessageRow colSpan={5}>
                 {search
                   ? t("verifications.noMatches")
                   : filter === "pending"
@@ -136,10 +165,7 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
               </MessageRow>
             ) : (
               visible.map((v) => {
-                const activity = v.activity
-                  ? (ACTIVITY_META[v.activity as ActivitySlug]?.[locale] ?? v.activity)
-                  : "—";
-                const isPending = v.status === "pending";
+                const items = menuItems(v);
                 return (
                   <TableRow key={v.id}>
                     <TableCell>
@@ -147,15 +173,13 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
                         <InitialAvatar name={v.display_name} src={v.photo_url} size={32} />
                         <div className="min-w-0">
                           <p className="max-w-[200px] truncate font-medium">{v.display_name}</p>
-                          <p className="max-w-[200px] truncate text-xs text-muted-foreground">
-                            {v.label || t("noLabel")}
-                          </p>
+                          {v.label && (
+                            <p className="max-w-[200px] truncate text-xs text-muted-foreground">
+                              {v.label}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>{activity}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {t(`docType.${v.doc_type}`, { defaultValue: v.doc_type })}
                     </TableCell>
                     <TableCell>
                       <StatusBadge tone={STATUS_TONE[v.status]}>{t(v.status)}</StatusBadge>
@@ -167,47 +191,9 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
                       {v.reviewed_at ? stamp(v.reviewed_at) : "—"}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (docBusy !== v.id) void openDoc(v);
-                          }}
-                          aria-busy={docBusy === v.id}
-                          className="mr-1 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-                        >
-                          {t("verifications.viewPdf")}
-                          {docBusy === v.id ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <ArrowRight size={14} />
-                          )}
-                        </a>
-                        {isPending && (
-                          <>
-                            <Button
-                              type="button"
-                              size="sm"
-                              onClick={() => setReview({ item: v, decision: "approved" })}
-                              className="h-8 gap-1.5 px-2.5"
-                            >
-                              <Check size={15} />
-                              {t("approve")}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setReview({ item: v, decision: "rejected" })}
-                              className="h-8 gap-1.5 px-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              <X size={15} />
-                              {t("reject")}
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                      {items.length > 0 && (
+                        <ActionMenu label={t("verifications.menu")} items={items} />
+                      )}
                     </TableCell>
                   </TableRow>
                 );

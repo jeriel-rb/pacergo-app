@@ -3,6 +3,7 @@
 
 insert into activities (slug, name_en, name_zh, icon, is_active) values
   ('gym',        'Gym / Strength', '健身 / 重訓', 'dumbbell', true),
+  ('walking',    'Walking',        '健走',        'person-standing', true),
   ('running',    'Running',        '跑步',        'footprints', true),
   ('hiking',     'Hiking',         '登山健行',     'mountain', true),
   ('cycling',    'Cycling',        '騎車',        'bike', false),

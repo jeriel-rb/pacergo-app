@@ -73,6 +73,13 @@ function renderView(lng: "en" | "zh" = "en", queue = QUEUE) {
 
 beforeEach(() => vi.clearAllMocks());
 
+/** Open a row's "⋯" menu. */
+function openMenu(name: string) {
+  const row = screen.getByText(name).closest("tr")!;
+  fireEvent.click(within(row).getByRole("button", { name: "Request actions" }));
+  return row;
+}
+
 /** Pick a status in the "Filter by status" dropdown. */
 function chooseStatus(name: RegExp) {
   fireEvent.keyDown(screen.getByRole("combobox", { name: "Filter by status" }), { key: "Enter" });
@@ -110,19 +117,49 @@ describe("AdminVerificationsView", () => {
     expect(select.className).toContain("[&>svg:last-child]:ml-auto");
   });
 
-  it("opens the PDF from a text link with an arrow, not an icon button", async () => {
+  it("opens the PDF from the row's ⋯ menu", async () => {
     const open = vi.spyOn(window, "open").mockImplementation(() => null);
     renderView();
-    const row = screen.getByText("Alice Chen").closest("tr")!;
-    const link = within(row).getByRole("link", { name: "View PDF" });
-    expect(link.tagName).toBe("A");
-    expect(link.querySelector("svg")).not.toBeNull(); // the right arrow
-    fireEvent.click(link);
+    openMenu("Alice Chen");
+    fireEvent.click(await screen.findByRole("menuitem", { name: "View PDF" }));
     await waitFor(() => expect(getCertSignedUrl).toHaveBeenCalledWith("u1/doc.pdf"));
     await waitFor(() => expect(open).toHaveBeenCalledWith("https://example.test/doc.pdf", "_blank", "noopener,noreferrer"));
-    // every request has one, whatever its status
-    expect(within(screen.getByText("Bob Lin").closest("tr")!).getByRole("link", { name: "View PDF" })).toBeInTheDocument();
     open.mockRestore();
+  });
+
+  it("menu: pending has View PDF, Approve and Reject; approved and rejected only View PDF", async () => {
+    renderView();
+    const names = () => screen.getAllByRole("menuitem").map((i) => i.textContent);
+    openMenu("Alice Chen");
+    expect(names()).toEqual(["View PDF", "Approve", "Reject"]);
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("menuitem")).not.toBeInTheDocument());
+    openMenu("Bob Lin");
+    expect(names()).toEqual(["View PDF"]);
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("menuitem")).not.toBeInTheDocument());
+    openMenu("Cara Wu");
+    expect(names()).toEqual(["View PDF"]);
+  });
+
+  it("pending request without a document: no View PDF, still Approve and Reject; no Type column", () => {
+    renderView("en", [v({ id: "v9", display_name: "Fay Lo", document_path: null })]);
+    expect(screen.queryByRole("columnheader", { name: "Type" })).not.toBeInTheDocument();
+    openMenu("Fay Lo");
+    expect(screen.getAllByRole("menuitem").map((i) => i.textContent)).toEqual(["Approve", "Reject"]);
+  });
+
+  it("shows only the trainer's name when there is no certification name (no placeholder text)", () => {
+    const { container } = renderView("en", [v({ id: "v8", display_name: "Gus Pan", label: null })]);
+    expect(screen.getByText("Gus Pan")).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/no name given/i);
+  });
+
+  it("has no inline action buttons or links in the rows", () => {
+    renderView();
+    const row = screen.getByText("Alice Chen").closest("tr")!;
+    expect(within(row).queryByRole("link")).not.toBeInTheDocument();
+    expect(within(row).getAllByRole("button")).toHaveLength(1);
   });
 
   it("uses a short search placeholder", () => {
@@ -130,12 +167,40 @@ describe("AdminVerificationsView", () => {
     expect(screen.getByPlaceholderText("Search by name…")).toBeInTheDocument();
   });
 
+  it("lists every trainer-role user on All, including those who never submitted a request", () => {
+    renderView("en", [
+      ...QUEUE,
+      v({
+        id: "u-eve",
+        user_id: "u-eve",
+        display_name: "Eve Ko",
+        doc_type: null,
+        activity: null,
+        label: null,
+        document_path: null,
+        status: "approved",
+        created_at: "2026-09-01T00:00:00Z",
+      }),
+    ]);
+    const row = screen.getByText("Eve Ko").closest("tr")!;
+    expect(within(row).getByText("Approved")).toBeInTheDocument();
+    expect(within(row).queryByRole("button", { name: "Request actions" })).not.toBeInTheDocument();
+    chooseStatus(/^Pending$/);
+    expect(screen.queryByText("Eve Ko")).not.toBeInTheDocument();
+    chooseStatus(/^Approved$/);
+    expect(screen.getByText("Eve Ko")).toBeInTheDocument();
+    chooseStatus(/^Rejected$/);
+    expect(screen.queryByText("Eve Ko")).not.toBeInTheDocument();
+    chooseStatus(/^All$/);
+    expect(screen.getByText("Eve Ko")).toBeInTheDocument();
+    expect(screen.getByText("Bob Lin")).toBeInTheDocument();
+  });
+
   it("shows which were approved and which were rejected", () => {
     renderView();
     chooseStatus(/^Approved$/);
     const approved = screen.getByText("Bob Lin").closest("tr")!;
     expect(within(approved).getByText("Approved")).toBeInTheDocument();
-    expect(within(approved).queryByRole("button", { name: "Approve" })).not.toBeInTheDocument();
     chooseStatus(/^Rejected$/);
     expect(within(screen.getByText("Cara Wu").closest("tr")!).getByText("Rejected")).toBeInTheDocument();
     chooseStatus(/^All$/);
@@ -162,8 +227,8 @@ describe("AdminVerificationsView", () => {
 
   it("approves a pending request after confirming, then refreshes", async () => {
     renderView();
-    const row = screen.getByText("Alice Chen").closest("tr")!;
-    fireEvent.click(within(row).getByRole("button", { name: "Approve" }));
+    openMenu("Alice Chen");
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Approve" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: "verified" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Approve" }));
@@ -173,8 +238,8 @@ describe("AdminVerificationsView", () => {
 
   it("rejects with a note", async () => {
     renderView();
-    const row = screen.getByText("Dan Ho").closest("tr")!;
-    fireEvent.click(within(row).getByRole("button", { name: "Reject" }));
+    openMenu("Dan Ho");
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Reject" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: "blurry" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Reject" }));

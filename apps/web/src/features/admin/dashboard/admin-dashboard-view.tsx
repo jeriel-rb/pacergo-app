@@ -38,7 +38,10 @@ export function AdminDashboardView({
 
   return (
     <div className="flex flex-col gap-4 lg:h-full">
-      <h1 className="text-2xl font-bold lg:text-3xl">{t("dashboard.title")}</h1>
+      <header>
+        <h1 className="text-2xl font-bold lg:text-3xl">{t("dashboard.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
+      </header>
 
       <div className="grid grid-cols-1 gap-4 lg:min-h-[480px] lg:flex-1 lg:grid-cols-24 lg:items-stretch">
         <div className="flex min-w-0 flex-col gap-4 lg:col-span-14 lg:h-full lg:min-h-0 xl:col-span-16">

@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatInAppTimeZone } from "@pacergo/shared";
+import { ACTIVITY_META, formatInAppTimeZone, type ActivitySlug } from "@pacergo/shared";
 import type { AppNotification } from "@/lib/notifications";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
 import { markNotificationsRead } from "./notification-actions";
 
 /** Notifications list. Marks everything read on view. */
@@ -22,6 +31,7 @@ export function NotificationsView({
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
+  const [rejected, setRejected] = useState<AppNotification | null>(null);
 
   const hasUnread = notifications.some((n) => !n.read_at);
   useEffect(() => {
@@ -52,12 +62,15 @@ export function NotificationsView({
                 )
               : null;
 
+            // A rejected trainer request opens a dialog with the reviewer's reason.
+            const opensReason = n.type === "verification_rejected";
+
             const body = (
               <div
                 className={cn(
                   "flex items-start gap-3 rounded-xl border border-border p-3.5 transition-colors",
                   n.read_at ? "bg-card" : "bg-primary/5",
-                  href && "hover:bg-accent",
+                  (href || opensReason) && "hover:bg-accent",
                 )}
               >
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent">
@@ -77,6 +90,19 @@ export function NotificationsView({
               </div>
             );
 
+            if (opensReason) {
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => setRejected(n)}
+                  className="block w-full text-left"
+                >
+                  {body}
+                </button>
+              );
+            }
+
             return href ? (
               <Link key={n.id} href={href} className="block">
                 {body}
@@ -87,6 +113,37 @@ export function NotificationsView({
           })}
         </div>
       )}
+
+      <Dialog open={rejected !== null} onOpenChange={(open) => !open && setRejected(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("rejection.title")}</DialogTitle>
+            <DialogDescription>
+              {[
+                rejected?.payload.activity
+                  ? (ACTIVITY_META[rejected.payload.activity as ActivitySlug]?.[locale] ??
+                    rejected.payload.activity)
+                  : null,
+                rejected?.payload.label,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium">{t("rejection.reason")}</p>
+            <p className="whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 text-sm">
+              {rejected?.payload.notes || t("rejection.noReason")}
+            </p>
+            <p className="text-xs text-muted-foreground">{t("rejection.hint")}</p>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setRejected(null)}>
+              {t("rejection.close")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

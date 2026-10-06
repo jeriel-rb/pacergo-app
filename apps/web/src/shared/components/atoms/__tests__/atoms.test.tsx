@@ -7,7 +7,7 @@ import { RatingStars } from "../rating-stars";
 describe("TierBadge", () => {
   it("renders the zh label for tier A", () => {
     render(<TierBadge tier="A" locale="zh" />);
-    expect(screen.getByText("社群頂流")).toBeInTheDocument();
+    expect(screen.getByText("高階專業")).toBeInTheDocument();
   });
 
   it("renders the en label for tier C", () => {

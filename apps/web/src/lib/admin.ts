@@ -7,10 +7,10 @@ export interface AdminVerification {
   user_id: string;
   display_name: string;
   photo_url: string | null;
-  doc_type: string;
+  doc_type: string | null;
   activity: string | null;
   label: string | null;
-  document_path: string;
+  document_path: string | null;
   status: "pending" | "approved" | "rejected";
   notes: string | null;
   created_at: string;
@@ -35,7 +35,8 @@ export async function getIsAdmin(): Promise<boolean> {
   return data === true;
 }
 
-/** The certification review queue (pending first). Admin-only RPC. */
+/** Certification review queue (pending first). Trainer-role users who never
+ *  submitted a request are included as approved. Admin-only RPC. */
 export async function getVerificationQueue(): Promise<AdminVerification[]> {
   if (!SUPABASE_CONFIGURED) return [];
   const supabase = await createSupabaseServerClient();
@@ -67,6 +68,9 @@ export interface PayoutTotals {
   requested_sum: number;
   processing_count: number;
   processing_sum: number;
+  /** Absent until the database function that returns them is updated. */
+  paid_count?: number;
+  paid_sum?: number;
 }
 
 export interface PayoutList {
@@ -80,7 +84,14 @@ export async function getPayoutList(
 ): Promise<PayoutList> {
   const empty: PayoutList = {
     rows: [],
-    totals: { requested_count: 0, requested_sum: 0, processing_count: 0, processing_sum: 0 },
+    totals: {
+      requested_count: 0,
+      requested_sum: 0,
+      processing_count: 0,
+      processing_sum: 0,
+      paid_count: 0,
+      paid_sum: 0,
+    },
   };
   if (!SUPABASE_CONFIGURED) return empty;
   const supabase = await createSupabaseServerClient();

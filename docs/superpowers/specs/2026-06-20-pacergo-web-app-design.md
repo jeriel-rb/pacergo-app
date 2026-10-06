@@ -50,7 +50,7 @@ Reference for stack/config conventions: `/Users/jeriel/Documents/GitLab/optserv-
 
 - **Enums / consts:** `Tier` (`'A'|'B'|'C'`), `ExperienceLevel` (`beginner|intermediate|advanced`),
   `BookingStatus`, `ActivitySlug` (`gym|running|hiking|cycling|yoga|swimming|boxing|basketball`).
-- **Display maps:** `TIER_LABELS` (A→社群頂流/Top Tier, B→資深專業/Senior Pro, C→陽光搭子/Buddy)
+- **Display maps:** `TIER_LABELS` (A→高階專業/Top Tier, B→資深專業/Senior Pro, C→陽光夥伴/Buddy)
   with zh+en; `TIER_TOKENS` (badge color intent per tier); `ACTIVITY_META` (slug → icon name,
   zh, en).
 - **Domain types:** `TrainerSummary` (discovery card), `TrainerProfile` (detail), `Offering`,

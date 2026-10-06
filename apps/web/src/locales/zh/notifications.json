@@ -7,6 +7,15 @@
     "booking_declined": "你的預約已被婉拒",
     "booking_cancelled": "有一筆預約已被取消",
     "booking_completed": "訓練已完成，留下你的評價吧！",
+    "verification_approved": "你的陪練申請已通過",
+    "verification_rejected": "你的陪練申請未通過 — 點擊查看原因",
     "default": "你有一則新通知"
+  },
+  "rejection": {
+    "title": "陪練申請未通過",
+    "reason": "審核原因",
+    "noReason": "審核人員未提供原因。",
+    "hint": "你可以在教練工作室重新上傳文件。",
+    "close": "關閉"
   }
 }

@@ -26,6 +26,6 @@ describe('activity queries (mock)', () => {
   it('marks gym/running/hiking active', async () => {
     const activities = await getActivities();
     const active = activities.filter((a) => a.is_active).map((a) => a.slug);
-    expect(active).toEqual(expect.arrayContaining(['gym', 'running', 'hiking']));
+    expect(active).toEqual(expect.arrayContaining(['gym', 'walking', 'running', 'hiking']));
   });
 });

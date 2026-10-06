@@ -4,7 +4,14 @@ import { SUPABASE_CONFIGURED } from "./supabase/env";
 export interface AppNotification {
   id: string;
   type: string;
-  payload: { booking_id?: string; status?: string } & Record<string, unknown>;
+  payload: {
+    booking_id?: string;
+    status?: string;
+    /** Trainer-request review (`verification_approved` / `verification_rejected`). */
+    activity?: string | null;
+    label?: string | null;
+    notes?: string | null;
+  } & Record<string, unknown>;
   read_at: string | null;
   created_at: string;
 }

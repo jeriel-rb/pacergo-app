@@ -10,12 +10,13 @@ import type { TrainerCategory } from "./filter-trainers";
 const CATEGORIES: { key: string; value: TrainerCategory; slug?: ActivitySlug }[] = [
   { key: "all", value: "all" },
   { key: "gym", value: "gym", slug: "gym" },
+  { key: "walking", value: "walking", slug: "walking" },
   { key: "running", value: "running", slug: "running" },
   { key: "hiking", value: "hiking", slug: "hiking" },
   { key: "hyrox", value: "hyrox", slug: "hyrox" },
 ];
 
-/** Segmented activity filter (全部 / 健身 / 陪跑 / 陪爬 / Hyrox). */
+/** Segmented activity filter (全部 / 健身 / 健走 / 陪跑 / 陪爬 / Hyrox). */
 export function CategoryFilter({
   value,
   onChange,

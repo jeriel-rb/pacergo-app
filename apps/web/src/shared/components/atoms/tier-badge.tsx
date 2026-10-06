@@ -14,7 +14,7 @@ const INTENT_STYLE: Record<
 
 /**
  * Tier badge. `tier` drives both label (TIER_LABELS) and color (TIER_INTENT)
- * from the shared package; `showGrade` prepends the grade letter (e.g. "C 陽光搭子").
+ * from the shared package; `showGrade` prepends the grade letter (e.g. "C 陽光夥伴").
  */
 export function TierBadge({
   tier,

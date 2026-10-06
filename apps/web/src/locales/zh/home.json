@@ -49,6 +49,7 @@
   "category": {
     "all": "全部",
     "gym": "健身",
+    "walking": "健走",
     "running": "陪跑",
     "hiking": "陪爬",
     "hyrox": "Hyrox"

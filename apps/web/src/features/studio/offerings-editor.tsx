@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { addOffering, removeOffering } from "./studio-actions";
 import { VerificationGate } from "./certification-gate";
 
-const ACTIVITIES: ActivitySlug[] = ["gym", "running", "hiking", "hyrox"];
+const ACTIVITIES: ActivitySlug[] = ["gym", "walking", "running", "hiking", "hyrox"];
 
 /** Manage the trainer's offerings — one tier per activity. */
 export function OfferingsEditor({

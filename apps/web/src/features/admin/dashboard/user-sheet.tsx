@@ -69,7 +69,7 @@ const LISTING_TONE: Record<string, StatusTone> = {
 };
 
 /** One fact on one line: icon, muted label, bold value — a row per detail. */
-function InfoRow({
+export function InfoRow({
   icon: Icon,
   label,
   children,
@@ -96,7 +96,7 @@ function InfoRow({
  *  "Show" asks the server to decrypt it (the number is stored encrypted and is
  *  only ever sent in that one response); "Hide" drops it from the page again.
  *  Closing the sheet or opening another user starts masked. */
-function BankAccountRow({
+export function BankAccountRow({
   userId,
   mask,
   hasAccount,
@@ -174,7 +174,7 @@ function BankAccountRow({
 }
 
 /** A plain note where a list would be (nothing to show). */
-function EmptyRow({ children }: { children: React.ReactNode }) {
+export function EmptyRow({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-md border border-dashed border-border px-3 py-2.5 text-sm text-muted-foreground">
       {children}

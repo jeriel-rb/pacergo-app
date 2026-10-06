@@ -11,7 +11,8 @@ import { Button } from "@/shared/components/ui/button";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { useToast } from "@/shared/components/ui/toast";
 import { setWithdrawalStatus } from "./admin-actions";
-import { StatusBadge } from "./admin-payouts-view";
+import { PayoutStatusBadge } from "./admin-payouts-view";
+import { PAYOUT_TRANSITIONS } from "./payout-actions";
 
 function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
@@ -28,20 +29,6 @@ function formatStamp(iso: string, locale: "zh" | "en"): string {
   });
 }
 
-/** Transitions from the current status: [forward steps, correction steps].
- *  Forward steps don't require a reason; corrections do (enforced server-side
- *  too, in admin_set_withdrawal_status). */
-const TRANSITIONS: Record<
-  PayoutStatus,
-  { forward: PayoutStatus[]; corrections: PayoutStatus[] }
-> = {
-  requested: { forward: ["processing"], corrections: ["rejected", "cancelled"] },
-  processing: { forward: ["paid"], corrections: ["rejected", "cancelled", "requested"] },
-  paid: { forward: [], corrections: ["processing"] },
-  rejected: { forward: [], corrections: ["requested"] },
-  cancelled: { forward: [], corrections: ["requested"] },
-};
-
 /** B-8: full bank reveal (admin-only), status workflow + corrections, full
  *  history. Full bank details render ONLY here — masked everywhere else. */
 export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
@@ -53,7 +40,7 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
   const [busy, setBusy] = useState<PayoutStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { forward, corrections } = TRANSITIONS[detail.status];
+  const { forward, corrections } = PAYOUT_TRANSITIONS[detail.status];
 
   async function transition(to: PayoutStatus, requiresReason: boolean) {
     if (requiresReason && reason.trim() === "") {
@@ -84,7 +71,7 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
             {formatStamp(detail.requested_at, locale)}
           </p>
         </div>
-        <StatusBadge status={detail.status} />
+        <PayoutStatusBadge status={detail.status} />
       </header>
 
       <Card className="p-5">

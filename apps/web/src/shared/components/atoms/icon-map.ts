@@ -1,5 +1,6 @@
 import {
   Dumbbell,
+  PersonStanding,
   Footprints,
   Mountain,
   Timer,
@@ -14,6 +15,7 @@ import {
 /** Maps the lucide icon names in `@pacergo/shared` ACTIVITY_META to components. */
 export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   dumbbell: Dumbbell,
+  "person-standing": PersonStanding,
   footprints: Footprints,
   mountain: Mountain,
   timer: Timer,

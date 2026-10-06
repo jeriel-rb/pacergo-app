@@ -6,6 +6,7 @@ import type {
   AdminUserDetail,
   AdminUserRole,
   AdminUsersPage,
+  PayoutDetail,
 } from "@/lib/admin";
 
 /** Must match `MEMBERS_PAGE_SIZE` in `@/lib/admin` (server-only, so it can't be
@@ -71,6 +72,16 @@ export async function fetchBankAccountNumber(userId: string): Promise<string> {
     | null;
   if (!res.ok || !body?.accountNumber) throw new Error(body?.error ?? "reveal_failed");
   return body.accountNumber;
+}
+
+/** One payout's detail for the sheet (admin-only RPC). The stored bank account
+ *  number is ciphertext, so it is dropped here: the sheet shows the mask and only
+ *  reveals the real number through `fetchBankAccountNumber` on "Show". */
+export async function fetchPayoutDetail(id: string): Promise<PayoutDetail> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("admin_withdrawal_detail", { p_id: id });
+  if (error || !data) throw new Error(error?.message ?? "payout");
+  return { ...(data as PayoutDetail), bank_account_number: null };
 }
 
 /** One user's full detail for the sheet (admin-only RPC). */

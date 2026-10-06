@@ -138,9 +138,16 @@ beforeEach(() => {
 });
 
 describe("AdminDashboardView — layout", () => {
+  it("has a subtitle under the title, like the other admin pages", () => {
+    renderView();
+    expect(
+      screen.getByText(/A snapshot of your users, trainer requests and payouts/),
+    ).toBeInTheDocument();
+  });
+
   it("puts the KPI cards and users table on the left, requests and payouts on the right", () => {
     renderView();
-    const grid = screen.getByRole("heading", { name: "Dashboard" }).nextElementSibling as HTMLElement;
+    const grid = screen.getByRole("heading", { name: "Dashboard" }).parentElement!.nextElementSibling as HTMLElement;
     // lg+: a 24-column grid that fills the viewport height (the page doesn't scroll).
     expect(grid.className).toContain("lg:grid-cols-24");
     expect(grid.className).toContain("lg:flex-1");

@@ -5,9 +5,9 @@ import type { Tier } from '../enums/tier';
  * labels are presentation-only (see the trainer cards and detail header).
  */
 export const TIER_LABELS: Record<Tier, { zh: string; en: string }> = {
-  A: { zh: '社群頂流', en: 'Top Tier' },
+  A: { zh: '高階專業', en: 'Top Tier' },
   B: { zh: '資深專業', en: 'Senior Pro' },
-  C: { zh: '陽光搭子', en: 'Buddy' },
+  C: { zh: '陽光夥伴', en: 'Buddy' },
 };
 
 /** Badge color intent per tier, mapped to theme tokens by the web/native UI. */

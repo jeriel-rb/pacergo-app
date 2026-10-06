@@ -52,6 +52,7 @@ export function TrainerRequestsCard({
     formatInAppTimeZone(iso, locale, { year: "numeric", month: "short", day: "numeric" });
 
   async function openDoc(v: AdminVerification) {
+    if (!v.document_path) return;
     setDocBusy(v.id);
     try {
       const url = await getCertSignedUrl(v.document_path);
@@ -78,9 +79,11 @@ export function TrainerRequestsCard({
                 <InitialAvatar name={v.display_name} src={v.photo_url} size={36} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{v.display_name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {[activity, v.label].filter(Boolean).join(" · ") || t("noLabel")}
-                  </p>
+                  {(activity || v.label) && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[activity, v.label].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                   <p className="mt-0.5 text-xs text-muted-foreground">{stamp(v.created_at)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">

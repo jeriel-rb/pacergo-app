@@ -7,7 +7,8 @@
     "orders": "訂單",
     "payouts": "撥款管理",
     "exports": "CSV 匯出",
-    "backToApp": "返回 Pacergo"
+    "backToApp": "返回 Pacergo",
+    "back": "返回"
   },
   "title": "陪練審核",
   "subtitle": "審核教練證／資格證明與比賽經驗申請",
@@ -42,7 +43,6 @@
   "historyTitle": "已審核",
   "empty": "目前沒有待審核的申請。",
   "submitted": "{{date}} 送出",
-  "noLabel": "（未填名稱）",
   "docType": {
     "certification": "教練證／資格證明",
     "competition": "比賽經驗"
@@ -67,7 +67,8 @@
     "subtitle": "審核提領申請，並於平台外以銀行轉帳完成撥款",
     "totals": {
       "requested": "待審核",
-      "processing": "處理中"
+      "processing": "處理中",
+      "paid": "已撥款"
     },
     "filter": {
       "all": "全部",
@@ -105,7 +106,40 @@
     },
     "history": "狀態歷程",
     "noHistory": "尚無狀態變更紀錄。",
-    "systemActor": "系統"
+    "systemActor": "系統",
+    "searchPlaceholder": "搜尋名稱…",
+    "noMatches": "沒有符合搜尋的撥款申請。",
+    "statusFilter": "依狀態篩選",
+    "menu": "撥款操作",
+    "columns": {
+      "trainer": "陪練",
+      "amount": "金額",
+      "bank": "銀行帳號",
+      "status": "狀態",
+      "requested": "申請時間",
+      "actions": "操作"
+    },
+    "count": "筆申請",
+    "dialog": {
+      "title": "確定要「{{action}}」嗎？",
+      "reasonOptional": "備註（選填）…"
+    },
+    "sheet": {
+      "title": "撥款詳情",
+      "loadError": "無法載入此撥款申請。",
+      "retry": "重試",
+      "sections": {
+        "payout": "撥款",
+        "bank": "銀行帳戶"
+      },
+      "fields": {
+        "status": "狀態",
+        "requested": "申請時間",
+        "updated": "最後更新",
+        "settled": "撥款日期",
+        "note": "備註"
+      }
+    }
   },
   "exports": {
     "title": "資料匯出 (CSV)",
@@ -244,6 +278,7 @@
   },
   "dashboard": {
     "title": "儀表板",
+    "subtitle": "一覽使用者、陪練申請與撥款概況，優先掌握需要你處理的事項。",
     "stats": {
       "totalUsers": "總使用者數",
       "newUsers": "近 30 天新增 {{count}} 位",
@@ -312,7 +347,8 @@
     "empty": "此分類目前沒有申請。",
     "noMatches": "沒有符合搜尋的申請。",
     "statusFilter": "依狀態篩選",
-    "viewPdf": "查看 PDF"
+    "viewPdf": "查看 PDF",
+    "menu": "申請操作"
   },
   "users": {
     "sheet": {

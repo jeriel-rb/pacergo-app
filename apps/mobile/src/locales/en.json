@@ -170,7 +170,7 @@
   },
   "verification": {
     "title": "Get verified",
-    "intro": "Tiers B and A need review: for gym, upload a coaching certification (any Taiwan-recognized licence); for running, hiking, and Hyrox, athletic or leadership proof works (race finishes, varsity records, club leading, etc.). Tier A additionally needs competition-award proof.",
+    "intro": "Tiers B and A need review: for gym, upload a coaching certification (any Taiwan-recognized licence); for walking, running, hiking, and Hyrox, athletic or leadership proof works (race finishes, varsity records, club leading, etc.). Tier A additionally needs competition-award proof.",
     "pickCert": "Upload certification",
     "pickId": "Upload ID",
     "pending": "Your verification is under review.",

@@ -7,7 +7,8 @@
     "orders": "Orders",
     "payouts": "Payouts",
     "exports": "CSV export",
-    "backToApp": "Back to Pacergo"
+    "backToApp": "Back to Pacergo",
+    "back": "Back"
   },
   "title": "Trainer verification",
   "subtitle": "Review certification / qualification-proof and competition-experience requests",
@@ -42,7 +43,6 @@
   "historyTitle": "Reviewed",
   "empty": "No pending requests. You're all caught up.",
   "submitted": "Submitted {{date}}",
-  "noLabel": "(no name given)",
   "docType": {
     "certification": "Certification / qualification proof",
     "competition": "Competition"
@@ -67,7 +67,8 @@
     "subtitle": "Review withdrawal requests; the actual transfer happens off-platform by bank transfer",
     "totals": {
       "requested": "Requested",
-      "processing": "Processing"
+      "processing": "Processing",
+      "paid": "Paid"
     },
     "filter": {
       "all": "All",
@@ -105,7 +106,40 @@
     },
     "history": "Status history",
     "noHistory": "No status changes yet.",
-    "systemActor": "System"
+    "systemActor": "System",
+    "searchPlaceholder": "Search by name…",
+    "noMatches": "No payouts match your search.",
+    "statusFilter": "Filter by status",
+    "menu": "Payout actions",
+    "columns": {
+      "trainer": "Trainer",
+      "amount": "Amount",
+      "bank": "Bank account",
+      "status": "Status",
+      "requested": "Requested",
+      "actions": "Actions"
+    },
+    "count": "requests",
+    "dialog": {
+      "title": "{{action}}?",
+      "reasonOptional": "Reason note (optional)…"
+    },
+    "sheet": {
+      "title": "Payout details",
+      "loadError": "Couldn't load this payout.",
+      "retry": "Try again",
+      "sections": {
+        "payout": "Payout",
+        "bank": "Bank account"
+      },
+      "fields": {
+        "status": "Status",
+        "requested": "Requested",
+        "updated": "Last updated",
+        "settled": "Paid on",
+        "note": "Note"
+      }
+    }
   },
   "exports": {
     "title": "Data export (CSV)",
@@ -244,6 +278,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "subtitle": "A snapshot of your users, trainer requests and payouts — see what needs your attention first.",
     "stats": {
       "totalUsers": "Total users",
       "newUsers": "+{{count}} in the last 30 days",
@@ -312,7 +347,8 @@
     "empty": "No requests in this view.",
     "noMatches": "No requests match your search.",
     "statusFilter": "Filter by status",
-    "viewPdf": "View PDF"
+    "viewPdf": "View PDF",
+    "menu": "Request actions"
   },
   "users": {
     "sheet": {

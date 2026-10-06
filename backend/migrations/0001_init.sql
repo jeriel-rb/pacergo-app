@@ -183,7 +183,15 @@ create table if not exists user_activities (
   primary key (user_id, activity_id)
 );
 
--- Seed activities: Gym active, others inactive (enabled later);
+-- 健走 sits with the bookable activities. The rest of the catalog is
+-- backend/seeds/01_activities.sql, which upserts this row again on reset.
+insert into activities (slug, name_en, name_zh, icon, is_active) values
+  ('walking', 'Walking', '健走', 'person-standing', true)
+on conflict (slug) do update set
+  name_en = excluded.name_en,
+  name_zh = excluded.name_zh,
+  icon = excluded.icon,
+  is_active = excluded.is_active;
 
 -- Companion listing (1:1 with a companion profile)
 create table if not exists companion_listings (
@@ -2694,6 +2702,9 @@ begin
     raise exception 'invalid document path';
   end if;
   if char_length(coalesce(p_label, '')) > 200 then raise exception 'label too long'; end if;
+  if p_doc_type in ('certification', 'competition') and btrim(coalesce(p_label, '')) = '' then
+    raise exception 'certification name required';
+  end if;
 
   if p_doc_type in ('certification', 'competition') then
     select id into v_activity from activities where slug = p_activity_slug;
@@ -2746,6 +2757,36 @@ begin
     join users u on u.id = ver.user_id
     left join activities a on a.id = ver.activity_id
     where ver.doc_type in ('certification', 'competition')
+
+    union all
+
+    -- Trainers added directly (trainer role) who never submitted a request.
+    -- They are already trainers, so the queue shows them as approved rather
+    -- than as a missing request. No verification row is inserted: an approved
+    -- certification would unlock tier B/A offerings.
+    select jsonb_build_object(
+      'id', u.id,
+      'user_id', u.id,
+      'display_name', u.display_name,
+      'photo_url', u.photo_url,
+      'doc_type', null,
+      'activity', null,
+      'label', null,
+      'document_path', null,
+      'status', 'approved',
+      'notes', null,
+      'created_at', u.created_at,
+      'reviewed_at', null
+    ) as obj,
+    1 as ord,
+    u.created_at
+    from users u
+    where u.is_companion
+      and not exists (
+        select 1 from verifications ver
+        where ver.user_id = u.id
+          and ver.doc_type in ('certification', 'competition')
+      )
   ) s;
   return v;
 end;
@@ -2757,6 +2798,9 @@ create or replace function review_verification(
   p_notes text
 ) returns void
 language plpgsql security definer set search_path = public as $$
+declare
+  v_ver verifications%rowtype;
+  v_activity text;
 begin
   if not is_platform_admin() then raise exception 'forbidden'; end if;
   if p_status not in ('approved', 'rejected') then raise exception 'invalid status'; end if;
@@ -2765,8 +2809,26 @@ begin
     notes = nullif(p_notes, ''),
     reviewed_by = auth.uid(),
     reviewed_at = now()
-  where id = p_id;
+  where id = p_id
+  returning * into v_ver;
   if not found then raise exception 'verification not found'; end if;
+
+  -- Tell the applicant. The payload carries the reviewer's reason so the
+  -- notifications page can show why a request was rejected.
+  select slug into v_activity from activities where id = v_ver.activity_id;
+  insert into notifications (user_id, type, payload)
+  values (
+    v_ver.user_id,
+    'verification_' || p_status,
+    jsonb_build_object(
+      'verification_id', v_ver.id,
+      'status', p_status,
+      'doc_type', v_ver.doc_type,
+      'activity', v_activity,
+      'label', v_ver.label,
+      'notes', v_ver.notes
+    )
+  );
 end $$;
 
 -- upsert_my_listing: length caps for the free-text fields.;
@@ -4044,7 +4106,9 @@ begin
     'requested_count', count(*) filter (where status = 'requested'),
     'requested_sum', coalesce(sum(amount) filter (where status = 'requested'), 0),
     'processing_count', count(*) filter (where status = 'processing'),
-    'processing_sum', coalesce(sum(amount) filter (where status = 'processing'), 0)
+    'processing_sum', coalesce(sum(amount) filter (where status = 'processing'), 0),
+    'paid_count', count(*) filter (where status = 'paid'),
+    'paid_sum', coalesce(sum(amount) filter (where status = 'paid'), 0)
   ) into v_totals
   from withdrawal_requests;
 

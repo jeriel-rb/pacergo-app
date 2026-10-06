@@ -84,16 +84,6 @@ export function PayoutsCard({ rows, className }: { rows: PayoutListRow[]; classN
                 <div className="flex shrink-0 items-center gap-1">
                   <Button
                     type="button"
-                    size="sm"
-                    onClick={() => setPending({ row: r, to: next })}
-                    aria-label={t(`payouts.action.${next}`)}
-                    title={t(`payouts.action.${next}`)}
-                    className="h-8 w-8 p-0"
-                  >
-                    {next === "paid" ? <Banknote size={15} /> : <Check size={15} />}
-                  </Button>
-                  <Button
-                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => setPending({ row: r, to: "rejected" })}
@@ -102,6 +92,16 @@ export function PayoutsCard({ rows, className }: { rows: PayoutListRow[]; classN
                     className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                   >
                     <X size={15} />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setPending({ row: r, to: next })}
+                    aria-label={t(`payouts.action.${next}`)}
+                    title={t(`payouts.action.${next}`)}
+                    className="h-8 w-8 p-0"
+                  >
+                    {next === "paid" ? <Banknote size={15} /> : <Check size={15} />}
                   </Button>
                 </div>
               </li>

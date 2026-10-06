@@ -200,6 +200,13 @@ describe("AdminDashboardView — trainer requests card", () => {
     expect(within(card).queryByRole("button", { name: /Pending|Approved|Rejected/ })).not.toBeInTheDocument();
   });
 
+  it("puts Reject on the left and Approve on the right (View PDF first)", () => {
+    renderView();
+    const item = within(panel("Trainer requests")).getAllByRole("listitem")[0]!;
+    const names = within(item).getAllByRole("button").map((b) => b.getAttribute("aria-label"));
+    expect(names).toEqual(["View document (PDF)", "Reject", "Approve"]);
+  });
+
   it("offers view / approve / reject on each request", () => {
     renderView();
     const card = panel("Trainer requests");
@@ -365,6 +372,16 @@ describe("AdminDashboardView — users table", () => {
 });
 
 describe("AdminDashboardView — payouts card", () => {
+  it("puts Reject on the left and the forward step (Mark Processing / Mark Paid) on the right", () => {
+    renderView();
+    const items = within(panel("Payouts")).getAllByRole("listitem");
+    for (const item of items) {
+      const names = within(item).getAllByRole("button").map((b) => b.getAttribute("aria-label"));
+      expect(names[0]).toBe("Reject");
+      expect(names[1]).toMatch(/^Mark (Processing|Paid)$/);
+    }
+  });
+
   it("is just a title and the payouts that still need an admin", () => {
     renderView();
     const card = panel("Payouts");

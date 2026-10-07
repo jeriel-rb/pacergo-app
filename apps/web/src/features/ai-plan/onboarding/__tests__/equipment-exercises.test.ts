@@ -16,7 +16,7 @@ import {
 } from "../equipment-exercises";
 
 describe("exercise → equipment mapping", () => {
-  it("maps every one of the 302 exercises without throwing", () => {
+  it("maps every illustrated exercise without throwing", () => {
     for (const e of EXERCISE_CATALOG) expect(() => providersOf(e), e.slug).not.toThrow();
   });
 
@@ -69,6 +69,6 @@ describe("gym type availability", () => {
       availableExercises([], gym).some((e) => e.slug === "skierg");
     expect(skierg("large_gym")).toBe(isCardioAvailable("large_gym", "ski_erg"));
     expect(skierg("small_gym")).toBe(false);
-    expect(availableExercises([], "bodyweight_only").some((e) => e.slug === "hiking")).toBe(true);
+    expect(availableExercises([], "bodyweight_only").some((e) => e.slug === "jump-rope")).toBe(true);
   });
 });

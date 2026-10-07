@@ -139,13 +139,11 @@ export const CARDIO_CATALOG: readonly {
   { id: "ski_erg", category: "gym_equipment" },
   { id: "battle_ropes", category: "gym_equipment" },
   { id: "cycling", category: "outdoor_and_bodyweight" },
-  { id: "hiking", category: "outdoor_and_bodyweight" },
-  { id: "swimming", category: "outdoor_and_bodyweight" },
   { id: "jump_rope", category: "outdoor_and_bodyweight" },
 ] as const;
 
 /** Gym cardio equipment each gym type typically has. Outdoor & bodyweight
- *  cardio (cycling, hiking, swimming, jump rope) isn't tied to a gym, so it's
+ *  cardio (cycling, jump rope) isn't tied to a gym, so it's
  *  available for every gym type — see `isCardioAvailable`. */
 export const CARDIO_PRESETS: Record<OnboardingGymType, readonly OnboardingCardioType[]> = {
   large_gym: [

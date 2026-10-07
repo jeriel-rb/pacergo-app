@@ -1614,29 +1614,6 @@
     ]
   },
   {
-    "slug": "chest-dip",
-    "name": "Chest Dip",
-    "frames": [
-      {
-        "index": 1,
-        "path": "chest-dip/frame-1.svg",
-        "attribution": {
-          "creator": "Bryl Lim",
-          "creatorUrl": "https://bryllim.com",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
-          "source": {
-            "name": "Everkinetic",
-            "url": "https://github.com/everkinetic/data/blob/main/dist/svg/0054-tension.svg",
-            "license": "CC BY-SA 4.0",
-            "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
-            "changes": "Rasterized on a transparent 512 × 512 canvas, recolored for monochrome display, and vector-traced."
-          }
-        }
-      }
-    ]
-  },
-  {
     "slug": "weighted-dip",
     "name": "Weighted Dip",
     "frames": [
@@ -2660,29 +2637,6 @@
     ]
   },
   {
-    "slug": "donkey-calf-raise",
-    "name": "Donkey Calf Raise",
-    "frames": [
-      {
-        "index": 1,
-        "path": "donkey-calf-raise/frame-1.svg",
-        "attribution": {
-          "creator": "Bryl Lim",
-          "creatorUrl": "https://bryllim.com",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
-          "source": {
-            "name": "Everkinetic",
-            "url": "https://github.com/everkinetic/data/blob/main/dist/svg/0275-tension.svg",
-            "license": "CC BY-SA 4.0",
-            "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
-            "changes": "Rasterized on a transparent 512 × 512 canvas, recolored for monochrome display, and vector-traced."
-          }
-        }
-      }
-    ]
-  },
-  {
     "slug": "leg-press-calf-raise",
     "name": "Leg Press Calf Raise",
     "frames": [
@@ -3364,22 +3318,6 @@
     ]
   },
   {
-    "slug": "swimming",
-    "name": "Swimming",
-    "frames": [
-      {
-        "index": 1,
-        "path": "swimming/frame-1.svg",
-        "attribution": {
-          "creator": "Bryl Lim",
-          "creatorUrl": "https://bryllim.com",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
-        }
-      }
-    ]
-  },
-  {
     "slug": "jump-rope",
     "name": "Jump Rope",
     "frames": [
@@ -3418,22 +3356,6 @@
       {
         "index": 1,
         "path": "skierg/frame-1.svg",
-        "attribution": {
-          "creator": "Bryl Lim",
-          "creatorUrl": "https://bryllim.com",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
-        }
-      }
-    ]
-  },
-  {
-    "slug": "hiking",
-    "name": "Hiking",
-    "frames": [
-      {
-        "index": 1,
-        "path": "hiking/frame-1.svg",
         "attribution": {
           "creator": "Bryl Lim",
           "creatorUrl": "https://bryllim.com",
@@ -4420,22 +4342,6 @@
     ]
   },
   {
-    "slug": "banded-frog-pump",
-    "name": "Banded Frog Pump",
-    "frames": [
-      {
-        "index": 1,
-        "path": "banded-frog-pump/frame-1.svg",
-        "attribution": {
-          "creator": "Bryl Lim",
-          "creatorUrl": "https://bryllim.com",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
-        }
-      }
-    ]
-  },
-  {
     "slug": "banded-clamshell",
     "name": "Banded Clamshell",
     "frames": [
@@ -5092,44 +4998,12 @@
     ]
   },
   {
-    "slug": "fast-feet",
-    "name": "Fast Feet",
-    "frames": [
-      {
-        "index": 1,
-        "path": "fast-feet/frame-1.svg",
-        "attribution": {
-          "creator": "Bryl Lim",
-          "creatorUrl": "https://bryllim.com",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
-        }
-      }
-    ]
-  },
-  {
     "slug": "sprawl",
     "name": "Sprawl",
     "frames": [
       {
         "index": 1,
         "path": "sprawl/frame-1.svg",
-        "attribution": {
-          "creator": "Bryl Lim",
-          "creatorUrl": "https://bryllim.com",
-          "license": "CC BY-SA 4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
-        }
-      }
-    ]
-  },
-  {
-    "slug": "seal-jack",
-    "name": "Seal Jack",
-    "frames": [
-      {
-        "index": 1,
-        "path": "seal-jack/frame-1.svg",
         "attribution": {
           "creator": "Bryl Lim",
           "creatorUrl": "https://bryllim.com",

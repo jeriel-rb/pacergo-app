@@ -8,10 +8,19 @@ import zh from "@/locales/zh/plan.json";
 import { libraryKey } from "../library-filter";
 
 const ART_DIR = path.resolve(__dirname, "../../../../../public/exercise-art");
+const INIT_SQL = path.resolve(__dirname, "../../../../../../../backend/migrations/0001_init.sql");
+
+function catalogSql(): string {
+  const init = fs.readFileSync(INIT_SQL, "utf8");
+  const start = init.indexOf("-- BEGIN ai_plan_exercises");
+  const end = init.indexOf("-- END ai_plan_exercises");
+  if (start < 0 || end < 0) throw new Error("exercise catalog block missing from 0001_init.sql");
+  return init.slice(start, end);
+}
 
 describe("exercise library content", () => {
-  it("uses all 302 workout-guide exercises", () => {
-    expect(EXERCISE_CATALOG).toHaveLength(302);
+  it("uses the illustrated workout-guide exercises", () => {
+    expect(EXERCISE_CATALOG).toHaveLength(295);
   });
 
   it("has its static illustration on disk for every exercise", () => {
@@ -41,10 +50,7 @@ describe("exercise library content", () => {
   });
 
   it("labels every muscle group used by the seeded plan exercises", () => {
-    const seed = fs.readFileSync(
-      path.resolve(__dirname, "../../../../../../../backend/seeds/03_ai_plan_exercises.sql"),
-      "utf8",
-    );
+    const seed = catalogSql();
     const keys = new Set<string>();
     for (const line of seed.split("\n").filter((l) => l.startsWith("('"))) {
       // The first array in each row is muscle_groups.
@@ -60,10 +66,7 @@ describe("exercise library content", () => {
   });
 
   it("seeds one row per catalog exercise, keyed by catalog slug, with the carried-over content", () => {
-    const seed = fs.readFileSync(
-      path.resolve(__dirname, "../../../../../../../backend/seeds/03_ai_plan_exercises.sql"),
-      "utf8",
-    );
+    const seed = catalogSql();
     const rows = seed.split("\n").filter((l) => l.startsWith("('"));
     expect(rows).toHaveLength(EXERCISE_CATALOG.length);
     const slugs = rows.map((l) => /^\('([a-z-]+)'/.exec(l)![1]);

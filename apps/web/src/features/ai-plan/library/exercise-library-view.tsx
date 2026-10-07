@@ -70,7 +70,7 @@ export function ExerciseLibraryView() {
   React.useEffect(() => setLimit(PAGE_SIZE), [filters]);
 
   // Load the next page as the sentinel nears the viewport, so we never mount
-  // (and fetch art for) all 302 cards at once.
+  // (and fetch art for) every card at once.
   const sentinel = React.useRef<HTMLDivElement | null>(null);
   const hasMore = limit < results.length;
   React.useEffect(() => {

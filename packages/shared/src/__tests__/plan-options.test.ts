@@ -164,9 +164,9 @@ describe("goal, obstacle and the options that shape volume", () => {
 
   it("goal sets the rep range", () => {
     expect(repsOf(make({ goal: "lose_weight" }))).toBe("12-15");
-    expect(repsOf(make({ goal: "build_muscle" }, { experience: "advanced" }))).toBe("6-10");
-    expect(repsOf(make({ goal: "build_muscle" }, { experience: "beginner" }))).toBe("10-12");
-    expect(repsOf(make({ goal: "stay_healthy" }, { experience: "intermediate" }))).toBe("8-12");
+    expect(repsOf(make({ goal: "build_muscle" }, { experience: "advanced" }))).toBe("8-10");
+    expect(repsOf(make({ goal: "build_muscle" }, { experience: "beginner" }))).toBe("12-15");
+    expect(repsOf(make({ goal: "stay_healthy" }, { experience: "intermediate" }))).toBe("10-12");
   });
 
   it("experience sets the number of sets", () => {

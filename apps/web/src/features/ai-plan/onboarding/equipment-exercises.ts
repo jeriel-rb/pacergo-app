@@ -8,7 +8,7 @@ import {
 import { EXERCISE_CATALOG, type ExerciseCatalogEntry } from "@/shared/assets/exercise-catalog";
 
 /**
- * Which onboarding equipment / cardio type each of the 302 illustrated
+ * Which onboarding equipment / cardio type each illustrated
  * exercises needs. This is what lets the Equipment and Cardio pickers show
  * "N exercises" per item, and lets every gym type (Large / Small / Garage /
  * Bodyweight) work out which exercises it can do.
@@ -70,7 +70,6 @@ const EQUIPMENT_OVERRIDES: Record<string, OnboardingEquipment> = {
   "lying-leg-curl": "lying_leg_curl_machine",
   "standing-calf-raise": "calf_machine",
   "seated-calf-raise": "calf_machine",
-  "donkey-calf-raise": "calf_machine",
   "preacher-curl": "preacher_bench",
   "smith-machine-bench-press": "smith_machine",
   "smith-machine-squat": "smith_machine",
@@ -100,7 +99,6 @@ const EQUIPMENT_OVERRIDES: Record<string, OnboardingEquipment> = {
   "hanging-leg-raise": "pull_up_bar",
   "inverted-row": "squat_rack",
   dip: "dip_station",
-  "chest-dip": "dip_station",
   "weighted-dip": "dip_station",
   "ab-wheel": "ab_wheel",
   "back-extension": "back_extension_bench",
@@ -117,11 +115,9 @@ const CARDIO_PROVIDERS: Record<string, OnboardingCardioType[]> = {
   rowing: ["rowing"],
   "stair-climber": ["stair_climber"],
   elliptical: ["elliptical"],
-  swimming: ["swimming"],
   "jump-rope": ["jump_rope"],
   "assault-bike": ["air_bike"],
   skierg: ["ski_erg"],
-  hiking: ["hiking"],
   "battle-ropes": ["battle_ropes"],
 };
 
@@ -192,7 +188,7 @@ export function availableExercises(
   });
 }
 
-/** How many of the 302 exercises each gym type can do with its default kit. */
+/** How many illustrated exercises each gym type can do with its default kit. */
 export function exerciseCountForGymType(gymType: OnboardingGymType): number {
   return availableExercises(EQUIPMENT_PRESETS[gymType], gymType).length;
 }

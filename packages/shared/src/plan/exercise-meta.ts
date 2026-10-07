@@ -82,7 +82,7 @@ export const ISOLATION_SLUGS: ReadonlySet<string> = new Set([
   "single-arm-dumbbell-tricep-extension", "tricep-kickback",
   // legs / glutes
   "leg-extension", "leg-curl", "seated-leg-curl", "lying-leg-curl", "standing-calf-raise",
-  "seated-calf-raise", "donkey-calf-raise", "leg-press-calf-raise", "calf-raise", "single-leg-calf-raise",
+  "seated-calf-raise", "leg-press-calf-raise", "calf-raise", "single-leg-calf-raise",
   "hip-abduction-machine", "hip-adduction-machine", "cable-kickback", "machine-glute-kickback",
   "cable-standing-hip-abduction", "cable-standing-hip-adduction",
   // back / core
@@ -146,7 +146,7 @@ export const FOUNDATIONAL_SLUGS: ReadonlySet<string> = new Set([
 /** Tier 3 — demanding, technical or awkward to set up. The elite calisthenics
  *  skills above are always tier 3 too. */
 export const CHALLENGING_SLUGS: ReadonlySet<string> = new Set([
-  "decline-bench-press", "decline-dumbbell-press", "chest-dip", "dip",
+  "decline-bench-press", "decline-dumbbell-press", "dip",
   "upright-row", "push-press", "feet-elevated-pike-push-up", "wall-walk",
   "deadlift", "sumo-deadlift", "good-morning", "single-leg-romanian-deadlift", "landmine-romanian-deadlift",
   "pendlay-row", "meadows-row", "rack-pull", "skierg",
@@ -156,7 +156,6 @@ export const CHALLENGING_SLUGS: ReadonlySet<string> = new Set([
   "front-foot-elevated-split-squat", "jump-squat", "assisted-pistol-squat", "cossack-squat", "skater-squat",
   "single-leg-box-squat",
   "deficit-reverse-lunge", "dumbbell-curtsy-lunge", "kettlebell-swing", "hip-airplane",
-  "donkey-calf-raise",
   "hanging-leg-raise", "ab-wheel", "weighted-russian-twist", "v-up", "squat-thrust", "burpee", "sprawl",
   "skater-hop",
 ]);

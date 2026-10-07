@@ -10,13 +10,11 @@ import {
 } from "../onboarding/onboarding-types";
 import type { Bi } from "./plan-types";
 import { recommendSplit } from "./split-recommendation";
-import { experienceFit } from "./exercise-fit";
+import { compareForLevel, restrictToLevel } from "./exercise-fit";
 import { isAiEligible } from "./exercise-qa";
 import {
-  DIFFICULTY_LIMITS,
   ISOLATION_SLUGS,
   LOW_PRIORITY_ISOLATION_SLUGS,
-  exerciseDifficulty,
   repsForExercise,
   suitsExperience,
 } from "./exercise-meta";
@@ -70,7 +68,7 @@ const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 7;
+export const PLAN_RULES_VERSION = 10;
 
 /** Extra sets on main lifts as the weeks go on (progressive overload): weeks 1–2
  *  as prescribed, weeks 3–4 one set more. Kept off for people who are short on
@@ -108,8 +106,8 @@ const SETS_REPS_BY_EXPERIENCE: Record<
 > = {
   no_experience: { sets: 2, reps: "12-15" },
   beginner: { sets: 2, reps: "12-15" },
-  intermediate: { sets: 3, reps: "8-12" },
-  advanced: { sets: 4, reps: "6-10" },
+  intermediate: { sets: 3, reps: "10-12" },
+  advanced: { sets: 4, reps: "8-10" },
 };
 
 // Catalog slugs (kebab-case) of the exercise library.
@@ -283,9 +281,7 @@ function repsFor(
 ): string {
   if (obstacle === "injuries") return "12-15"; // lighter loads, more reps
   if (goal === "lose_weight") return "12-15";
-  if (goal === "build_muscle") {
-    return experience === "advanced" ? "6-10" : experience === "intermediate" ? "8-12" : "10-12";
-  }
+  if (goal === "build_muscle") return SETS_REPS_BY_EXPERIENCE[experience].reps;
   return SETS_REPS_BY_EXPERIENCE[experience].reps;
 }
 
@@ -353,15 +349,10 @@ function isAvailable(e: ExerciseRecord, gymType: string, selected: ReadonlySet<s
 }
 
 /** The eligible exercise pool for one session focus, best first. Equipment is
- *  a hard filter (applied before anything is ranked or picked), and so is
- *  difficulty: beginners only get foundational (tier 1) moves, intermediates
- *  tier 1–2, advanced lifters everything. Only when that leaves fewer than
- *  `count` exercises (e.g. a bodyweight-only setup) is the ceiling raised one
- *  tier at a time, up to the level's maximum — a beginner never reaches tier 3.
- *  Experience then ranks what's left, so an advanced lifter's loaded compound
- *  lifts come ahead of band or beginner bodyweight variants of the same muscle.
- *  A missing machine is substituted naturally: other exercises for the same
- *  main muscle stay in the pool. */
+ *  a hard filter. Experience then drops setups that are needlessly hard while
+ *  an easier one exists for that muscle, and orders what remains: pattern
+ *  before isolation, the level's preferred setup, then a staple list. A
+ *  missing machine is substituted by the next rung for that muscle only. */
 function poolFor(
   exercises: readonly ExerciseRecord[],
   gymType: string,
@@ -371,14 +362,8 @@ function poolFor(
   priority: ReadonlySet<string>,
   lowImpact: boolean,
   experience: NonNullable<TrainingPreferencesAnswers["experience"]>,
-  count: number,
 ): ExerciseRecord[] {
-  const { start, max } = DIFFICULTY_LIMITS[experience];
-  let pool = rankedPool(exercises, gymType, selected, muscleGroups, excluded, priority, lowImpact, experience, start);
-  for (let ceiling = start + 1; pool.length < count && ceiling <= max; ceiling++) {
-    pool = rankedPool(exercises, gymType, selected, muscleGroups, excluded, priority, lowImpact, experience, ceiling);
-  }
-  return pool;
+  return rankedPool(exercises, gymType, selected, muscleGroups, excluded, priority, lowImpact, experience);
 }
 
 function rankedPool(
@@ -390,28 +375,22 @@ function rankedPool(
   priority: ReadonlySet<string>,
   lowImpact: boolean,
   experience: NonNullable<TrainingPreferencesAnswers["experience"]>,
-  maxDifficulty: number,
 ): ExerciseRecord[] {
-  return exercises
-    .filter(
-      (e) =>
-        isAvailable(e, gymType, selected) &&
-        suitsExperience(e.slug, experience) &&
-        exerciseDifficulty(e.slug) <= maxDifficulty &&
-        // An exercise belongs to the focus its main (first-listed) muscle is in.
-        muscleGroups.includes(e.muscleGroups[0] ?? "") &&
-        !hitsExcluded(e, excluded) &&
-        !(lowImpact && HIGH_IMPACT.test(e.slug)),
-    )
-    .sort(
-      (a, b) =>
-        // Prioritized muscles first, then fit for the training level, then
-        // exercises with written instructions, then a stable slug order.
-        priorityScore(b, priority) - priorityScore(a, priority) ||
-        experienceFit(b, experience) - experienceFit(a, experience) ||
-        Number(b.hasInstructions === true) - Number(a.hasInstructions === true) ||
-        a.slug.localeCompare(b.slug),
-    );
+  const available = exercises.filter(
+    (e) =>
+      isAvailable(e, gymType, selected) &&
+      suitsExperience(e.slug, experience) &&
+      // An exercise belongs to the focus its main (first-listed) muscle is in.
+      muscleGroups.includes(e.muscleGroups[0] ?? "") &&
+      !hitsExcluded(e, excluded) &&
+      !(lowImpact && HIGH_IMPACT.test(e.slug)),
+  );
+  return restrictToLevel(available, experience).sort(
+    (a, b) =>
+      priorityScore(b, priority) - priorityScore(a, priority) ||
+      compareForLevel(a, b, experience) ||
+      Number(b.hasInstructions === true) - Number(a.hasInstructions === true),
+  );
 }
 
 function byslugs(exercises: readonly ExerciseRecord[], slugs: readonly string[]): ExerciseRecord[] {
@@ -486,8 +465,11 @@ export function generateTrainingPlan(input: {
     (e) => stretchSlugs.has(e.slug) && isAvailable(e, gymType, selectedEquipment),
   );
   const cooldownCount = durationMin <= 30 || answers.obstacle === "lack_of_time" ? 3 : 4;
-  // Jump rope is dropped in low-impact mode.
-  const cardioTypes = gymEquipment.cardioTypes.filter((c) => !(lowImpact && c === "jump_rope"));
+  // Jump rope is dropped in low-impact mode. A saved answer for a cardio type
+  // that is no longer in the catalog (hiking, swimming) is skipped.
+  const cardioTypes = gymEquipment.cardioTypes.filter(
+    (c) => cardioTypeToSlug(c) !== null && !(lowImpact && c === "jump_rope"),
+  );
 
   /** One week's seven days. Every day sharing a focus gets identical content
    *  within the week (deterministic, and no re-deriving the same pool); how much
@@ -509,7 +491,7 @@ export function generateTrainingPlan(input: {
         // Sessions that train a prioritized muscle get one extra exercise.
         const worksPriority = FOCUS_MUSCLES[focus].some((m) => priority.has(m));
         const count = Math.min(7, mainCount + (worksPriority ? 1 : 0));
-        const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact, experience, count);
+        const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact, experience);
         const muscleOrder = [
           ...FOCUS_MUSCLES[focus].filter((m) => priority.has(m)),
           ...FOCUS_MUSCLES[focus].filter((m) => !priority.has(m)),
@@ -535,7 +517,8 @@ export function generateTrainingPlan(input: {
         let cardio: GeneratedCardioBlock | null = null;
         if (gymEquipment.addCardio && cardioTypes.length > 0) {
           const cardioSlug = cardioTypes[trainingDayCounter % cardioTypes.length]!;
-          const cardioExercise = exercises.find((e) => e.slug === cardioTypeToSlug(cardioSlug));
+          const mapped = cardioTypeToSlug(cardioSlug);
+          const cardioExercise = mapped ? exercises.find((e) => e.slug === mapped) : undefined;
           if (cardioExercise) {
             cardio = {
               placement: gymEquipment.cardioPlacement,
@@ -576,8 +559,9 @@ export function generateTrainingPlan(input: {
   return { weeks, sessionDurationMin: durationMin, rulesVersion: PLAN_RULES_VERSION };
 }
 
-/** Cardio type ids (onboarding) → catalog exercise slugs. */
-function cardioTypeToSlug(cardioType: string): string {
+/** Cardio type ids (onboarding) → catalog exercise slugs. Unknown ids (older
+ *  saved answers for exercises that left the catalog) are ignored. */
+function cardioTypeToSlug(cardioType: string): string | null {
   const map: Record<string, string> = {
     air_bike: "assault-bike",
     cycling: "cycling",
@@ -589,8 +573,6 @@ function cardioTypeToSlug(cardioType: string): string {
     stair_climber: "stair-climber",
     ski_erg: "skierg",
     battle_ropes: "battle-ropes",
-    swimming: "swimming",
-    hiking: "hiking",
   };
-  return map[cardioType] ?? cardioType;
+  return map[cardioType] ?? null;
 }

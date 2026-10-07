@@ -84,7 +84,6 @@ describe("difficulty by experience level", () => {
   const rank = (slug: string) => exerciseDifficulty(slug);
   const calves = [
     rec("standing-calf-raise", ["calves"], ["calf_machine"]),
-    rec("donkey-calf-raise", ["calves"], ["calf_machine"]),
   ];
   const DIFFICULTY_LIB = [
     ...LIB,
@@ -125,23 +124,24 @@ describe("difficulty by experience level", () => {
       exercises: DIFFICULTY_LIB,
     });
 
-  it("classifies the donkey calf raise as challenging and the standing calf raise as foundational", () => {
-    expect(rank("donkey-calf-raise")).toBe(3);
+  it("classifies a pull-up as challenging and the standing calf raise as foundational", () => {
+    expect(rank("pull-up")).toBe(3);
     expect(rank("standing-calf-raise")).toBe(1);
     expect(rank("some-new-unreviewed-move")).toBe(2);
   });
 
-  it("gives beginners only foundational moves, in every week, even with dynamic variety", () => {
+  it("keeps beginners on machines and cables when those are available", () => {
     for (const level of ["no_experience", "beginner"] as const) {
       const slugs = everything(withKit(level, "dynamic")).map((e) => e.slug);
-      expect(slugs.length).toBeGreaterThan(0);
-      for (const slug of slugs) expect(rank(slug), `${level}: ${slug}`).toBe(1);
-      expect(slugs).not.toContain("donkey-calf-raise");
+      expect(slugs).toContain("machine-chest-press");
+      expect(slugs).toContain("leg-press");
+      expect(slugs).not.toContain("bench-press");
       expect(slugs).not.toContain("pull-up");
+      expect(slugs).not.toContain("squat");
     }
   });
 
-  it("only stretches beginners to tier 2 when too few foundational moves fit, never to tier 3", () => {
+  it("uses a pull-up only when a beginner has no easier lat exercise", () => {
     const thin = [rec("push-up", ["chest"]), rec("pike-push-up", ["shoulders"]), rec("pull-up", ["lats"], ["pull_up_bar"])];
     const p = generateTrainingPlan({
       answers: { ...ONBOARDING_ANSWERS_DEFAULT, goal: "build_muscle" },
@@ -151,22 +151,23 @@ describe("difficulty by experience level", () => {
     });
     const slugs = everything(p).map((e) => e.slug);
     expect(slugs).toContain("pike-push-up");
-    expect(slugs).not.toContain("pull-up");
+    expect(slugs).toContain("push-up");
+    expect(slugs).toContain("pull-up");
   });
 
-  it("keeps the standing calf raise for a beginner and the hardest calf work for no one below advanced", () => {
+  it("keeps the standing calf raise for a beginner", () => {
     expect(everything(withKit("beginner", "fixed")).map((e) => e.slug)).toContain("standing-calf-raise");
-    expect(everything(withKit("intermediate", "dynamic")).map((e) => e.slug)).not.toContain("donkey-calf-raise");
   });
 
-  it("gives intermediates a mix that leans harder than beginners, and advanced the hardest", () => {
-    const avg = (level: OnboardingExperience) => {
-      const d = everything(withKit(level, "fixed")).map((e) => rank(e.slug));
-      return d.reduce((a, b) => a + b, 0) / d.length;
-    };
-    expect(avg("beginner")).toBe(1);
-    expect(avg("intermediate")).toBeGreaterThan(avg("beginner"));
-    expect(avg("advanced")).toBeGreaterThanOrEqual(avg("intermediate"));
+  it("leads each level with a different kind of lift, not the same list", () => {
+    const lead = (level: OnboardingExperience, focus: string) =>
+      withKit(level, "fixed").weeks[0]!.days.find((d) => d.session?.focus === focus)!.session!.main[0]!.slug;
+    expect(lead("beginner", "push")).toBe("machine-chest-press");
+    expect(lead("beginner", "legs")).toBe("leg-press");
+    expect(lead("intermediate", "push")).toBe("bench-press");
+    expect(lead("advanced", "push")).toBe("bench-press");
+    expect(lead("advanced", "legs")).toBe("squat");
+    expect(lead("beginner", "push")).not.toBe(lead("advanced", "push"));
   });
 });
 
@@ -180,7 +181,7 @@ describe("per-exercise prescription", () => {
   it("trains single-joint work in a higher rep range than the heavy lifts", () => {
     const push = day(plan("advanced"), "push").main;
     const bySlug = Object.fromEntries(push.map((e) => [e.slug, e.reps]));
-    expect(bySlug["bench-press"]).toBe("6-10");
+    expect(bySlug["bench-press"]).toBe("8-10");
     for (const slug of ISOLATION_SLUGS) if (bySlug[slug]) expect(bySlug[slug], slug).toBe("10-15");
     expect(repsForExercise("lateral-raise", "6-10", "lose_weight")).toBe("12-15");
   });

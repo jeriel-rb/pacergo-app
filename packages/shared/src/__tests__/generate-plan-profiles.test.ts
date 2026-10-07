@@ -201,7 +201,7 @@ describe("goal, experience and obstacle drive the prescription", () => {
     const compoundReps = (p: Profile) => firstMain(plan(p))[0]!.reps; // the lead lift is a compound
     expect(compoundReps({ answers: { goal: "lose_weight" } })).toBe("12-15");
     expect(compoundReps({ answers: { goal: "build_muscle", obstacle: "injuries" } })).toBe("12-15");
-    expect(compoundReps({ answers: { goal: "build_muscle" }, prefs: { experience: "advanced" } })).toBe("6-10");
+    expect(compoundReps({ answers: { goal: "build_muscle" }, prefs: { experience: "advanced" } })).toBe("8-10");
   });
 
   it("progressive overload: +1 set in weeks 3–4, except for lack_of_time and injuries", () => {

@@ -1,8 +1,8 @@
 /**
- * Builds backend/seeds/03_ai_plan_exercises.sql from the single exercise
- * catalog (see generate-exercises-seed.mjs, which bundles and runs this).
+ * Builds the exercise catalog block inside backend/migrations/0001_init.sql
+ * (see generate-exercises-seed.mjs, which bundles and runs this).
  *
- * One `exercises` row per catalog exercise (all 302):
+ * One `exercises` row per catalog exercise:
  *  - identity   ← exercise-catalog.json (name, muscles, equipment) + zh name
  *  - rules      ← computed: which onboarding equipment unlocks it, which gym
  *                 types can do it, which muscle groups the plan should count
@@ -77,9 +77,7 @@ const CONDITIONING = new Set([
   "jumping-jack",
   "skater-hop",
   "lateral-shuffle",
-  "fast-feet",
   "sprawl",
-  "seal-jack",
   "mountain-climber",
   "plank-jack",
   "bear-crawl",
@@ -141,6 +139,7 @@ export function renderSeedSql(): string {
 
   return `-- AI Plan exercise library — GENERATED, do not edit by hand.
 -- Regenerate with:  node apps/web/scripts/generate-exercises-seed.mjs
+-- This block is the catalog load. It lives at the end of 0001_init.sql.
 --
 -- One row per illustrated exercise (${EXERCISE_CATALOG.length}), keyed by the catalog slug (kebab-case),
 -- built from:
@@ -148,8 +147,6 @@ export function renderSeedSql(): string {
 --   apps/web/src/shared/assets/exercise-names.zh.json  Traditional Chinese names
 --   apps/web/src/shared/assets/exercise-content.json   steps + tips (${withContent} of ${EXERCISE_CATALOG.length} written so far)
 -- and the equipment rules in features/ai-plan/onboarding/equipment-exercises.ts.
---
--- Needs the equipment column, which 0001_init.sql defines on the exercises table.
 --
 -- Columns:
 --   muscle_groups       the plan generator's muscle vocabulary (push/pull/legs pools)

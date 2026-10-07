@@ -431,8 +431,6 @@ export type OnboardingCardioType =
   | "ski_erg"
   | "battle_ropes"
   | "cycling"
-  | "hiking"
-  | "swimming"
   | "jump_rope";
 
 export const ONBOARDING_CARDIO_TYPES: readonly OnboardingCardioType[] = [
@@ -445,8 +443,6 @@ export const ONBOARDING_CARDIO_TYPES: readonly OnboardingCardioType[] = [
   "ski_erg",
   "battle_ropes",
   "cycling",
-  "hiking",
-  "swimming",
   "jump_rope",
 ] as const;
 

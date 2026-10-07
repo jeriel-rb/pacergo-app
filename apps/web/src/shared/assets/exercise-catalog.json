@@ -810,17 +810,6 @@
     "isStretch": false
   },
   {
-    "slug": "chest-dip",
-    "name": "Chest Dip",
-    "equipment": "Bodyweight",
-    "primaryMuscle": "Chest",
-    "secondaryMuscles": [
-      "Triceps",
-      "Shoulders"
-    ],
-    "isStretch": false
-  },
-  {
     "slug": "weighted-dip",
     "name": "Weighted Dip",
     "equipment": "Bodyweight",
@@ -1469,14 +1458,6 @@
     "isStretch": false
   },
   {
-    "slug": "donkey-calf-raise",
-    "name": "Donkey Calf Raise",
-    "equipment": "Machine",
-    "primaryMuscle": "Calves",
-    "secondaryMuscles": [],
-    "isStretch": false
-  },
-  {
     "slug": "leg-press-calf-raise",
     "name": "Leg Press Calf Raise",
     "equipment": "Machine",
@@ -1835,17 +1816,6 @@
     "isStretch": false
   },
   {
-    "slug": "swimming",
-    "name": "Swimming",
-    "equipment": "Cardio",
-    "primaryMuscle": "Back",
-    "secondaryMuscles": [
-      "Shoulders",
-      "Cardio"
-    ],
-    "isStretch": false
-  },
-  {
     "slug": "jump-rope",
     "name": "Jump Rope",
     "equipment": "Cardio",
@@ -1875,17 +1845,6 @@
     "secondaryMuscles": [
       "Triceps",
       "Core",
-      "Cardio"
-    ],
-    "isStretch": false
-  },
-  {
-    "slug": "hiking",
-    "name": "Hiking",
-    "equipment": "Cardio",
-    "primaryMuscle": "Legs",
-    "secondaryMuscles": [
-      "Glutes",
       "Cardio"
     ],
     "isStretch": false
@@ -2592,16 +2551,6 @@
     "isStretch": false
   },
   {
-    "slug": "banded-frog-pump",
-    "name": "Banded Frog Pump",
-    "equipment": "Resistance Band",
-    "primaryMuscle": "Glutes",
-    "secondaryMuscles": [
-      "Hamstrings"
-    ],
-    "isStretch": false
-  },
-  {
     "slug": "banded-clamshell",
     "name": "Banded Clamshell",
     "equipment": "Resistance Band",
@@ -3050,17 +2999,6 @@
     "isStretch": false
   },
   {
-    "slug": "fast-feet",
-    "name": "Fast Feet",
-    "equipment": "Bodyweight",
-    "primaryMuscle": "Calves",
-    "secondaryMuscles": [
-      "Legs",
-      "Cardio"
-    ],
-    "isStretch": false
-  },
-  {
     "slug": "sprawl",
     "name": "Sprawl",
     "equipment": "Bodyweight",
@@ -3068,18 +3006,6 @@
     "secondaryMuscles": [
       "Core",
       "Shoulders",
-      "Cardio"
-    ],
-    "isStretch": false
-  },
-  {
-    "slug": "seal-jack",
-    "name": "Seal Jack",
-    "equipment": "Bodyweight",
-    "primaryMuscle": "Chest",
-    "secondaryMuscles": [
-      "Shoulders",
-      "Legs",
       "Cardio"
     ],
     "isStretch": false

@@ -29,6 +29,7 @@ export function CardioPicker({
   onToggle: (cardio: OnboardingCardioType) => void;
 }) {
   const { t } = useTranslation("onboarding");
+  const selectedCount = selected.filter((id) => CARDIO_CATALOG.some((c) => c.id === id)).length;
 
   return (
     <div className="space-y-5">
@@ -54,9 +55,9 @@ export function CardioPicker({
             {t("gymEquipment.chooseCardio.selectLabel")}
           </p>
           <p className="text-xs text-muted-foreground" aria-live="polite">
-            {selected.length === 0
+            {selectedCount === 0
               ? t("gymEquipment.chooseCardio.pickAtLeastOne")
-              : t("gymEquipment.chooseCardio.selectedCount", { count: selected.length })}
+              : t("gymEquipment.chooseCardio.selectedCount", { count: selectedCount })}
           </p>
         </div>
 

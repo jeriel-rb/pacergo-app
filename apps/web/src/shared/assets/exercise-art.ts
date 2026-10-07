@@ -3,7 +3,7 @@ import { EXERCISE_CATALOG } from "./exercise-catalog";
 /**
  * Exercise/equipment line art from bryllim/workout-guide (CC BY-SA 4.0,
  * derived from Everkinetic). The files under `public/exercise-art/` are synced
- * by `apps/web/scripts/sync-exercise-art.mjs` (all 302 exercises, one static
+ * by `apps/web/scripts/sync-exercise-art.mjs` (one static
  * frame each). Attribution lives on `/credits`, linked from the Terms of Service and
  * Privacy Policy pages rather than from the art itself — keep that link when
  * touching those pages, and keep the license/attribution files in

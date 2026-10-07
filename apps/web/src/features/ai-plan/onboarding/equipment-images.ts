@@ -56,8 +56,6 @@ export const CARDIO_ART: Record<OnboardingCardioType, string> = {
   ski_erg: "skierg",
   battle_ropes: "battle-ropes",
   cycling: "cycling",
-  hiking: "hiking",
-  swimming: "swimming",
   jump_rope: "jump-rope",
 };
 

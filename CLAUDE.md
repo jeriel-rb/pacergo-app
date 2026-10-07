@@ -43,13 +43,14 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
   in, `supabase migration repair --status reverted <version>` drops the old
   history row. Do not `db reset` the linked project. Changing `0001` does not
   re-run it on a remote where `0001` is already applied.
-- **Exercises:** `backend/seeds/03_ai_plan_exercises.sql` is GENERATED — one row per
-  catalog exercise (302, kebab-case slugs). Regenerate with
+- **Exercises:** the catalog upsert is GENERATED into `backend/migrations/0001_init.sql`
+  between `-- BEGIN ai_plan_exercises` and `-- END ai_plan_exercises` (one row per
+  catalog exercise, kebab-case slugs). Regenerate with
   `node apps/web/scripts/generate-exercises-seed.mjs`; hand-written steps/tips live in
-  `apps/web/src/shared/assets/exercise-content.json`. That seed file is the only
-  catalog load (`config.toml` `[db.seed]`, on `supabase db reset`). Do not copy
-  the insert into a migration. The one-time saved-plan slug rewrite already ran
-  on the linked database and is not a migration file.
+  `apps/web/src/shared/assets/exercise-content.json`. Changing `0001` does not reload
+  the live catalog — apply that block with a one-off push, then
+  `supabase migration repair --status reverted <version>` so history stays `0001`/`0002`.
+  The one-time saved-plan slug rewrite already ran and is not a migration file.
 - **Exercise QA:** the AI only generates exercises that have instructions, a muscle
   mapping, an illustration and a QA pass. Exercises that failed QA are listed with
   reasons in `QA_EXCLUDED_EXERCISES` (`packages/shared/src/plan/exercise-qa.ts`) and

@@ -445,9 +445,7 @@
         "treadmill": "跑步機（跑步／健走）",
         "stair_climber": "登階機",
         "ski_erg": "滑雪機",
-        "battle_ropes": "戰繩",
-        "swimming": "游泳",
-        "hiking": "健行"
+        "battle_ropes": "戰繩"
       }
     },
     "creatingPlan": {

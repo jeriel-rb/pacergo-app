@@ -71,7 +71,7 @@ describe("cardio catalog", () => {
 
   it("makes outdoor cardio available everywhere and gym cardio only where it fits", () => {
     for (const gym of [...ONBOARDING_GYM_TYPES, null] as const) {
-      expect(isCardioAvailable(gym, "hiking")).toBe(true);
+      expect(isCardioAvailable(gym, "cycling")).toBe(true);
       expect(isCardioAvailable(gym, "jump_rope")).toBe(true);
     }
     expect(isCardioAvailable("large_gym", "ski_erg")).toBe(true);

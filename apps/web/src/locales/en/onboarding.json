@@ -445,9 +445,7 @@
         "treadmill": "Treadmill (Run / Walk)",
         "stair_climber": "Stair Climber",
         "ski_erg": "SkiErg",
-        "battle_ropes": "Battle Ropes",
-        "swimming": "Swimming",
-        "hiking": "Hiking"
+        "battle_ropes": "Battle Ropes"
       }
     },
     "creatingPlan": {

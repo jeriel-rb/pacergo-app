@@ -626,25 +626,6 @@
       "用前腳掌著地，避免整腳掌拍地。"
     ]
   },
-  "hiking": {
-    "nameZh": "健行",
-    "instructionsEn": [
-      "Wear supportive shoes and start at an easy walking pace.",
-      "Keep a steady pace uphill and let your arms swing naturally.",
-      "Take short breaks to drink water and enjoy the view."
-    ],
-    "instructionsZh": [
-      "穿著包覆性佳的鞋子，先以輕鬆步伐開始。",
-      "上坡時維持穩定配速，雙臂自然擺動。",
-      "適時短暫休息、補充水分。"
-    ],
-    "tipsEn": [
-      "Shorten your stride on steep sections to protect your knees."
-    ],
-    "tipsZh": [
-      "陡坡時縮小步幅，保護膝蓋。"
-    ]
-  },
   "hip-abduction-machine": {
     "nameZh": "髖外展機",
     "instructionsEn": [
@@ -1443,25 +1424,6 @@
       "抬到舒適的範圍即可，不要勉強過度後仰。"
     ]
   },
-  "swimming": {
-    "nameZh": "游泳",
-    "instructionsEn": [
-      "Warm up with a few easy lengths at a relaxed pace.",
-      "Swim at a steady pace using the stroke you are most comfortable with.",
-      "Finish with a slow cool-down length or two."
-    ],
-    "instructionsZh": [
-      "先以輕鬆的速度游幾趟暖身。",
-      "以自己最熟悉的泳姿，維持穩定配速。",
-      "最後放慢速度游一兩趟收操。"
-    ],
-    "tipsEn": [
-      "Breathe rhythmically — do not hold your breath."
-    ],
-    "tipsZh": [
-      "保持規律換氣，不要憋氣。"
-    ]
-  },
   "tricep-kickback": {
     "nameZh": "啞鈴三頭後踢",
     "instructionsEn": [
@@ -2182,25 +2144,6 @@
     ],
     "tipsZh": [
       "對肩膀較友善的推舉，保持肋骨向下收緊。"
-    ]
-  },
-  "chest-dip": {
-    "nameZh": "胸部雙槓撐體",
-    "instructionsEn": [
-      "Support yourself on parallel bars and lean your torso forward.",
-      "Lower until your upper arms are parallel to the floor, elbows flared slightly.",
-      "Press back up."
-    ],
-    "instructionsZh": [
-      "雙手撐在雙槓上，上身前傾。",
-      "下降至上臂與地面平行，手肘微微外展。",
-      "推回起始位置。"
-    ],
-    "tipsEn": [
-      "Stop lowering if your shoulders feel pinched."
-    ],
-    "tipsZh": [
-      "若肩膀有夾擠感就停止下降。"
     ]
   },
   "weighted-dip": {
@@ -3170,25 +3113,6 @@
     ],
     "tipsZh": [
       "不要甩動，用臀部發力抬起。"
-    ]
-  },
-  "donkey-calf-raise": {
-    "nameZh": "驢式提踵",
-    "instructionsEn": [
-      "Position yourself on the machine with the pad on your lower back and the balls of your feet on the edge.",
-      "Lower your heels for a full stretch.",
-      "Rise up onto your toes as high as you can."
-    ],
-    "instructionsZh": [
-      "在機台上就位，護墊壓在下背，前腳掌踩在邊緣。",
-      "放低腳跟至完全伸展。",
-      "盡量踮高腳尖。"
-    ],
-    "tipsEn": [
-      "Pause at the top and stretch fully at the bottom."
-    ],
-    "tipsZh": [
-      "頂端停頓，底部完全伸展。"
     ]
   },
   "leg-press-calf-raise": {
@@ -4768,25 +4692,6 @@
       "頂端時用力夾緊臀部。"
     ]
   },
-  "banded-frog-pump": {
-    "nameZh": "彈力帶青蛙臀推",
-    "instructionsEn": [
-      "Lie on your back with the soles of your feet together, a band above your knees.",
-      "Lift your hips by squeezing your glutes.",
-      "Lower slowly."
-    ],
-    "instructionsZh": [
-      "仰躺，雙腳腳掌相對，膝蓋上方套彈力帶。",
-      "夾緊臀部抬起髖部。",
-      "緩慢放下。"
-    ],
-    "tipsEn": [
-      "Push your knees out into the band."
-    ],
-    "tipsZh": [
-      "讓膝蓋向外推撐彈力帶。"
-    ]
-  },
   "banded-clamshell": {
     "nameZh": "彈力帶蚌殼式",
     "instructionsEn": [
@@ -5414,25 +5319,6 @@
       "保持低姿並挺胸。"
     ]
   },
-  "fast-feet": {
-    "nameZh": "快速踏步",
-    "instructionsEn": [
-      "Stand with a slight knee bend and lean forward slightly.",
-      "Rapidly tap your feet on the floor.",
-      "Stay light on the balls of your feet."
-    ],
-    "instructionsZh": [
-      "膝蓋微彎，身體略微前傾。",
-      "快速交替踏地。",
-      "用前腳掌輕盈踏地。"
-    ],
-    "tipsEn": [
-      "Quick, small steps — speed over height."
-    ],
-    "tipsZh": [
-      "步伐小而快，速度比高度重要。"
-    ]
-  },
   "sprawl": {
     "nameZh": "撲地",
     "instructionsEn": [
@@ -5450,25 +5336,6 @@
     ],
     "tipsZh": [
       "動作要快，但雙腳落在髖部下方。"
-    ]
-  },
-  "seal-jack": {
-    "nameZh": "海豹開合跳",
-    "instructionsEn": [
-      "Stand with arms out in front of you at chest height.",
-      "Jump your feet apart while swinging your arms wide.",
-      "Jump back in and bring your arms together."
-    ],
-    "instructionsZh": [
-      "站立，雙臂在胸前伸直。",
-      "雙腳跳開同時將手臂向兩側打開。",
-      "跳回併攏，手臂收回胸前。"
-    ],
-    "tipsEn": [
-      "Land softly with slightly bent knees."
-    ],
-    "tipsZh": [
-      "膝蓋微彎，輕柔落地。"
     ]
   },
   "cat-cow-stretch": {

@@ -13,8 +13,10 @@ import { recommendSplit } from "./split-recommendation";
 import { experienceFit } from "./exercise-fit";
 import { isAiEligible } from "./exercise-qa";
 import {
+  DIFFICULTY_LIMITS,
   ISOLATION_SLUGS,
   LOW_PRIORITY_ISOLATION_SLUGS,
+  exerciseDifficulty,
   repsForExercise,
   suitsExperience,
 } from "./exercise-meta";
@@ -68,7 +70,7 @@ const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 6;
+export const PLAN_RULES_VERSION = 7;
 
 /** Extra sets on main lifts as the weeks go on (progressive overload): weeks 1–2
  *  as prescribed, weeks 3–4 one set more. Kept off for people who are short on
@@ -351,10 +353,14 @@ function isAvailable(e: ExerciseRecord, gymType: string, selected: ReadonlySet<s
 }
 
 /** The eligible exercise pool for one session focus, best first. Equipment is
- *  a hard filter (applied before anything is ranked or picked); experience
- *  then ranks what's left, so an advanced lifter's loaded compound lifts come
- *  ahead of band or beginner bodyweight variants of the same muscle. A
- *  missing machine is substituted naturally: other exercises for the same
+ *  a hard filter (applied before anything is ranked or picked), and so is
+ *  difficulty: beginners only get foundational (tier 1) moves, intermediates
+ *  tier 1–2, advanced lifters everything. Only when that leaves fewer than
+ *  `count` exercises (e.g. a bodyweight-only setup) is the ceiling raised one
+ *  tier at a time, up to the level's maximum — a beginner never reaches tier 3.
+ *  Experience then ranks what's left, so an advanced lifter's loaded compound
+ *  lifts come ahead of band or beginner bodyweight variants of the same muscle.
+ *  A missing machine is substituted naturally: other exercises for the same
  *  main muscle stay in the pool. */
 function poolFor(
   exercises: readonly ExerciseRecord[],
@@ -365,12 +371,33 @@ function poolFor(
   priority: ReadonlySet<string>,
   lowImpact: boolean,
   experience: NonNullable<TrainingPreferencesAnswers["experience"]>,
+  count: number,
+): ExerciseRecord[] {
+  const { start, max } = DIFFICULTY_LIMITS[experience];
+  let pool = rankedPool(exercises, gymType, selected, muscleGroups, excluded, priority, lowImpact, experience, start);
+  for (let ceiling = start + 1; pool.length < count && ceiling <= max; ceiling++) {
+    pool = rankedPool(exercises, gymType, selected, muscleGroups, excluded, priority, lowImpact, experience, ceiling);
+  }
+  return pool;
+}
+
+function rankedPool(
+  exercises: readonly ExerciseRecord[],
+  gymType: string,
+  selected: ReadonlySet<string>,
+  muscleGroups: readonly string[],
+  excluded: ReadonlySet<string>,
+  priority: ReadonlySet<string>,
+  lowImpact: boolean,
+  experience: NonNullable<TrainingPreferencesAnswers["experience"]>,
+  maxDifficulty: number,
 ): ExerciseRecord[] {
   return exercises
     .filter(
       (e) =>
         isAvailable(e, gymType, selected) &&
         suitsExperience(e.slug, experience) &&
+        exerciseDifficulty(e.slug) <= maxDifficulty &&
         // An exercise belongs to the focus its main (first-listed) muscle is in.
         muscleGroups.includes(e.muscleGroups[0] ?? "") &&
         !hitsExcluded(e, excluded) &&
@@ -479,10 +506,10 @@ export function generateTrainingPlan(input: {
       const focus = sequence[trainingDayCounter % sequence.length]!;
       let session = sessionByFocus.get(focus);
       if (!session) {
-        const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact, experience);
         // Sessions that train a prioritized muscle get one extra exercise.
         const worksPriority = FOCUS_MUSCLES[focus].some((m) => priority.has(m));
         const count = Math.min(7, mainCount + (worksPriority ? 1 : 0));
+        const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact, experience, count);
         const muscleOrder = [
           ...FOCUS_MUSCLES[focus].filter((m) => priority.has(m)),
           ...FOCUS_MUSCLES[focus].filter((m) => !priority.has(m)),

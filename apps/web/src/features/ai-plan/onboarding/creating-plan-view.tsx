@@ -7,7 +7,7 @@ import { Check, Loader2 } from "lucide-react";
 import { generateTrainingPlan } from "@pacergo/shared";
 import { cn } from "@/lib/utils";
 import { fetchAllExercises } from "@/lib/exercises";
-import { saveTrainingPlan } from "@/lib/plans";
+import { beginPlanGeneration, saveTrainingPlan } from "@/lib/plans";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 
 const DURATION_MS = 4500;
@@ -75,14 +75,21 @@ export function CreatingPlanView() {
     // Generate, then save straight to the account: the profile (incl. the
     // selected equipment list) and the plan, which becomes the active plan.
     // Nothing depends on a later "save" tap, so leaving now can't lose it.
+    // The profile is saved first (a fresh start holds its answers in memory
+    // until now), then the build is marked started: if the tab closes before
+    // the plan lands, /ai-plan resumes here from that saved profile instead of
+    // showing "no plan"; saving the plan clears the mark.
     (async () => {
+      await persistProfile().catch(() => {
+        // Non-fatal: the plan below still saves; the profile saves again later.
+      });
+      await beginPlanGeneration().catch(() => {
+        // Non-fatal: only the resume-after-close safety net is lost.
+      });
       const exercises = await fetchAllExercises();
       if (cancelled) return;
       const plan = generateTrainingPlan({ answers, trainingPreferences, gymEquipment, exercises });
       setGeneratedPlan(plan);
-      await persistProfile().catch(() => {
-        // Non-fatal: the plan below still saves; the profile saves again later.
-      });
       if (cancelled) return;
       const planId = await saveTrainingPlan({
         label: answers.goal ? t(`goal.options.${answers.goal}.title`) : t("gymEquipment.planReady.headline"),

@@ -189,6 +189,14 @@ export async function saveTrainingPlan(input: {
   return data as string;
 }
 
+/** Marks a plan build as started, so a tab closed before `saveTrainingPlan`
+ *  returns can be resumed on the next visit. Saving the plan clears it. */
+export async function beginPlanGeneration(): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("begin_plan_generation");
+  if (error) throw error;
+}
+
 /** Makes a saved plan the user's active plan (what AI Training opens and
  *  Home progress follows). Saving a new plan makes it active automatically. */
 export async function setActiveTrainingPlan(id: string): Promise<void> {

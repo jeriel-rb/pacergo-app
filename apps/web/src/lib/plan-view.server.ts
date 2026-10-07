@@ -54,6 +54,16 @@ export async function getActivePlanIdServer(): Promise<string | null> {
   return (data as string | null) ?? null;
 }
 
+/** True while a plan build the user started hasn't been saved yet (and is
+ *  under 10 minutes old) — i.e. a closed tab interrupted it and /ai-plan
+ *  should resume it rather than treat the user as having no plan. */
+export async function getPlanGenerationInProgressServer(): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("plan_generation_in_progress");
+  if (error) throw error;
+  return data === true;
+}
+
 export interface SavedPlanSummaryServer {
   id: string;
   label: string;

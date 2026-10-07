@@ -1,6 +1,6 @@
 import type { OnboardingExperience } from "../onboarding/onboarding-types";
 import type { ExerciseRecord } from "./generated-plan-types";
-import { isAdvancedSkill } from "./exercise-meta";
+import { exerciseDifficulty, isAdvancedSkill, type ExerciseDifficulty } from "./exercise-meta";
 
 /** How an exercise is loaded — derived from the equipment it needs. */
 export type ExerciseModality =
@@ -95,9 +95,25 @@ const COMPLEXITY_FIT: Record<OnboardingExperience, readonly [number, number, num
   advanced: [0, 1, 2],
 };
 
+/** Preference per difficulty tier (see `exerciseDifficulty`). Beginners are
+ *  held to tier 1 by the pool filter, so this only orders any stretch into
+ *  tier 2; it is weighted heavily so an easy move always outranks a harder one
+ *  of the same muscle. Intermediates favor tier 2 over tier 1, advanced
+ *  lifters the harder work. */
+const DIFFICULTY_FIT: Record<OnboardingExperience, Record<ExerciseDifficulty, number>> = {
+  no_experience: { 1: 12, 2: 0, 3: -12 },
+  beginner: { 1: 12, 2: 0, 3: -12 },
+  intermediate: { 1: 1, 2: 3, 3: -1 },
+  advanced: { 1: 0, 2: 2, 3: 3 },
+};
+
 /** How well an exercise suits a training level — higher is better. Used to
  *  rank the (already equipment-filtered) pool, so experience changes which
  *  exercises are chosen, not just sets and reps. */
 export function experienceFit(e: ExerciseRecord, experience: OnboardingExperience): number {
-  return MODALITY_FIT[experience][exerciseModality(e)] + COMPLEXITY_FIT[experience][exerciseComplexity(e)];
+  return (
+    MODALITY_FIT[experience][exerciseModality(e)] +
+    COMPLEXITY_FIT[experience][exerciseComplexity(e)] +
+    DIFFICULTY_FIT[experience][exerciseDifficulty(e.slug)]
+  );
 }

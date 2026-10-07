@@ -536,6 +536,12 @@ create table if not exists user_training_plans (
 alter table user_onboarding
   add column if not exists active_plan_id uuid references user_training_plans (id) on delete set null;
 
+-- Set while a plan is being generated (begin_plan_generation), cleared when it
+-- is saved (save_training_plan) — lets /ai-plan resume a build that a closed
+-- tab interrupted instead of treating the user as having no plan.
+alter table user_onboarding
+  add column if not exists plan_generation_started_at timestamptz;
+
 -- One row per exercise per calendar day (Asia/Taipei). RPC-only: RLS on, no policies.
 create table if not exists workout_exercise_logs (
   id uuid primary key default gen_random_uuid(),
@@ -4660,7 +4666,9 @@ begin
 
   insert into user_onboarding (user_id, active_plan_id)
   values (auth.uid(), v_id)
-  on conflict (user_id) do update set active_plan_id = excluded.active_plan_id;
+  on conflict (user_id) do update set
+    active_plan_id = excluded.active_plan_id,
+    plan_generation_started_at = null;
 
   return v_id;
 end $$;
@@ -4727,6 +4735,8 @@ begin
   if auth.uid() is null then raise exception 'not authenticated'; end if;
   delete from user_training_plans where id = p_id and user_id = auth.uid();
   if not found then raise exception 'plan not found'; end if;
+  -- An abandoned "new plan" build must not resurface after a deliberate delete.
+  update user_onboarding set plan_generation_started_at = null where user_id = auth.uid();
 end $$;
 
 revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
@@ -6351,6 +6361,32 @@ begin
   values (auth.uid(), p_id)
   on conflict (user_id) do update set active_plan_id = excluded.active_plan_id;
 end $$;
+
+-- Plan generation marker: begin_plan_generation() is called once the profile is
+-- saved and just before the plan is built; save_training_plan clears it. If the
+-- tab closes in between, plan_generation_in_progress() stays true for 10 minutes
+-- so /ai-plan can resume the build; after that it's treated as abandoned.
+create or replace function begin_plan_generation()
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+
+  insert into user_onboarding (user_id, plan_generation_started_at)
+  values (auth.uid(), now())
+  on conflict (user_id) do update set plan_generation_started_at = now();
+end $$;
+
+create or replace function plan_generation_in_progress()
+returns boolean
+language sql security definer set search_path = public stable as $$
+  select coalesce(
+    (select o.plan_generation_started_at > now() - interval '10 minutes'
+       from user_onboarding o
+      where o.user_id = auth.uid()),
+    false
+  );
+$$;
 
 create or replace function log_exercise_sets(
   p_plan_id uuid,

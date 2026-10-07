@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generateTrainingPlan } from "../plan/generate-plan";
-import { ADVANCED_SKILL_SLUGS, ISOLATION_SLUGS, TIMED_SLUGS, repsForExercise, suitsExperience } from "../plan/exercise-meta";
+import { ADVANCED_SKILL_SLUGS, ISOLATION_SLUGS, exerciseDifficulty, TIMED_SLUGS, repsForExercise, suitsExperience } from "../plan/exercise-meta";
 import {
   GYM_EQUIPMENT_DEFAULT,
   ONBOARDING_ANSWERS_DEFAULT,
@@ -77,6 +77,96 @@ describe("exercise suitability by experience", () => {
     expect(suitsExperience("dragon-flag", "intermediate")).toBe(true);
     expect(suitsExperience("dragon-flag", "beginner")).toBe(false);
     expect(suitsExperience("bench-press", "no_experience")).toBe(true);
+  });
+});
+
+describe("difficulty by experience level", () => {
+  const rank = (slug: string) => exerciseDifficulty(slug);
+  const calves = [
+    rec("standing-calf-raise", ["calves"], ["calf_machine"]),
+    rec("donkey-calf-raise", ["calves"], ["calf_machine"]),
+  ];
+  const DIFFICULTY_LIB = [
+    ...LIB,
+    ...calves,
+    rec("leg-press", ["quads"], ["leg_press"]),
+    rec("goblet-squat", ["quads", "glutes"], ["dumbbells"]),
+    rec("leg-curl", ["hamstrings"], ["leg_curl_machine"]),
+    rec("machine-chest-press", ["chest", "triceps"], ["chest_press_machine"]),
+    rec("machine-shoulder-press", ["shoulders", "triceps"], ["shoulder_press_machine"]),
+    rec("lat-pulldown", ["lats", "biceps"], ["lat_pulldown"]),
+    rec("seated-row", ["back", "biceps"], ["cable_machine"]),
+    rec("pull-up", ["lats", "biceps"], ["pull_up_bar"]),
+    rec("pec-deck", ["chest"], ["pec_deck"]),
+    rec("cable-lateral-raise", ["shoulders"], ["cable_machine"]),
+    rec("rope-tricep-pushdown", ["triceps"], ["cable_machine"]),
+    rec("cable-curl", ["biceps"], ["cable_machine"]),
+    rec("seated-leg-curl", ["hamstrings"], ["leg_curl_machine"]),
+    rec("hip-abduction-machine", ["glutes"], ["hip_machine"]),
+  ];
+  const withKit = (experience: OnboardingExperience, variety: "fixed" | "dynamic") =>
+    generateTrainingPlan({
+      answers: { ...ONBOARDING_ANSWERS_DEFAULT, goal: "build_muscle" },
+      trainingPreferences: {
+        ...TRAINING_PREFERENCES_DEFAULT,
+        experience,
+        daysPerWeek: "3",
+        trainingDays: [0, 2, 4],
+        workoutSplit: "push_pull_legs",
+        durationMin: 60,
+        variety,
+      },
+      gymEquipment: {
+        ...GYM_EQUIPMENT_DEFAULT,
+        gymType: "large_gym",
+        equipment: [...KIT, "leg_press", "leg_curl_machine", "chest_press_machine", "shoulder_press_machine", "lat_pulldown", "pec_deck", "hip_machine"] as never,
+        addCardio: false,
+      },
+      exercises: DIFFICULTY_LIB,
+    });
+
+  it("classifies the donkey calf raise as challenging and the standing calf raise as foundational", () => {
+    expect(rank("donkey-calf-raise")).toBe(3);
+    expect(rank("standing-calf-raise")).toBe(1);
+    expect(rank("some-new-unreviewed-move")).toBe(2);
+  });
+
+  it("gives beginners only foundational moves, in every week, even with dynamic variety", () => {
+    for (const level of ["no_experience", "beginner"] as const) {
+      const slugs = everything(withKit(level, "dynamic")).map((e) => e.slug);
+      expect(slugs.length).toBeGreaterThan(0);
+      for (const slug of slugs) expect(rank(slug), `${level}: ${slug}`).toBe(1);
+      expect(slugs).not.toContain("donkey-calf-raise");
+      expect(slugs).not.toContain("pull-up");
+    }
+  });
+
+  it("only stretches beginners to tier 2 when too few foundational moves fit, never to tier 3", () => {
+    const thin = [rec("push-up", ["chest"]), rec("pike-push-up", ["shoulders"]), rec("pull-up", ["lats"], ["pull_up_bar"])];
+    const p = generateTrainingPlan({
+      answers: { ...ONBOARDING_ANSWERS_DEFAULT, goal: "build_muscle" },
+      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "beginner", daysPerWeek: "3", trainingDays: [0, 2, 4], workoutSplit: "push_pull_legs", variety: "fixed" },
+      gymEquipment: { ...GYM_EQUIPMENT_DEFAULT, gymType: "large_gym", equipment: ["pull_up_bar"] as never, addCardio: false },
+      exercises: thin,
+    });
+    const slugs = everything(p).map((e) => e.slug);
+    expect(slugs).toContain("pike-push-up");
+    expect(slugs).not.toContain("pull-up");
+  });
+
+  it("keeps the standing calf raise for a beginner and the hardest calf work for no one below advanced", () => {
+    expect(everything(withKit("beginner", "fixed")).map((e) => e.slug)).toContain("standing-calf-raise");
+    expect(everything(withKit("intermediate", "dynamic")).map((e) => e.slug)).not.toContain("donkey-calf-raise");
+  });
+
+  it("gives intermediates a mix that leans harder than beginners, and advanced the hardest", () => {
+    const avg = (level: OnboardingExperience) => {
+      const d = everything(withKit(level, "fixed")).map((e) => rank(e.slug));
+      return d.reduce((a, b) => a + b, 0) / d.length;
+    };
+    expect(avg("beginner")).toBe(1);
+    expect(avg("intermediate")).toBeGreaterThan(avg("beginner"));
+    expect(avg("advanced")).toBeGreaterThanOrEqual(avg("intermediate"));
   });
 });
 

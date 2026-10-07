@@ -75,6 +75,10 @@ interface OnboardingState {
   /** Bumped when a section is completed; the provider then saves the answers
    *  to the account profile (after the render that holds the final values). */
   persistRequest: number;
+  /** A brand-new onboarding started from scratch (Home → AI plan): answers
+   *  live in memory only and the account's Shared Fitness Profile is left
+   *  untouched until the plan is built — quitting halfway can't wipe it. */
+  deferPersist: boolean;
 }
 
 const INITIAL_STATE: OnboardingState = {
@@ -86,6 +90,7 @@ const INITIAL_STATE: OnboardingState = {
   savedPlanId: null,
   baseUpdatedAt: null,
   persistRequest: 0,
+  deferPersist: false,
 };
 
 /** Wizard state seeded from the saved account profile: every answer
@@ -125,7 +130,8 @@ type Action =
   | { type: "replace"; state: OnboardingState }
   | { type: "setBaseUpdatedAt"; updatedAt: string }
   | { type: "resetForUpdate" }
-  | { type: "reset" };
+  | { type: "reset" }
+  | { type: "startFresh" };
 
 /** Map retired picker keys from older sessionStorage drafts. */
 const LEGACY_MUSCLE_KEYS: Record<string, OnboardingMuscleGroup> = {
@@ -175,12 +181,14 @@ function reducer(state: OnboardingState, action: Action): OnboardingState {
         savedPlanId: action.state.savedPlanId ?? null,
         baseUpdatedAt: action.state.baseUpdatedAt ?? null,
         persistRequest: 0,
+        deferPersist: action.state.deferPersist ?? false,
       };
     }
     case "replace":
       return action.state;
     case "setBaseUpdatedAt":
-      return { ...state, baseUpdatedAt: action.updatedAt };
+      // The profile was just saved, so a fresh start is no longer deferred.
+      return { ...state, baseUpdatedAt: action.updatedAt, deferPersist: false };
     case "patch":
       return { ...state, answers: { ...state.answers, ...action.patch } };
     case "patchTraining":
@@ -245,7 +253,9 @@ function reducer(state: OnboardingState, action: Action): OnboardingState {
         completedSteps: { ...state.completedSteps, [action.step]: true },
         // Gym & Equipment completes on "Save My Plan", which saves explicitly.
         persistRequest:
-          action.step === "gymEquipment" ? state.persistRequest : state.persistRequest + 1,
+          action.step === "gymEquipment" || state.deferPersist
+            ? state.persistRequest
+            : state.persistRequest + 1,
       };
     case "setGeneratedPlan":
       return { ...state, generatedPlan: action.plan, savedPlanId: null };
@@ -262,6 +272,8 @@ function reducer(state: OnboardingState, action: Action): OnboardingState {
       };
     case "reset":
       return { ...INITIAL_STATE, baseUpdatedAt: state.baseUpdatedAt };
+    case "startFresh":
+      return { ...INITIAL_STATE, baseUpdatedAt: state.baseUpdatedAt, deferPersist: true };
     default:
       return state;
   }
@@ -308,6 +320,9 @@ interface OnboardingContextValue {
   setSavedPlanId: (id: string) => void;
   resetForUpdate: () => void;
   reset: () => void;
+  /** Blank wizard for a new plan: nothing prefilled, nothing saved until the
+   *  plan is built. */
+  startFresh: () => void;
 }
 
 const OnboardingContext = React.createContext<OnboardingContextValue | null>(null);
@@ -403,7 +418,7 @@ export function OnboardingProvider({
       gymEquipment: state.gymEquipment,
       completedSteps: state.completedSteps,
       generatedPlan: state.generatedPlan,
-      hasSavedProfile: state.baseUpdatedAt !== null,
+      hasSavedProfile: state.baseUpdatedAt !== null && !state.deferPersist,
       nutritionStatus: savedProfile?.nutritionStatus ?? null,
       persistProfile,
       setGoal: (goal) => dispatch({ type: "patch", patch: { goal } }),
@@ -463,6 +478,7 @@ export function OnboardingProvider({
       setSavedPlanId: (id) => dispatch({ type: "setSavedPlanId", id }),
       resetForUpdate: () => dispatch({ type: "resetForUpdate" }),
       reset: () => dispatch({ type: "reset" }),
+      startFresh: () => dispatch({ type: "startFresh" }),
     }),
     [state, persistProfile, savedProfile?.nutritionStatus],
   );

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   ADVANCED_SKILL_SLUGS,
+  CHALLENGING_SLUGS,
+  FOUNDATIONAL_SLUGS,
   ISOLATION_SLUGS,
   LOW_PRIORITY_ISOLATION_SLUGS,
   QA_EXCLUDED_EXERCISES,
@@ -20,9 +22,15 @@ describe("exercise library QA", () => {
   });
 
   it("every slug in the programming lists (skill, timed, isolation) exists in the library", () => {
-    const lists = { ADVANCED_SKILL_SLUGS, TIMED_SLUGS, ISOLATION_SLUGS, LOW_PRIORITY_ISOLATION_SLUGS };
+    const lists = { ADVANCED_SKILL_SLUGS, CHALLENGING_SLUGS, FOUNDATIONAL_SLUGS, TIMED_SLUGS, ISOLATION_SLUGS, LOW_PRIORITY_ISOLATION_SLUGS };
     for (const [name, list] of Object.entries(lists)) {
       for (const slug of list) expect(bySlug.has(slug), `${name}: ${slug}`).toBe(true);
+    }
+  });
+
+  it("no exercise is both foundational (beginner) and challenging", () => {
+    for (const slug of FOUNDATIONAL_SLUGS) {
+      expect(CHALLENGING_SLUGS.has(slug) || ADVANCED_SKILL_SLUGS.has(slug), slug).toBe(false);
     }
   });
 

@@ -96,7 +96,10 @@ export function HomeView({
       icon: Sparkles,
       label: t("actions.aiPlan"),
       tint: "bg-violet-500/10 text-violet-500",
-      href: getLocalizedPath("/ai-plan", locale),
+      // With a plan, start a blank onboarding for a new one — existing plans
+      // live under "My Plans" in the sidebar. Without one, /ai-plan also
+      // resumes an interrupted build.
+      href: getLocalizedPath(hasActivePlan ? "/ai-plan/new" : "/ai-plan", locale),
       beta: true,
     },
     { icon: Ticket, label: t("actions.hours"), tint: "bg-emerald-500/10 text-emerald-500", soon: true },

@@ -152,6 +152,15 @@
       "upper": "Upper Body",
       "lower": "Lower Body"
     },
+    "muscleFamilies": {
+      "shoulders": "Shoulders",
+      "chest": "Chest",
+      "back": "Back",
+      "arms": "Arms",
+      "core": "Core",
+      "hips": "Glutes & hips",
+      "legs": "Legs"
+    },
     "muscles": {
       "abs": "Abs",
       "trapezius": "Trapezius",

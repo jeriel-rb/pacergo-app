@@ -51,31 +51,20 @@ export const MUSCLE_GROUP_IMAGES: Record<OnboardingMuscleGroup, string> = Object
   ]),
 ) as Record<OnboardingMuscleGroup, string>;
 
-/** Which section a muscle group is grouped under in the picker UI. */
-export const MUSCLE_GROUP_REGION: Record<OnboardingMuscleGroup, "upper" | "lower"> = {
-  abs: "upper",
-  obliques: "upper",
-  lower_abs: "upper",
-  upper_chest: "upper",
-  middle_chest: "upper",
-  lower_chest: "upper",
-  upper_back: "upper",
-  lower_back: "upper",
-  lats: "upper",
-  trapezius: "upper",
-  neck: "upper",
-  front_deltoid: "upper",
-  middle_deltoid: "upper",
-  rear_deltoid: "upper",
-  biceps: "upper",
-  triceps: "upper",
-  forearms: "upper",
-  quadriceps: "lower",
-  hamstrings: "lower",
-  glutes: "lower",
-  calves: "lower",
-  shins: "lower",
-  adductors: "lower",
-  abductors: "lower",
-  hip_flexors: "lower",
-};
+/** Picker layout: each family of neighbouring muscles is one row (client:
+ *  "相近肌群放同一列", e.g. front/middle/rear delts side by side), grouped
+ *  under the upper/lower body heading. Muscles not selectable yet (no
+ *  exercises) are filtered out by the picker. */
+export const MUSCLE_FAMILIES: readonly {
+  key: string;
+  region: "upper" | "lower";
+  muscles: readonly OnboardingMuscleGroup[];
+}[] = [
+  { key: "shoulders", region: "upper", muscles: ["front_deltoid", "middle_deltoid", "rear_deltoid"] },
+  { key: "chest", region: "upper", muscles: ["upper_chest", "middle_chest", "lower_chest"] },
+  { key: "back", region: "upper", muscles: ["trapezius", "upper_back", "lats", "lower_back", "neck"] },
+  { key: "arms", region: "upper", muscles: ["biceps", "triceps", "forearms"] },
+  { key: "core", region: "upper", muscles: ["abs", "lower_abs", "obliques"] },
+  { key: "hips", region: "lower", muscles: ["glutes", "hip_flexors", "abductors", "adductors"] },
+  { key: "legs", region: "lower", muscles: ["quadriceps", "hamstrings", "calves", "shins"] },
+];

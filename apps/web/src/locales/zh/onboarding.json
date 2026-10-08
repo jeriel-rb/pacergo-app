@@ -152,6 +152,15 @@
       "upper": "上半身",
       "lower": "下半身"
     },
+    "muscleFamilies": {
+      "shoulders": "肩部",
+      "chest": "胸部",
+      "back": "背部",
+      "arms": "手臂",
+      "core": "核心",
+      "hips": "臀部與髖部",
+      "legs": "腿部"
+    },
     "muscles": {
       "abs": "腹肌",
       "trapezius": "斜方肌",

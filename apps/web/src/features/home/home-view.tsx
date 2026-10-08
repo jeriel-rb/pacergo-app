@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Users,
-  LineChart,
   Sparkles,
-  Ticket,
+  Apple,
+  UserCog,
   ClipboardCheck,
   HeartPulse,
   Wand2,
@@ -91,18 +91,28 @@ export function HomeView({
       tint: "bg-gradient-to-br from-primary/20 to-indigo-500/10 text-primary",
       href: trainersHref,
     },
-    { icon: LineChart, label: t("actions.log"), tint: "bg-blue-500/10 text-blue-500", soon: true },
     {
       icon: Sparkles,
       label: t("actions.aiPlan"),
       tint: "bg-violet-500/10 text-violet-500",
       // With a plan, start a blank onboarding for a new one — existing plans
-      // live under "My Plans" in the sidebar. Without one, /ai-plan also
+      // live under "My Plans" in the nav. Without one, /ai-plan also
       // resumes an interrupted build.
       href: getLocalizedPath(hasActivePlan ? "/ai-plan/new" : "/ai-plan", locale),
       beta: true,
     },
-    { icon: Ticket, label: t("actions.hours"), tint: "bg-emerald-500/10 text-emerald-500", soon: true },
+    {
+      icon: Apple,
+      label: t("actions.nutrition"),
+      tint: "bg-emerald-500/10 text-emerald-500",
+      href: getLocalizedPath("/ai-plan/nutrition", locale),
+    },
+    {
+      icon: UserCog,
+      label: t("actions.fitnessProfile"),
+      tint: "bg-amber-500/10 text-amber-500",
+      href: getLocalizedPath("/ai-plan/fitness-profile", locale),
+    },
   ];
 
   const tools: ToolItem[] = [

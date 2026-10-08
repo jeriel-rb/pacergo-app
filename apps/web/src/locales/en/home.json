@@ -11,9 +11,9 @@
   },
   "actions": {
     "find": "Find partner",
-    "log": "Training log",
     "aiPlan": "AI plan",
-    "hours": "Hour pack"
+    "nutrition": "Nutrition",
+    "fitnessProfile": "Fitness profile"
   },
   "quickActions": "Quick actions",
   "quick": {

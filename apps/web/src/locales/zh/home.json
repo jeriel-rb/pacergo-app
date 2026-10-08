@@ -11,9 +11,9 @@
   },
   "actions": {
     "find": "找夥伴",
-    "log": "訓練記錄",
     "aiPlan": "AI 訓練計劃",
-    "hours": "時數包"
+    "nutrition": "營養",
+    "fitnessProfile": "健身檔案"
   },
   "quickActions": "快速功能",
   "quick": {

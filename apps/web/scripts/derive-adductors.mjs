@@ -1,6 +1,10 @@
 import sharp from "sharp";
 
 /**
+ * SUPERSEDED — do not re-run: adductors.jpg is now the clearer inner-thigh
+ * artwork (it was mis-filed as obliques.jpg); this script would overwrite it
+ * with the old faint version.
+ *
  * Derive adductors.jpg from quadriceps.jpg:
  * - Quads blue → muted lavender
  * - Medial lavender/dark strips (inner thigh) → bright blue

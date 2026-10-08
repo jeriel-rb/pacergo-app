@@ -9,9 +9,10 @@ import { ONBOARDING_MUSCLE_GROUPS, type OnboardingMuscleGroup } from "@pacergo/s
 const MUSCLE_ASSET_DIR = "/images/focused_muscles";
 
 /**
- * On-disk filename for each muscle-picker tile. Verified filenames are the
- * source of truth (match the onboarding key). Assets still carrying a `1` in
- * the name are unverified WIP — leave those files alone until renamed.
+ * On-disk filename for each muscle-picker tile — named after the muscle the
+ * artwork highlights. Some tiles are derived by recolouring another tile
+ * (scripts/derive-*.mjs, e.g. obliques from abs). Calves still needs art:
+ * nothing is highlighted in calves.jpg.
  */
 const MUSCLE_GROUP_IMAGE_FILES: Record<OnboardingMuscleGroup, string> = {
   abs: "abs.jpg",

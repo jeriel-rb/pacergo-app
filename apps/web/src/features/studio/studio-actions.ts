@@ -8,7 +8,22 @@ import {
   type VerificationDocType,
 } from "./certification";
 
-/** First-time Tier C request. An admin has to approve it before the member is a trainer. */
+/** Records the birthdate (must be 18+) and the "information is true"
+ *  confirmation. Required before any proof upload or trainer application. */
+export async function confirmTrainerEligibility(input: {
+  birthdate: string | null;
+  attested: boolean;
+}): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("confirm_trainer_eligibility", {
+    p_birthdate: input.birthdate,
+    p_attested: input.attested,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** First-time trainer request. Needs a proof on file for every activity
+ *  offered; an admin approves it (after approving those proofs). */
 export async function submitTrainerApplication(): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.rpc("submit_trainer_application");
@@ -79,9 +94,9 @@ export async function removeAvailability(id: string): Promise<void> {
 
 /**
  * Upload a verification document (PDF) for a specific activity to the private
- * verification bucket and register it for admin review. A `certification`
- * unlocks Tiers B & A for that activity; a `competition` (competition
- * experience) is additionally required for Tier A.
+ * verification bucket and register it for admin review. A `background` proof
+ * qualifies Tier C, a `certification` Tier B, and a `competition` (with a
+ * certification) Tier A — each for that activity only.
  */
 export async function submitVerificationDoc(input: {
   activity: ActivitySlug;

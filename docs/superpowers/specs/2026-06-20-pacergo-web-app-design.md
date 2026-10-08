@@ -1,4 +1,4 @@
-# Pacergo Web App — Design Spec
+# PacerGo Web App — Design Spec
 
 **Date:** 2026-06-20
 **Status:** Approved
@@ -6,7 +6,7 @@
 
 ## Goal
 
-Build the Pacergo **product web app** (Next.js, behind auth) into the empty `apps/web`
+Build the PacerGo **product web app** (Next.js, behind auth) into the empty `apps/web`
 placeholder. First deliverables: **Home (首頁)**, **Trainer list & detail (陪練師)**, and
 **authentication (sign in / sign up)**, plus the app shell (header + bottom navigation) and
 placeholder pages for the remaining tabs. The app must be responsive (mobile → tablet →
@@ -90,7 +90,7 @@ CSS variables in `globals.css` (light + dark) consumed by shadcn and custom atom
 **Tier 1 — shadcn primitives** (`src/shared/components/ui/`): button, card, badge, avatar, input,
 tabs, separator, skeleton, sheet, dialog, scroll-area, sonner.
 
-**Tier 2 — Pacergo design-system atoms** (token-bound, reusable): `TierBadge`, `PriceTag`
+**Tier 2 — PacerGo design-system atoms** (token-bound, reusable): `TierBadge`, `PriceTag`
 (NT$ / 小時), `RatingStars`, `ActivityChip` / `ActivityIcon`, `SectionCard`, `ProgressBar`,
 `GradientHeader`.
 

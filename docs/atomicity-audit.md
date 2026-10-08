@@ -1,6 +1,6 @@
 # Atomicity & Data-Integrity Audit
 
-Audit date: 2026-10-05 · Project: Pacergo (Supabase `kezkrcyfnjlugkrcbwmy`) · Scope: every
+Audit date: 2026-10-05 · Project: PacerGo (Supabase `kezkrcyfnjlugkrcbwmy`) · Scope: every
 database function that writes data, plus the web code that calls them in sequence.
 
 Also covers the AI plan security review that preceded it (section 6), so all findings from

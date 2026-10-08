@@ -9,13 +9,10 @@ import {
   calculateNutrition,
   missingNutritionInputs,
   nutritionNeedsRecalc,
-  preservedProteinGrams,
   toFitnessProfile,
-  withProteinGrams,
   type OnboardingAnswers,
 } from "@pacergo/shared";
-import { Button, buttonVariants } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
+import { buttonVariants } from "@/shared/components/ui/button";
 import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { saveOnboardingAnswers } from "@/lib/plans";
@@ -47,32 +44,20 @@ export function NutritionView({
   const pathname = usePathname();
 
   const profile = toFitnessProfile(answers, saved.trainingPreferences, saved.gymEquipment);
-  const recommended = calculateNutrition(profile);
-  const keptProtein = preservedProteinGrams(saved.nutrition, recommended);
-  const targets =
-    recommended && keptProtein != null
-      ? withProteinGrams(recommended, keptProtein, profile.weightKg ?? 0)
-      : recommended;
+  // Calories and protein are always our formula — not user-editable.
+  const targets = calculateNutrition(profile);
   const stale = nutritionNeedsRecalc(saved.nutrition, profile);
-  const [proteinDraft, setProteinDraft] = React.useState(
-    String(keptProtein ?? recommended?.proteinGrams ?? ""),
-  );
-  const [proteinError, setProteinError] = React.useState(false);
-  const [proteinSaving, setProteinSaving] = React.useState<"custom" | "suggested" | null>(null);
 
   const synced = React.useRef(false);
   React.useEffect(() => {
     if (synced.current) return;
     synced.current = true;
-    if (recommended && stale) {
-      // Refresh calories and guidance, but keep a protein target the new
-      // formula would replace. The page explains that and offers the new number.
+    if (targets && stale) {
       saveOnboardingAnswers({
         userId,
         answers,
         trainingPreferences: saved.trainingPreferences,
         gymEquipment: saved.gymEquipment,
-        proteinGrams: keptProtein,
       })
         .then(() => router.refresh())
         .catch(() => {
@@ -82,26 +67,6 @@ export function NutritionView({
     // Initial-mount check only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function saveProtein(grams: number | undefined) {
-    if (!recommended) return;
-    setProteinSaving(grams == null ? "suggested" : "custom");
-    setProteinError(false);
-    try {
-      await saveOnboardingAnswers({
-        userId,
-        answers,
-        trainingPreferences: saved.trainingPreferences,
-        gymEquipment: saved.gymEquipment,
-        nutritionStatus: "built",
-        proteinGrams: grams,
-      });
-      router.refresh();
-    } catch {
-      setProteinError(true);
-      setProteinSaving(null);
-    }
-  }
 
   const profileHref = pathname.replace(/\/nutrition$/, "/fitness-profile");
 
@@ -120,59 +85,6 @@ export function NutritionView({
           <NutritionTargetsCard targets={targets} />
         ) : (
           <NutritionMissingNotice missing={missingNutritionInputs(profile)} />
-        )}
-        {recommended && keptProtein != null && keptProtein !== recommended.proteinGrams && (
-          <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
-            <p className="text-sm">
-              {t("nutrition.proteinKept", {
-                saved: keptProtein,
-                suggested: recommended.proteinGrams,
-                perKg: recommended.proteinGPerKg,
-              })}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              disabled={proteinSaving !== null}
-              onClick={() => void saveProtein(undefined)}
-            >
-              {t("nutrition.useSuggested")}
-            </Button>
-          </div>
-        )}
-        {recommended && (
-          <form
-            className="space-y-3 rounded-2xl border border-border bg-card p-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const grams = Number(proteinDraft);
-              if (!Number.isFinite(grams) || grams < 10 || grams > 800) {
-                setProteinError(true);
-                return;
-              }
-              void saveProtein(grams);
-            }}
-          >
-            <Input
-              type="number"
-              inputMode="numeric"
-              min={10}
-              max={800}
-              step={5}
-              label={t("nutrition.proteinInput")}
-              hint={t("nutrition.proteinEditHint")}
-              error={proteinError ? t("nutrition.proteinEditError") : undefined}
-              value={proteinDraft}
-              onChange={(event) => {
-                setProteinDraft(event.target.value);
-                setProteinError(false);
-              }}
-            />
-            <Button type="submit" className="w-full" disabled={proteinSaving !== null}>
-              {t("nutrition.saveProtein")}
-            </Button>
-          </form>
         )}
         {saved.updatedAt && (
           <p className="text-xs text-muted-foreground">

@@ -1,6 +1,6 @@
 # Warm-up standards for beginner / general-fitness strength training
 
-Research scope: consumer gym/home strength sessions (30–60 min), mapped to Pacergo equipment ids (`treadmill`, `cycling_stationary`, `rowing`, `elliptical`) and bodyweight fallbacks. Goal: MVP rules for a deterministic plan generator that already knows gym equipment and experience level (no new onboarding question). Existing generator already switches high-impact warm-ups (`jumping-jack`, `high-knees`) to gentler mobility when age ≥50, BMI ≥30, or injury obstacle is set.
+Research scope: consumer gym/home strength sessions (30–60 min), mapped to PacerGo equipment ids (`treadmill`, `cycling_stationary`, `rowing`, `elliptical`) and bodyweight fallbacks. Goal: MVP rules for a deterministic plan generator that already knows gym equipment and experience level (no new onboarding question). Existing generator already switches high-impact warm-ups (`jumping-jack`, `high-knees`) to gentler mobility when age ≥50, BMI ≥30, or injury obstacle is set.
 
 ## What warm-up is recommended for true beginners vs people with some experience?
 
@@ -24,7 +24,7 @@ Both beginners and experienced lifters need the same two-phase structure—gener
 - **MVP beginner (`no_experience` / `beginner`) rule:** Raise 3–5 min easy cardio (machine if available) + 3–5 min simple dynamic mobility (arm circles, leg swings, bodyweight squat, world-greatest-style lunge if catalog has it) + lighter first sets on compound lifts. Avoid plyometric potentiation (pogo hops, jumping jacks) as default.
 - **MVP experienced (`intermediate` / `advanced`) rule:** Same structure, but Raise can be 2–4 min if the user is already warm from commuting/prior activity; allocate more of the budget to session-specific mobility and progressive warm-up sets on the first heavy compound. Optional short potentiation only if session includes impact/power work and low-impact mode is off.
 - **Do not use experience alone to skip warm-up**—experience changes *complexity and intensity*, not whether a warm-up exists.
-- Pacergo already encodes experience for sets/reps; warm-up differentiation can reuse that enum without a new question.
+- PacerGo already encodes experience for sets/reps; warm-up differentiation can reuse that enum without a new question.
 
 ### Gaps
 - ACSM GETP 11th edition full text was not freely fetchable; duration “5–10 min” is cited via secondary academic/teaching sources summarizing ACSM rather than a page-quoted primary PDF.
@@ -92,7 +92,7 @@ For consumer strength sessions, budget roughly **5–10 minutes** total warm-up 
 ## How do apps or guidelines adapt warm-ups when impact should be low (age, BMI, injury)?
 
 ### Takeaway
-Guidelines and consumer products converge on: replace jumping/running Raise with walking or low-impact machines, keep intensity light, use controlled mobility instead of plyometrics, and progress via lighter versions of the main lifts; Pacergo’s existing `needsLowImpact` triggers (injury obstacle, age ≥50, BMI ≥30) align with this literature and do not require a new onboarding question.
+Guidelines and consumer products converge on: replace jumping/running Raise with walking or low-impact machines, keep intensity light, use controlled mobility instead of plyometrics, and progress via lighter versions of the main lifts; PacerGo’s existing `needsLowImpact` triggers (injury obstacle, age ≥50, BMI ≥30) align with this literature and do not require a new onboarding question.
 
 ### Cited Findings
 - NIA older-adult guidance: do a little light activity such as easy walking before/after aerobic work; for muscle-strengthening, warm up by doing the exercises with less weight; avoid overdoing to the point of joint pain — [National Institute on Aging – Three types of exercise](https://www.nia.nih.gov/health/exercise-and-physical-activity/three-types-exercise-can-improve-your-health-and-physical) *(fetch returned 405 in this research pass; URL retained as the canonical NIA page cited widely in search results)*
@@ -102,7 +102,7 @@ Guidelines and consumer products converge on: replace jumping/running Raise with
 - Sports Medicine warm-up review: warm-ups should be individualized; substantial inter-individual variability; modality can be generic, sport-specific, or session-specific depending on goals and constraints — [Afonso et al., Sports Medicine 2023 (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC10798919/)
 - Fitbod filters mobility/warm-up content by equipment availability, muscle relevance, excluded exercises, and **experience level**; soft-tissue omitted without foam roller — [Fitbod Help – Stretching](https://help.fitbod.me/hc/en-us/articles/360019715433-Stretching-Warm-up-Cool-down)
 - Nike: “one size does not fit all”; check with clinician/PT for pains/injuries; match warm-up to workout type (mobility/activation for strength; plyos mainly for impact sports/HIIT) — [Nike – Warm-Up Training Tips](https://www.nike.com/a/warmup-training-tips)
-- Pacergo current code already defines low-impact mode from injury / age≥50 / BMI≥30 and swaps `jumping-jack`+`high-knees` for `arm-circles`, `leg-swings-stretch`, `bodyweight-squat` — local `packages/shared/src/plan/generate-plan.ts` (`needsLowImpact`, `LOW_IMPACT_WARMUP_SLUGS`)
+- PacerGo current code already defines low-impact mode from injury / age≥50 / BMI≥30 and swaps `jumping-jack`+`high-knees` for `arm-circles`, `leg-swings-stretch`, `bodyweight-squat` — local `packages/shared/src/plan/generate-plan.ts` (`needsLowImpact`, `LOW_IMPACT_WARMUP_SLUGS`)
 
 ### Inferences
 - **Deterministic low-impact warm-up package (no new question):**
@@ -115,7 +115,7 @@ Guidelines and consumer products converge on: replace jumping/running Raise with
 
 ### Gaps
 - NIA page could not be re-fetched (HTTP 405) during this pass; content summarized from search snippet + common NIA messaging—re-verify before treating quotes as verbatim.
-- Guidelines rarely specify exact BMI cutoffs for warm-up modality; Pacergo’s BMI≥30 threshold is a product heuristic consistent with obesity low-impact advice, not an ACSM warm-up cutoff.
+- Guidelines rarely specify exact BMI cutoffs for warm-up modality; PacerGo’s BMI≥30 threshold is a product heuristic consistent with obesity low-impact advice, not an ACSM warm-up cutoff.
 - Injury type is not differentiated (shoulder vs knee vs back)—MVP can only apply a blunt low-impact filter unless injury location is later collected.
 
 ## Concrete fallback chain when cardio machines are unavailable

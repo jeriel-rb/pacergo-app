@@ -84,7 +84,7 @@ export function AppHeader(props: AppHeaderProps) {
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
             P
           </span>
-          <span className="text-lg">Pacergo — 陪練動</span>
+          <span className="text-lg">PacerGo — 陪練動</span>
         </Link>
 
         <nav className="hidden lg:flex lg:items-center lg:gap-1">

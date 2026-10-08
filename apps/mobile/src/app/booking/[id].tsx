@@ -55,7 +55,7 @@ export default function BookingDetailScreen() {
   async function shareDetails() {
     if (!booking) return;
     await Share.share({
-      message: `Pacergo session with ${name ?? ''} — ${booking.scheduled_start ?? ''} at ${
+      message: `PacerGo session with ${name ?? ''} — ${booking.scheduled_start ?? ''} at ${
         booking.location_name ?? ''
       }`,
     });

@@ -1,4 +1,4 @@
--- Pacergo RLS policies — centralized row-level security.
+-- PacerGo RLS policies — centralized row-level security.
 --
 -- Runs after 0001_init (schema + functions). Seeds load after migrations.
 -- Idempotent: ENABLE is safe to re-run; each policy is DROP IF EXISTS then CREATE.

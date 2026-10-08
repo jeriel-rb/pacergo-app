@@ -48,7 +48,7 @@ export function SideNav(props: SideNavProps) {
   const brandHref = isAdmin
     ? getLocalizedPath("/admin", locale)
     : getLocalizedPath("/", locale);
-  const brandLabel = isAdmin ? t("nav.console") : "Pacergo";
+  const brandLabel = isAdmin ? t("nav.console") : "PacerGo";
   const labelFor = (key: string) => (isAdmin ? t(`nav.${key}`) : t(key));
 
   return (

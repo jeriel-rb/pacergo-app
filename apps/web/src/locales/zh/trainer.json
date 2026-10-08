@@ -23,6 +23,7 @@
   "managerRegion": "負責區域",
   "bookNow": "立即預約",
   "bookHint": "預約後陪練將在 24 小時內確認",
+  "cannotBookSelf": "你不能預約自己。",
   "bookingRequested": "已送出預約邀請，陪練將盡快與你確認。",
   "bidding": "競標制",
   "ratingCount": "({{count}})",

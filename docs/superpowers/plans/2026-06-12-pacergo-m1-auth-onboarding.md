@@ -1,4 +1,4 @@
-# Pacergo M1 — Auth & Onboarding Implementation Plan
+# PacerGo M1 — Auth & Onboarding Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -84,7 +84,7 @@ git add -A
 git commit -m "feat(db): add profiles.onboarding_completed (M1 migration)"
 ```
 
-> Application of this migration is deferred (same as M0 — no MCP access to the Pacergo project). It is applied by the owner alongside `0001`.
+> Application of this migration is deferred (same as M0 — no MCP access to the PacerGo project). It is applied by the owner alongside `0001`.
 
 ---
 
@@ -1155,7 +1155,7 @@ Expected: PASS (2 tests).
   "nameLabel": "What should we call you?",
   "namePlaceholder": "Your name",
   "birthdateLabel": "Your birthdate",
-  "ageError": "You must be 18 or older to use Pacergo.",
+  "ageError": "You must be 18 or older to use PacerGo.",
   "experienceLabel": "Your experience level",
   "beginner": "Beginner",
   "intermediate": "Intermediate",
@@ -1176,7 +1176,7 @@ Expected: PASS (2 tests).
   "nameLabel": "我們該怎麼稱呼你？",
   "namePlaceholder": "你的名字",
   "birthdateLabel": "你的生日",
-  "ageError": "你必須年滿 18 歲才能使用 Pacergo。",
+  "ageError": "你必須年滿 18 歲才能使用 PacerGo。",
   "experienceLabel": "你的經驗程度",
   "beginner": "初學者",
   "intermediate": "中級",
@@ -1239,7 +1239,7 @@ export default function OnboardingScreen() {
       activityIds: store.activityIds,
     });
     if (!parsed.success) {
-      Alert.alert('Pacergo', t('onboarding.ageError'));
+      Alert.alert('PacerGo', t('onboarding.ageError'));
       return;
     }
     try {
@@ -1258,7 +1258,7 @@ export default function OnboardingScreen() {
       store.reset();
       router.replace('/(tabs)');
     } catch {
-      Alert.alert('Pacergo', t('onboarding.saveError'));
+      Alert.alert('PacerGo', t('onboarding.saveError'));
     }
   }
 

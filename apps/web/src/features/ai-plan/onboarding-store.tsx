@@ -26,9 +26,6 @@ import {
   type OnboardingStepId,
   type OnboardingUnit,
   type OnboardingVariety,
-  calculateNutrition,
-  preservedProteinGrams,
-  toFitnessProfile,
   type ActivityLevel,
   type OnboardingWorkoutSplit,
   type TrainingPreferencesAnswers,
@@ -395,20 +392,11 @@ export function OnboardingProvider({
   const persistProfile = React.useCallback(async () => {
     if (!userId) throw new Error("Not signed in");
     const { answers, trainingPreferences, gymEquipment } = stateRef.current;
-    const saved = savedProfileRef.current;
-    const calculated = calculateNutrition(
-      toFitnessProfile(answers, trainingPreferences, gymEquipment),
-    );
-    const proteinGrams =
-      saved?.nutritionStatus === "built"
-        ? preservedProteinGrams(saved.nutrition, calculated)
-        : undefined;
     const { updatedAt } = await saveOnboardingAnswers({
       userId,
       answers,
       trainingPreferences,
       gymEquipment,
-      proteinGrams,
     });
     dispatch({ type: "setBaseUpdatedAt", updatedAt });
   }, [userId]);

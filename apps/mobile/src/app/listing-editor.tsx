@@ -37,10 +37,10 @@ export default function ListingEditor() {
         served_area: area || null,
         status,
       });
-      Alert.alert('Pacergo', t('editor.saved'));
+      Alert.alert('PacerGo', t('editor.saved'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('editor.error'));
+      Alert.alert('PacerGo', t('editor.error'));
     }
   }
 

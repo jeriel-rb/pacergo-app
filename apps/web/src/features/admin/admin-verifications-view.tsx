@@ -35,11 +35,11 @@ const STATUS_TONE: Record<AdminVerification["status"], StatusTone> = {
 };
 
 /** A certification is a Tier B request, competition proof is Tier A, and a
- *  first application is Tier C. */
+ *  sports-background proof or a first application is Tier C. */
 function tierOf(docType: string | null): "A" | "B" | "C" | null {
   if (docType === "competition") return "A";
   if (docType === "certification") return "B";
-  if (docType === "application") return "C";
+  if (docType === "application" || docType === "background") return "C";
   return null;
 }
 
@@ -106,7 +106,9 @@ export function AdminVerificationsView({ queue }: { queue: AdminVerification[] }
       ];
       if (
         v.document_path &&
-        (v.doc_type === "certification" || v.doc_type === "competition")
+        (v.doc_type === "certification" ||
+          v.doc_type === "competition" ||
+          v.doc_type === "background")
       ) {
         items.push({
           key: "view",

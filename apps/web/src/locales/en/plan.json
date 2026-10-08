@@ -199,6 +199,7 @@
   },
   "myPlans": {
     "title": "My Plans",
+    "newPlan": "New plan",
     "empty": "You haven't saved a plan yet.",
     "createdOn": "Created {{date}}",
     "view": "View",
@@ -265,12 +266,6 @@
     "protein": "Protein Target",
     "proteinUnit": "g/day",
     "proteinDetail": "About {{perKg}} g per kg of body weight",
-    "proteinKept": "Your saved protein target is {{saved}} g/day. From your current goal and experience, the suggestion is now {{suggested}} g/day ({{perKg}} g/kg). Creating a training plan keeps the saved target.",
-    "useSuggested": "Use suggested target",
-    "proteinInput": "Protein target (g/day)",
-    "proteinEditHint": "10–800 g. This is what new training plans keep.",
-    "proteinEditError": "Enter a protein target between 10 and 800 g.",
-    "saveProtein": "Save protein target",
     "maintenance": "Maintenance: about {{kcal}} kcal/day",
     "goalNote": {
       "lose_weight": "Set below maintenance to support steady fat loss.",

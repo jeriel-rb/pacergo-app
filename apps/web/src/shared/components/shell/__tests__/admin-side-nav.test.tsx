@@ -31,7 +31,7 @@ function renderNav(lng: "en" | "zh") {
 describe("admin sidebar footer", () => {
   it("puts Back, the theme toggle and the language switcher on one row", () => {
     renderNav("en");
-    const back = screen.getByRole("link", { name: "Back to Pacergo" });
+    const back = screen.getByRole("link", { name: "Back to PacerGo" });
     expect(back).toHaveTextContent(/^Back$/);
     const row = back.parentElement!;
     expect(row.className).toContain("flex");
@@ -43,6 +43,6 @@ describe("admin sidebar footer", () => {
 
   it("uses the short label in Chinese too", () => {
     renderNav("zh");
-    expect(screen.getByRole("link", { name: "返回 Pacergo" })).toHaveTextContent(/^返回$/);
+    expect(screen.getByRole("link", { name: "返回 PacerGo" })).toHaveTextContent(/^返回$/);
   });
 });

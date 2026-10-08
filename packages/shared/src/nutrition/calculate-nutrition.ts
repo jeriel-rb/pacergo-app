@@ -70,12 +70,6 @@ export interface NutritionTargets {
   dailyCalories: number;
   proteinGrams: number;
   proteinGPerKg: number;
-  /**
-   * Grams/day the user chose to keep. When set, creating a new training plan
-   * does not replace it with the goal formula. Absent means the formula is
-   * the current target.
-   */
-  proteinOverrideGrams?: number;
   guidance: NutritionGuidanceItem[];
   rulesVersion: number;
   inputs: NutritionInputs;
@@ -159,56 +153,6 @@ export function calculateNutrition(
   };
 }
 
-/**
- * Replace the formula protein on an already-calculated result and mark it as
- * the user's target. Grams are rounded to 5 and clamped so the saved g/kg
- * stays inside 0.5–4 (what the profile row accepts).
- */
-export function withProteinGrams(
-  targets: NutritionTargets,
-  proteinGrams: number,
-  weightKg: number,
-  rules: NutritionRules = DEFAULT_NUTRITION_RULES,
-): NutritionTargets {
-  const weight = weightKg > 0 ? weightKg : (targets.inputs.weightKg ?? 0);
-  let grams = Math.min(800, Math.max(10, roundTo(proteinGrams, 5)));
-  let perKg = weight > 0 ? Math.round((grams / weight) * 100) / 100 : targets.proteinGPerKg;
-  if (perKg > 4) {
-    perKg = 4;
-    grams = Math.min(800, Math.max(10, roundTo(4 * weight, 5)));
-  } else if (perKg < 0.5) {
-    perKg = 0.5;
-    grams = Math.min(800, Math.max(10, roundTo(0.5 * weight, 5)));
-  }
-  const meals = rules.mealsPerDay;
-  return {
-    ...targets,
-    proteinGrams: grams,
-    proteinGPerKg: perKg,
-    proteinOverrideGrams: grams,
-    guidance: targets.guidance.map((item) =>
-      item.key === "proteinPerMeal"
-        ? { key: item.key, params: { grams: roundTo(grams / meals, 5), meals } }
-        : item,
-    ),
-  };
-}
-
-/**
- * Protein to write back when saving a training plan. A chosen target always
- * stays. A formula target stays only when the new formula would change it,
- * so generating a plan does not silently replace 190 g with 95 g.
- */
-export function preservedProteinGrams(
-  saved: NutritionTargets | null | undefined,
-  calculated: NutritionTargets | null | undefined,
-): number | undefined {
-  if (!saved || !calculated) return undefined;
-  if (saved.proteinOverrideGrams != null) return saved.proteinOverrideGrams;
-  if (saved.proteinGrams !== calculated.proteinGrams) return saved.proteinGrams;
-  return undefined;
-}
-
 function sameInputs(a: NutritionInputs, b: NutritionInputs): boolean {
   return NUTRITION_INPUT_KEYS.every((k) => (a[k] ?? null) === (b[k] ?? null));
 }
@@ -238,7 +182,6 @@ export function isValidSavedNutrition(value: unknown): value is NutritionTargets
     num(v.dailyCalories, 300, 12000) &&
     num(v.proteinGrams, 10, 800) &&
     num(v.proteinGPerKg, 0.5, 4) &&
-    (v.proteinOverrideGrams == null || num(v.proteinOverrideGrams, 10, 800)) &&
     num(v.rulesVersion, 0, 1_000_000) &&
     Array.isArray(v.guidance) &&
     v.guidance.length <= 20 &&

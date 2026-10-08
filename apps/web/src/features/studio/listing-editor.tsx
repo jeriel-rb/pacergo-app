@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState, type
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import type { ListingStatus, StudioListing, VerificationStatus } from "@/lib/studio";
+import type { ListingStatus, StudioListing, TrainerEligibility, VerificationStatus } from "@/lib/studio";
 import { Card } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
@@ -12,12 +12,31 @@ import { Button } from "@/shared/components/ui/button";
 import { useToast } from "@/shared/components/ui/toast";
 import { useFormDirty } from "@/shared/hooks/use-form-dirty";
 import { cn } from "@/lib/utils";
-import { submitTrainerApplication, upsertMyListing } from "./studio-actions";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { confirmTrainerEligibility, submitTrainerApplication, upsertMyListing } from "./studio-actions";
 import { ConsentCheckboxRow } from "@/features/legal/consent-checkbox-row";
 import { CONSENT_VERSIONS } from "@/lib/consent";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const STATUSES: ListingStatus[] = ["draft", "active", "paused"];
+
+/** ISO date `years` ago today — the latest birthdate that is 18+. */
+function isoYearsAgo(years: number): string {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - years);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Maps a server error to friendly copy where we have it. */
+function errorKey(raw: string): string | null {
+  if (raw.includes("setup_required")) return "listing.needPlanAndAvailability";
+  if (raw.includes("proof_required")) return "bg.proofRequired";
+  if (raw.includes("under_18")) return "eligibility.under18";
+  if (raw.includes("birthdate_required")) return "eligibility.birthdateRequired";
+  if (raw.includes("attestation_required") || raw.includes("eligibility_required")) return "eligibility.required";
+  if (raw.includes("requires an approved proof")) return "bg.planAfterApproval";
+  return null;
+}
 
 const ListingDraftContext = createContext<(() => Promise<void>) | null>(null);
 
@@ -97,6 +116,7 @@ export function ListingEditor({
   hasAvailability,
   isCompanion = true,
   applicationStatus = null,
+  eligibility = { birthdate: null, attested: false, eligible: false },
   children,
 }: {
   listing: StudioListing | null;
@@ -105,6 +125,8 @@ export function ListingEditor({
   /** False until an admin approves the first trainer request. */
   isCompanion?: boolean;
   applicationStatus?: VerificationStatus | null;
+  /** 18+ and the truthfulness confirmation; asked for before the first proof or request. */
+  eligibility?: TrainerEligibility;
   children?: ReactNode;
 }) {
   const { t } = useTranslation("studio");
@@ -123,6 +145,8 @@ export function ListingEditor({
   // already agreed on an earlier save; don't re-ask on every edit).
   const isFirstListing = listing === null;
   const [conductChecked, setConductChecked] = useState(false);
+  const [birthdate, setBirthdate] = useState(eligibility.birthdate ?? "");
+  const [attested, setAttested] = useState(false);
   const [reviewDraft, setReviewDraft] = useState<ReviewDraft | null>(null);
   const [offeringPending, setOfferingPending] = useState(false);
   const [availabilityPending, setAvailabilityPending] = useState(false);
@@ -165,9 +189,14 @@ export function ListingEditor({
   const established = isCompanion || applicationStatus === "approved";
   const needsApplication = !established;
   const awaitingReview = needsApplication && applicationStatus === "pending";
+  // Anyone sending a proof or their first request confirms 18+ and that the
+  // information is true (once; the server keeps the confirmation).
+  const needsEligibility = !eligibility.eligible && (needsApplication || reviewing);
+  const eligibilityReady = !needsEligibility || (Boolean(birthdate) && attested);
   const ready =
     profileReady &&
     !awaitingReview &&
+    eligibilityReady &&
     (reviewing ? Boolean(reviewDraft?.ready) : needsApplication || hasChange);
   const hint = reviewing && !reviewDraft?.ready ? t("cert.needFile") : null;
   const label = needsApplication || reviewing ? t("cert.submit") : t("save");
@@ -196,9 +225,16 @@ export function ListingEditor({
       setError(t("listing.conductRequired"));
       return;
     }
+    if (needsEligibility && birthdate > isoYearsAgo(18)) {
+      setError(t("eligibility.under18"));
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
+      if (needsEligibility) {
+        await confirmTrainerEligibility({ birthdate: birthdate || null, attested });
+      }
       const fields = {
         headline: headline.trim() || null,
         bioLong: bio.trim() || null,
@@ -218,8 +254,9 @@ export function ListingEditor({
       if (planStillPending) {
         await upsertMyListing({ ...fields, status: "active" });
       }
+      // A first request sends its proof and the request together.
       if (reviewDraft?.ready) await reviewDraft.submit();
-      else if (needsApplication) await submitTrainerApplication();
+      if (needsApplication) await submitTrainerApplication();
       markClean();
       toast.show(
         reviewDraft?.ready || needsApplication
@@ -230,7 +267,8 @@ export function ListingEditor({
       router.refresh();
     } catch (err) {
       const raw = err instanceof Error ? err.message : "";
-      setError(raw.includes("setup_required") ? t("listing.needPlanAndAvailability") : raw || t("error"));
+      const key = errorKey(raw);
+      setError(key ? t(key) : raw || t("error"));
       toast.show(
         reviewing || needsApplication
           ? t("toast.verificationSubmitFailed")
@@ -320,6 +358,34 @@ export function ListingEditor({
           </div>
           <p className="text-xs text-muted-foreground">{t(`statusHint.${status}`)}</p>
         </div>
+
+        {needsEligibility && (
+          <div className="space-y-3 rounded-lg border border-border p-3">
+            <p className="text-sm font-medium">{t("eligibility.title")}</p>
+            <Input
+              type="date"
+              label={t("eligibility.birthdate")}
+              hint={t("eligibility.birthdateHint")}
+              value={birthdate}
+              max={isoYearsAgo(18)}
+              onChange={(e) => {
+                setBirthdate(e.target.value);
+                setError(null);
+              }}
+            />
+            <label htmlFor="studio-attest" className="flex items-start gap-2 text-xs">
+              <Checkbox
+                id="studio-attest"
+                checked={attested}
+                onChange={(checked) => {
+                  setAttested(checked);
+                  setError(null);
+                }}
+              />
+              <span className="leading-relaxed text-muted-foreground">{t("eligibility.attest")}</span>
+            </label>
+          </div>
+        )}
 
         {isFirstListing && (
           <ConsentCheckboxRow

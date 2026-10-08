@@ -1,4 +1,4 @@
-# Pacergo M5 — Trust & Safety + Polish Implementation Plan
+# PacerGo M5 — Trust & Safety + Polish Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -579,10 +579,10 @@ export default function ReportScreen() {
   async function submit() {
     try {
       await report.mutateAsync({ reportedId: id, reason, details });
-      Alert.alert('Pacergo', t('safety.reported'));
+      Alert.alert('PacerGo', t('safety.reported'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('safety.error'));
+      Alert.alert('PacerGo', t('safety.error'));
     }
   }
 
@@ -637,7 +637,7 @@ Add `const block = useBlock();` after the existing hooks. Then, inside the final
             label={t('safety.block')}
             variant="ghost"
             onPress={() =>
-              Alert.alert('Pacergo', t('safety.blockConfirm'), [
+              Alert.alert('PacerGo', t('safety.blockConfirm'), [
                 { text: t('bookingDetail.cancel'), style: 'cancel' },
                 {
                   text: t('safety.block'),
@@ -717,7 +717,7 @@ Add this function in the component (after `openChat`):
   async function shareDetails() {
     if (!booking) return;
     await Share.share({
-      message: `Pacergo session with ${name ?? ''} — ${booking.scheduled_start ?? ''} at ${
+      message: `PacerGo session with ${name ?? ''} — ${booking.scheduled_start ?? ''} at ${
         booking.location_name ?? ''
       }`,
     });
@@ -941,7 +941,7 @@ import { useDeleteAccount } from '@/features/account/useDeleteAccount';
   const del = useDeleteAccount();
 
   function confirmDelete() {
-    Alert.alert('Pacergo', t('settings.deleteConfirm'), [
+    Alert.alert('PacerGo', t('settings.deleteConfirm'), [
       { text: t('bookingDetail.cancel'), style: 'cancel' },
       {
         text: t('settings.deleteAccount'),
@@ -950,7 +950,7 @@ import { useDeleteAccount } from '@/features/account/useDeleteAccount';
           try {
             await del.mutateAsync();
           } catch {
-            Alert.alert('Pacergo', t('settings.deleteError'));
+            Alert.alert('PacerGo', t('settings.deleteError'));
           }
         },
       },
@@ -1054,5 +1054,5 @@ git commit -m "docs: M5 trust & safety notes"
 
 **Verification boundary:** live behaviour requires migrations `0001`–`0007` applied. Logic, SQL, screens, hooks are built and unit/bundle-verified.
 
-**v1 (M0–M5) is feature-complete.** Post-v1 is **M6** — in-app payments + Pacergo commission, enabling the Running/Hiking activities, and LINE + phone-OTP auth.
+**v1 (M0–M5) is feature-complete.** Post-v1 is **M6** — in-app payments + PacerGo commission, enabling the Running/Hiking activities, and LINE + phone-OTP auth.
 ```

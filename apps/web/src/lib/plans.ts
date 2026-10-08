@@ -3,7 +3,6 @@
 import {
   applyProfileToPlan,
   calculateNutrition,
-  withProteinGrams,
   generateTrainingPlan,
   planInputsSignature,
   toFitnessProfile,
@@ -54,19 +53,11 @@ export async function saveOnboardingAnswers(input: {
   gymEquipment: GymEquipmentAnswers;
   /** Pass "built" from the nutrition flow; omit to keep the current status. */
   nutritionStatus?: NutritionStatus;
-  /**
-   * Keep this protein target instead of the goal formula. Plan generation
-   * passes the saved grams so a new plan does not replace them.
-   */
-  proteinGrams?: number;
 }): Promise<{ nutrition: NutritionTargets | null; updatedAt: string }> {
   const supabase = createSupabaseBrowserClient();
   const profile = toFitnessProfile(input.answers, input.trainingPreferences, input.gymEquipment);
-  const calculated = calculateNutrition(profile);
-  const nutrition =
-    calculated && input.proteinGrams != null
-      ? withProteinGrams(calculated, input.proteinGrams, profile.weightKg ?? 0)
-      : calculated;
+  // Protein (like calories) is always our formula — users can't set their own.
+  const nutrition = calculateNutrition(profile);
   const { data, error } = await supabase.rpc("save_onboarding_answers", {
     p_about_you: input.answers,
     p_training_preferences: input.trainingPreferences,

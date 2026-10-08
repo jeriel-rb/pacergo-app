@@ -27,7 +27,7 @@ export default function OnboardingScreen() {
       activityIds: store.activityIds,
     });
     if (!parsed.success) {
-      Alert.alert('Pacergo', t('onboarding.ageError'));
+      Alert.alert('PacerGo', t('onboarding.ageError'));
       return;
     }
     try {
@@ -40,7 +40,7 @@ export default function OnboardingScreen() {
       store.reset();
       router.replace('/(tabs)');
     } catch {
-      Alert.alert('Pacergo', t('onboarding.saveError'));
+      Alert.alert('PacerGo', t('onboarding.saveError'));
     }
   }
 

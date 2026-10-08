@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Users,
   Sparkles,
+  ClipboardList,
   Apple,
   UserCog,
   ClipboardCheck,
@@ -83,23 +83,20 @@ export function HomeView({
     setToday(formatHeaderDate(new Date(), locale, weekdays));
   }, [locale, weekdays]);
 
-  // Only "Find" is live today; the rest are flagged until their features land.
   const primaryActions: QuickAction[] = [
-    {
-      icon: Users,
-      label: t("actions.find"),
-      tint: "bg-gradient-to-br from-primary/20 to-indigo-500/10 text-primary",
-      href: trainersHref,
-    },
     {
       icon: Sparkles,
       label: t("actions.aiPlan"),
       tint: "bg-violet-500/10 text-violet-500",
-      // With a plan, start a blank onboarding for a new one — existing plans
-      // live under "My Plans" in the nav. Without one, /ai-plan also
-      // resumes an interrupted build.
-      href: getLocalizedPath(hasActivePlan ? "/ai-plan/new" : "/ai-plan", locale),
-      beta: true,
+      // With any saved plan, land on My Plans (pick one, or start a new one
+      // there). Without one, /ai-plan resumes an interrupted build or opens setup.
+      href: getLocalizedPath(hasActivePlan ? "/ai-plan/my-plans" : "/ai-plan", locale),
+    },
+    {
+      icon: ClipboardList,
+      label: t("actions.myPlans"),
+      tint: "bg-blue-500/10 text-blue-500",
+      href: getLocalizedPath("/ai-plan/my-plans", locale),
     },
     {
       icon: Apple,

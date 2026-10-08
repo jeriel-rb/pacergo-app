@@ -1,5 +1,5 @@
 /**
- * Pacergo business timezone.
+ * PacerGo business timezone.
  *
  * Sessions happen in Taiwan. Store UTC (`timestamptz`); parse wall-clock
  * inputs and render all user/admin timestamps in Asia/Taipei so a "2pm"

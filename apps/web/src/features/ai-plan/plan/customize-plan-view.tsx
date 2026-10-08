@@ -39,11 +39,8 @@ import {
   REST_TIMER_STEP_SEC,
   ONBOARDING_VARIETIES,
   TRAINING_PREFERENCES_DEFAULT,
-  calculateNutrition,
   generateTrainingPlan,
-  preservedProteinGrams,
   recommendSplit,
-  toFitnessProfile,
   resolveTrainingDays,
   trainingDaysComplete,
   trainingDaysCount,
@@ -292,14 +289,7 @@ export function CustomizePlanView({
         };
         if (!differs(next, { answers: current.answers, trainingPreferences: current.trainingPreferences, gymEquipment: current.gymEquipment })) return;
       }
-      const calculated = calculateNutrition(
-        toFitnessProfile(next.answers, next.trainingPreferences, next.gymEquipment),
-      );
-      const proteinGrams =
-        current.nutritionStatus === "built"
-          ? preservedProteinGrams(current.nutrition, calculated)
-          : undefined;
-      await saveOnboardingAnswers({ userId, ...next, proteinGrams });
+      await saveOnboardingAnswers({ userId, ...next });
     } catch {
       // Leave the profile as it was; the next profile save reconciles it.
     }

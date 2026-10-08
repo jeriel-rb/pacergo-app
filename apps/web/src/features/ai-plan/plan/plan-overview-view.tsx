@@ -14,7 +14,6 @@ import {
 import { useRouter } from "next/navigation";
 import { Loader2, RefreshCw } from "lucide-react";
 import { regeneratePlanUnderCurrentRules } from "@/lib/plans";
-import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/shared/components/ui/toast";
 import { useLocale } from "@/shared/hooks/use-locale";
@@ -92,7 +91,6 @@ export function PlanOverviewView({
         </Link>
         <div className="flex flex-1 items-center gap-2">
           <h1 className="text-lg font-semibold">{title}</h1>
-          <BetaBadge />
         </div>
       </div>
 

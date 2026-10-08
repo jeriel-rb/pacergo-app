@@ -88,7 +88,7 @@ describe("admin header (phone)", () => {
     expect(links).toHaveLength(2);
     // 1st: back out of the admin console — an icon, no text label
     expect(links[0]!.getAttribute("href")).toBe("/en");
-    expect(links[0]!.getAttribute("aria-label")).toBe("Back to Pacergo");
+    expect(links[0]!.getAttribute("aria-label")).toBe("Back to PacerGo");
     expect(links[0]!.textContent).toBe("");
     expect(links[0]!.querySelector("svg")).not.toBeNull();
     // 2nd: the avatar and the title
@@ -96,12 +96,12 @@ describe("admin header (phone)", () => {
     expect(links[1]!.getAttribute("href")).toBe("/en/admin");
   });
 
-  it("has no hard-coded Chinese suffix and no 'Back to Pacergo' text", () => {
+  it("has no hard-coded Chinese suffix and no 'Back to PacerGo' text", () => {
     path = "/en/admin";
     wrap("en", <AppHeader variant="admin" />);
     const text = screen.getByRole("banner").textContent ?? "";
     expect(text).not.toContain("陪練動");
-    expect(text).not.toContain("Back to Pacergo");
+    expect(text).not.toContain("Back to PacerGo");
     expect(text).not.toContain("—");
   });
 
@@ -110,6 +110,6 @@ describe("admin header (phone)", () => {
     wrap("zh", <AppHeader variant="admin" />);
     const header = screen.getByRole("banner");
     expect(header.textContent).toBe("A管理後台");
-    expect(within(header).getAllByRole("link")[0]!.getAttribute("aria-label")).toBe("返回 Pacergo");
+    expect(within(header).getAllByRole("link")[0]!.getAttribute("aria-label")).toBe("返回 PacerGo");
   });
 });

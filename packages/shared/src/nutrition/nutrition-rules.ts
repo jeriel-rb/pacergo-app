@@ -45,7 +45,9 @@ export interface NutritionRules {
  *  references, not settled policy. Change them here only, and bump
  *  `version` when you do. */
 export const DEFAULT_NUTRITION_RULES: NutritionRules = {
-  version: 1,
+  // v2: protein is always the formula — the user-set target was removed, so
+  // bumping recalculates (and drops) any target a user saved under v1.
+  version: 2,
   bmr: {
     weightCoef: 10,
     heightCoef: 6.25,

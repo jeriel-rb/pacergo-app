@@ -12,7 +12,6 @@ import {
   type TrainingPreferencesAnswers,
 } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
-import { BetaBadge } from "@/shared/components/atoms/beta-badge";
 import { cn } from "@/lib/utils";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { ABOUT_YOU_STEPS, type AboutYouStep } from "./about-you-steps";
@@ -102,7 +101,6 @@ export function HubView({ activePlanId }: { activePlanId: string | null }) {
           <h1 className="text-3xl font-extrabold uppercase tracking-tight">
             {t("hub.title")}
           </h1>
-          <BetaBadge />
         </div>
         <p className="text-muted-foreground">{t("hub.subtitle")}</p>
         {!allDone && <p className="text-sm text-muted-foreground">{t("hub.why")}</p>}

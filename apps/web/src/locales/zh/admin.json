@@ -7,7 +7,7 @@
     "orders": "訂單",
     "payouts": "撥款管理",
     "exports": "CSV 匯出",
-    "backToApp": "返回 Pacergo",
+    "backToApp": "返回 PacerGo",
     "back": "返回"
   },
   "title": "陪練審核",
@@ -46,13 +46,16 @@
   "docType": {
     "certification": "教練證／資格證明",
     "competition": "比賽經驗",
-    "application": "C 級陪練"
+    "application": "C 級陪練",
+    "background": "C 級運動背景證明"
   },
   "expected": {
     "coachCert": "審核標準：此項目需教練證照，台灣認可的教練證照皆可（例如：NASM-CPT、ACE……等）。",
     "experience": "審核標準：此項目不需教練證照——可接受校隊證明、賽事完賽證明（如：ITRA 分數、百岳完攀紀錄）或社團帶領經驗。",
-    "competition": "審核標準：需比賽得獎或成績證明（獎狀、名次證明、完賽成績）。"
+    "competition": "審核標準：需比賽得獎或成績證明（獎狀、名次證明、完賽成績）。",
+    "background": "審核標準：C 級不需教練證照，但需至少一項與此項目相關、可驗證的運動背景證明（相關課程修課、體育學校／科系在校、校隊，或相對應的運動經歷／競賽證明）。"
   },
+  "proofNotApproved": "請先核准此申請人每個項目的資格證明（C 級運動背景證明或教練證照），再核准陪練申請。",
   "viewDoc": "檢視文件（PDF）",
   "notesPlaceholder": "備註（選填，未通過時會顯示給陪練）…",
   "approve": "核准",
@@ -160,13 +163,13 @@
   },
   "orders": {
     "title": "訂單",
-    "subtitle": "查看訂單，並記錄退款、暫停與服務完成。款項以手動轉帳方式於 Pacergo 平台外完成。",
+    "subtitle": "查看訂單，並記錄退款、暫停與服務完成。款項以手動轉帳方式於 PacerGo 平台外完成。",
     "empty": "沒有符合此篩選的訂單。",
     "unknown": "未知",
     "amount": "金額",
     "withTrainer": "陪練：{{name}}",
     "actions": "帳本操作",
-    "actionsNotice": "此操作只會更新 Pacergo 內的訂單紀錄。退款與撥款皆以手動轉帳於平台外處理。",
+    "actionsNotice": "此操作只會更新 PacerGo 內的訂單紀錄。退款與撥款皆以手動轉帳於平台外處理。",
     "reasonPlaceholder": "原因說明（必填）…",
     "reasonRequired": "此操作需要填寫原因。",
     "history": "歷程",
@@ -303,7 +306,7 @@
     },
     "users": {
       "title": "使用者",
-      "subtitle": "所有 Pacergo 使用者——搜尋、依角色篩選並管理管理員權限",
+      "subtitle": "所有 PacerGo 使用者——搜尋、依角色篩選並管理管理員權限",
       "roleFilter": "依角色篩選",
       "role": {
         "all": "所有角色",

@@ -85,9 +85,9 @@ Explicit rules:
 ### Cited Findings
 - ACSM 2026: complex periodization **did not consistently** outperform simpler progressive training for average healthy adults; consistency and sufficient effort matter most; progression needed mainly for continued long-term progress. — [ACSM announcement](https://acsm.org/resistance-training-guidelines-update-2026/); [ACSM PDF](https://fit.com.my/wp-content/uploads/sites/2/2026/03/acsm-rt-2026.pdf)
 - RP sample mesocycle: start at MEV, add volume through MAV toward MRV (example 12→14→16→18→20 then deload to ~MV); weekly algorithm uses **live** soreness/performance scores to add 1–3 / hold / deload. — [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth)
-- RP coaching notes (prior research): beginners may go many weeks before systemic MRV; advanced often need unload sooner—4-week consumer plans often need only mild final unload for intermediate+, not hard deload for novices. — [RP back hypertrophy tips](https://rpstrength.com/blogs/articles/back-hypertrophy-training-tips) *(as cited in prior Pacergo notes)*
+- RP coaching notes (prior research): beginners may go many weeks before systemic MRV; advanced often need unload sooner—4-week consumer plans often need only mild final unload for intermediate+, not hard deload for novices. — [RP back hypertrophy tips](https://rpstrength.com/blogs/articles/back-hypertrophy-training-tips) *(as cited in prior PacerGo notes)*
 - Coleman et al. 2024: in a 9-week high-volume block, a mid-block 1-week **training cessation** deload did **not** improve hypertrophy vs continuous training and **favored continuous** for lower-body strength. — [PeerJ e16777](https://peerj.com/articles/16777/)
-- Prior Pacergo periodization notes: implementable W1→W4 schemes include novice linear (flat volume), mild volume undulation (+1–2 sets), mild RIR ramp—not weekly goal-phase hopping. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md)
+- Prior PacerGo periodization notes: implementable W1→W4 schemes include novice linear (flat volume), mild volume undulation (+1–2 sets), mild RIR ramp—not weekly goal-phase hopping. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md)
 
 ### Inferences — deterministic 4-week volume curves (generation-time)
 
@@ -118,7 +118,7 @@ Without 1RM, prescribe **rep ranges + RIR targets + double-progression / 2-for-2
 ### Cited Findings
 - ACSM 2009 (evidence grade **B**): when training at a specific RM load, apply a **2–10% load increase** when the individual can perform the current workload for **1–2 reps over** the desired number on **two consecutive** sessions (smaller % for small muscles, larger for large). — [Medscape ACSM table](https://www.medscape.com/viewarticle/717047_9); [ACSM MSSE 2009](https://journals.lww.com/acsm-msse/fulltext/2009/03000/progression_models_in_resistance_training.26.aspx)
 - NSCA / Baechle & Earle **2-for-2 rule** (coaching textbook): if athlete performs **≥2 reps over** assigned goal on the **last set** for **two consecutive workouts**, increase load next session. — [NASM progressive overload blog](https://www.nasm.org/resource-center/blog/training/progressive-overload-explained-programming-progress-for-every-client); industry attribution to Graves & Baechle — [Critical Bench summary](https://criticalbench.com/increase_weight.htm)
-- Double progression (reps within a range, then load): standard coaching/consumer teaching aligned with 2-for-2 (e.g. hit top of 8–12 → add load, drop toward bottom of range). — [NASM](https://www.nasm.org/resource-center/blog/training/progressive-overload-explained-programming-progress-for-every-client); prior Pacergo report — [Deterministic workout plan progression.md](../../reports/Deterministic%20workout%20plan%20progression.md)
+- Double progression (reps within a range, then load): standard coaching/consumer teaching aligned with 2-for-2 (e.g. hit top of 8–12 → add load, drop toward bottom of range). — [NASM](https://www.nasm.org/resource-center/blog/training/progressive-overload-explained-programming-progress-for-every-client); prior PacerGo report — [Deterministic workout plan progression.md](../../reports/Deterministic%20workout%20plan%20progression.md)
 - Helms et al. / Zourdos RIR-based RPE: RPE 10 = 0 RIR, 9 = 1 RIR, etc.; useful for load autoregulation; novices less accurate than experienced; accuracy better within ~**0–3 RIR**. — [PMC 4961270](https://pmc.ncbi.nlm.nih.gov/articles/PMC4961270/)
 - Helms et al. 2018: RPE-based loading can match %-1RM programs for strength when sets/reps matched; some individuals may prefer RPE. — [Frontiers 2018](https://www.frontiersin.org/journals/physiology/articles/10.3389/fphys.2018.00247/full)
 - ACSM 2026: training to failure **not necessary**; sufficient effort can be ~**2–3 RIR**; exact RIR targets still under-specified. Load range for hypertrophy can be broad (~30–100% 1RM) if effort is high. — [ACSM PDF](https://fit.com.my/wp-content/uploads/sites/2/2026/03/acsm-rt-2026.pdf)
@@ -160,7 +160,7 @@ A mild **effort ramp** (leave more reps in reserve early, push closer mid-late b
 - Robinson / Pelland et al. 2024 meta-regression: hypertrophy increased as estimated RIR decreased (closer to failure); **strength** showed **negligible** RIR relationship; authors caution RIR was **estimated from study descriptions** (exploratory). — [Sports Medicine 2024](https://link.springer.com/article/10.1007/s40279-024-02069-2); [PubMed 38970765](https://pubmed.ncbi.nlm.nih.gov/38970765/)
 - Refalo et al. 2024: similar hypertrophy training to failure vs **1–2 RIR** in trained individuals; non-failure may improve fatigue resistance. — [Taylor & Francis](https://www.tandfonline.com/doi/full/10.1080/02640414.2024.2321021)
 - Helms/Zourdos: RIR accuracy poorer in novices and farther from failure; practice needed before sole reliance on RIR. — [PMC 4961270](https://pmc.ncbi.nlm.nih.gov/articles/PMC4961270/)
-- Prior Pacergo inference: mild intensity via RIR ~3 → ~1–2 across block when %1RM unknown. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md)
+- Prior PacerGo inference: mild intensity via RIR ~3 → ~1–2 across block when %1RM unknown. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md)
 
 ### Inferences — prescribed RIR schedules (PARAMETER tables)
 
@@ -231,7 +231,7 @@ At generation time, only **static onboarding proxies** (experience, days/week, s
 ### Cited Findings
 - RP weekly volume algorithm explicitly uses **prior-week soreness and performance** scores—live by definition. — [RP landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth)
 - Helms/Zourdos: RIR/RPE autoregulation assumes in-session ratings; novices less accurate. — [PMC 4961270](https://pmc.ncbi.nlm.nih.gov/articles/PMC4961270/)
-- Fitbod-style recovery windows / estimated strength from history are **LIVE FEEDBACK** architectures (prior Pacergo consumer-apps research). — [periodization / consumer apps notes](../Deterministic%20workout%20plan%20progression/periodization_rules.md); [Fitbod algorithm](https://fitbod.me/blog/fitbod-algorithm/)
+- Fitbod-style recovery windows / estimated strength from history are **LIVE FEEDBACK** architectures (prior PacerGo consumer-apps research). — [periodization / consumer apps notes](../Deterministic%20workout%20plan%20progression/periodization_rules.md); [Fitbod algorithm](https://fitbod.me/blog/fitbod-algorithm/)
 - Bell survey: deload triggers = stalled performance, soreness, joint aches—observed during training, not at signup. — [Sports Medicine - Open 2024](https://link.springer.com/article/10.1186/s40798-024-00691-y)
 - ACSM 2026 / NSCA themes: individualize for adherence, total stress, training status—status is an onboarding-compatible construct. — [ACSM announcement](https://acsm.org/resistance-training-guidelines-update-2026/); [NSCA frequency](https://www.nsca.com/education/articles/kinetic-select/determination-of-resistance-training-frequency/)
 
@@ -281,7 +281,7 @@ Keep the **same 4-week skeleton and progression machinery**; change **parameters
 - Robinson et al.: hypertrophy more sensitive to proximity-to-failure than strength. — [Sports Medicine 2024](https://link.springer.com/article/10.1007/s40279-024-02069-2)
 - Pelland et al.: strength gains plateau earlier on weekly sets than hypertrophy—high set ramps less useful for pure strength. — [SportRxiv](https://sportrxiv.org/index.php/server/preprint/view/460/version/587%E2%81%A0)
 - RP: during fat loss, MV-level volume can maintain muscle—implies not maximizing MAV→MRV while dieting. — [RP landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth)
-- Prior Pacergo synthesis: fat-loss RT progression ≈ hypertrophy; manage energy via cardio/steps separately. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md)
+- Prior PacerGo synthesis: fat-loss RT progression ≈ hypertrophy; manage energy via cardio/steps separately. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md)
 
 ### Inferences — parameter delta table (not separate engines)
 
@@ -331,7 +331,7 @@ Evidence classes abbreviated: SS = strongly supported, RS = reasonably supported
 ---
 
 ## Cross-cutting gaps (report-writer)
-- Exact integer tables for Pacergo onboarding → MEV are **engineering choices** informed by—but not dictated by—ACSM/Schoenfeld/RP.
+- Exact integer tables for PacerGo onboarding → MEV are **engineering choices** informed by—but not dictated by—ACSM/Schoenfeld/RP.
 - 4-week RCTs of consumer “app periodization” are scarce; most evidence is 6–12+ weeks or coaching practice.
 - Fractional vs direct set accounting must be chosen and frozen for the product; both are defensible.
 - Do not fabricate readiness thresholds, HRV gates, or muscle-specific MRV as if they were position-stand rules.

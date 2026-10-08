@@ -23,7 +23,7 @@ export default function ProfileScreen() {
       const uri = result.assets[0].uri;
       await (kind === 'avatar' ? setAvatar : setBanner).mutateAsync(uri);
     } catch {
-      Alert.alert('Pacergo', t('profile.uploadError'));
+      Alert.alert('PacerGo', t('profile.uploadError'));
     }
   }
 
@@ -31,7 +31,7 @@ export default function ProfileScreen() {
     try {
       await Linking.openURL(supportMailto(t('profile.supportSubject')));
     } catch {
-      Alert.alert('Pacergo', t('profile.supportError'));
+      Alert.alert('PacerGo', t('profile.supportError'));
     }
   }
 

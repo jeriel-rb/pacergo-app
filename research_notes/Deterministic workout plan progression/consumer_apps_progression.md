@@ -2,7 +2,7 @@
 
 Research window: sources preferred 2022–2026; older material flagged inline. Focus: public product docs, help centers, company blogs, and credible reviews. Not medical advice.
 
-**Scope note for Pacergo:** Pure 4-week plan generation (same inputs → same plan) can reuse *templates, ladders, experience gates, and pre-scheduled volume/complexity ramps*. Anything that needs logged sets, RiR, Max Effort days, or coach messaging is marked **LIVE FEEDBACK** and is out of scope for generation-time logic.
+**Scope note for PacerGo:** Pure 4-week plan generation (same inputs → same plan) can reuse *templates, ladders, experience gates, and pre-scheduled volume/complexity ramps*. Anything that needs logged sets, RiR, Max Effort days, or coach messaging is marked **LIVE FEEDBACK** and is out of scope for generation-time logic.
 
 ---
 
@@ -56,7 +56,7 @@ High-quality products use **both**, but on different timescales: keep core lifts
 
 ### Inferences
 - Deterministic pattern that matches best apps: **anchor movements fixed for all 4 weeks**; optional **week-indexed accessory or regression→progression swaps** (especially bodyweight), never random weekly reshuffles of compounds.
-- Hevy’s default “Balanced ≈ 6 weeks” implies a 4-week Pacergo plan should default to **Consistent**, not Variable.
+- Hevy’s default “Balanced ≈ 6 weeks” implies a 4-week PacerGo plan should default to **Consistent**, not Variable.
 - Freeletics-style **movement ladders** (same pattern, harder variant) are fully deterministic if keyed off week number + experience, not mastery tests—though Freeletics itself gates on performance (**LIVE FEEDBACK**).
 
 ### Gaps
@@ -83,7 +83,7 @@ Public product docs rarely distinguish “absolute beginner” vs “&lt;1 year�
 - Cleveland Clinic progressive overload guidance (general, not app-specific): change one variable at a time; example add ~5 lb if ≥5 reps left on last set; aim ~6–15 reps; when 15 is easy, drop reps and add load — [Cleveland Clinic](https://health.clevelandclinic.org/progressive-overload).
 
 ### Inferences
-- For Pacergo tiers: treat **absolute beginner** as Fitbod/Hevy Beginner + Freeletics Start Smart/Strong: fewer technical variants, moderate hypertrophy reps (8–12), modest set counts, no failure prescription.
+- For PacerGo tiers: treat **absolute beginner** as Fitbod/Hevy Beginner + Freeletics Start Smart/Strong: fewer technical variants, moderate hypertrophy reps (8–12), modest set counts, no failure prescription.
 - Treat **&lt;1 year / early experience** closer to Intermediate: same compounds, slightly higher weekly volume or accessory count, optional unilateral/harder variants in weeks 3–4—not a jump to advanced Olympic lifts.
 - Double progression inside a fixed range (hit top of 8–10 → bump load, drop toward bottom) is the dominant *user-facing* rule even when the app doesn’t automate it (Caliber, Strong, Hevy logging).
 
@@ -111,7 +111,7 @@ Consumer guidance converges on a **two-layer warm-up**: (1) short general raise-
 - Strong: known for warm-up **calculator** (execution aid for load ramps), not a programmed mobility circuit — [Mesostrength comparison 2026](https://mesostrength.com/blog/best-apps-progressive-overload-training).
 
 ### Inferences
-- Best deterministic default for Pacergo general fitness / beginners: **~5–8 min movement-pattern warm-up** (no equipment required) + **1–3 ramp sets on the session’s heaviest compound** when load-based; omit ramp sets for bodyweight-only sessions (mirrors Fitbod rules).
+- Best deterministic default for PacerGo general fitness / beginners: **~5–8 min movement-pattern warm-up** (no equipment required) + **1–3 ramp sets on the session’s heaviest compound** when load-based; omit ramp sets for bodyweight-only sessions (mirrors Fitbod rules).
 - Prefer dynamic mobility over mandatory cardio machines for Taiwan gym + outdoor companion use cases; optional “light cardio 3–5 min” as an alternate template when equipment is available.
 - Do not put long static stretching before strength as the primary warm-up (Nike PT guidance).
 
@@ -140,7 +140,7 @@ Marketing often says “AI,” but public engineering detail is sparse. Document
 
 ### Inferences
 - “AI” in fitness apps usually means **personalized recommendation / coach branding**, not generative LLM programming at plan-build time.
-- Pacergo’s no-LLM generation stance aligns publicly with **Hevy Trainer’s positioning** and with **coach-template products** (Ladder/Peloton/Caliber plans), more than with Fitbod’s continuous ML recommender.
+- PacerGo’s no-LLM generation stance aligns publicly with **Hevy Trainer’s positioning** and with **coach-template products** (Ladder/Peloton/Caliber plans), more than with Fitbod’s continuous ML recommender.
 - Anything requiring RiR, Max Effort AMRAP, coach video review, or recovery % from wearables is **LIVE FEEDBACK**.
 
 ### Gaps
@@ -150,13 +150,13 @@ Marketing often says “AI,” but public engineering detail is sparse. Document
 
 ---
 
-## Pacergo reuse patterns (deterministic 4-week composer)
+## PacerGo reuse patterns (deterministic 4-week composer)
 
 ### Takeaway
 The reusable core is a **fixed mesocycle template**: same main lifts for 4 weeks, week-indexed volume/complexity/rest, experience-gated exercise pools, and a two-layer warm-up—without needing logged performance at generation time.
 
-### Cited Findings (pattern → source → Pacergo fit)
-- **4-week progressive block** with scheduled increases in reps/load/volume — Peloton PUTV & Strength+ program length — [PUTV](https://www.onepeloton.com/classes/pump-up-the-volume); [Strength+](https://www.onepeloton.com/en-CA/strength-plus-app). → Pacergo’s 4-week horizon matches market norms.
+### Cited Findings (pattern → source → PacerGo fit)
+- **4-week progressive block** with scheduled increases in reps/load/volume — Peloton PUTV & Strength+ program length — [PUTV](https://www.onepeloton.com/classes/pump-up-the-volume); [Strength+](https://www.onepeloton.com/en-CA/strength-plus-app). → PacerGo’s 4-week horizon matches market norms.
 - **Keep exercises stable inside the block; refresh ~6–8 weeks** — Hevy Balanced default; Caliber community/blog — [Hevy Settings](https://help.hevyapp.com/hc/en-us/articles/43572343844247-How-Hevy-Trainer-Settings-Work); [Caliber beginner routine](https://caliberstrong.com/blog/great-beginners-workout-routine/). → Default: no mid-plan exercise roulette.
 - **Complexity ladders as deterministic overload** (when load unavailable) — Freeletics — [Progressive overload at home](https://www.freeletics.com/en/progressive-overload-at-home/). → Week index can pick ladder rung (regression → base → harder variant).
 - **Experience gates exercise difficulty, not only volume** — Fitbod / Hevy Level — [Fitbod Experience](https://help.fitbod.me/hc/en-us/articles/29976088485143-Fitness-Experience); [Hevy Settings](https://help.hevyapp.com/hc/en-us/articles/43572343844247-How-Hevy-Trainer-Settings-Work). → Separate beginner vs early-experience exercise pools.
@@ -169,10 +169,10 @@ The reusable core is a **fixed mesocycle template**: same main lifts for 4 weeks
 - **Flag LIVE FEEDBACK out of generation:** RiR, Max Effort AMRAPs, strength decay after absences, muscle recovery %, coach swaps, Freeletics mastery unlocks, Future form video — Fitbod/Future/Freeletics sources above.
 
 ### Inferences
-- Highest-ROI Pacergo reuse: **coach-template mesocycle + Freeletics complexity ladder + Fitbod/Hevy experience gating + Nike/Caliber warm-up recipe**.
+- Highest-ROI PacerGo reuse: **coach-template mesocycle + Freeletics complexity ladder + Fitbod/Hevy experience gating + Nike/Caliber warm-up recipe**.
 - Avoid copying Fitbod’s “new workout every open” UX for a saved 4-week plan; users in Caliber/Hevy Consistent mode expect **repeatability**.
 - Do not claim “AI coach” if generation is rule-based—Hevy’s transparency is a better product narrative for deterministic systems.
 
 ### Gaps
-- No Pacergo-specific competitive teardown of in-app screens was performed in this research pass (text sources only).
-- Exact numeric week-over-week set increments used by Ladder/Peloton instructors inside a block remain non-public; Pacergo must invent explicit tables informed by these patterns, not copy proprietary schedules.
+- No PacerGo-specific competitive teardown of in-app screens was performed in this research pass (text sources only).
+- Exact numeric week-over-week set increments used by Ladder/Peloton instructors inside a block remain non-public; PacerGo must invent explicit tables informed by these patterns, not copy proprietary schedules.

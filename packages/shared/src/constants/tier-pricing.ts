@@ -54,7 +54,7 @@ export const TIER_REQUIRES_COMPETITION: Record<Tier, boolean> = {
  *                   licence would filter out the experienced athletes who are
  *                   the actual supply. Accepts athletic proof (varsity records,
  *                   race finishes such as ITRA scores or 百岳 summits) or
- *                   leadership experience (club leading, Pacergo reviews).
+ *                   leadership experience (club leading, PacerGo reviews).
  * Tier A always additionally requires competition-award proof, regardless of
  * kind. Review stays manual (admin queue); this only drives the requested
  * document type and the copy shown to trainers.

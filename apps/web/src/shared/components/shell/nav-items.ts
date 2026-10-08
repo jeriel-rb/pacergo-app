@@ -15,8 +15,8 @@ export interface NavItem extends ShellNavItem {
 }
 
 /**
- * The primary tabs. The mobile bottom bar shows all five as equal-width
- * tabs (no raised center action); `settings` opens the SettingsSheet instead
+ * The primary tabs. The mobile bottom bar shows all five, with `trainers`
+ * as the raised center action (keep the count odd so it stays centered); `settings` opens the SettingsSheet instead
  * of navigating. Nutrition and Fitness Profile live in the home page's quick
  * actions. The desktop sidebar shows everything but `settings`, which
  * lives in its footer.
@@ -24,7 +24,7 @@ export interface NavItem extends ShellNavItem {
 export const NAV_ITEMS: NavItem[] = [
   { key: "home", href: "/", icon: Home },
   { key: "myPlans", href: "/ai-plan/my-plans", icon: ClipboardList },
-  { key: "trainers", href: "/trainers", icon: Dumbbell },
+  { key: "trainers", href: "/trainers", icon: Dumbbell, center: true },
   { key: "messages", href: "/messages", icon: MessageCircle },
   { key: "settings", href: "/profile", icon: Settings, sheet: "settings" },
 ];

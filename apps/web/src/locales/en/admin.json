@@ -7,7 +7,7 @@
     "orders": "Orders",
     "payouts": "Payouts",
     "exports": "CSV export",
-    "backToApp": "Back to Pacergo",
+    "backToApp": "Back to PacerGo",
     "back": "Back"
   },
   "title": "Trainer verification",
@@ -46,13 +46,16 @@
   "docType": {
     "certification": "Certification / qualification proof",
     "competition": "Competition",
-    "application": "Tier C trainer"
+    "application": "Tier C trainer",
+    "background": "Tier C sports background"
   },
   "expected": {
     "coachCert": "Review bar: this activity requires a coaching licence — any Taiwan-recognized certification (e.g. NASM-CPT, ACE, etc.).",
     "experience": "Review bar: no coaching licence needed for this activity — varsity records, race finishes (e.g. ITRA score, 百岳 summit log), or club-leading experience are acceptable.",
-    "competition": "Review bar: competition result proof required (award certificate, placement record, or race result)."
+    "competition": "Review bar: competition result proof required (award certificate, placement record, or race result).",
+    "background": "Review standard: Tier C needs no coaching licence, but at least one verifiable sports-background proof for this activity (relevant coursework, sports school/department enrolment, a school team, or matching sports/competition history)."
   },
+  "proofNotApproved": "Approve this applicant's proof for each activity (Tier C sports background or a coaching certification) before approving the trainer application.",
   "viewDoc": "View document (PDF)",
   "notesPlaceholder": "Optional note (shown to the trainer if rejected)…",
   "approve": "Approve",
@@ -160,13 +163,13 @@
   },
   "orders": {
     "title": "Orders",
-    "subtitle": "Review orders and record refunds, holds and service completion. Payments are made by manual transfer outside Pacergo.",
+    "subtitle": "Review orders and record refunds, holds and service completion. Payments are made by manual transfer outside PacerGo.",
     "empty": "No orders match this filter.",
     "unknown": "Unknown",
     "amount": "Amount",
     "withTrainer": "With {{name}}",
     "actions": "Ledger actions",
-    "actionsNotice": "This only updates the order record in Pacergo. Any refund or payout is sent by manual transfer, outside the platform.",
+    "actionsNotice": "This only updates the order record in PacerGo. Any refund or payout is sent by manual transfer, outside the platform.",
     "reasonPlaceholder": "Reason note (required)…",
     "reasonRequired": "This action requires a reason note.",
     "history": "History",
@@ -303,7 +306,7 @@
     },
     "users": {
       "title": "Users",
-      "subtitle": "Everyone on Pacergo — search, filter by role, and manage admin access",
+      "subtitle": "Everyone on PacerGo — search, filter by role, and manage admin access",
       "roleFilter": "Filter by role",
       "role": {
         "all": "All roles",

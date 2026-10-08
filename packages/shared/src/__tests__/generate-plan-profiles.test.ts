@@ -234,7 +234,7 @@ describe("goal, experience and obstacle drive the prescription", () => {
           const p = plan({ answers: { obstacle, goal }, prefs: { experience } });
           for (const s of sessions(p)) {
             expect(s.main.length, `${obstacle}/${goal}/${experience}`).toBeGreaterThanOrEqual(3);
-            expect(s.warmup.length).toBeGreaterThan(0);
+            expect(s.warmup.length, `${obstacle}/${goal}/${experience} warm-up`).toBe(2);
             expect(s.cooldown.length).toBeGreaterThan(0);
           }
         }

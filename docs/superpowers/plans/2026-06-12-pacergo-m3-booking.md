@@ -1,4 +1,4 @@
-# Pacergo M3 — Booking Loop Implementation Plan
+# PacerGo M3 — Booking Loop Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -847,10 +847,10 @@ export default function RequestScreen() {
         companion_name: data?.detail?.display_name ?? null,
         companion_photo: data?.detail?.photo_url ?? null,
       });
-      Alert.alert('Pacergo', t('request.sent'));
+      Alert.alert('PacerGo', t('request.sent'));
       router.replace('/(tabs)/bookings');
     } catch {
-      Alert.alert('Pacergo', t('request.error'));
+      Alert.alert('PacerGo', t('request.error'));
     }
   }
 
@@ -1265,10 +1265,10 @@ export default function ReviewScreen() {
     const revieweeId = amSeeker ? booking.companion_id : booking.seeker_id;
     try {
       await submit.mutateAsync({ revieweeId, rating, comment });
-      Alert.alert('Pacergo', t('review.thanks'));
+      Alert.alert('PacerGo', t('review.thanks'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('review.error'));
+      Alert.alert('PacerGo', t('review.error'));
     }
   }
 

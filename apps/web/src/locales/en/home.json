@@ -12,6 +12,7 @@
   "actions": {
     "find": "Find partner",
     "aiPlan": "AI plan",
+    "myPlans": "My plans",
     "nutrition": "Nutrition",
     "fitnessProfile": "Fitness profile"
   },

@@ -262,7 +262,8 @@ describe("low-impact mode", () => {
     const session = firstSession(plan);
     const warmup = session.warmup.map((e) => e.slug);
     expect(warmup[0]).toBe("rowing"); // easy machine Raise when cardio types include rowing
-    expect(warmup).toEqual(expect.arrayContaining(["arm-circles", "leg-swings-stretch", "bodyweight-squat"]));
+    expect(warmup).toHaveLength(2); // Raise + one mobility drill
+    expect(["arm-circles", "leg-swings-stretch", "bodyweight-squat"]).toContain(warmup[1]);
     expect(warmup).not.toContain("jumping-jack");
     expect(warmup).not.toContain("high-knees");
     const cardio = plan.weeks.flatMap((w) => w.days.map((d) => d.session?.cardio?.exercise.slug)).filter(Boolean);

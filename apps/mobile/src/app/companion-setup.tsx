@@ -68,7 +68,7 @@ export default function CompanionSetup() {
     const v = validateOffering({ tier: draft.tier, priceNtd: draft.price_ntd, isFree: false });
     if (!v.ok) {
       Alert.alert(
-        'Pacergo',
+        'PacerGo',
         t('companionSetup.belowFloor', { min: TIER_PRICE_FLOORS[tier], tier }),
       );
       return;
@@ -79,7 +79,7 @@ export default function CompanionSetup() {
 
   async function finish() {
     if (store.offerings.length === 0) {
-      Alert.alert('Pacergo', t('companionSetup.needOffering'));
+      Alert.alert('PacerGo', t('companionSetup.needOffering'));
       return;
     }
     try {
@@ -97,13 +97,13 @@ export default function CompanionSetup() {
         status: 'active',
       });
       store.reset();
-      Alert.alert('Pacergo', t('companionSetup.saved'));
+      Alert.alert('PacerGo', t('companionSetup.saved'));
       router.replace('/companion-dashboard');
     } catch (e) {
       // Surface the server rule that failed (price floor / cert / competition
       // gate from the add_offering RPC) instead of a generic error.
       const detail = e instanceof Error && e.message ? `\n${e.message}` : '';
-      Alert.alert('Pacergo', `${t('companionSetup.error')}${detail}`);
+      Alert.alert('PacerGo', `${t('companionSetup.error')}${detail}`);
     }
   }
 

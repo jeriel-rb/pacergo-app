@@ -1,4 +1,4 @@
--- Pacergo init migration — schema, types, functions, RPCs (no RLS).
+-- PacerGo init migration — schema, types, functions, RPCs (no RLS).
 --
 -- Final schema in one file: the original 0001–0046 sequence, admin members,
 -- profile-setup single source, fitness-profile validation, and withdrawal /

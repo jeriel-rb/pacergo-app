@@ -43,9 +43,9 @@ export default function VerificationScreen() {
         activitySlug: slug,
         fileUri: result.assets[0].uri,
       });
-      Alert.alert('Pacergo', t('verification.submitted'));
+      Alert.alert('PacerGo', t('verification.submitted'));
     } catch {
-      Alert.alert('Pacergo', t('verification.error'));
+      Alert.alert('PacerGo', t('verification.error'));
     }
   }
 

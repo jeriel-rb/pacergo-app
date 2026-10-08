@@ -1,8 +1,8 @@
-# Pacergo M0 — Foundation Implementation Plan
+# PacerGo M0 — Foundation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Stand up the Pacergo Expo app skeleton — design system, theming, i18n, Supabase wiring, navigation, a core component kit, and the foundational database schema — so feature milestones (M1–M5) can build on it.
+**Goal:** Stand up the PacerGo Expo app skeleton — design system, theming, i18n, Supabase wiring, navigation, a core component kit, and the foundational database schema — so feature milestones (M1–M5) can build on it.
 
 **Architecture:** Expo (managed) + expo-router file-based navigation. NativeWind (Tailwind) expresses a Phantom-inspired design system via tokens. A React Context ThemeProvider supports dark/light/system. i18next + expo-localization provide en/zh-Hant with NTD/date/distance formatters. A Supabase client singleton (AsyncStorage-persisted session) connects to the existing project, with the foundational schema (profiles, activities, profile_activities) created via SQL migrations. TanStack Query + Zustand handle server and UI state.
 
@@ -67,7 +67,7 @@ Set these fields (leave other generated fields as-is):
 ```json
 {
   "expo": {
-    "name": "Pacergo",
+    "name": "PacerGo",
     "slug": "pacergo",
     "scheme": "pacergo",
     "newArchEnabled": true,
@@ -1476,7 +1476,7 @@ git commit -m "feat: foundational DB schema (profiles, activities, RLS, buckets)
 **Files:** Create `README.md`
 
 ```markdown
-# Pacergo
+# PacerGo
 
 Find an in-person workout companion in Taiwan — from certified pro trainers (Tier A) to experienced peers (Tier B) to training buddies (Tier C). React Native (Expo) + Supabase.
 

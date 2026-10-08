@@ -6,8 +6,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://pacergo.app"),
   title: {
-    default: "Pacergo",
-    template: "%s · Pacergo",
+    default: "PacerGo",
+    template: "%s · PacerGo",
   },
 };
 

@@ -42,11 +42,11 @@ function renderHome(hasActivePlan: boolean) {
 }
 
 describe("Home → AI plan button", () => {
-  it("starts a fresh onboarding (/ai-plan/new) when the user already has a plan", () => {
+  it("goes to My Plans (never a blank setup) when the user already has a plan", () => {
     renderHome(true);
-    const link = screen.getByRole("link", { name: /AI plan/i });
-    expect(link).toHaveAttribute("href", "/en/ai-plan/new");
-    expect(link.getAttribute("href")).not.toMatch(/\/plan\/|my-plans|setup|about-you/);
+    const link = screen.getByRole("link", { name: /^AI plan/i });
+    expect(link).toHaveAttribute("href", "/en/ai-plan/my-plans");
+    expect(link.getAttribute("href")).not.toMatch(/\/new|setup|about-you/);
   });
 
   it("goes through /ai-plan (which resumes an interrupted build) when there is no plan", () => {

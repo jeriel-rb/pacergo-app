@@ -1,4 +1,4 @@
-# Pacergo plan engine — product handbook
+# PacerGo plan engine — product handbook
 
 This folder is the **source of truth for how AI Plan works** — for product owners, designers, and engineers. It explains concepts in plain language, shows how pieces connect, and lists what is live vs leftover vs unfinished.
 
@@ -12,7 +12,7 @@ This folder is the **source of truth for how AI Plan works** — for product own
 
 ## One-sentence product model
 
-> Pacergo builds a **deterministic 4-week training plan** from onboarding answers + the exercise catalog, then (on web) helps the user **progress load session-to-session** from what they logged — without an LLM inventing workouts.
+> PacerGo builds a **deterministic 4-week training plan** from onboarding answers + the exercise catalog, then (on web) helps the user **progress load session-to-session** from what they logged — without an LLM inventing workouts.
 
 ## Two engines (do not conflate)
 

@@ -4,13 +4,13 @@
 
 **Owner:** Jeriel (dev lead) | **Client contact:** Aerion Tsai (蔡翊陽)
 
-**Stack:** Web app (existing Pacergo codebase), Supabase backend, Vercel hosting, NewebPay (藍新金流)
+**Stack:** Web app (existing PacerGo codebase), Supabase backend, Vercel hosting, NewebPay (藍新金流)
 
 **Languages:** zh-TW default + EN | **Themes:** light + dark | **Platform:** web only
 
 # 1. Project Summary
 
-Deliver two scope items on the Pacergo web app, end to end:
+Deliver two scope items on the PacerGo web app, end to end:
 
 - **Scope A:** Personalized Workout Plan Generator (Beta). Deterministic, rule-based, full 4-week plan.
 - **Scope B:** NewebPay per-order payments + trainer payout administration. Phase 1 simulated, Phase 2 live cutover.
@@ -195,7 +195,7 @@ Opened from A-4. Shows:
 ## 5.1 Core principles
 
 - **Per-order direct payment only.** No points, no wallet, no stored value, no subscriptions.
-- Flow: user selects trainer/service/date/time → system creates NTD order from listed price → user pays that order → platform records everything → after service, Pacergo settles trainer manually by bank transfer outside platform.
+- Flow: user selects trainer/service/date/time → system creates NTD order from listed price → user pays that order → platform records everything → after service, PacerGo settles trainer manually by bank transfer outside platform.
 - **Platform fee rule (business logic):** platform service fee = 5% of order price, deducted from trainer side. Customer pays displayed price. Trainer payable = 95%. Rounding rule must be documented.
 - Third-party processing fee: record actual rate/amount where provider exposes it. Not added to checkout, not deducted from trainer 95%.
 - **All funds go to client's own NewebPay account.** Developer never receives funds.
@@ -203,7 +203,7 @@ Opened from A-4. Shows:
 - Two-phase delivery behind a **payment-provider abstraction**:
     - **Phase 1 (M2/M3):** simulated provider. Full order, payment-record, payout-admin system (B-1 to B-9). No real money. Records are real.
     - **Phase 2 (M4):** swap simulated provider for live NewebPay (B-10). No change to rest of system.
-- NewebPay classified Pacergo as **platform collection-and-payout model (平台代收代付)**. Client must obtain corporate platform-merchant account. Design order/payout data model for this structure from day one so cutover requires no restructuring.
+- NewebPay classified PacerGo as **platform collection-and-payout model (平台代收代付)**. Client must obtain corporate platform-merchant account. Design order/payout data model for this structure from day one so cutover requires no restructuring.
 - Assumed integration pattern: signed trade request → hosted payment page → server notify (NotifyURL) + browser ReturnURL. Review against NewebPay spec (P-4) when received. Material deviation (sub-merchant onboarding APIs, mandated payout reporting, different API family) = change request, not defect.
 
 ## 5.2 Requirements

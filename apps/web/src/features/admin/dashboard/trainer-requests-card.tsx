@@ -8,7 +8,6 @@ import { ActionMenu, type ActionMenuItem } from "@/shared/components/atoms/actio
 import {
   ACTIVITY_META,
   formatInAppTimeZone,
-  isExperienceQualified,
   type ActivitySlug,
 } from "@pacergo/shared";
 import type { AdminVerification } from "@/lib/admin";
@@ -152,16 +151,16 @@ export function ReviewDialog({
   const decision = state?.decision;
 
   // Review is the only enforcement point for document kind, so spell out the
-  // per-activity bar: gym-style activities need a coaching licence, while
-  // accompaniment activities accept experience proof instead.
+  // bar per tier: C a sports-background proof, B a coach certification for
+  // the activity, A competition / award proof.
   const barKey =
     v?.doc_type === "competition"
       ? "expected.competition"
-      : v?.doc_type === "certification" && v.activity
-        ? isExperienceQualified(v.activity)
-          ? "expected.experience"
-          : "expected.coachCert"
-        : null;
+      : v?.doc_type === "background"
+        ? "expected.background"
+        : v?.doc_type === "certification"
+          ? "expected.coachCert"
+          : null;
 
   function close() {
     if (busy) return;
@@ -184,7 +183,9 @@ export function ReviewDialog({
       onClose();
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("error"));
+      const raw = e instanceof Error ? e.message : "";
+      // An application waits for each activity's proof to be approved first.
+      setError(raw.includes("proof_not_approved") ? t("proofNotApproved") : raw || t("error"));
       toast.show(t("toast.verificationUpdateFailed"), "destructive");
     } finally {
       setBusy(false);

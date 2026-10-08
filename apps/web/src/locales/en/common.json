@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "title": "Pacergo — Find your training partner",
+    "title": "PacerGo — Find your training partner",
     "description": "Pro trainers, experienced peers, or someone to just train with — near you."
   },
   "free": "Free",
@@ -32,13 +32,13 @@
   "pickDate": "Pick a date",
   "credits": {
     "title": "Credits & licenses",
-    "intro": "Pacergo is built on open-source work. Thank you to everyone below.",
+    "intro": "PacerGo is built on open-source work. Thank you to everyone below.",
     "artHeading": "Exercise & equipment illustrations",
     "artBody": "The line-art exercise and equipment illustrations come from Workout Guide by Bryl Lim, whose original pose artwork is from Everkinetic. Both are licensed under Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0).",
     "changesHeading": "Changes we made",
     "footerLink": "Open-source credits & licenses",
     "changesBody": "We use the illustrations as SVG files, without editing the files themselves, and recolor them on screen (brand blue in light mode, white in dark mode). Bryl Lim's files were themselves adapted from Everkinetic's originals; the changes are recorded per image in the manifest below.",
-    "licenseNote": "The illustrations remain under CC BY-SA 4.0. If you adapt them, you must credit the sources above and share your adaptation under the same license. This does not change the license of the rest of Pacergo.",
+    "licenseNote": "The illustrations remain under CC BY-SA 4.0. If you adapt them, you must credit the sources above and share your adaptation under the same license. This does not change the license of the rest of PacerGo.",
     "linksHeading": "Sources & license texts",
     "linkWorkoutGuide": "Workout Guide by Bryl Lim",
     "linkEverkinetic": "Everkinetic",

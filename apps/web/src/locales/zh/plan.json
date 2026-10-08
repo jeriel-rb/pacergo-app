@@ -199,6 +199,7 @@
   },
   "myPlans": {
     "title": "我的計畫",
+    "newPlan": "建立新計畫",
     "empty": "你尚未儲存任何計畫。",
     "createdOn": "建立於 {{date}}",
     "view": "查看",
@@ -265,12 +266,6 @@
     "protein": "蛋白質目標",
     "proteinUnit": "克／天",
     "proteinDetail": "約每公斤體重 {{perKg}} 克",
-    "proteinKept": "你已儲存的蛋白質目標是每天 {{saved}} 克。依目前的目標與經驗，建議改為每天 {{suggested}} 克（每公斤 {{perKg}} 克）。建立新的訓練計畫時會保留已儲存的目標。",
-    "useSuggested": "改用建議目標",
-    "proteinInput": "蛋白質目標（克／天）",
-    "proteinEditHint": "10–800 克。新的訓練計畫會保留這個數字。",
-    "proteinEditError": "請輸入 10 到 800 克之間的蛋白質目標。",
-    "saveProtein": "儲存蛋白質目標",
     "maintenance": "維持熱量：約 {{kcal}} 大卡／天",
     "goalNote": {
       "lose_weight": "設定略低於維持熱量，幫助穩定減脂。",

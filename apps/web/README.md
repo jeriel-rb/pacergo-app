@@ -1,6 +1,6 @@
 # @pacergo/web
 
-Pacergo product app - Next.js 15 (App Router) + React 19 + Tailwind v4 + shadcn-style components. Consumes shared domain types from `@pacergo/shared` and data from `@pacergo/api`.
+PacerGo product app - Next.js 15 (App Router) + React 19 + Tailwind v4 + shadcn-style components. Consumes shared domain types from `@pacergo/shared` and data from `@pacergo/api`.
 
 ## Run
 

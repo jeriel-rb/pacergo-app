@@ -19,10 +19,10 @@ export default function ReportScreen() {
   async function submit() {
     try {
       await report.mutateAsync({ reportedId: id, reason, details });
-      Alert.alert('Pacergo', t('safety.reported'));
+      Alert.alert('PacerGo', t('safety.reported'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('safety.error'));
+      Alert.alert('PacerGo', t('safety.error'));
     }
   }
 

@@ -85,7 +85,7 @@ export const MOCK_TRAINERS: TrainerProfile[] = [
     ],
     gym_memberships: [
       { name: 'World Gym', branch: '大安店' },
-      { name: 'Anytime Fitness', branch: '忠孝店' },
+      { name: '健身工廠', branch: '忠孝店' },
     ],
     availability: [
       { weekday: 1, start_minute: min(9), end_minute: min(18) },

@@ -634,7 +634,7 @@ function main() {
   schemaItems.push(...dedupedSchemaItems);
 
   const schemaParts = [
-    `-- Pacergo schema (final state, squashed from 0001–0046 baseline).
+    `-- PacerGo schema (final state, squashed from 0001–0046 baseline).
 -- RLS policies live in 0002_rls.sql; seed data in ../seeds/.
 
 do $$ begin

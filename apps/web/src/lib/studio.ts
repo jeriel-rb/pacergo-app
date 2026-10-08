@@ -41,12 +41,24 @@ export interface StudioVerification {
 /** Per-activity certification status, keyed by ActivitySlug (e.g. `gym`). */
 export type VerificationMap = Record<string, StudioVerification>;
 
+export interface TrainerEligibility {
+  /** ISO date, or null when we don't know it yet. */
+  birthdate: string | null;
+  attested: boolean;
+  /** 18+ and attested. */
+  eligible: boolean;
+}
+
 export interface MyListing {
   is_companion: boolean;
   /** Per-activity certification status (unlocks Tiers B & A). */
   verifications: VerificationMap;
   /** Per-activity competition-experience status (additionally unlocks Tier A). */
   competitions: VerificationMap;
+  /** Per-activity sports-background proof status (qualifies Tier C). */
+  backgrounds: VerificationMap;
+  /** 18+ and the truthfulness confirmation, required before any proof upload. */
+  eligibility: TrainerEligibility;
   /** First-time Tier C trainer request. Null until they submit. */
   application: { status: VerificationStatus; notes: string | null } | null;
   listing: StudioListing | null;
@@ -58,6 +70,8 @@ const EMPTY: MyListing = {
   is_companion: false,
   verifications: {},
   competitions: {},
+  backgrounds: {},
+  eligibility: { birthdate: null, attested: false, eligible: false },
   application: null,
   listing: null,
   offerings: [],
@@ -74,6 +88,8 @@ export async function getMyListing(): Promise<MyListing> {
     is_companion: r.is_companion ?? false,
     verifications: r.verifications ?? {},
     competitions: r.competitions ?? {},
+    backgrounds: r.backgrounds ?? {},
+    eligibility: r.eligibility ?? EMPTY.eligibility,
     application: r.application ?? null,
     listing: r.listing ?? null,
     offerings: r.offerings ?? [],

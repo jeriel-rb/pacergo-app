@@ -1,4 +1,4 @@
-# Pacergo — Product & Technical Design Spec
+# PacerGo — Product & Technical Design Spec
 
 - **Date:** 2026-06-12
 - **Status:** Approved (brainstorming complete) — ready for milestone implementation planning
@@ -10,7 +10,7 @@
 
 ## 1. Vision
 
-Pacergo helps anyone in Taiwan find an **in-person workout companion** near them — anywhere on a spectrum from a certified pro trainer to a peer who just wants to train together — and book a session in a few taps, **no gym membership or long-term coaching contract required**.
+PacerGo helps anyone in Taiwan find an **in-person workout companion** near them — anywhere on a spectrum from a certified pro trainer to a peer who just wants to train together — and book a session in a few taps, **no gym membership or long-term coaching contract required**.
 
 It feels playful and personal — Tinder-style profile discovery, **but with no swipe gestures** — wrapped in a premium, Phantom-wallet-grade dark UI.
 
@@ -54,7 +54,7 @@ Discover (feed / map) → Profile → Request session (time, place, duration, pr
    → Mark complete → Both leave a review
 ```
 
-**Money in v1:** the agreed NTD price is recorded only. There is **no real payment processing in v1**. The model is built so in-app payment + Pacergo commission slot in as the next milestone (M6).
+**Money in v1:** the agreed NTD price is recorded only. There is **no real payment processing in v1**. The model is built so in-app payment + PacerGo commission slot in as the next milestone (M6).
 
 ---
 
@@ -124,7 +124,7 @@ Discover (feed / map) → Profile → Request session (time, place, duration, pr
 
 ## 6. Design system — Phantom-inspired (dark + light)
 
-We use Phantom's **design language** (violet, dark, rounded, playful, glassy) — **not** its ghost mascot. Pacergo gets its own simple wordmark/mark (placeholder until branding exists).
+We use Phantom's **design language** (violet, dark, rounded, playful, glassy) — **not** its ghost mascot. PacerGo gets its own simple wordmark/mark (placeholder until branding exists).
 
 ### Color tokens
 - **Brand:** primary violet `#AB9FF2`, gradient to deep violet `#7C5CFF` for CTAs, soft violet glow on key actions.

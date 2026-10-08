@@ -85,7 +85,7 @@ Deprecated shim: `progressionSets()` always returns `0` so old callers don’t d
 | Term | Meaning |
 | --- | --- |
 | **Split** | Recurring sequence of focuses across training days |
-| **ai_custom** | “Let Pacergo pick the split” → `recommendSplit` |
+| **ai_custom** | “Let PacerGo pick the split” → `recommendSplit` |
 | **ppl_full_body** | Retired UI option still supported in code for old answers |
 | **Training days** | Which weekdays train (from frequency + optional day picks) |
 

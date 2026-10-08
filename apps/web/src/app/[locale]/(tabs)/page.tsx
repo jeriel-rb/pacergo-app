@@ -1,6 +1,5 @@
 import { getRecommendedTrainers } from "@pacergo/api";
 import { rankCompanions } from "@pacergo/shared";
-import { excludeSelf } from "@/features/home/filter-trainers";
 import { HomeView } from "@/features/home/home-view";
 import { getSessionUser } from "@/lib/auth";
 import { getSavedCompanionIds } from "@/lib/saved";
@@ -22,7 +21,7 @@ export default async function HomePage() {
   ]);
   return (
     <HomeView
-      trainers={excludeSelf(rankCompanions(trainers, profileSetup), user?.id)}
+      trainers={rankCompanions(trainers, profileSetup)}
       user={user}
       savedIds={savedIds}
       weeklyProgress={weeklyProgress}

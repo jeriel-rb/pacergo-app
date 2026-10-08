@@ -35,7 +35,7 @@ export default function AdminScreen() {
   }
 
   function decide(item: PendingVerification, status: 'approved' | 'rejected') {
-    Alert.alert('Pacergo', t(`admin.${status}Confirm`), [
+    Alert.alert('PacerGo', t(`admin.${status}Confirm`), [
       { text: t('bookingDetail.cancel'), style: 'cancel' },
       {
         text: t(`admin.${status}`),

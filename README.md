@@ -1,4 +1,4 @@
-# Pacergo
+# PacerGo
 
 Find an in-person workout companion in Taiwan — from certified pro trainers (Tier A) to experienced peers (Tier B) to training buddies (Tier C). React Native (Expo) + Supabase.
 

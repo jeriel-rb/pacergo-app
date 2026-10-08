@@ -58,10 +58,10 @@ export default function RequestScreen() {
         location_name: where || null,
         seeker_note: note || null,
       });
-      Alert.alert('Pacergo', t('request.sent'));
+      Alert.alert('PacerGo', t('request.sent'));
       router.replace('/(tabs)/bookings');
     } catch {
-      Alert.alert('Pacergo', t('request.error'));
+      Alert.alert('PacerGo', t('request.error'));
     }
   }
 

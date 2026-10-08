@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { CompanionOffering } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { useToast } from "@/shared/components/ui/toast";
 import { BookingSheet } from "@/features/booking/booking-sheet";
 
 const PER_HOUR: Record<"zh" | "en", string> = { zh: "/ 小時", en: "/ hr" };
@@ -22,13 +23,12 @@ export function BookingCTA({
   offerings: CompanionOffering[];
   price: number;
   isFree: boolean;
-  /** True when the viewer is looking at their own listing — booking hidden. */
+  /** True when the viewer is looking at their own listing — the button only toasts. */
   isSelf?: boolean;
 }) {
   const { t } = useTranslation("trainer");
   const locale = useLocale();
-
-  if (isSelf) return null;
+  const toast = useToast();
 
   const priceLabel = isFree
     ? locale === "zh"
@@ -41,6 +41,23 @@ export function BookingCTA({
       {t("bookNow")} — {priceLabel}
     </Button>
   );
+
+  // No self-booking: the button stays visible on your own listing but only
+  // explains why (create_booking also rejects it server-side).
+  if (isSelf) {
+    return (
+      <div className="pt-1">
+        <Button
+          size="lg"
+          aria-disabled="true"
+          onClick={() => toast.show(t("cannotBookSelf"), "destructive")}
+          className="w-full cursor-not-allowed rounded-2xl text-base opacity-50"
+        >
+          {t("bookNow")} — {priceLabel}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2 pt-1">

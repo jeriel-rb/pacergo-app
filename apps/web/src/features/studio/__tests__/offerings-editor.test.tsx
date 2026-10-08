@@ -15,7 +15,14 @@ vi.mock("../studio-actions", () => ({
   removeOffering: vi.fn(),
 }));
 
-function renderOfferings(verifications: Record<string, { status: "pending" | "approved" | "rejected" }>) {
+type Status = "pending" | "approved" | "rejected";
+type Map = Record<string, { status: Status; label: string | null }>;
+const st = (status: Status) => ({ status, label: null });
+
+function renderOfferings(
+  verifications: Record<string, { status: Status }>,
+  options?: { backgrounds?: Map; competitions?: Map; isCompanion?: boolean },
+) {
   const instance = i18next.createInstance();
   void instance.use(initReactI18next).init({
     lng: "en",
@@ -30,8 +37,12 @@ function renderOfferings(verifications: Record<string, { status: "pending" | "ap
       <OfferingsEditor
         offerings={[]}
         hasListing
-        verifications={verifications}
-        competitions={{}}
+        verifications={Object.fromEntries(
+          Object.entries(verifications).map(([k, v]) => [k, st(v.status)]),
+        )}
+        competitions={options?.competitions ?? {}}
+        backgrounds={options?.backgrounds ?? {}}
+        isCompanion={options?.isCompanion}
       />
     </I18nextProvider>,
   );
@@ -62,5 +73,38 @@ describe("OfferingsEditor certificate steps", () => {
     chooseTier("B");
     expect(screen.getByText(/certification is under review/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Choose PDF" })).not.toBeInTheDocument();
+  });
+});
+
+describe("OfferingsEditor Tier C proof", () => {
+  it("asks for a sports-background proof for Tier C when none is on file", () => {
+    renderOfferings({});
+    expect(screen.getByText("Gym sports-background proof required")).toBeInTheDocument();
+    // Applicants still set the price; the proof goes with their first request.
+    expect(screen.getByLabelText("Price (NT$)")).toBeInTheDocument();
+  });
+
+  it("does not ask for C proof when a certification already covers the activity", () => {
+    renderOfferings({ gym: { status: "approved" } });
+    expect(screen.queryByText("Gym sports-background proof required")).not.toBeInTheDocument();
+  });
+
+  it("holds an approved trainer's new Tier C plan until its proof is approved", () => {
+    renderOfferings({}, { isCompanion: true, backgrounds: { gym: st("pending") } });
+    expect(screen.getByText(/sports-background proof is under review/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Price (NT$)")).not.toBeInTheDocument();
+    expect(screen.getByText(/once its Tier C proof is approved/)).toBeInTheDocument();
+  });
+
+  it("shows which tier each activity is verified for", () => {
+    renderOfferings(
+      { gym: { status: "approved" } },
+      { backgrounds: { hyrox: st("pending") }, competitions: { gym: st("approved") } },
+    );
+    expect(screen.getByText("Tier review status by activity")).toBeInTheDocument();
+    const gymRow = screen.getByRole("row", { name: /Gym/ });
+    expect(gymRow).toHaveTextContent("VerifiedVerifiedVerified");
+    const hyroxRow = screen.getByRole("row", { name: /Hyrox/ });
+    expect(hyroxRow).toHaveTextContent("Not submittedNot submittedIn review");
   });
 });

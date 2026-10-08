@@ -23,6 +23,7 @@
   "managerRegion": "Region",
   "bookNow": "Book now",
   "bookHint": "The trainer will confirm within 24 hours",
+  "cannotBookSelf": "You can't book yourself.",
   "bookingRequested": "Booking request sent — the trainer will confirm shortly.",
   "bidding": "Bidding",
   "ratingCount": "({{count}})",

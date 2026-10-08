@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { TrainerSummary } from "@pacergo/shared";
-import { excludeSelf, filterTrainers } from "../filter-trainers";
+import { filterTrainers } from "../filter-trainers";
 
 const make = (id: string, activities: TrainerSummary["activities"]): TrainerSummary => ({
   id,
@@ -35,15 +35,5 @@ describe("filterTrainers", () => {
 
   it("returns an empty list when no trainer matches", () => {
     expect(filterTrainers(list, "yoga")).toHaveLength(0);
-  });
-});
-
-describe("excludeSelf", () => {
-  it("removes the signed-in trainer and leaves everyone else", () => {
-    expect(excludeSelf(list, "b").map((t) => t.id)).toEqual(["a", "c"]);
-  });
-
-  it("keeps the full list when nobody is signed in", () => {
-    expect(excludeSelf(list, null)).toHaveLength(3);
   });
 });

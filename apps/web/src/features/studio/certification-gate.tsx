@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Clock, FileUp, ShieldAlert } from "lucide-react";
-import { isExperienceQualified, type ActivitySlug, type Tier } from "@pacergo/shared";
+import type { ActivitySlug, Tier } from "@pacergo/shared";
 import type { VerificationStatus } from "@/lib/studio";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -12,15 +12,13 @@ import { submitVerificationDoc } from "./studio-actions";
 import { useReviewDraftSlot } from "./listing-editor";
 
 /**
- * Per-activity verification gate for the certified tiers. Handles both document
- * kinds via `docType`: a `certification` (unlocks Tiers B & A) and a
- * `competition` experience proof (additionally required for Tier A). The
- * certification copy is qualification-aware (ACTIVITY_QUALIFICATION): gym-style
- * activities ask for a coaching licence (`cert.*`), accompaniment activities
- * (running/hiking/Hyrox…) accept experience proof instead (`certExp.*`);
- * upload mechanics always come from `cert.*` / `comp.*`. When Tier A is
- * selected, the certification card also notes the extra competition-proof
- * requirement so A doesn't read identically to B.
+ * Per-activity proof upload for every tier (all three are admin-reviewed):
+ * `background` — a sports-background proof for Tier C (`bg.*`);
+ * `certification` — a coach certification for Tier B (`cert.*`);
+ * `competition` — competition / award proof, with the certification, for
+ * Tier A (`comp.*`). Upload mechanics come from `cert.*` / `comp.*`. When
+ * Tier A is selected, the certification card also notes the extra
+ * competition-proof requirement so A doesn't read identically to B.
  */
 export function VerificationGate({
   docType,
@@ -42,17 +40,17 @@ export function VerificationGate({
   const [label, setLabel] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Copy prefix: competitions `comp.*`; certifications `cert.*`, or `certExp.*`
-  // for experience-qualified activities. Mechanics (file picker/submit/hints)
-  // stay under `cert.*`/`comp.*`.
-  const isExperience =
-    docType === "certification" && isExperienceQualified(activity);
-  const k = docType === "competition" ? "comp" : isExperience ? "certExp" : "cert";
+  // Copy prefix per document kind. Mechanics (file picker/submit/hints) stay
+  // under `cert.*`/`comp.*`.
+  const k = docType === "competition" ? "comp" : docType === "background" ? "bg" : "cert";
   const m = docType === "competition" ? "comp" : "cert";
   const showTierANote = docType === "certification" && tier === "A";
 
+  // Only a started upload becomes the pending submission, so an empty card
+  // doesn't block saving other listing edits.
+  const started = Boolean(file || label.trim());
   useEffect(() => {
-    if (!setReviewDraft || status === "pending") return;
+    if (!setReviewDraft || status === "pending" || !started) return;
     setReviewDraft({
       ready: Boolean(file && label.trim()),
       submit: async () => {
@@ -61,7 +59,7 @@ export function VerificationGate({
       },
     });
     return () => setReviewDraft(null);
-  }, [setReviewDraft, status, file, label, docType, activity]);
+  }, [setReviewDraft, status, started, file, label, docType, activity]);
 
   if (status === "pending") {
     return (

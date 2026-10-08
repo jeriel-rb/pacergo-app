@@ -10,6 +10,7 @@ import { PriceTag } from '@/components/ui/PriceTag';
 import { useCompanion } from '@/features/discovery/useCompanion';
 import { useSavedIds, useToggleSaved } from '@/features/discovery/useSaved';
 import { useBlock } from '@/features/safety/useBlocks';
+import { useSession } from '@/features/auth/useSession';
 
 export default function CompanionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -19,6 +20,9 @@ export default function CompanionDetailScreen() {
   const saved = useSavedIds();
   const toggle = useToggleSaved();
   const block = useBlock();
+  const { session } = useSession();
+  // No self-booking (create_booking also rejects it server-side).
+  const isSelf = session?.user.id === id;
 
   const detail = data?.detail;
   const isSaved = (saved.data ?? []).includes(id);
@@ -66,7 +70,11 @@ export default function CompanionDetailScreen() {
           />
           <Button
             label={t('companion.request')}
-            onPress={() => router.push(`/booking/request/${id}`)}
+            onPress={() =>
+              isSelf
+                ? Alert.alert('PacerGo', t('companion.cannotBookSelf'))
+                : router.push(`/booking/request/${id}`)
+            }
           />
           <Button
             label={t('safety.report')}
@@ -77,7 +85,7 @@ export default function CompanionDetailScreen() {
             label={t('safety.block')}
             variant="ghost"
             onPress={() =>
-              Alert.alert('Pacergo', t('safety.blockConfirm'), [
+              Alert.alert('PacerGo', t('safety.blockConfirm'), [
                 { text: t('bookingDetail.cancel'), style: 'cancel' },
                 {
                   text: t('safety.block'),

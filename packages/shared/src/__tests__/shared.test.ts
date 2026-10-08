@@ -71,8 +71,8 @@ describe('shared domain constants', () => {
 
   it('points the support channel at the real inbox with an encoded mailto', () => {
     expect(SUPPORT_EMAIL).toBe('pacergov1@gmail.com');
-    expect(supportMailto('Pacergo 客服')).toBe(
-      'mailto:pacergov1@gmail.com?subject=Pacergo%20%E5%AE%A2%E6%9C%8D',
+    expect(supportMailto('PacerGo 客服')).toBe(
+      'mailto:pacergov1@gmail.com?subject=PacerGo%20%E5%AE%A2%E6%9C%8D',
     );
   });
 });

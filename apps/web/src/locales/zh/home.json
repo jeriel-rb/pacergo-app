@@ -12,6 +12,7 @@
   "actions": {
     "find": "找夥伴",
     "aiPlan": "AI 訓練計劃",
+    "myPlans": "我的計畫",
     "nutrition": "營養",
     "fitnessProfile": "健身檔案"
   },

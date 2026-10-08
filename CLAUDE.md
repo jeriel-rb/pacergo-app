@@ -1,4 +1,4 @@
-# Pacergo — agent notes
+# PacerGo — agent notes
 
 Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
 (Tier A pro trainers · B experienced peers · C training buddies).

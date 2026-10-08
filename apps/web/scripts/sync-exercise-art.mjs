@@ -39,6 +39,17 @@ const catalog = JSON.parse(await fs.readFile(CATALOG_FILE, "utf8"));
 const allowed = new Set(catalog.map((e) => e.slug));
 const bySlug = new Map(manifest.map((e) => [e.slug, e]));
 
+/** Upstream frames that don't form a usable animation (e.g. the legs barely
+ *  change between frames, so the figure jitters instead of walking). These
+ *  keep frame 1 only and render as a still illustration. */
+const STATIC_ART = new Set([
+  "treadmill-incline-walk",
+  "cycling",
+  "elliptical",
+  "assault-bike",
+  "stair-climber",
+]);
+
 await fs.rm(OUT_DIR, { recursive: true, force: true });
 await fs.mkdir(OUT_DIR, { recursive: true });
 
@@ -58,6 +69,7 @@ for (const row of catalog) {
     .filter((f) => f.format === "svg")
     .sort((a, b) => a.index - b.index);
   if (svgFrames.length === 0) throw new Error(`${entry.slug}: no SVG frames`);
+  if (STATIC_ART.has(entry.slug)) svgFrames.splice(1);
 
   await fs.mkdir(path.join(OUT_DIR, entry.slug), { recursive: true });
   for (const frame of svgFrames) {

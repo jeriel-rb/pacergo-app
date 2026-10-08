@@ -706,7 +706,7 @@ end $$;`;
   });
 
   const parts = [
-    `-- Pacergo schema (final state from migrations 0001–0046).
+    `-- PacerGo schema (final state from migrations 0001–0046).
 -- RLS: 0002_rls.sql | Seeds: ../seeds/
 
 `,

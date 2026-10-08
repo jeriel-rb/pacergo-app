@@ -1,4 +1,4 @@
-# Pacergo M4a — Companion Mode Implementation Plan
+# PacerGo M4a — Companion Mode Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -673,7 +673,7 @@ export default function CompanionSetup() {
     };
     const v = validateOffering({ tier: draft.tier, priceNtd: draft.price_ntd, isFree: draft.is_free });
     if (!v.ok) {
-      Alert.alert('Pacergo', t('companionSetup.invalidOffering'));
+      Alert.alert('PacerGo', t('companionSetup.invalidOffering'));
       return;
     }
     store.addOffering(draft);
@@ -682,7 +682,7 @@ export default function CompanionSetup() {
 
   async function finish() {
     if (store.offerings.length === 0) {
-      Alert.alert('Pacergo', t('companionSetup.needOffering'));
+      Alert.alert('PacerGo', t('companionSetup.needOffering'));
       return;
     }
     try {
@@ -694,10 +694,10 @@ export default function CompanionSetup() {
       });
       await saveOfferings.mutateAsync({ listingId, offerings: store.offerings });
       store.reset();
-      Alert.alert('Pacergo', t('companionSetup.saved'));
+      Alert.alert('PacerGo', t('companionSetup.saved'));
       router.replace('/companion-dashboard');
     } catch {
-      Alert.alert('Pacergo', t('companionSetup.error'));
+      Alert.alert('PacerGo', t('companionSetup.error'));
     }
   }
 
@@ -1052,10 +1052,10 @@ export default function ListingEditor() {
         served_area: area || null,
         status,
       });
-      Alert.alert('Pacergo', t('editor.saved'));
+      Alert.alert('PacerGo', t('editor.saved'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('editor.error'));
+      Alert.alert('PacerGo', t('editor.error'));
     }
   }
 
@@ -1145,10 +1145,10 @@ export default function AvailabilityEditor() {
   async function onSave() {
     try {
       await save.mutateAsync(slots);
-      Alert.alert('Pacergo', t('editor.saved'));
+      Alert.alert('PacerGo', t('editor.saved'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('editor.error'));
+      Alert.alert('PacerGo', t('editor.error'));
     }
   }
 
@@ -1266,9 +1266,9 @@ export default function VerificationScreen() {
     if (result.canceled || !result.assets[0]) return;
     try {
       await submit.mutateAsync({ docType, fileUri: result.assets[0].uri });
-      Alert.alert('Pacergo', t('verification.submitted'));
+      Alert.alert('PacerGo', t('verification.submitted'));
     } catch {
-      Alert.alert('Pacergo', t('verification.error'));
+      Alert.alert('PacerGo', t('verification.error'));
     }
   }
 

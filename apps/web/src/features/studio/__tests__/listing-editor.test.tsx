@@ -31,6 +31,7 @@ function renderEditor(
     certificate?: boolean;
     isCompanion?: boolean;
     applicationStatus?: "pending" | "approved" | "rejected" | null;
+    eligible?: boolean;
   },
 ) {
   const instance = i18next.createInstance();
@@ -50,6 +51,11 @@ function renderEditor(
         hasAvailability={hasAvailability}
         isCompanion={options?.isCompanion}
         applicationStatus={options?.applicationStatus}
+        eligibility={{
+          birthdate: null,
+          attested: Boolean(options?.eligible),
+          eligible: Boolean(options?.eligible),
+        }}
       >
         {options?.certificate && (
           <VerificationGate
@@ -97,15 +103,37 @@ describe("ListingEditor bottom button", () => {
   });
 
   it("asks a new Tier C member to submit for review, and stays off while that request is pending", () => {
-    const first = renderEditor(true, true, { isCompanion: false });
+    const first = renderEditor(true, true, { isCompanion: false, eligible: true });
     expect(screen.getByRole("button", { name: "Submit for review" })).toBeEnabled();
     first.unmount();
     renderEditor(true, true, { isCompanion: false, applicationStatus: "pending" });
     expect(screen.getByRole("button", { name: "Submit for review" })).toBeDisabled();
   });
 
-  it("switches to Submit for review while a Tier B certificate is open", () => {
+  it("asks a first-time applicant for 18+ birthdate and the truthfulness confirmation", () => {
+    renderEditor(true, true, { isCompanion: false });
+    const submit = screen.getByRole("button", { name: "Submit for review" });
+    expect(submit).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Date of birth"), { target: { value: "1990-01-01" } });
+    expect(submit).toBeDisabled();
+    fireEvent.click(screen.getByRole("checkbox", { name: /I confirm that I am 18 or older/ }));
+    expect(submit).toBeEnabled();
+  });
+
+  it("does not ask an already-confirmed applicant again", () => {
+    renderEditor(true, true, { isCompanion: false, eligible: true });
+    expect(screen.queryByLabelText("Date of birth")).not.toBeInTheDocument();
+  });
+
+  it("keeps Save until a certificate upload is started", () => {
+    renderEditor(true, true, { certificate: true, isCompanion: true, eligible: true });
+    expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Submit for review" })).not.toBeInTheDocument();
+  });
+
+  it("switches to Submit for review once a Tier B certificate is being filled in", () => {
     renderEditor(true, true, { certificate: true });
+    fireEvent.change(screen.getByLabelText(/Certification name/), { target: { value: "NASM-CPT" } });
     const submit = screen.getByRole("button", { name: "Submit for review" });
     expect(submit).toBeDisabled();
     expect(screen.getByText("Please choose a PDF to upload.")).toBeInTheDocument();

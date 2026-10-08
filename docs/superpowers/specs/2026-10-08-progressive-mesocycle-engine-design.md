@@ -13,7 +13,7 @@
 
 ## 1. Purpose
 
-Upgrade Pacergo’s **existing deterministic 4-week plan generator** so plans feel high-quality and progressive to the client, without replacing the architecture with classical LP / DUP / block periodization or LLM-invented workouts.
+Upgrade PacerGo’s **existing deterministic 4-week plan generator** so plans feel high-quality and progressive to the client, without replacing the architecture with classical LP / DUP / block periodization or LLM-invented workouts.
 
 **Client problems this resolves**
 
@@ -37,9 +37,9 @@ Upgrade Pacergo’s **existing deterministic 4-week plan generator** so plans fe
 
 ## 2. Naming note (brief vs codebase)
 
-Research and the implementation brief use names such as `ProgressiveMesocycle`, `FULL_RAMP`, `GoalProfile`, `Engine A / Engine B`. **Those names are conceptual.** Implementers map them onto Pacergo’s real modules. Renaming is optional; behavior and tests are mandatory.
+Research and the implementation brief use names such as `ProgressiveMesocycle`, `FULL_RAMP`, `GoalProfile`, `Engine A / Engine B`. **Those names are conceptual.** Implementers map them onto PacerGo’s real modules. Renaming is optional; behavior and tests are mandatory.
 
-| Brief / research concept | Current Pacergo reality | Target role |
+| Brief / research concept | Current PacerGo reality | Target role |
 | --- | --- | --- |
 | ProgressiveMesocycle | `generateTrainingPlan` + week loop in `generate-plan.ts` | Keep: frozen skeleton + progressive dose |
 | Plan Composer (Engine A) | `generateTrainingPlan` | Enrich: goal/experience profiles, week scalars, duration trim, warm-up Raise |

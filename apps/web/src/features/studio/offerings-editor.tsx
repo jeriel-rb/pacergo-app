@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, CheckCircle2, Clock, XCircle, CircleDashed } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   TIERS,
@@ -24,6 +24,7 @@ import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { addOffering, removeOffering } from "./studio-actions";
 import { VerificationGate } from "./certification-gate";
+import { tierStates, type ProofMaps, type TierState } from "./tier-eligibility";
 import { useEnsureDraftListing, useStudioDraftRegistration } from "./listing-editor";
 
 const ACTIVITIES: ActivitySlug[] = ["gym", "walking", "running", "hiking", "hyrox"];
@@ -34,11 +35,17 @@ export function OfferingsEditor({
   hasListing,
   verifications,
   competitions,
+  backgrounds = {},
+  isCompanion = false,
 }: {
   offerings: StudioOffering[];
   hasListing: boolean;
   verifications: VerificationMap;
   competitions: VerificationMap;
+  /** Per-activity Tier C sports-background proof status. */
+  backgrounds?: VerificationMap;
+  /** Approved trainers need an approved proof before a new Tier C plan. */
+  isCompanion?: boolean;
 }) {
   const { t } = useTranslation("studio");
   const locale = useLocale();
@@ -74,9 +81,12 @@ export function OfferingsEditor({
     setTouched(false);
   }
 
+  const maps: ProofMaps = { backgrounds, verifications, competitions };
+  const states = tierStates(activity, maps);
+
   // A Tier B certificate (pending or approved) is not asked for again. Tier A
   // then collects only the competition document. A missing or rejected
-  // certificate still has to be uploaded first. Tier C is open.
+  // certificate still has to be uploaded first.
   const activityCertStatus = verifications[activity]?.status;
   const activityCompStatus = competitions[activity]?.status;
   const certOnFile = activityCertStatus === "pending" || activityCertStatus === "approved";
@@ -86,6 +96,13 @@ export function OfferingsEditor({
   const certRequired =
     TIER_REQUIRES_CERT[tier] && !needsComp && activityCertStatus !== "approved";
   const competitionRequired = needsComp;
+  // Tier C needs a sports-background proof (a certification also counts).
+  // Applicants send it with their first request; approved trainers need it
+  // approved before the plan can be saved.
+  const backgroundRequired = tier === "C" && states.C !== "verified";
+  const backgroundStatus =
+    backgrounds[activity]?.status ?? (activityCertStatus === "pending" ? "pending" : undefined);
+  const cPlanBlocked = tier === "C" && isCompanion && states.C !== "verified";
 
   const floor = TIER_PRICE_FLOORS[tier];
   const priceHint = t("offerings.priceHintFloor", { tier, min: floor });
@@ -111,7 +128,13 @@ export function OfferingsEditor({
       o.session_minutes === sessionMinutes,
   );
   const canCommitPlan =
-    touched && canEdit && !certRequired && !competitionRequired && priceValid && !matchesSaved;
+    touched &&
+    canEdit &&
+    !certRequired &&
+    !competitionRequired &&
+    !cPlanBlocked &&
+    priceValid &&
+    !matchesSaved;
   const planRef = useRef({
     canCommitPlan,
     hasListing,
@@ -218,6 +241,8 @@ export function OfferingsEditor({
         <p className="text-sm text-muted-foreground">{t("offerings.subtitle")}</p>
       </div>
 
+      <TierStatusPanel maps={maps} />
+
       {!canEdit ? (
         <p className="text-sm text-muted-foreground">{t("offerings.needListing")}</p>
       ) : (
@@ -240,6 +265,11 @@ export function OfferingsEditor({
                     {o.tier} · {o.session_minutes}
                     {locale === "zh" ? " 分" : "m"}
                   </span>
+                  {tierStates(o.activity, maps)[o.tier] !== "verified" && (
+                    <span className="mt-1 block text-xs font-medium text-amber-600 dark:text-amber-400">
+                      {t("tierStatus.needsProof")}
+                    </span>
+                  )}
                 </span>
                 <div className="flex shrink-0 items-center gap-3">
                   <PriceTag
@@ -297,6 +327,18 @@ export function OfferingsEditor({
                 />
               ) : (
                 <>
+                  {backgroundRequired && (
+                    <VerificationGate
+                      docType="background"
+                      activity={activity}
+                      activityLabel={ACTIVITY_META[activity][locale]}
+                      status={backgroundStatus}
+                    />
+                  )}
+                  {cPlanBlocked ? (
+                    <p className="text-xs text-muted-foreground">{t("bg.planAfterApproval")}</p>
+                  ) : (
+                    <>
                   <div className="grid grid-cols-2 gap-2">
                     <Input
                       type="number"
@@ -347,6 +389,8 @@ export function OfferingsEditor({
                     )}
                     {t("offerings.add")}
                   </Button>
+                    </>
+                  )}
                 </>
               )}
           </div>
@@ -389,6 +433,71 @@ function ChipRow<T extends string>({
             {o.label}
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+const STATE_ICON: Record<TierState, typeof CheckCircle2> = {
+  verified: CheckCircle2,
+  pending: Clock,
+  rejected: XCircle,
+  missing: CircleDashed,
+};
+
+const STATE_CLASS: Record<TierState, string> = {
+  verified: "text-emerald-600 dark:text-emerald-400",
+  pending: "text-amber-600 dark:text-amber-400",
+  rejected: "text-destructive",
+  missing: "text-muted-foreground",
+};
+
+/** Which tier each activity is verified (and so eligible) for. Tiers are per
+ *  activity, and only a verified tier can be used for that activity's plan. */
+function TierStatusPanel({ maps }: { maps: ProofMaps }) {
+  const { t } = useTranslation("studio");
+  const locale = useLocale();
+  return (
+    <div className="space-y-2 rounded-lg border border-border p-3">
+      <p className="text-sm font-medium">{t("tierStatus.title")}</p>
+      <p className="text-xs text-muted-foreground">{t("tierStatus.body")}</p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="text-left text-muted-foreground">
+              <th className="py-1 pr-2 font-medium">{t("offerings.activity")}</th>
+              {TIERS.map((tier) => (
+                <th key={tier} className="px-1 py-1 font-medium">
+                  {tier}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {ACTIVITIES.map((slug) => {
+              const states = tierStates(slug, maps);
+              return (
+                <tr key={slug} className="border-t border-border">
+                  <td className="py-1.5 pr-2 font-medium whitespace-nowrap">
+                    {ACTIVITY_META[slug][locale]}
+                  </td>
+                  {TIERS.map((tier) => {
+                    const state = states[tier];
+                    const Icon = STATE_ICON[state];
+                    return (
+                      <td key={tier} className="px-1 py-1.5">
+                        <span className={cn("inline-flex items-center gap-1 whitespace-nowrap", STATE_CLASS[state])}>
+                          <Icon size={13} aria-hidden />
+                          {t(`tierStatus.${state}`)}
+                        </span>
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

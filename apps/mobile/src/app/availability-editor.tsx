@@ -43,10 +43,10 @@ export default function AvailabilityEditor() {
   async function onSave() {
     try {
       await save.mutateAsync(slots);
-      Alert.alert('Pacergo', t('editor.saved'));
+      Alert.alert('PacerGo', t('editor.saved'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('editor.error'));
+      Alert.alert('PacerGo', t('editor.error'));
     }
   }
 

@@ -16,7 +16,7 @@ export default function SettingsScreen() {
   const del = useDeleteAccount();
 
   function confirmDelete() {
-    Alert.alert('Pacergo', t('settings.deleteConfirm'), [
+    Alert.alert('PacerGo', t('settings.deleteConfirm'), [
       { text: t('bookingDetail.cancel'), style: 'cancel' },
       {
         text: t('settings.deleteAccount'),
@@ -25,7 +25,7 @@ export default function SettingsScreen() {
           try {
             await del.mutateAsync();
           } catch {
-            Alert.alert('Pacergo', t('settings.deleteError'));
+            Alert.alert('PacerGo', t('settings.deleteError'));
           }
         },
       },

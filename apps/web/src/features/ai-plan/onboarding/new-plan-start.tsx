@@ -4,7 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 
-/** `/ai-plan/new` — Home → AI plan for a user who already has a plan. Starts a
+/** `/ai-plan/new` — My Plans → "New plan" for a user who already has one. Starts a
  *  blank onboarding (no answers carried over from the previous plan) and opens
  *  "Let's Get Started" with every section still to do. Existing plans stay under
  *  My Plans. */

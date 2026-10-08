@@ -22,10 +22,10 @@ export default function ReviewScreen() {
     if (!booking) return;
     try {
       await submit.mutateAsync({ rating, comment });
-      Alert.alert('Pacergo', t('review.thanks'));
+      Alert.alert('PacerGo', t('review.thanks'));
       router.back();
     } catch {
-      Alert.alert('Pacergo', t('review.error'));
+      Alert.alert('PacerGo', t('review.error'));
     }
   }
 

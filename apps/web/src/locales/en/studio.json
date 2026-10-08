@@ -4,11 +4,11 @@
   "viewRequests": "View booking requests",
   "intro": {
     "title": "Become a trainer",
-    "body": "Fill in your listing below, set the status to \"Active\", and add at least one plan — then submit it for an admin to review."
+    "body": "Fill in your listing, add at least one plan and upload proof for its activity (sports-background proof for Tier C), then submit it for an admin to review. Every tier takes effect only after approval."
   },
   "application": {
     "pendingTitle": "Application under review",
-    "pendingBody": "An admin is reviewing your trainer application. You'll become a Tier C trainer once it's approved.",
+    "pendingBody": "An admin is reviewing your trainer application and proof. Once approved, you'll be a trainer and can use your verified tiers.",
     "rejectedTitle": "Application not approved",
     "rejectedBody": "An admin did not approve this application. Update your listing and submit it again."
   },
@@ -72,7 +72,7 @@
   },
   "cert": {
     "title": "{{activity}} certification required",
-    "body": "Tiers B and A are for certified trainers. Upload a coaching certification PDF for review — any Taiwan-recognized coaching certification qualifies. Tier B unlocks for this activity once approved.",
+    "body": "Tiers B and A are for certified coaches. Upload a coaching certification for this activity (PDF) for review — at least a C-level coaching licence, or another official coaching qualification PacerGo recognizes. Tier B unlocks for this activity once approved.",
     "label": "Certification name",
     "labelPlaceholder": "e.g. NASM-CPT, ACE Personal Trainer, etc.",
     "choose": "Choose PDF",
@@ -85,14 +85,6 @@
     "hintSize": "PDF must be under 8 MB.",
     "tierANote": "Tier A (plus competition proof): once this is approved, you'll also upload proof of a competition result to unlock Tier A.",
     "needLabel": "Please enter the certification name."
-  },
-  "certExp": {
-    "title": "{{activity}} qualification proof required",
-    "body": "Tiers B and A don't require a coaching licence — upload relevant proof instead. Athletic: varsity records or race finishes (e.g. ITRA score, Taiwan 百岳 summit log); Experience: running/hiking club leadership, or positive Pacergo reviews. Tier B unlocks for this activity once approved.",
-    "label": "Proof name",
-    "labelPlaceholder": "e.g. ITRA score, 百岳 summit log, club leadership, etc.",
-    "pending": "Your {{activity}} qualification proof is under review — Tier B unlocks for {{activity}} once it's approved.",
-    "rejected": "Your last submission was rejected. Please upload valid qualification proof."
   },
   "comp": {
     "title": "{{activity}} competition experience required",
@@ -160,5 +152,35 @@
       "holder": "Account holder",
       "invalid": "Check the bank code (3–7 digits) and account number (8–16 digits)."
     }
+  },
+  "bg": {
+    "title": "{{activity}} sports-background proof required",
+    "body": "Tier C is reviewed too. Upload at least one verifiable sports-background proof for this activity (PDF), such as a university fitness/sports course record, enrolment at a sports school or department, a high-school or university team record, or matching sports or competition history (for running, e.g. a track team or track competition record). A coaching licence isn't required.",
+    "label": "Proof name",
+    "labelPlaceholder": "e.g. University track team record, sports department enrolment",
+    "pending": "Your {{activity}} sports-background proof is under review — Tier C for {{activity}} unlocks once it's approved.",
+    "rejected": "Your last submission was rejected. Please upload valid sports-background proof.",
+    "planAfterApproval": "You can add a plan for this activity once its Tier C proof is approved.",
+    "proofRequired": "Every activity in your plans needs proof first (sports-background proof for Tier C, a coaching certification for B/A).",
+    "missingTitle": "Please upload your qualification proof",
+    "missingBody": "Every tier, including C, is now reviewed. These plans aren't verified yet: {{activities}}. In Plans & pricing, pick the activity and upload your proof."
+  },
+  "eligibility": {
+    "title": "Trainer eligibility",
+    "birthdate": "Date of birth",
+    "birthdateHint": "Trainers must be 18 or older.",
+    "attest": "I confirm that I am 18 or older and that all information and documents I provide are true, accurate and my own. I understand that PacerGo may reject or revoke my trainer status if any of it is false, and that I am responsible for any resulting legal consequences.",
+    "under18": "Trainers must be 18 or older.",
+    "birthdateRequired": "Please enter your date of birth.",
+    "required": "Please enter your date of birth and confirm the information is true."
+  },
+  "tierStatus": {
+    "title": "Tier review status by activity",
+    "body": "Tiers are reviewed per activity (e.g. A for gym, C for Hyrox). Only a verified tier can be used for that activity's plan.",
+    "verified": "Verified",
+    "pending": "In review",
+    "rejected": "Rejected",
+    "missing": "Not submitted",
+    "needsProof": "This tier isn't verified yet — upload your proof"
   }
 }

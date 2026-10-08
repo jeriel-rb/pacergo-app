@@ -4,7 +4,7 @@
 
 **Evidence grades used below:** **A** = ACSM/NSCA position stand or multi-study meta-analysis; **B** = peer-reviewed RCT / systematic review / Delphi with clear limits; **C** = coaching framework / expert consensus (not RCT law); **E** = engineering heuristic for deterministic software (product convenience, not physiology).
 
-**Contradiction map vs prior Pacergo notes** ([periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md), [report](../../reports/Deterministic%20workout%20plan%20progression.md)): Prior work correctly freezes the skeleton and prefers progressive overload over complex periodization. It overstates (1) a mandatory or strongly evidence-backed Week-4 deload for intermediate+ (−40–50% sets), (2) RP’s live recovery-gated +1–3 sets/week as if it were generation-time law, and (3) a physiologic “Week 3 peak” requirement. Those are refined below.
+**Contradiction map vs prior PacerGo notes** ([periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md), [report](../../reports/Deterministic%20workout%20plan%20progression.md)): Prior work correctly freezes the skeleton and prefers progressive overload over complex periodization. It overstates (1) a mandatory or strongly evidence-backed Week-4 deload for intermediate+ (−40–50% sets), (2) RP’s live recovery-gated +1–3 sets/week as if it were generation-time law, and (3) a physiologic “Week 3 peak” requirement. Those are refined below.
 
 ---
 
@@ -30,7 +30,7 @@ For a fixed 4-week, fully prescribed consumer mesocycle, the evidence-backed, ma
 - Israetel et al. SCJ 2020 (NSCA journal, coaching article): typical hypertrophy mesocycle progressions span **~4–8 weeks** then a recovery week; set-number progression is argued as most supported among set/rep/load options—“some of all 3.” — [SCJ Mesocycle Progression](https://journals.lww.com/nsca-scj/fulltext/2020/10000/mesocycle_progression_in_hypertrophy__volume.2.aspx) **[C]**
 
 ### Inferences
-- **Encodeability ranking for Pacergo (generation-time IF→THEN):**
+- **Encodeability ranking for PacerGo (generation-time IF→THEN):**
   1. **Progressive overload + fixed skeleton** — highest: week_index → set_delta, RIR_target, rest_delta. **[A+E]**
   2. **Double progression** — high as **user-facing rule** (reps then load); load bumps themselves need logged performance (**LIVE**), not generation. **[A]**
   3. **Linear volume/effort ramp within one quality (hypertrophy)** — high: W1 baseline sets → W2–W3 +sets and/or ↓RIR. Mimics “linear periodization” only in the soft sense of progressive stress, **not** classic volume↓/intensity↑ peaking. **[B/C → E]**
@@ -57,7 +57,7 @@ For a fixed 4-week, fully prescribed consumer mesocycle, the evidence-backed, ma
 - ACSM 2009: novice strength **60–70% 1RM, 8–12 reps**, frequency **2–3 d·wk⁻¹**; intermediate ≈ **~6 months** consistent RT, frequency **3–4**; advanced wider periodized ranges. Hypertrophy novice/intermediate **70–85% 1RM, 8–12, 1–3 sets**. — [ACSM 2009 PDF](https://www.bewegenismedicijn.nl/files/downloads/acsm_position_stand_resistance_training_healthy_adults.pdf) **[A]**
 - ACSM 2026 practical targets: hypertrophy ~**10 weekly sets/muscle**; consistency and sustainability over complex formulas. — [ACSM announcement](https://acsm.org/resistance-training-guidelines-update-2026/) **[A]**
 - NSCA teaching: **less variation required for novices** than advanced; “manipulate only one overload variable at a time.” — [NSCA TSAC module](https://www.nsca.com/contentassets/53f36e5db26a4729b251fb794c166af1/tsac-module-4.0--4.5.pdf) **[C/education]**
-- Prior Pacergo synthesis (aligned here): freeze split/exercises/rest pattern; vary dose scalars—matches Hevy-style “Consistent” programs and ACSM consistency doctrine. — [Deterministic workout plan progression report](../../reports/Deterministic%20workout%20plan%20progression.md) **[E + cited A]**
+- Prior PacerGo synthesis (aligned here): freeze split/exercises/rest pattern; vary dose scalars—matches Hevy-style “Consistent” programs and ACSM consistency doctrine. — [Deterministic workout plan progression report](../../reports/Deterministic%20workout%20plan%20progression.md) **[E + cited A]**
 
 ### Inferences
 - **Novice IF→THEN (generation-time):** `experience ∈ {no_experience, beginner}` → flat or +0–1 set by W3–4; RIR ~3–4 → ~2–3; emit double-progression copy; **no required deload**; **no DUP day types**. **[A+B]**
@@ -65,7 +65,7 @@ For a fixed 4-week, fully prescribed consumer mesocycle, the evidence-backed, ma
 - **Hard constraint:** without live feedback, the plan cannot implement RP’s “if performance = 4 → deload” branch; that is a **different product surface** (logger/autoregulation), not the 4-week composer.
 
 ### Gaps
-- ACSM “intermediate ≈ 6 months” ≠ Pacergo marketing labels (“basic / &lt;1 yr”); mapping remains an **E** product decision.
+- ACSM “intermediate ≈ 6 months” ≠ PacerGo marketing labels (“basic / &lt;1 yr”); mapping remains an **E** product decision.
 - Few trials isolate **fully prescribed** (non-autoregulated) 4-week blocks in unsupervised consumers.
 
 ---
@@ -86,7 +86,7 @@ Authoritative sources converge on **dose (volume × effort × consistency)** ove
 - NSCA education: linear suitable for beginners/intermediates with clear objectives; undulating for multiple simultaneous goals / no event date; variation need rises with training status. — [NSCA TSAC module](https://www.nsca.com/contentassets/53f36e5db26a4729b251fb794c166af1/tsac-module-4.0--4.5.pdf) **[C/education]**
 
 ### Inferences
-- **Implication for Pacergo short meso:** encode **weekly hard sets ≈ f(experience, goal)** anchored near ACSM ~6–12 (novice) / ~10–16 (intermediate consumer cap), not RP MRV chasing. **[A+C]**
+- **Implication for PacerGo short meso:** encode **weekly hard sets ≈ f(experience, goal)** anchored near ACSM ~6–12 (novice) / ~10–16 (intermediate consumer cap), not RP MRV chasing. **[A+C]**
 - **Implication for model menu:** expose one default path (“progressive plan”); do not ship competing “DUP vs Block” product modes unless strength-specialist later. **[A]**
 - **Prior-note correction:** citing RP’s 5-week sample ramp (W1–W5 + deload) as a template for a **4-week** app plan compresses a longer, feedback-driven meso into an unsupported calendar. Prefer **3 progressive weeks + optional consolidation**, or flat progressive effort without a fifth “MRV touch” week. **[C≠A]**
 
@@ -106,7 +106,7 @@ A gentle **baseline → progress → higher productive dose → optional easier 
 - Israetel SCJ 2020: week-to-week progressions over **typically 4–8 weeks** before a recovery week are described as central in hypertrophy coaching; set progression favored. — [SCJ](https://journals.lww.com/nsca-scj/fulltext/2020/10000/mesocycle_progression_in_hypertrophy__volume.2.aspx) **[C]**
 - RP sample: W1 MEV → weekly +sets → approach MRV → deload to MV—**illustrative**, recovery-gated. — [RP Landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth) **[C]**
 - Schoenfeld volume meta: more weekly sets → more hypertrophy (graded)—supports **raising volume** as a progression operator, not a Week-3-only peak. — [Schoenfeld 2017 PDF](https://www.ageingmuscle.be/sites/bams/files/publications/Dose%20response%20relationship%20between%20weekly%20resistance%20training%20volume%20and%20increases.pdf) **[A]**
-- Prior Pacergo report’s W1→W4 schemes (novice linear; +1–2 sets for basic; RIR ramp) are **engineering adaptations** of the above—not ACSM tables. — [report](../../reports/Deterministic%20workout%20plan%20progression.md) **[E]**
+- Prior PacerGo report’s W1→W4 schemes (novice linear; +1–2 sets for basic; RIR ramp) are **engineering adaptations** of the above—not ACSM tables. — [report](../../reports/Deterministic%20workout%20plan%20progression.md) **[E]**
 - NSCA: change **one major stressor at a time** (volume *or* intensity *or* frequency)—supports not stacking large set jumps **and** large RIR drops the same week for novices. — [NSCA TSAC](https://www.nsca.com/contentassets/53f36e5db26a4729b251fb794c166af1/tsac-module-4.0--4.5.pdf) **[C/education]**
 
 ### Inferences
@@ -135,8 +135,8 @@ A gentle **baseline → progress → higher productive dose → optional easier 
 - Sci Reports 2026 (untrained young men, within-subject, 8 weeks): deload periods as reduced volume/frequency mid/end → **similar hypertrophy and strength-endurance** vs continuous; deload arm performed ~**18% fewer sets**—time-efficiency angle, not superiority. — [Nature Sci Rep](https://www.nature.com/articles/s41598-026-40612-5) **[B]**
 - Bell et al. 2023 Delphi (expert coaches, ≥70% consensus): deload = reduced training stress to mitigate fatigue and enhance preparedness; can be **pre-planned or autoregulated**; often every **~4–6 weeks** (~7 days) in strength/physique practice; volume usually cut (sets/reps/frequency); intensity may stay or drop. Explicitly: scientific evidence for deloading is limited; practices are experiential. — [Sports Med Open Delphi](https://link.springer.com/article/10.1186/s40798-023-00633-0) **[C]**
 - Bell et al. practical approach / survey literature: pre-planned deload commonly every **4–8 weeks**; flexible/reactive deload when performance stalls, soreness, joint aches. — [SHU practical deload PDF](https://shura.shu.ac.uk/35313/3/Bell-APracticalApproach%28AM%29.pdf); [Sports Med Open survey](https://link.springer.com/article/10.1186/s40798-024-00691-y) **[C]**
-- RP coaching: beginners may train many weeks before systemic MRV; advanced often need unload sooner—used in prior Pacergo notes. — [RP landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth) **[C]** (specific “12 weeks vs 3–4 weeks” claims in secondary RP posts should be treated as coaching narrative unless re-fetched per article)
-- Prior Pacergo notes suggested optional W4 **−40–50%** sets for intermediate+: that magnitude resembles RP drop toward **MV**, but **no RCT mandates −40–50% in week 4 of a consumer plan**. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md) **[E, previously over-labeled]**
+- RP coaching: beginners may train many weeks before systemic MRV; advanced often need unload sooner—used in prior PacerGo notes. — [RP landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth) **[C]** (specific “12 weeks vs 3–4 weeks” claims in secondary RP posts should be treated as coaching narrative unless re-fetched per article)
+- Prior PacerGo notes suggested optional W4 **−40–50%** sets for intermediate+: that magnitude resembles RP drop toward **MV**, but **no RCT mandates −40–50% in week 4 of a consumer plan**. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md) **[E, previously over-labeled]**
 
 ### Inferences
 - **Always deload W4?** → **No.** Contradicted by Coleman 2024 strength findings and null hypertrophy benefit; contradicted for novices by ACSM consistency + Zourdos adherence priority. **[B+A]**
@@ -152,7 +152,7 @@ A gentle **baseline → progress → higher productive dose → optional easier 
 
 ### Gaps
 - Coleman deload was **full cessation**, not reduced-volume deload—may not generalize to “keep frequency, cut sets 40%.”
-- No trial tests Pacergo-like **fully prescribed** W4 unload vs continuous inside **exactly 4 weeks**.
+- No trial tests PacerGo-like **fully prescribed** W4 unload vs continuous inside **exactly 4 weeks**.
 - Delphi thresholds (every 4–6 weeks) describe **competitive** strength/physique coaches—not general consumers.
 
 ---
@@ -164,7 +164,7 @@ Without 1RM, generation-time rules should prescribe **rep ranges, set counts, RI
 
 ### Cited Findings
 - ACSM 2009: progression when exceeding target reps by 1–2 → **+2–10% load** (small-muscle lower %, large-muscle higher %). Operates on **RM performance**, not a stored 1RM. — [ACSM 2009 PDF](https://www.bewegenismedicijn.nl/files/downloads/acsm_position_stand_resistance_training_healthy_adults.pdf) **[A]**
-- Double progression (add reps within a range, then add load and reset reps) is the consumer-practical form of that ACSM rule; Pacergo prior notes and Caliber-style apps rely on user execution. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md); [Cleveland Clinic progressive overload](https://health.clevelandclinic.org/progressive-overload) **[A mechanics + E UX]**
+- Double progression (add reps within a range, then add load and reset reps) is the consumer-practical form of that ACSM rule; PacerGo prior notes and Caliber-style apps rely on user execution. — [periodization_rules.md](../Deterministic%20workout%20plan%20progression/periodization_rules.md); [Cleveland Clinic progressive overload](https://health.clevelandclinic.org/progressive-overload) **[A mechanics + E UX]**
 - RIR prescription: target RIR + fixed reps lets users select load without 1RM; Graham & Cleather-style programs assign weekly RIR targets. Scoping review: RIR scales feasible for intensity regulation; accuracy better near failure, higher loads, lower reps. — [Scoping review](https://journals.sagepub.com/doi/full/10.1177/00315125241241785) **[B]**
 - Ormsbee/Helms-linked caveat (cited in RIR-velocity paper): RIR accuracy highest with experience and nearer failure; novices less accurate—so RIR is a useful **target label**, not a precision instrument for beginners. — [PMC RIR-velocity](https://pmc.ncbi.nlm.nih.gov/articles/PMC10901726/) **[B]**
 - Lovegrove et al. 2022: RIR reliable for load prescription in young novice men on deadlift/bench (ICC ≥ 0.95 for 1-RIR loads across 3/5/8-rep schemes). — [JSCR](https://journals.lww.com/nsca-jscr/fulltext/2022/10000/repetitions_in_reserve_is_a_reliable_tool_for.4.aspx) **[B]**

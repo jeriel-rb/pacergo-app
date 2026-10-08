@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { MoreVertical, Pencil, Trash2, ClipboardList, Star } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, ClipboardList, Star, Plus } from "lucide-react";
 import { ONBOARDING_GOALS, type OnboardingGoal } from "@pacergo/shared";
 import { ConfirmDialog } from "@/shared/components/atoms/confirm-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
@@ -74,7 +74,19 @@ export function MyPlansView({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-bold">{t("myPlans.title")}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">{t("myPlans.title")}</h1>
+        {/* Home → AI plan opens the active plan, so starting another one lives here. */}
+        {plans.length > 0 && (
+          <Link
+            href={pathname.replace(/\/my-plans$/, "/new")}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <Plus size={16} aria-hidden />
+            {t("myPlans.newPlan")}
+          </Link>
+        )}
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <NutritionLinkCard href={pathname.replace(/\/my-plans$/, "/nutrition")} />

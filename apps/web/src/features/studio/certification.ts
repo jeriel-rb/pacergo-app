@@ -10,18 +10,20 @@ export function validateCertFile(file: File): CertValidationError | null {
   return null;
 }
 
-/** Verification document kinds a trainer can submit for admin review. */
-export type VerificationDocType = "certification" | "competition";
+/** Verification document kinds a trainer can submit for admin review:
+ *  `background` qualifies Tier C, `certification` Tier B, `competition` (with a
+ *  certification) Tier A — all per activity. */
+export type VerificationDocType = "background" | "certification" | "competition";
 
 /**
  * Storage object path for a verification doc, owner-scoped so the storage RLS
- * policy (folder = uid) accepts it: `<uid>/cert-<ts>.pdf` or `<uid>/comp-<ts>.pdf`.
+ * policy (folder = uid) accepts it: `<uid>/{bg,cert,comp}-<ts>.pdf`.
  */
 export function verificationObjectPath(
   uid: string,
   ts: number,
   docType: VerificationDocType,
 ): string {
-  const prefix = docType === "competition" ? "comp" : "cert";
+  const prefix = docType === "competition" ? "comp" : docType === "background" ? "bg" : "cert";
   return `${uid}/${prefix}-${ts}.pdf`;
 }

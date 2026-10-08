@@ -1,4 +1,4 @@
-# Pacergo M2 — Discovery Implementation Plan
+# PacerGo M2 — Discovery Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -215,7 +215,7 @@ git add -A
 git commit -m "feat(db): discovery schema + nearby_companions/get_companion RPCs (M2)"
 ```
 
-> Application deferred (same as M0/M1 — no MCP access to the Pacergo project).
+> Application deferred (same as M0/M1 — no MCP access to the PacerGo project).
 
 ---
 

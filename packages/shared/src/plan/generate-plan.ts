@@ -86,7 +86,7 @@ const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 14;
+export const PLAN_RULES_VERSION = 15;
 
 /** @deprecated Compatibility shim — weekly set ramps are handled by
  *  `setsForWeek` / volume curves. Always returns 0 so callers that still sum
@@ -500,30 +500,51 @@ function trimMainToDuration(
   return { records, exercises };
 }
 
-function buildWarmupPool(
+/** Every warm-up is exactly this many moves (client rule). */
+export const WARMUP_MOVE_COUNT = 2;
+
+/** Mobility drill order per focus — the drill closest to the day's muscles first. */
+const WARMUP_MOBILITY_BY_FOCUS: Record<SessionFocus, readonly string[]> = {
+  push: ["arm-circles", "bodyweight-squat", "leg-swings-stretch"],
+  pull: ["arm-circles", "bodyweight-squat", "leg-swings-stretch"],
+  upper: ["arm-circles", "bodyweight-squat", "leg-swings-stretch"],
+  legs: ["leg-swings-stretch", "bodyweight-squat", "arm-circles"],
+  lower: ["leg-swings-stretch", "bodyweight-squat", "arm-circles"],
+  full_body: ["bodyweight-squat", "arm-circles", "leg-swings-stretch"],
+};
+
+/** The Raise for this user (machine when preferred/available, else one impact
+ *  drill unless low-impact or a novice), plus the available mobility drills. */
+function buildWarmupParts(
   exercises: readonly ExerciseRecord[],
   raiseAvailable: ReadonlySet<string>,
   lowImpact: boolean,
   preferMachineRaise: boolean,
-): ExerciseRecord[] {
+): { raise: ExerciseRecord | null; mobility: ExerciseRecord[] } {
+  const mobility = byslugs(exercises, [...WARMUP_MOBILITY_SLUGS]);
   const raiseSlug = selectWarmupRaiseSlug({
     available: raiseAvailable,
     lowImpact,
     preferMachine: preferMachineRaise || lowImpact,
   });
-  const raise = raiseSlug ? byslugs(exercises, [raiseSlug]) : [];
-  if (raise.length === 0 && !lowImpact && !preferMachineRaise) {
-    return byslugs(exercises, [...WARMUP_IMPACT_RAISE_SLUGS, ...WARMUP_MOBILITY_SLUGS]);
+  const machine = raiseSlug ? byslugs(exercises, [raiseSlug])[0] : undefined;
+  if (machine) return { raise: machine, mobility };
+  // No machine: impact drills only for non-novice, non-low-impact users.
+  if (!lowImpact && !preferMachineRaise) {
+    return { raise: byslugs(exercises, [...WARMUP_IMPACT_RAISE_SLUGS])[0] ?? null, mobility };
   }
-  if (raise.length === 0 && lowImpact) {
-    return byslugs(exercises, [...WARMUP_MOBILITY_SLUGS]);
-  }
-  if (raise.length === 0) {
-    // Novice wanted a machine Raise but none available — skip impact drills.
-    return byslugs(exercises, [...WARMUP_MOBILITY_SLUGS]);
-  }
-  const mobility = byslugs(exercises, [...WARMUP_MOBILITY_SLUGS]);
-  return [...raise, ...mobility];
+  return { raise: null, mobility };
+}
+
+/** Exactly `WARMUP_MOVE_COUNT` moves: the Raise (if any) then the mobility
+ *  drill(s) that best match the session's focus. */
+function selectWarmup(
+  parts: { raise: ExerciseRecord | null; mobility: ExerciseRecord[] },
+  focus: SessionFocus,
+): ExerciseRecord[] {
+  const order = WARMUP_MOBILITY_BY_FOCUS[focus];
+  const mobility = [...parts.mobility].sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
+  return [...(parts.raise ? [parts.raise] : []), ...mobility].slice(0, WARMUP_MOVE_COUNT);
 }
 
 /**
@@ -587,7 +608,7 @@ export function generateTrainingPlan(input: {
     answers.goal === "lose_weight" ||
     profile.conditioningBias === "encouraged";
   const raiseAvailable = new Set<string>([...selectedEquipment, ...gymEquipment.cardioTypes]);
-  const warmupPool = buildWarmupPool(exercises, raiseAvailable, lowImpact, preferMachineRaise);
+  const warmupParts = buildWarmupParts(exercises, raiseAvailable, lowImpact, preferMachineRaise);
   // Recovery / stretching: real stretches only, chosen per workout from the
   // muscles it trained (see selectCooldown). Equipment still applies (the
   // doorway stretch needs a doorway).
@@ -693,11 +714,12 @@ export function generateTrainingPlan(input: {
         }
       }
 
+      const warmupRecords = selectWarmup(warmupParts, focus);
       const trimmed = trimMainToDuration(
         mainRecords,
         main,
         durationMin,
-        warmupPool.length,
+        warmupRecords.length,
         cooldownCount,
         cardio !== null,
       );
@@ -705,18 +727,18 @@ export function generateTrainingPlan(input: {
       main = trimmed.exercises;
 
       const raiseReps =
-        warmupPool[0] &&
-        (warmupPool[0].slug === "cycling" ||
-          warmupPool[0].slug === "elliptical" ||
-          warmupPool[0].slug === "rowing" ||
-          warmupPool[0].slug === "running" ||
-          warmupPool[0].slug === "treadmill-incline-walk")
+        warmupRecords[0] &&
+        (warmupRecords[0].slug === "cycling" ||
+          warmupRecords[0].slug === "elliptical" ||
+          warmupRecords[0].slug === "rowing" ||
+          warmupRecords[0].slug === "running" ||
+          warmupRecords[0].slug === "treadmill-incline-walk")
           ? "3-5 min"
           : "45 sec";
 
       const session: GeneratedSession = {
         focus,
-        warmup: warmupPool.map((e, i) =>
+        warmup: warmupRecords.map((e, i) =>
           toExercise(e, {
             sets: 1,
             reps: i === 0 && raiseReps === "3-5 min" ? raiseReps : "45 sec",

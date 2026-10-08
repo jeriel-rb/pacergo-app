@@ -1,8 +1,8 @@
-# Pacergo Web App Implementation Plan
+# PacerGo Web App Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the Pacergo product web app (Home, Trainer list/detail, social auth, app shell) into `apps/web`, backed by shared `@pacergo/shared` types and an env-gated `@pacergo/api` mock layer.
+**Goal:** Build the PacerGo product web app (Home, Trainer list/detail, social auth, app shell) into `apps/web`, backed by shared `@pacergo/shared` types and an env-gated `@pacergo/api` mock layer.
 
 **Architecture:** Yarn-workspace monorepo. Domain types/enums live in `@pacergo/shared` (pure TS, RN-ready); data access in `@pacergo/api` (mock now, Supabase-SSR later, selected by env). The Next.js 15 App Router web app consumes both: Server Components fetch via `@pacergo/api`; small Client Components handle the category filter, theme, language, and save toggles. Components are layered shadcn primitives → token-bound design-system atoms → feature components.
 
@@ -405,7 +405,7 @@ describe('trainer queries (mock)', () => {
 
 - [ ] **Step 1:** Add shadcn primitives (`npx shadcn@latest add button card avatar badge separator skeleton sheet scroll-area sonner tabs` inside `apps/web`, or hand-write minimal versions if registry unavailable). Verify `cn` alias resolves.
 - [ ] **Step 2:** `BottomNav.tsx` — `"use client"`; nav items array (icon, key, href); active via `usePathname` + `removeLocaleFromPathname`; blue active color; center item raised. Responsive: fixed bottom bar `<lg`, inline top row `≥lg`.
-- [ ] **Step 3:** `AppHeader.tsx` — Pacergo logo text, notification bell (lucide), `ThemeToggle`, `LanguageSwitcher`. Sticky top.
+- [ ] **Step 3:** `AppHeader.tsx` — PacerGo logo text, notification bell (lucide), `ThemeToggle`, `LanguageSwitcher`. Sticky top.
 - [ ] **Step 4:** `(tabs)/layout.tsx` — `<AppHeader/>` + `<main class="mx-auto w-full max-w-md lg:max-w-3xl pb-24 lg:pb-8">{children}</main>` + `<BottomNav/>`. Build. Expected: PASS.
 - [ ] **Step 5: Commit** — `git commit -am "feat(web): shadcn primitives + responsive app shell (header, bottom nav)"`
 
@@ -453,7 +453,7 @@ describe('trainer queries (mock)', () => {
 **Interfaces:** `signInWithProvider(provider: 'google'|'apple'): Promise<void>` (mock → `router.push('/')`). `SocialButtons` (Google/Apple branded buttons). `AuthCard({ mode: 'sign-in'|'sign-up' })`.
 
 - [ ] **Step 1:** `signInWithProvider.ts` — mock that routes home (real OAuth later). `SocialButtons.tsx` — `"use client"`, Google + Apple buttons (lucide / inline svg), calls `signInWithProvider`.
-- [ ] **Step 2:** `AuthCard.tsx` — centered card with Pacergo logo, title/subtitle from `auth.*` by mode, `SocialButtons`, footer link toggling sign-in↔sign-up; sign-up adds ToS line. Includes ThemeToggle + LanguageSwitcher top-right.
+- [ ] **Step 2:** `AuthCard.tsx` — centered card with PacerGo logo, title/subtitle from `auth.*` by mode, `SocialButtons`, footer link toggling sign-in↔sign-up; sign-up adds ToS line. Includes ThemeToggle + LanguageSwitcher top-right.
 - [ ] **Step 3:** `sign-in/page.tsx` + `sign-up/page.tsx` — render `AuthCard` with respective mode, centered full-height gradient/blank background. Build. Expected: PASS.
 - [ ] **Step 4: Commit** — `git commit -am "feat(web): social-only sign-in/sign-up pages"`
 

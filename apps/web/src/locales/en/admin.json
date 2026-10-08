@@ -56,6 +56,7 @@
     "background": "Review standard: Tier C needs no coaching licence, but at least one verifiable sports-background proof for this activity (relevant coursework, sports school/department enrolment, a school team, or matching sports/competition history)."
   },
   "proofNotApproved": "Approve this applicant's proof for each activity (Tier C sports background or a coaching certification) before approving the trainer application.",
+  "eligibilityMissing": "This applicant hasn't confirmed they're 18+ and that their information is true. Ask them to complete it in the Studio, then approve.",
   "viewDoc": "View document (PDF)",
   "notesPlaceholder": "Optional note (shown to the trainer if rejected)…",
   "approve": "Approve",

@@ -185,7 +185,13 @@ export function ReviewDialog({
     } catch (e) {
       const raw = e instanceof Error ? e.message : "";
       // An application waits for each activity's proof to be approved first.
-      setError(raw.includes("proof_not_approved") ? t("proofNotApproved") : raw || t("error"));
+      setError(
+        raw.includes("proof_not_approved")
+          ? t("proofNotApproved")
+          : raw.includes("eligibility_missing")
+            ? t("eligibilityMissing")
+            : raw || t("error"),
+      );
       toast.show(t("toast.verificationUpdateFailed"), "destructive");
     } finally {
       setBusy(false);

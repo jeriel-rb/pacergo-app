@@ -33,36 +33,38 @@ export function BottomNav({
   const isAdmin = variant === "admin";
 
   const { t } = useTranslation(isAdmin ? "admin" : "nav");
-  // myPlans is sidebar-only — see nav-items.ts.
-  const items: ShellNavItem[] = isAdmin
-    ? adminBottomNavItems()
-    : NAV_ITEMS.filter((item) => item.key !== "myPlans" && item.key !== "nutrition" && item.key !== "fitnessProfile");
+  const items: ShellNavItem[] = isAdmin ? adminBottomNavItems() : NAV_ITEMS;
   const isItemActive = isAdmin ? isAdminNavItemActive : isNavItemActive;
   const labelFor = (key: string) =>
     isAdmin ? t(`nav.${key}`) : t(key);
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur lg:hidden">
-      <ul className="mx-auto flex max-w-md items-end justify-around px-2 py-2">
+      <ul
+        className={cn(
+          "mx-auto flex max-w-md items-end py-2",
+          isAdmin ? "justify-around px-2" : "px-1",
+        )}
+      >
         {items.map((item) => {
           const Icon = item.icon;
           const label = labelFor(item.key);
 
           if (!isAdmin && (item as NavItem).sheet === "settings") {
             return (
-              <li key={item.key}>
+              <li key={item.key} className="min-w-0 flex-1">
                 <SettingsSheet
                   user={user}
                   trigger={
                     <button
                       type="button"
-                      className="group flex flex-col items-center gap-1 px-2 py-1 transition-opacity hover:opacity-80"
+                      className="group flex w-full flex-col items-center gap-1 px-0.5 py-1 transition-opacity hover:opacity-80"
                     >
                       <Icon
                         size={22}
                         className="text-muted-foreground group-data-[state=open]:text-primary"
                       />
-                      <span className="text-[10px] font-medium text-muted-foreground group-data-[state=open]:text-primary">
+                      <span className="text-center text-[10px] font-medium leading-tight text-muted-foreground group-data-[state=open]:text-primary">
                         {label}
                       </span>
                     </button>
@@ -98,16 +100,16 @@ export function BottomNav({
 
           if (item.comingSoon) {
             return (
-              <li key={item.key}>
+              <li key={item.key} className="min-w-0 flex-1">
                 <div
                   aria-disabled="true"
-                  className="flex cursor-not-allowed flex-col items-center gap-1 px-2 py-1 opacity-50"
+                  className="flex cursor-not-allowed flex-col items-center gap-1 px-0.5 py-1 opacity-50"
                 >
                   <span className="relative">
                     <Icon size={22} className="text-muted-foreground" />
                     <SoonBadge className="absolute -right-3 -top-2 scale-90" />
                   </span>
-                  <span className="text-[10px] font-medium text-muted-foreground">
+                  <span className="text-center text-[10px] font-medium leading-tight text-muted-foreground">
                     {label}
                   </span>
                 </div>
@@ -117,7 +119,7 @@ export function BottomNav({
 
           if (item.center) {
             return (
-              <li key={item.key}>
+              <li key={item.key} className="min-w-0 flex-1">
                 <Link
                   href={href}
                   className="-mt-7 flex flex-col items-center gap-1 transition-opacity hover:opacity-80"
@@ -139,10 +141,11 @@ export function BottomNav({
           }
 
           return (
-            <li key={item.key}>
+            <li key={item.key} className="min-w-0 flex-1">
               <Link
                 href={href}
-                className="flex flex-col items-center gap-1 px-2 py-1 transition-opacity hover:opacity-80"
+                aria-current={active ? "page" : undefined}
+                className="flex flex-col items-center gap-1 px-0.5 py-1 transition-opacity hover:opacity-80"
               >
                 <Icon
                   size={22}
@@ -150,7 +153,7 @@ export function BottomNav({
                 />
                 <span
                   className={cn(
-                    "text-[10px] font-medium",
+                    "text-center text-[10px] font-medium leading-tight",
                     active ? "text-primary" : "text-muted-foreground",
                   )}
                 >

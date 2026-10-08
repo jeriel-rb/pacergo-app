@@ -162,7 +162,8 @@ create table if not exists users (
   bank_name text,
   branch_name text,
   bank_account_number text,
-  bank_account_holder text
+  bank_account_holder text,
+  trainer_attested_at timestamptz
 );
 
 create table if not exists activities (
@@ -299,7 +300,7 @@ create table if not exists availability_blocks (
 create table if not exists verifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references users (id) on delete cascade,
-  doc_type text not null check (doc_type in ('certification', 'competition', 'id', 'application')),
+  doc_type text not null check (doc_type in ('certification', 'competition', 'background', 'id', 'application')),
   document_path text,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
   notes text,
@@ -2126,6 +2127,14 @@ returns jsonb
 language sql security definer set search_path = public stable as $$
   select jsonb_build_object(
     'is_companion', (select is_companion from users where id = auth.uid()),
+    'eligibility', (
+      select jsonb_build_object(
+        'birthdate', birthdate,
+        'attested', trainer_attested_at is not null,
+        'eligible', is_trainer_eligible(id)
+      )
+      from users where id = auth.uid()
+    ),
     'verifications', (
       select coalesce(
         jsonb_object_agg(v.slug, jsonb_build_object('status', v.status, 'label', v.label)),
@@ -2154,6 +2163,23 @@ language sql security definer set search_path = public stable as $$
         join activities a on a.id = ver.activity_id
         where ver.user_id = auth.uid()
           and ver.doc_type = 'competition'
+          and ver.activity_id is not null
+        order by a.slug,
+          case ver.status when 'approved' then 2 when 'pending' then 1 else 0 end desc,
+          ver.created_at desc
+      ) v
+    ),
+    'backgrounds', (
+      select coalesce(
+        jsonb_object_agg(v.slug, jsonb_build_object('status', v.status, 'label', v.label)),
+        '{}'::jsonb
+      )
+      from (
+        select distinct on (a.slug) a.slug, ver.status, ver.label
+        from verifications ver
+        join activities a on a.id = ver.activity_id
+        where ver.user_id = auth.uid()
+          and ver.doc_type = 'background'
           and ver.activity_id is not null
         order by a.slug,
           case ver.status when 'approved' then 2 when 'pending' then 1 else 0 end desc,
@@ -2329,6 +2355,16 @@ begin
       v_price, v_min, p_tier;
   end if;
 
+  -- 1b. Tier C: an approved trainer adding an activity needs an approved
+  --     proof for it. A first-time applicant's listing is still a draft; the
+  --     application can't be approved until each activity's proof is.
+  if p_tier = 'C'
+    and exists (select 1 from users where id = v_uid and is_companion)
+    and not has_activity_proof(v_uid, v_activity, array['approved'])
+  then
+    raise exception 'tier C requires an approved proof for %', p_activity_slug;
+  end if;
+
   -- 2. Tier B and A require an approved certification for this activity.
   if p_tier in ('A', 'B') and not exists (
     select 1 from verifications
@@ -2362,6 +2398,7 @@ begin
   return v_id;
 end;
 $$;
+
 grant execute on function add_offering(text, tier_level, int, boolean, int) to authenticated;
 
 -- Remove one of the caller's offerings.
@@ -2757,6 +2794,68 @@ $$;
 revoke all on function set_user_admin(uuid, boolean) from public, anon;
 grant execute on function set_user_admin(uuid, boolean) to authenticated;
 
+create or replace function is_trainer_eligible(p_user_id uuid)
+returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((
+    select u.trainer_attested_at is not null
+       and u.birthdate is not null
+       and u.birthdate <= (current_date - interval '18 years')::date
+    from users u where u.id = p_user_id
+  ), false);
+$$;
+
+-- A Tier C qualification for this activity: a background proof, or a
+-- certification (which also qualifies for B), in one of the given statuses.
+create or replace function has_activity_proof(p_user_id uuid, p_activity_id uuid, p_statuses text[])
+returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from verifications
+    where user_id = p_user_id
+      and activity_id = p_activity_id
+      and doc_type in ('background', 'certification')
+      and status = any (p_statuses)
+  );
+$$;
+
+create or replace function confirm_trainer_eligibility(p_birthdate date, p_attested boolean)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_birthdate date;
+begin
+  if v_uid is null then raise exception 'not authenticated'; end if;
+  if p_attested is not true then raise exception 'attestation_required'; end if;
+  if p_birthdate is not null and (p_birthdate > current_date or p_birthdate < date '1900-01-01') then
+    raise exception 'invalid birthdate';
+  end if;
+  update users set birthdate = coalesce(p_birthdate, birthdate)
+  where id = v_uid
+  returning birthdate into v_birthdate;
+  if v_birthdate is null then raise exception 'birthdate_required'; end if;
+  if v_birthdate > (current_date - interval '18 years')::date then raise exception 'under_18'; end if;
+  update users set trainer_attested_at = now() where id = v_uid;
+end;
+$$;
+
+create or replace function trainer_proofs_complete(p_user_id uuid)
+returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+      select 1 from listing_offerings o
+      join companion_listings cl on cl.id = o.listing_id
+      where cl.user_id = p_user_id
+    )
+    and not exists (
+      select 1 from listing_offerings o
+      join companion_listings cl on cl.id = o.listing_id
+      where cl.user_id = p_user_id
+        and not has_activity_proof(p_user_id, o.activity_id, array['approved'])
+    );
+$$;
+
 create or replace function submit_verification(
   p_doc_type text,
   p_document_path text,
@@ -2770,7 +2869,7 @@ declare
   v_id uuid;
 begin
   if v_uid is null then raise exception 'not authenticated'; end if;
-  if p_doc_type not in ('certification', 'competition', 'id') then
+  if p_doc_type not in ('certification', 'competition', 'background', 'id') then
     raise exception 'invalid doc type';
   end if;
   if coalesce(p_document_path, '') = '' then raise exception 'missing document'; end if;
@@ -2778,13 +2877,18 @@ begin
     raise exception 'invalid document path';
   end if;
   if char_length(coalesce(p_label, '')) > 200 then raise exception 'label too long'; end if;
-  if p_doc_type in ('certification', 'competition') and btrim(coalesce(p_label, '')) = '' then
+  if p_doc_type in ('certification', 'competition', 'background') and btrim(coalesce(p_label, '')) = '' then
     raise exception 'certification name required';
   end if;
 
-  if p_doc_type in ('certification', 'competition') then
+  if p_doc_type in ('certification', 'competition', 'background') then
+    -- Every trainer proof needs the 18+ / truthful-information confirmation.
+    if not is_trainer_eligible(v_uid) then raise exception 'eligibility_required'; end if;
     select id into v_activity from activities where slug = p_activity_slug;
     if not found then raise exception 'unknown activity'; end if;
+  end if;
+
+  if p_doc_type in ('certification', 'competition') then
 
     -- Submit for review is the only write into the trainer-request queue.
     -- A price plan and a bookable slot have to exist before that write.
@@ -2846,7 +2950,7 @@ begin
     join users u on u.id = ver.user_id
     left join activities a on a.id = ver.activity_id
     left join users reviewer on reviewer.id = ver.reviewed_by
-    where ver.doc_type in ('certification', 'competition', 'application')
+    where ver.doc_type in ('certification', 'competition', 'background', 'application')
 
     union all
 
@@ -2876,7 +2980,7 @@ begin
       and not exists (
         select 1 from verifications ver
         where ver.user_id = u.id
-          and ver.doc_type in ('certification', 'competition', 'application')
+          and ver.doc_type in ('certification', 'competition', 'background', 'application')
       )
   ) s;
   return v;
@@ -2895,6 +2999,16 @@ declare
 begin
   if not is_platform_admin() then raise exception 'forbidden'; end if;
   if p_status not in ('approved', 'rejected') then raise exception 'invalid status'; end if;
+  -- A trainer application is only approvable for an eligible (18+, attested)
+  -- applicant with at least one plan, every one of whose activities has an
+  -- approved proof (background or certification).
+  if p_status = 'approved' and exists (
+    select 1 from verifications v where v.id = p_id and v.doc_type = 'application'
+  ) then
+    select * into v_ver from verifications where id = p_id;
+    if not is_trainer_eligible(v_ver.user_id) then raise exception 'eligibility_missing'; end if;
+    if not trainer_proofs_complete(v_ver.user_id) then raise exception 'proof_not_approved'; end if;
+  end if;
   update verifications set
     status = p_status,
     notes = nullif(p_notes, ''),
@@ -2904,9 +3018,16 @@ begin
   returning * into v_ver;
   if not found then raise exception 'verification not found'; end if;
 
-  -- Approving a first trainer application, or a certification for someone who
-  -- is not a trainer yet, is what grants the trainer role.
-  if p_status = 'approved' and v_ver.doc_type in ('application', 'certification') then
+  -- Approving a first trainer application grants the trainer role. A
+  -- certification only does so when the same bar as an application is met
+  -- (eligible, and every offered activity's proof approved); otherwise the
+  -- certification is recorded and the application still decides.
+  if p_status = 'approved' and (
+    v_ver.doc_type = 'application'
+    or (v_ver.doc_type = 'certification'
+        and is_trainer_eligible(v_ver.user_id)
+        and trainer_proofs_complete(v_ver.user_id))
+  ) then
     if not exists (select 1 from users where id = v_ver.user_id and is_companion) then
       update companion_listings
       set status = 'active'
@@ -2975,6 +3096,7 @@ declare
   v_id uuid;
 begin
   if v_uid is null then raise exception 'not authenticated'; end if;
+  if not is_trainer_eligible(v_uid) then raise exception 'eligibility_required'; end if;
   if not exists (
     select 1 from listing_offerings o
     join companion_listings cl on cl.id = o.listing_id
@@ -2983,6 +3105,16 @@ begin
     select 1 from availability av where av.user_id = v_uid
   ) then
     raise exception 'setup_required';
+  end if;
+  -- Even Tier C needs proof: every activity offered has a background proof
+  -- or a certification on file (pending or approved).
+  if exists (
+    select 1 from listing_offerings o
+    join companion_listings cl on cl.id = o.listing_id
+    where cl.user_id = v_uid
+      and not has_activity_proof(v_uid, o.activity_id, array['pending', 'approved'])
+  ) then
+    raise exception 'proof_required';
   end if;
   if exists (
     select 1 from verifications
@@ -2998,6 +3130,25 @@ begin
   returning id into v_id;
   return v_id;
 end;
+
+
+revoke all on function is_trainer_eligible(uuid) from public, anon, authenticated;
+revoke all on function has_activity_proof(uuid, uuid, text[]) from public, anon, authenticated;
+revoke all on function trainer_proofs_complete(uuid) from public, anon, authenticated;
+revoke all on function confirm_trainer_eligibility(date, boolean) from public, anon;
+grant execute on function confirm_trainer_eligibility(date, boolean) to authenticated;
+revoke all on function submit_verification(text, text, text, text) from public, anon;
+grant execute on function submit_verification(text, text, text, text) to authenticated;
+revoke all on function submit_trainer_application() from public, anon;
+grant execute on function submit_trainer_application() to authenticated;
+revoke all on function add_offering(text, tier_level, int, boolean, int) from public, anon;
+grant execute on function add_offering(text, tier_level, int, boolean, int) to authenticated;
+revoke all on function review_verification(uuid, text, text) from public, anon;
+grant execute on function review_verification(uuid, text, text) to authenticated;
+revoke all on function list_pending_verifications() from public, anon;
+grant execute on function list_pending_verifications() to authenticated;
+revoke all on function my_listing() from public, anon;
+grant execute on function my_listing() to authenticated;
 $$;
 
 create or replace function complete_onboarding(

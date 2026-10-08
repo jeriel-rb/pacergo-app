@@ -19,6 +19,9 @@ vi.mock("@/lib/plans", () => ({
   beginPlanGeneration: () => beginPlanGeneration(),
 }));
 vi.mock("@/lib/exercises", () => ({ fetchAllExercises: vi.fn().mockResolvedValue([]) }));
+vi.mock("@/lib/workout-logs", () => ({
+  fetchPlanPerformanceHistory: vi.fn().mockResolvedValue({}),
+}));
 const generateTrainingPlan = vi.fn();
 vi.mock("@pacergo/shared", async (orig) => ({
   ...(await orig<typeof import("@pacergo/shared")>()),

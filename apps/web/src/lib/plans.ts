@@ -22,6 +22,7 @@ import {
   type NutritionStatus,
   type SavedFitnessProfile,
 } from "@/lib/fitness-profile-row";
+import { fetchPlanPerformanceHistory } from "@/lib/workout-logs";
 
 /** The signed-in user's id, client-side. `/ai-plan` is fully auth-gated by
  *  middleware, so a null here would mean the session expired mid-flow. */
@@ -112,8 +113,11 @@ export async function refreshActivePlanFromProfile(profile: {
   const next = applyProfileToPlan(current, profile);
   if (planInputsSignature(next) === planInputsSignature(current)) return false;
 
-  const exercises = await fetchAllExercises();
-  const plan = generateTrainingPlan({ ...next, exercises });
+  const [exercises, performanceHistory] = await Promise.all([
+    fetchAllExercises(),
+    fetchPlanPerformanceHistory(),
+  ]);
+  const plan = generateTrainingPlan({ ...next, exercises, performanceHistory });
   await updateTrainingPlan({
     id: planId as string,
     label: row.label,
@@ -145,8 +149,11 @@ export async function regeneratePlanUnderCurrentRules(planId: string): Promise<v
     trainingPreferences: snap.trainingPreferences,
     gymEquipment: upgradeLegacyEquipment(snap.gymEquipment),
   };
-  const exercises = await fetchAllExercises();
-  const plan = generateTrainingPlan({ ...next, exercises });
+  const [exercises, performanceHistory] = await Promise.all([
+    fetchAllExercises(),
+    fetchPlanPerformanceHistory(),
+  ]);
+  const plan = generateTrainingPlan({ ...next, exercises, performanceHistory });
   await updateTrainingPlan({ id: planId, label: row.label, plan, onboardingSnapshot: next });
 }
 

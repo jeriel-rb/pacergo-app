@@ -75,6 +75,7 @@ import {
   updateTrainingPlan,
   type PlanOnboardingSnapshot,
 } from "@/lib/plans";
+import { fetchPlanPerformanceHistory } from "@/lib/workout-logs";
 import { TrainingDaysPicker } from "@/features/ai-plan/onboarding/training-days-picker";
 
 type FieldKey =
@@ -228,8 +229,17 @@ export function CustomizePlanView({
     setError(false);
     try {
       const trainingPreferences = { ...tp, workoutSplit: recommended };
-      const exercises = await fetchAllExercises();
-      const plan = generateTrainingPlan({ answers, trainingPreferences, gymEquipment: ge, exercises });
+      const [exercises, performanceHistory] = await Promise.all([
+        fetchAllExercises(),
+        fetchPlanPerformanceHistory(),
+      ]);
+      const plan = generateTrainingPlan({
+        answers,
+        trainingPreferences,
+        gymEquipment: ge,
+        exercises,
+        performanceHistory,
+      });
       const label = answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : currentLabel;
       const snapshot: PlanOnboardingSnapshot = { answers, trainingPreferences, gymEquipment: ge };
       await updateTrainingPlan({ id: planId, label, plan, onboardingSnapshot: snapshot });

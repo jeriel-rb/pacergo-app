@@ -47,9 +47,10 @@ export interface GeneratedWeek {
 }
 
 /** The full generated plan. Every week uses the same day-of-week pattern.
- *  Primaries stay frozen across the block (unless variety is `dynamic`); dose
- *  progresses via reps/effort/RIR and only mild set ramps when eligible. All 4
- *  weeks are always fully generated and visible, nothing drip-released. */
+ *  Same-focus days within a week use structured Exposure A/B emphasis; week-
+ *  to-week primaries stay frozen when variety is `fixed` (ladder when
+ *  balanced/dynamic). Dose progresses via reps/effort/RIR and mild set ramps.
+ *  All 4 weeks are always fully generated and visible, nothing drip-released. */
 export interface GeneratedPlan {
   weeks: GeneratedWeek[]; // always length 4
   sessionDurationMin: number;

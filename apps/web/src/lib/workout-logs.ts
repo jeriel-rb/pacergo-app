@@ -1,6 +1,11 @@
 "use client";
 
-import type { EffortFeedback, LoggedSet, PreviousPerformance } from "@pacergo/shared";
+import type {
+  EffortFeedback,
+  LoggedSet,
+  PlanPerformanceHistory,
+  PreviousPerformance,
+} from "@pacergo/shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 /** Where a log belongs: one exercise of one plan day. */
@@ -62,6 +67,30 @@ export async function fetchExerciseHistory(slug: string, limit = 3): Promise<Exe
     sets: r.sets ?? [],
     effort: r.effort,
   }));
+}
+
+/** Recent logged lifts for plan generation — empty when unsigned-in or no logs. */
+export async function fetchPlanPerformanceHistory(): Promise<PlanPerformanceHistory> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("recent_exercise_performance", {
+    p_days: 28,
+    p_limit: 60,
+  });
+  if (error || !data) return {};
+  const rows = data as { exercise_slug: string; effort: string | null; performed_on: string }[];
+  const recentSlugs: string[] = [];
+  const strugglingSlugs: string[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (!seen.has(row.exercise_slug)) {
+      seen.add(row.exercise_slug);
+      recentSlugs.push(row.exercise_slug);
+    }
+    if (row.effort === "too_heavy" && !strugglingSlugs.includes(row.exercise_slug)) {
+      strugglingSlugs.push(row.exercise_slug);
+    }
+  }
+  return { recentSlugs, strugglingSlugs };
 }
 
 /** Marks a plan day finished (idempotent) — counts toward Home progress. */

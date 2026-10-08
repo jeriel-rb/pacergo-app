@@ -8,6 +8,7 @@ import { generateTrainingPlan } from "@pacergo/shared";
 import { cn } from "@/lib/utils";
 import { fetchAllExercises } from "@/lib/exercises";
 import { beginPlanGeneration, saveTrainingPlan } from "@/lib/plans";
+import { fetchPlanPerformanceHistory } from "@/lib/workout-logs";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 
 const DURATION_MS = 4500;
@@ -86,9 +87,18 @@ export function CreatingPlanView() {
       await beginPlanGeneration().catch(() => {
         // Non-fatal: only the resume-after-close safety net is lost.
       });
-      const exercises = await fetchAllExercises();
+      const [exercises, performanceHistory] = await Promise.all([
+        fetchAllExercises(),
+        fetchPlanPerformanceHistory(),
+      ]);
       if (cancelled) return;
-      const plan = generateTrainingPlan({ answers, trainingPreferences, gymEquipment, exercises });
+      const plan = generateTrainingPlan({
+        answers,
+        trainingPreferences,
+        gymEquipment,
+        exercises,
+        performanceHistory,
+      });
       setGeneratedPlan(plan);
       if (cancelled) return;
       const planId = await saveTrainingPlan({

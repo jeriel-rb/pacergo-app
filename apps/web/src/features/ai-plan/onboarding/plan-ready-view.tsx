@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { fetchAllExercises } from "@/lib/exercises";
 import { saveTrainingPlan } from "@/lib/plans";
+import { fetchPlanPerformanceHistory } from "@/lib/workout-logs";
 
 const BMI_MIN = 15;
 const BMI_MAX = 35;
@@ -82,8 +83,17 @@ export function PlanReadyView() {
     try {
       let plan = generatedPlan;
       if (!plan) {
-        const exercises = await fetchAllExercises();
-        plan = generateTrainingPlan({ answers, trainingPreferences, gymEquipment, exercises });
+        const [exercises, performanceHistory] = await Promise.all([
+          fetchAllExercises(),
+          fetchPlanPerformanceHistory(),
+        ]);
+        plan = generateTrainingPlan({
+          answers,
+          trainingPreferences,
+          gymEquipment,
+          exercises,
+          performanceHistory,
+        });
         setGeneratedPlan(plan);
       }
       await persistProfile();

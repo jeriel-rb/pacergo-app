@@ -50,11 +50,16 @@ describe("generateTrainingPlan", () => {
     expect(JSON.stringify(a)).toEqual(JSON.stringify(b));
   });
 
-  it("keeps the same main exercises across weeks and progresses effort, not automatic weekly sets", () => {
-    const plan = generateTrainingPlan({ answers: ANSWERS, trainingPreferences: TRAINING, gymEquipment: GYM, exercises: EXERCISES });
+  it("progresses effort (RIR) across weeks on a stable skeleton when variety is fixed", () => {
+    const plan = generateTrainingPlan({
+      answers: ANSWERS,
+      trainingPreferences: { ...TRAINING, variety: "fixed" },
+      gymEquipment: GYM,
+      exercises: EXERCISES,
+    });
     const mainSlugs = (w: number) => plan.weeks[w]!.days.flatMap((d) => d.session?.main.map((e) => e.slug) ?? []);
     expect(mainSlugs(0).length).toBeGreaterThan(0);
-    expect(JSON.stringify(mainSlugs(2))).not.toEqual(JSON.stringify(mainSlugs(0)));
+    expect(mainSlugs(2)).toEqual(mainSlugs(0));
     const rir = (w: number) => plan.weeks[w]!.days.find((d) => d.session)!.session!.main[0]!.rirTarget;
     expect(rir(0)).toBeGreaterThanOrEqual(rir(2)!);
   });

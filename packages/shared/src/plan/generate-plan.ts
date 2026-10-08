@@ -11,7 +11,7 @@ import {
 } from "../onboarding/onboarding-types";
 import type { Bi } from "./plan-types";
 import { recommendSplit } from "./split-recommendation";
-import { compareForLevel, exerciseEase, restrictToLevel } from "./exercise-fit";
+import { compareForLevel, exerciseEase, patternProgressionRank, restrictToLevel } from "./exercise-fit";
 import { isAiEligible } from "./exercise-qa";
 import {
   ISOLATION_SLUGS,
@@ -32,6 +32,11 @@ import {
   weekRirTarget,
 } from "./mesocycle-rules";
 import { selectCooldown, stretchToExercise, STRETCH_LIBRARY } from "./stretch-library";
+import {
+  orderGroupForExposure,
+  preferUnused,
+  type PlanPerformanceHistory,
+} from "./structured-variation";
 import type {
   ExerciseRecord,
   GeneratedCardioBlock,
@@ -81,7 +86,7 @@ const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 12;
+export const PLAN_RULES_VERSION = 14;
 
 /** @deprecated Compatibility shim — weekly set ramps are handled by
  *  `setsForWeek` / volume curves. Always returns 0 so callers that still sum
@@ -280,7 +285,9 @@ function priorityScore(e: ExerciseRecord, priority: ReadonlySet<string>): number
  *  the order given — prioritized muscles lead), then a second round, and so on,
  *  so a leg day isn't five glute moves. Each later week steps the main lift to
  *  the next harder variation of that pattern (machine → free weight → barbell)
- *  when one exists. `fixed` variety keeps week 1's choices all month. */
+ *  when one exists. `fixed` variety keeps week 1's Exposure A/B choices all
+ *  month. `exposureIndex` rotates emphasis when the same focus repeats in the
+ *  week (structured A/B — not random). */
 function pickMain(
   pool: readonly ExerciseRecord[],
   muscleOrder: readonly string[],
@@ -288,6 +295,9 @@ function pickMain(
   week: number,
   variety: NonNullable<TrainingPreferencesAnswers["variety"]>,
   goal: OnboardingAnswers["goal"],
+  exposureIndex: number,
+  softAvoid: ReadonlySet<string>,
+  history: PlanPerformanceHistory | undefined,
 ): ExerciseRecord[] {
   // Upper / lower chest are chest: one slot family, so a push day isn't three
   // chest moves before it reaches shoulders or triceps.
@@ -308,18 +318,33 @@ function pickMain(
         ...rest.filter((e) => !ISOLATION_SLUGS.has(e.slug)),
       ];
     })
-    .map((g) => advanceToHarderVariation(g, week, variety, goal));
+    .map((g) => advanceToHarderVariation(g, week, variety, goal))
+    .map((g) => orderGroupForExposure(g, exposureIndex, variety, softAvoid, history));
 
   const picked: ExerciseRecord[] = [];
-  for (let round = 0; picked.length < count && groups.some((g) => g.length > round); round++) {
+  const pickedSlugs = new Set<string>();
+  const maxRounds = Math.max(0, ...groups.map((g) => g.length));
+  for (let round = 0; picked.length < count && round < maxRounds; round++) {
     for (const g of groups) {
-      if (picked.length < count && g[round]) picked.push(g[round]!);
+      if (picked.length >= count) break;
+      const remaining = g.filter((e) => !pickedSlugs.has(e.slug));
+      if (remaining.length === 0) continue;
+      // First pass prefers unused/avoided; later rounds take what's left.
+      const next = (round === 0 ? preferUnused(remaining, softAvoid) : remaining)[0];
+      if (next) {
+        picked.push(next);
+        pickedSlugs.add(next.slug);
+      }
     }
   }
   // Anything still short (fewer muscles than slots) tops up from the ranked pool.
-  for (const e of pool) {
+  for (const e of preferUnused(
+    pool.filter((e) => !pickedSlugs.has(e.slug)),
+    softAvoid,
+  )) {
     if (picked.length >= count) break;
-    if (!picked.includes(e)) picked.push(e);
+    picked.push(e);
+    pickedSlugs.add(e.slug);
   }
   return picked;
 }
@@ -338,18 +363,27 @@ function advanceToHarderVariation(
   if (patterns.length < 2) return group;
 
   const functionalish = (slug: string) =>
-    /lunge|split|carry|farmer|step-up|swing|single|unilateral|thruster|burpee/.test(slug);
+    /lunge|split|carry|farmer|step-up|swing|single|unilateral|thruster|burpee|pistol/.test(slug);
   const sorted = [...patterns].sort((a, b) => {
-    if (goal === "functional") {
-      const byKind = Number(functionalish(b.slug)) - Number(functionalish(a.slug));
-      if (byKind !== 0) return byKind;
-    }
+    // Maintain Health: prefer bodyweight, but never ahead of a clearer easy→hard order.
     if (goal === "stay_healthy") {
       const bodyweight = (e: ExerciseRecord) => (exerciseEase(e) >= 6 ? 0 : 1);
       const byBw = bodyweight(a) - bodyweight(b);
       if (byBw !== 0) return byBw;
     }
-    return exerciseEase(a) - exerciseEase(b) || a.slug.localeCompare(b.slug);
+    // Primary: equipment rung (machine → free weight → barbell / bodyweight).
+    const byEase = exerciseEase(a) - exerciseEase(b);
+    if (byEase !== 0) return byEase;
+    // Tie-break that matters most: known families step wall → incline → knee → full,
+    // not A–Z (which put wall-push-up in week 4 after push-up).
+    const byProgression = patternProgressionRank(a.slug) - patternProgressionRank(b.slug);
+    if (byProgression !== 0) return byProgression;
+    // Functional: among equal difficulty, prefer athletic unilateral patterns.
+    if (goal === "functional") {
+      const byKind = Number(functionalish(b.slug)) - Number(functionalish(a.slug));
+      if (byKind !== 0) return byKind;
+    }
+    return a.slug.localeCompare(b.slug);
   });
   const step = Math.min(weekLadderStep(week, goal), sorted.length - 1);
   const lead = sorted[step]!;
@@ -495,17 +529,21 @@ function buildWarmupPool(
 /**
  * Deterministically compose a 4-week structured training plan from the
  * onboarding wizard's answers + the live `exercises` catalog. Same inputs
- * (including the same exercise catalog snapshot) always produce the same
- * plan — no randomness, no network/AI calls of any kind. Frozen primary
- * skeleton + week-indexed dose (reps/effort/RIR, mild set ramps when eligible).
+ * (including the same exercise catalog snapshot and optional performance
+ * history) always produce the same plan — no randomness, no network/AI calls.
+ * Same-focus days in a week use structured Exposure A/B emphasis; dose
+ * progresses via reps/effort/RIR and mild set ramps when eligible.
  */
 export function generateTrainingPlan(input: {
   answers: OnboardingAnswers;
   trainingPreferences: TrainingPreferencesAnswers;
   gymEquipment: GymEquipmentAnswers;
   exercises: readonly ExerciseRecord[];
+  /** Optional recent / struggling lifts — biases Exposure B+ away from the
+   *  same leads. Omitted on first plans and in most unit tests. */
+  performanceHistory?: PlanPerformanceHistory;
 }): GeneratedPlan {
-  const { answers, trainingPreferences, gymEquipment } = input;
+  const { answers, trainingPreferences, gymEquipment, performanceHistory } = input;
   // Hard gate before anything is selected: only exercises with reliable
   // illustration + instructions + muscle mapping that passed QA can be used.
   const exercises = input.exercises.filter(isAiEligible);
@@ -567,10 +605,13 @@ export function generateTrainingPlan(input: {
   // in product copy, but generation never invents cardio without addCardio.
   const wantCardio = gymEquipment.addCardio;
 
-  /** One week's seven days. Every day sharing a focus gets identical content
-   *  within the week; primaries stay frozen unless variety is `dynamic`. */
+  /** One week's seven days. Each occurrence of a focus gets its own Exposure
+   *  index (A=0, B=1, …) so upper/upper or full-body×3 is not a clone. Soft-
+   *  avoid earlier mains in the week for recovery; history biases B+ leads. */
   function buildWeek(week: number): GeneratedDay[] {
-    const sessionByFocus = new Map<SessionFocus, GeneratedSession>();
+    const focusExposure = new Map<SessionFocus, number>();
+    const usedThisWeek = new Set<string>();
+    const usedByFocus = new Map<SessionFocus, Set<string>>();
     let trainingDayCounter = 0;
     const days: GeneratedDay[] = [];
     const rir = weekRirTarget(week, experience, curve);
@@ -590,87 +631,110 @@ export function generateTrainingPlan(input: {
       }
 
       const focus = sequence[trainingDayCounter % sequence.length]!;
-      let session = sessionByFocus.get(focus);
-      if (!session) {
-        // Sessions that train a prioritized muscle get one extra exercise.
-        const worksPriority = FOCUS_MUSCLES[focus].some((m) => priority.has(m));
-        const count = Math.min(7, mainCount + (worksPriority ? 1 : 0));
-        const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact, experience);
-        const muscleOrder = [
-          ...FOCUS_MUSCLES[focus].filter((m) => priority.has(m)),
-          ...FOCUS_MUSCLES[focus].filter((m) => !priority.has(m)),
-        ];
-        let mainRecords = pickMain(pool, muscleOrder, count, week, variety, answers.goal);
-        let main = mainRecords.map((e) => {
-          const reps = repsForExercise(e.slug, compoundReps, answers.goal);
-          return toExercise(e, {
-            sets,
+      const exposureIndex = focusExposure.get(focus) ?? 0;
+      focusExposure.set(focus, exposureIndex + 1);
+
+      const focusUsed = usedByFocus.get(focus) ?? new Set<string>();
+      // Same-focus repeats: hard soft-avoid prior lineup. Cross-day: lighter
+      // avoid of anything already trained this week (recovery).
+      const softAvoid = new Set<string>([
+        ...focusUsed,
+        ...(exposureIndex > 0 ? usedThisWeek : []),
+      ]);
+
+      // Sessions that train a prioritized muscle get one extra exercise.
+      const worksPriority = FOCUS_MUSCLES[focus].some((m) => priority.has(m));
+      const count = Math.min(7, mainCount + (worksPriority ? 1 : 0));
+      const pool = poolFor(exercises, gymType, selectedEquipment, FOCUS_MUSCLES[focus], excluded, priority, lowImpact, experience);
+      const muscleOrder = [
+        ...FOCUS_MUSCLES[focus].filter((m) => priority.has(m)),
+        ...FOCUS_MUSCLES[focus].filter((m) => !priority.has(m)),
+      ];
+      let mainRecords = pickMain(
+        pool,
+        muscleOrder,
+        count,
+        week,
+        variety,
+        answers.goal,
+        exposureIndex,
+        softAvoid,
+        performanceHistory,
+      );
+      let main = mainRecords.map((e) => {
+        const reps = repsForExercise(e.slug, compoundReps, answers.goal);
+        return toExercise(e, {
+          sets,
+          reps,
+          restSec: restSecFor({
+            record: e,
             reps,
-            restSec: restSecFor({
-              record: e,
-              reps,
-              goal: answers.goal,
-              prefs: trainingPreferences,
-            }),
-            rirTarget: rir,
-          });
+            goal: answers.goal,
+            prefs: trainingPreferences,
+          }),
+          rirTarget: rir,
         });
+      });
 
-        let cardio: GeneratedCardioBlock | null = null;
-        if (wantCardio && cardioTypes.length > 0) {
-          const cardioSlug = cardioTypes[trainingDayCounter % cardioTypes.length]!;
-          const mapped = cardioTypeToSlug(cardioSlug);
-          const cardioExercise = mapped ? exercises.find((e) => e.slug === mapped) : undefined;
-          if (cardioExercise) {
-            cardio = {
-              placement: gymEquipment.cardioPlacement,
-              exercise: toExercise(cardioExercise, {
-                sets: 1,
-                reps: "15-20 min",
-                restSec: lightWorkRestSec(trainingPreferences),
-              }),
-            };
-          }
-        }
-
-        const trimmed = trimMainToDuration(
-          mainRecords,
-          main,
-          durationMin,
-          warmupPool.length,
-          cooldownCount,
-          cardio !== null,
-        );
-        mainRecords = trimmed.records;
-        main = trimmed.exercises;
-
-        const raiseReps =
-          warmupPool[0] &&
-          (warmupPool[0].slug === "cycling" ||
-            warmupPool[0].slug === "elliptical" ||
-            warmupPool[0].slug === "rowing" ||
-            warmupPool[0].slug === "running" ||
-            warmupPool[0].slug === "treadmill-incline-walk")
-            ? "3-5 min"
-            : "45 sec";
-
-        session = {
-          focus,
-          warmup: warmupPool.map((e, i) =>
-            toExercise(e, {
+      let cardio: GeneratedCardioBlock | null = null;
+      if (wantCardio && cardioTypes.length > 0) {
+        const cardioSlug = cardioTypes[trainingDayCounter % cardioTypes.length]!;
+        const mapped = cardioTypeToSlug(cardioSlug);
+        const cardioExercise = mapped ? exercises.find((e) => e.slug === mapped) : undefined;
+        if (cardioExercise) {
+          cardio = {
+            placement: gymEquipment.cardioPlacement,
+            exercise: toExercise(cardioExercise, {
               sets: 1,
-              reps: i === 0 && raiseReps === "3-5 min" ? raiseReps : "45 sec",
+              reps: "15-20 min",
               restSec: lightWorkRestSec(trainingPreferences),
             }),
-          ),
-          main,
-          cooldown: selectCooldown({ main: mainRecords, available: stretchPool, count: cooldownCount }).map(
-            ({ def, record }) => stretchToExercise(def, record, lightWorkRestSec(trainingPreferences)),
-          ),
-          cardio,
-        };
-        sessionByFocus.set(focus, session);
+          };
+        }
       }
+
+      const trimmed = trimMainToDuration(
+        mainRecords,
+        main,
+        durationMin,
+        warmupPool.length,
+        cooldownCount,
+        cardio !== null,
+      );
+      mainRecords = trimmed.records;
+      main = trimmed.exercises;
+
+      const raiseReps =
+        warmupPool[0] &&
+        (warmupPool[0].slug === "cycling" ||
+          warmupPool[0].slug === "elliptical" ||
+          warmupPool[0].slug === "rowing" ||
+          warmupPool[0].slug === "running" ||
+          warmupPool[0].slug === "treadmill-incline-walk")
+          ? "3-5 min"
+          : "45 sec";
+
+      const session: GeneratedSession = {
+        focus,
+        warmup: warmupPool.map((e, i) =>
+          toExercise(e, {
+            sets: 1,
+            reps: i === 0 && raiseReps === "3-5 min" ? raiseReps : "45 sec",
+            restSec: lightWorkRestSec(trainingPreferences),
+          }),
+        ),
+        main,
+        cooldown: selectCooldown({ main: mainRecords, available: stretchPool, count: cooldownCount }).map(
+          ({ def, record }) => stretchToExercise(def, record, lightWorkRestSec(trainingPreferences)),
+        ),
+        cardio,
+      };
+
+      for (const e of mainRecords) {
+        usedThisWeek.add(e.slug);
+        focusUsed.add(e.slug);
+      }
+      usedByFocus.set(focus, focusUsed);
 
       days.push({ dayIndex, dayLabel: WEEKDAY[dayIndex]!, isRestDay: false, session });
       trainingDayCounter++;

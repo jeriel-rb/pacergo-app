@@ -148,6 +148,44 @@ export function exerciseEase(e: Pick<ExerciseRecord, "slug" | "equipment">): num
   return STABILITY_RUNG[exerciseStability(e)];
 }
 
+/**
+ * Easy → hard order inside the same equipment rung (e.g. all bodyweight).
+ * When every option shares `exerciseEase`, A–Z would put wall-push-up after
+ * full push-up — this rank stops that. Unknown slugs sit in the middle so
+ * they neither steal week 1 nor block the top of the ladder.
+ */
+export function patternProgressionRank(slug: string): number {
+  // Push-up family
+  if (slug === "wall-push-up") return 0;
+  if (slug === "incline-push-up") return 1;
+  if (slug === "knee-push-up") return 2;
+  if (slug === "push-up") return 3;
+  if (slug === "diamond-push-up" || slug === "decline-push-up") return 4;
+  if (slug === "weighted-push-up" || slug === "archer-push-up") return 5;
+
+  // Squat / single-leg family
+  if (slug === "wall-sit") return 0;
+  if (slug === "bodyweight-squat") return 1;
+  if (slug === "goblet-squat" || slug.endsWith("box-squat")) return 2;
+  if (/^(forward|lateral|reverse)-lunge$|^step-up$|^split-squat$/.test(slug)) return 3;
+  if (/bulgarian|walking-lunge/.test(slug)) return 4;
+  if (/pistol|shrimp/.test(slug)) return 5;
+
+  // Pull-up / chin-up family
+  if (/^assisted-(pull|chin)-up$/.test(slug)) return 0;
+  if (/negative/.test(slug)) return 1;
+  if (/^(pull|chin)-up$/.test(slug)) return 2;
+  if (/weighted|archer|typewriter/.test(slug) && /(pull|chin)-up/.test(slug)) return 3;
+
+  // Dip family
+  if (slug === "chair-dip" || slug === "bench-dip") return 0;
+  if (slug === "assisted-dip") return 1;
+  if (slug === "dip") return 2;
+  if (slug === "weighted-dip") return 3;
+
+  return 50;
+}
+
 export function exerciseStability(e: Pick<ExerciseRecord, "slug" | "equipment">): ExerciseStability {
   // An assisted pull-up or dip is a bodyweight move with a counterweight, not
   // a selectorized machine. It waits until no pulldown or pushdown exists.

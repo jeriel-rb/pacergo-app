@@ -6442,6 +6442,22 @@ language sql security definer set search_path = public stable as $$
   limit least(greatest(coalesce(p_limit, 3), 1), 10);
 $$;
 
+-- Recent logged lifts for plan generation (structured Exposure B+ bias).
+create or replace function recent_exercise_performance(p_days int default 28, p_limit int default 60)
+returns table (exercise_slug text, effort text, performed_on date)
+language sql security definer set search_path = public stable as $$
+  select l.exercise_slug, l.effort, l.performed_on
+  from workout_exercise_logs l
+  where l.user_id = auth.uid()
+    and l.performed_on >= (app_today() - least(greatest(coalesce(p_days, 28), 1), 90))
+    and jsonb_array_length(coalesce(l.sets, '[]'::jsonb)) > 0
+  order by l.performed_on desc, l.updated_at desc
+  limit least(greatest(coalesce(p_limit, 60), 1), 120);
+$$;
+
+revoke all on function recent_exercise_performance(int, int) from public;
+grant execute on function recent_exercise_performance(int, int) to authenticated;
+
 create or replace function complete_workout(p_plan_id uuid, p_week int, p_day_index int)
 returns void
 language plpgsql security definer set search_path = public as $$

@@ -25,6 +25,7 @@ export * from './plan/plan-inputs';
 export * from './plan/exercise-qa';
 export * from './plan/exercise-meta';
 export * from './plan/stretch-library';
+export * from './plan/structured-variation';
 
 export * from './onboarding/onboarding-types';
 export * from './onboarding/equipment-catalog';

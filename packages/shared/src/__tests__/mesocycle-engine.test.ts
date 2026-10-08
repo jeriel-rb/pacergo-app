@@ -13,6 +13,7 @@ import {
   selectWarmupRaiseSlug,
 } from "../plan/mesocycle-rules";
 import { recommendLoad, recommendSessionProgression } from "../plan/progression";
+import { patternProgressionRank } from "../plan/exercise-fit";
 import {
   GYM_EQUIPMENT_DEFAULT,
   ONBOARDING_ANSWERS_DEFAULT,
@@ -42,7 +43,11 @@ const ex = (
 const CATALOG: ExerciseRecord[] = [
   ex("machine-chest-press", ["chest", "triceps"], ["chest_press_machine"]),
   ex("dumbbell-bench-press", ["chest", "triceps"], ["dumbbells", "bench"]),
+  ex("wall-push-up", ["chest", "triceps"]),
+  ex("incline-push-up", ["chest", "triceps"]),
+  ex("knee-push-up", ["chest", "triceps"]),
   ex("push-up", ["chest", "triceps"]),
+  ex("diamond-push-up", ["chest", "triceps"]),
   ex("dumbbell-row", ["back", "biceps"], ["dumbbells"]),
   ex("inverted-row", ["back", "biceps"]),
   ex("goblet-squat", ["quads", "glutes"], ["dumbbells", "kettlebell"]),
@@ -145,6 +150,30 @@ describe("mesocycle volume / week progression", () => {
     expect(mainSlugs(p, 0).length).toBeGreaterThan(0);
     const changed = [1, 2, 3].some((w) => JSON.stringify(mainSlugs(p, w)) !== JSON.stringify(mainSlugs(p, 0)));
     expect(changed).toBe(true);
+  });
+
+  it("orders bodyweight push-ups easy→hard so week 4 is not a wall push-up after a full push-up", () => {
+    expect(patternProgressionRank("wall-push-up")).toBeLessThan(patternProgressionRank("incline-push-up"));
+    expect(patternProgressionRank("incline-push-up")).toBeLessThan(patternProgressionRank("knee-push-up"));
+    expect(patternProgressionRank("knee-push-up")).toBeLessThan(patternProgressionRank("push-up"));
+    expect(patternProgressionRank("push-up")).toBeLessThan(patternProgressionRank("diamond-push-up"));
+
+    // Bodyweight-only Functional: same catalog family lanoire hit in production.
+    const p = plan({
+      answers: { goal: "functional" },
+      prefs: { experience: "beginner", daysPerWeek: "3", workoutSplit: "upper_lower", variety: "balanced" },
+      gym: { gymType: "bodyweight_only", equipment: [] },
+    });
+    const chestLead = (w: number) =>
+      p.weeks[w]!.days
+        .flatMap((d) => d.session?.main ?? [])
+        .map((e) => e.slug)
+        .find((s) => /push-up/.test(s));
+    const ranks = [0, 1, 2, 3].map((w) => patternProgressionRank(chestLead(w)!));
+    for (let i = 1; i < ranks.length; i++) {
+      expect(ranks[i]!, `week ${i + 1}`).toBeGreaterThanOrEqual(ranks[i - 1]!);
+    }
+    expect(chestLead(3)).not.toBe("wall-push-up");
   });
 
   it("tightens RIR across weeks while keeping FLAT sets for Basic", () => {

@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { calculateNutrition, missingNutritionInputs, nutritionNeedsRecalc } from "../nutrition/calculate-nutrition";
+import {
+  calculateNutrition,
+  missingNutritionInputs,
+  nutritionNeedsRecalc,
+  preservedProteinGrams,
+  withProteinGrams,
+} from "../nutrition/calculate-nutrition";
 import { profileStepCompletion, toFitnessProfile, type FitnessProfile } from "../nutrition/fitness-profile";
 import type { NutritionInputs } from "../nutrition/calculate-nutrition";
 import { DEFAULT_NUTRITION_RULES, type NutritionRules } from "../nutrition/nutrition-rules";
@@ -267,5 +273,32 @@ describe("nutrition guidance", () => {
     const keys = calculateNutrition(BASE)!.guidance.map((g) => g.key);
     expect(keys).not.toContain("activity_low");
     expect(keys).not.toContain("activity_high");
+  });
+});
+
+describe("protein target preservation", () => {
+  it("keeps a saved target when a new goal would replace it", () => {
+    const previous = calculateNutrition({
+      ...BASE,
+      goal: "build_muscle",
+      experience: "advanced",
+    })!;
+    const next = calculateNutrition({
+      ...BASE,
+      goal: "stay_healthy",
+      experience: "beginner",
+    })!;
+    expect(next.proteinGPerKg).toBe(1.2);
+    expect(previous.proteinGrams).not.toBe(next.proteinGrams);
+    expect(preservedProteinGrams(previous, next)).toBe(previous.proteinGrams);
+    expect(preservedProteinGrams(next, next)).toBeUndefined();
+
+    const kept = withProteinGrams(next, previous.proteinGrams, BASE.weightKg!);
+    expect(kept.proteinGrams).toBe(previous.proteinGrams);
+    expect(kept.proteinOverrideGrams).toBe(previous.proteinGrams);
+    expect(kept.dailyCalories).toBe(next.dailyCalories);
+    expect(preservedProteinGrams(kept, next)).toBe(previous.proteinGrams);
+    const perMeal = kept.guidance.find((item) => item.key === "proteinPerMeal");
+    expect(perMeal?.params?.grams).toBe(Math.round(kept.proteinGrams / 3 / 5) * 5);
   });
 });

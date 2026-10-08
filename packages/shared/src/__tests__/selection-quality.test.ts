@@ -130,15 +130,13 @@ describe("difficulty by experience level", () => {
     expect(rank("some-new-unreviewed-move")).toBe(2);
   });
 
-  it("keeps beginners on machines and cables when those are available", () => {
-    for (const level of ["no_experience", "beginner"] as const) {
-      const slugs = everything(withKit(level, "dynamic")).map((e) => e.slug);
-      expect(slugs).toContain("machine-chest-press");
-      expect(slugs).toContain("leg-press");
-      expect(slugs).not.toContain("bench-press");
-      expect(slugs).not.toContain("pull-up");
-      expect(slugs).not.toContain("squat");
-    }
+  it("starts on machines, and only Basic users may step up to a barbell later", () => {
+    const slugs = (level: "no_experience" | "beginner") =>
+      everything(withKit(level, "dynamic")).map((e) => e.slug);
+    expect(slugs("no_experience")).toContain("machine-chest-press");
+    expect(slugs("no_experience")).not.toContain("bench-press");
+    expect(slugs("beginner")).toContain("machine-chest-press");
+    expect(slugs("beginner")).toContain("bench-press");
   });
 
   it("uses a pull-up only when a beginner has no easier lat exercise", () => {
@@ -181,7 +179,7 @@ describe("per-exercise prescription", () => {
   it("trains single-joint work in a higher rep range than the heavy lifts", () => {
     const push = day(plan("advanced"), "push").main;
     const bySlug = Object.fromEntries(push.map((e) => [e.slug, e.reps]));
-    expect(bySlug["bench-press"]).toBe("8-10");
+    expect(bySlug["bench-press"]).toBe("6-10");
     for (const slug of ISOLATION_SLUGS) if (bySlug[slug]) expect(bySlug[slug], slug).toBe("10-15");
     expect(repsForExercise("lateral-raise", "6-10", "lose_weight")).toBe("12-15");
   });

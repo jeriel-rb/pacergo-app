@@ -15,6 +15,8 @@ export interface GeneratedExercise {
   /** "10-12" for rep ranges, or "30 sec" for timed work. */
   reps: string;
   restSec: number;
+  /** Planned reps-in-reserve for main work (composer effort cue). */
+  rirTarget?: number;
 }
 
 export interface GeneratedCardioBlock {
@@ -44,10 +46,10 @@ export interface GeneratedWeek {
   days: GeneratedDay[]; // always length 7
 }
 
-/** The full generated plan. Every week uses the same day-of-week pattern. Week
- *  to week, the exercises rotate by the user's Variety choice and main lifts gain
- *  a set in weeks 3–4 (progressive overload, see `progressionSets`). All 4 weeks
- *  are always fully generated and visible, nothing drip-released. */
+/** The full generated plan. Every week uses the same day-of-week pattern.
+ *  Primaries stay frozen across the block (unless variety is `dynamic`); dose
+ *  progresses via reps/effort/RIR and only mild set ramps when eligible. All 4
+ *  weeks are always fully generated and visible, nothing drip-released. */
 export interface GeneratedPlan {
   weeks: GeneratedWeek[]; // always length 4
   sessionDurationMin: number;

@@ -4,7 +4,7 @@ import * as React from "react";
 import { Check, Dumbbell } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
-  ONBOARDING_MUSCLE_GROUPS,
+  PLAN_SELECTABLE_MUSCLE_GROUPS,
   type OnboardingMuscleGroup,
 } from "@pacergo/shared";
 import { MUSCLE_GROUP_IMAGES, MUSCLE_GROUP_REGION } from "@/shared/assets/images";
@@ -39,7 +39,7 @@ export function MuscleGrid({
       </p>
 
       {REGIONS.map((region) => {
-        const muscles = ONBOARDING_MUSCLE_GROUPS.filter(
+        const muscles = PLAN_SELECTABLE_MUSCLE_GROUPS.filter(
           (m) => MUSCLE_GROUP_REGION[m] === region,
         );
         return (

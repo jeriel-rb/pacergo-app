@@ -50,12 +50,13 @@ describe("generateTrainingPlan", () => {
     expect(JSON.stringify(a)).toEqual(JSON.stringify(b));
   });
 
-  it("keeps the same content in weeks 1–2, then adds a set to main lifts (progression)", () => {
+  it("keeps the same main exercises across weeks and progresses effort, not automatic weekly sets", () => {
     const plan = generateTrainingPlan({ answers: ANSWERS, trainingPreferences: TRAINING, gymEquipment: GYM, exercises: EXERCISES });
-    expect(plan.weeks[1]!.days).toEqual(plan.weeks[0]!.days);
-    const mainSets = (w: number) => plan.weeks[w]!.days.flatMap((d) => d.session?.main.map((e) => e.sets) ?? []);
-    expect(mainSets(0).length).toBeGreaterThan(0);
-    expect(mainSets(3)).toEqual(mainSets(0).map((s) => s + 1));
+    const mainSlugs = (w: number) => plan.weeks[w]!.days.flatMap((d) => d.session?.main.map((e) => e.slug) ?? []);
+    expect(mainSlugs(0).length).toBeGreaterThan(0);
+    expect(JSON.stringify(mainSlugs(2))).not.toEqual(JSON.stringify(mainSlugs(0)));
+    const rir = (w: number) => plan.weeks[w]!.days.find((d) => d.session)!.session!.main[0]!.rirTarget;
+    expect(rir(0)).toBeGreaterThanOrEqual(rir(2)!);
   });
 
   it("respects the chosen training frequency's rest-day pattern", () => {

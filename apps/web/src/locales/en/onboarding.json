@@ -51,6 +51,10 @@
       "stay_healthy": {
         "title": "Stay Healthy",
         "description": "Perform a variety of exercises to improve health, strength and consistency."
+      },
+      "functional": {
+        "title": "Functional Fitness",
+        "description": "Train strength, power, conditioning, and movement skills for real-world performance."
       }
     }
   },

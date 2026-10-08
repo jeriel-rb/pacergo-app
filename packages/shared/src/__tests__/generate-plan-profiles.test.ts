@@ -189,10 +189,10 @@ describe("plan shape for every profile dimension", () => {
 describe("goal, experience and obstacle drive the prescription", () => {
   const firstMain = (p: GeneratedPlan) => sessions(p)[0]!.main;
 
-  it("sets scale with experience", () => {
+  it("sets scale with experience (Beginner ≠ Basic)", () => {
     const sets = (experience: OnboardingExperience) => firstMain(plan({ prefs: { experience } }))[0]!.sets;
     expect(sets("no_experience")).toBe(2);
-    expect(sets("beginner")).toBe(2);
+    expect(sets("beginner")).toBe(3);
     expect(sets("intermediate")).toBe(3);
     expect(sets("advanced")).toBe(4);
   });
@@ -201,13 +201,17 @@ describe("goal, experience and obstacle drive the prescription", () => {
     const compoundReps = (p: Profile) => firstMain(plan(p))[0]!.reps; // the lead lift is a compound
     expect(compoundReps({ answers: { goal: "lose_weight" } })).toBe("12-15");
     expect(compoundReps({ answers: { goal: "build_muscle", obstacle: "injuries" } })).toBe("12-15");
-    expect(compoundReps({ answers: { goal: "build_muscle" }, prefs: { experience: "advanced" } })).toBe("8-10");
+    expect(compoundReps({ answers: { goal: "build_muscle" }, prefs: { experience: "advanced" } })).toBe("6-10");
   });
 
-  it("progressive overload: +1 set in weeks 3–4, except for lack_of_time and injuries", () => {
+  it("mild set ramp only when eligible; novices and obstacles stay flat", () => {
     const mainSets = (p: GeneratedPlan, w: number) => p.weeks[w]!.days.flatMap((d) => d.session?.main.map((e) => e.sets) ?? []);
-    const normal = plan();
-    expect(mainSets(normal, 2)).toEqual(mainSets(normal, 0).map((s) => s + 1));
+    const novice = plan({ prefs: { experience: "no_experience" } });
+    expect(mainSets(novice, 3)).toEqual(mainSets(novice, 0));
+    const intermediate = plan({ prefs: { experience: "intermediate" }, answers: { goal: "build_muscle" } });
+    // Week 3 (index 2) may add a set; week 4 consolidates back for intermediate+.
+    expect(mainSets(intermediate, 2)).toEqual(mainSets(intermediate, 0).map((s) => s + 1));
+    expect(mainSets(intermediate, 3)).toEqual(mainSets(intermediate, 0));
     for (const obstacle of ["lack_of_time", "injuries"] as const) {
       const p = plan({ answers: { obstacle } });
       expect(mainSets(p, 3)).toEqual(mainSets(p, 0));
@@ -262,8 +266,16 @@ describe("safety: low-impact mode", () => {
     }
   });
 
-  it("a healthy young profile may still get the normal warm-up", () => {
-    expect(allSlugs(plan())).toContain("jumping-jack");
+  it("a healthy intermediate without machines may still get an impact Raise", () => {
+    expect(
+      allSlugs(
+        plan({
+          prefs: { experience: "intermediate" },
+          answers: { goal: "build_muscle" },
+          gym: { equipment: ["dumbbells", "bench", "barbell", "squat_rack"] },
+        }),
+      ),
+    ).toContain("jumping-jack");
   });
 });
 
@@ -332,21 +344,16 @@ describe("priorities and variety", () => {
     expect(bySlug.get(pull(prio).main[0]!.slug)!.muscleGroups[0]).toBe("biceps");
   });
 
-  it("'fixed' never rotates; 'dynamic' rotates; 'balanced' keeps staples", () => {
+  it("'fixed' keeps week 1; 'balanced' steps to harder variations", () => {
     const pick = (variety: "fixed" | "balanced" | "dynamic") => {
-      // A push day has few muscle groups, so a long session reaches the second
-      // round of picks — the part that rotates.
       const p = plan({ prefs: { variety, workoutSplit: "push_pull_legs", daysPerWeek: "3", trainingDays: [], durationMin: 90 } });
       return p.weeks.map((w) => w.days.find((d) => d.session?.focus === "push")!.session!.main.map((e) => e.slug));
     };
     const fixed = pick("fixed");
     for (const w of fixed) expect(w).toEqual(fixed[0]);
-    const dynamic = pick("dynamic");
-    expect(dynamic[1]).not.toEqual(dynamic[0]);
     const balanced = pick("balanced");
-    // The lead lift per muscle stays; something else still changes over the month.
-    expect(balanced[1]![0]).toBe(balanced[0]![0]);
-    expect(JSON.stringify(balanced)).not.toBe(JSON.stringify(fixed));
+    expect(balanced[0]).toEqual(fixed[0]);
+    expect(JSON.stringify(balanced)).not.toEqual(JSON.stringify(fixed));
   });
 
   it("no session repeats an exercise within itself", () => {

@@ -51,6 +51,10 @@
       "stay_healthy": {
         "title": "維持健康",
         "description": "多元動作訓練，提升健康、體能與規律運動習慣。"
+      },
+      "functional": {
+        "title": "功能性體能",
+        "description": "結合力量、爆發、體能與動作技巧，提升實用運動表現。"
       }
     }
   },

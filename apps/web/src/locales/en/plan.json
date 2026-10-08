@@ -13,6 +13,12 @@
   },
   "overview": {
     "week": "Week {{number}}",
+    "weekPhase": {
+      "1": "Lighter start — simpler versions of each movement.",
+      "2": "Harder versions of the same movements.",
+      "3": "The most demanding versions in this block.",
+      "4": "Hold the harder work, or ease the dose if the block has been heavy."
+    },
     "restDay": "Rest day",
     "viewDay": "View",
     "focus": {
@@ -97,7 +103,7 @@
       }
     }
   },
-  "weekProgress": "Weeks 3–4 add one set to every main lift.",
+  "weekProgress": "Each week steps up to a harder version of the main movements. Sets stay steady unless your level calls for a small mid-block increase.",
   "detail": {
     "targetMuscles": "Target Muscles",
     "steps": "Steps",
@@ -259,6 +265,12 @@
     "protein": "Protein Target",
     "proteinUnit": "g/day",
     "proteinDetail": "About {{perKg}} g per kg of body weight",
+    "proteinKept": "Your saved protein target is {{saved}} g/day. From your current goal and experience, the suggestion is now {{suggested}} g/day ({{perKg}} g/kg). Creating a training plan keeps the saved target.",
+    "useSuggested": "Use suggested target",
+    "proteinInput": "Protein target (g/day)",
+    "proteinEditHint": "10–800 g. This is what new training plans keep.",
+    "proteinEditError": "Enter a protein target between 10 and 800 g.",
+    "saveProtein": "Save protein target",
     "maintenance": "Maintenance: about {{kcal}} kcal/day",
     "goalNote": {
       "lose_weight": "Set below maintenance to support steady fat loss.",
@@ -302,12 +314,13 @@
       "goal_lose_weight": "Fill half your plate with vegetables, choose lean protein, and swap sugary drinks for water or unsweetened tea.",
       "goal_build_muscle": "Have a carb + protein meal or snack within about 2 hours after training (e.g. chicken rice, or a banana with soy milk).",
       "goal_stay_healthy": "Build balanced plates: ½ vegetables, ¼ protein, ¼ whole grains such as brown rice or sweet potato.",
+      "goal_functional": "Fuel mixed training with steady carbs around sessions and enough protein to support strength and recovery.",
       "activity_low": "With a mostly seated day, keep portions moderate and favor high-fiber foods that keep you full.",
       "activity_high": "Active days burn more — include enough carbs (rice, noodles, fruit) to keep your energy up.",
       "hydration": "Drink about {{liters}} L of water a day, more on hot days and training days."
     },
     "continueToPlan": "Continue to My Plan",
-    "editInProfile": "These targets are calculated from your Fitness Profile. Change your details there and they update automatically."
+    "editInProfile": "Calories follow your Fitness Profile. Your protein target stays when you create a new training plan — change it here, or use the suggestion when your goal changes."
   },
   "openCurrentPlan": "Open my current plan",
   "fitnessProfile": {

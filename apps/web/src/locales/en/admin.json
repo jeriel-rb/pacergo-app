@@ -475,7 +475,8 @@
       "goal": {
         "lose_weight": "Lose weight",
         "build_muscle": "Build muscle",
-        "stay_healthy": "Stay healthy"
+        "stay_healthy": "Stay healthy",
+        "functional": "Functional fitness"
       },
       "document": {
         "terms_of_service": "Terms of Service",

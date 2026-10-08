@@ -211,6 +211,7 @@ describe("calculateNutrition — invariants across the whole profile space", () 
       "goal_lose_weight",
       "goal_build_muscle",
       "goal_stay_healthy",
+      "goal_functional",
       "activity_low",
       "activity_high",
       "hydration",
@@ -351,8 +352,15 @@ describe("missing / incomplete profiles", () => {
 
 describe("profile sanitizers and saved-nutrition validation", () => {
   it("sanitizeAboutYou nulls only the bad values", () => {
-    const out = sanitizeAboutYou({ ...ONBOARDING_ANSWERS_DEFAULT, age: 9999, heightCm: 180, weightKg: -4 });
+    const out = sanitizeAboutYou({
+      ...ONBOARDING_ANSWERS_DEFAULT,
+      age: 9999,
+      heightCm: 180,
+      weightKg: -4,
+      useCases: ["personalized_plan"],
+    } as typeof ONBOARDING_ANSWERS_DEFAULT & { useCases: string[] });
     expect([out.age, out.heightCm, out.weightKg]).toEqual([null, 180, null]);
+    expect(out).not.toHaveProperty("useCases");
   });
 
   it("sanitizeTrainingPreferences repairs frequency, duration, rest range and day list", () => {

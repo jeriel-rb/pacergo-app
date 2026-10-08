@@ -30,14 +30,6 @@ export const ONBOARDING_OBSTACLES: readonly OnboardingObstacle[] = [
   "never_tried",
 ] as const;
 
-export type OnboardingUseCase =
-  | "log_weights_reps"
-  | "personalized_plan"
-  | "progressive_overload"
-  | "manage_plan_workouts"
-  | "exercise_demos"
-  | "muscle_recovery";
-
 export type OnboardingUnit = "imperial" | "metric";
 
 /** General day-to-day activity outside of planned workouts (NEAT), bucketed
@@ -60,7 +52,6 @@ export const ACTIVITY_LEVEL_STEPS: Record<ActivityLevel, { min: number | null; m
 export interface OnboardingAnswers {
   goal: OnboardingGoal | null;
   obstacle: OnboardingObstacle | null;
-  useCases: OnboardingUseCase[];
   gender: "male" | "female" | "other" | null;
   age: number | null;
   unit: OnboardingUnit;
@@ -75,7 +66,6 @@ export interface OnboardingAnswers {
 export const ONBOARDING_ANSWERS_DEFAULT: OnboardingAnswers = {
   goal: null,
   obstacle: null,
-  useCases: [],
   gender: null,
   age: null,
   unit: "metric",

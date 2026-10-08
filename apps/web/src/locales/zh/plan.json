@@ -13,6 +13,12 @@
   },
   "overview": {
     "week": "第 {{number}} 週",
+    "weekPhase": {
+      "1": "較輕鬆的開始 — 每個動作先用較簡單的版本。",
+      "2": "同樣的動作模式，換成較難的版本。",
+      "3": "這個週期裡要求最高的版本。",
+      "4": "維持較難的動作；如果前面已經很累，份量會稍微收回。"
+    },
     "restDay": "休息日",
     "viewDay": "查看",
     "focus": {
@@ -97,7 +103,7 @@
       }
     }
   },
-  "weekProgress": "第 3–4 週，每個主訓練動作多加 1 組。",
+  "weekProgress": "每一週會把主要動作換成較難的版本。組數通常保持穩定，只有部分程度會在中段多加一點。",
   "detail": {
     "targetMuscles": "目標肌群",
     "steps": "動作步驟",
@@ -259,6 +265,12 @@
     "protein": "蛋白質目標",
     "proteinUnit": "克／天",
     "proteinDetail": "約每公斤體重 {{perKg}} 克",
+    "proteinKept": "你已儲存的蛋白質目標是每天 {{saved}} 克。依目前的目標與經驗，建議改為每天 {{suggested}} 克（每公斤 {{perKg}} 克）。建立新的訓練計畫時會保留已儲存的目標。",
+    "useSuggested": "改用建議目標",
+    "proteinInput": "蛋白質目標（克／天）",
+    "proteinEditHint": "10–800 克。新的訓練計畫會保留這個數字。",
+    "proteinEditError": "請輸入 10 到 800 克之間的蛋白質目標。",
+    "saveProtein": "儲存蛋白質目標",
     "maintenance": "維持熱量：約 {{kcal}} 大卡／天",
     "goalNote": {
       "lose_weight": "設定略低於維持熱量，幫助穩定減脂。",
@@ -302,12 +314,13 @@
       "goal_lose_weight": "餐盤一半放蔬菜，選擇低脂蛋白質，把含糖飲料換成水或無糖茶。",
       "goal_build_muscle": "訓練後約 2 小時內吃一份含碳水與蛋白質的餐點或點心（例如雞肉飯，或香蕉配豆漿）。",
       "goal_stay_healthy": "均衡餐盤：½ 蔬菜、¼ 蛋白質、¼ 全穀類（如糙米、地瓜）。",
+      "goal_functional": "混合訓練日在課前課後穩定補碳水，並攝取足夠蛋白質以支持力量與恢復。",
       "activity_low": "日常多久坐時，份量適中，多選擇高纖、有飽足感的食物。",
       "activity_high": "活動量高時消耗較多，記得攝取足夠的碳水（飯、麵、水果）維持體力。",
       "hydration": "每天喝約 {{liters}} 公升的水，天氣熱或訓練日再多喝一些。"
     },
     "continueToPlan": "前往我的計畫",
-    "editInProfile": "這些目標是依據你的健身檔案計算的。在那裡修改資料，目標就會自動更新。"
+    "editInProfile": "熱量會跟著健身檔案更新。建立新的訓練計畫時會保留你的蛋白質目標——在這裡修改，或在目標改變時改用建議值。"
   },
   "openCurrentPlan": "開啟目前的計畫",
   "fitnessProfile": {

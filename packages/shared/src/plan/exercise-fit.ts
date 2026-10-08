@@ -143,6 +143,11 @@ const STABILITY_RUNG: Record<ExerciseStability, number> = {
   band: 7,
 };
 
+/** Lower = easier setup. Used to step weeks from light → heavier variations. */
+export function exerciseEase(e: Pick<ExerciseRecord, "slug" | "equipment">): number {
+  return STABILITY_RUNG[exerciseStability(e)];
+}
+
 export function exerciseStability(e: Pick<ExerciseRecord, "slug" | "equipment">): ExerciseStability {
   // An assisted pull-up or dip is a bodyweight move with a counterweight, not
   // a selectorized machine. It waits until no pulldown or pushdown exists.
@@ -161,16 +166,14 @@ export function exerciseRole(slug: string): "pattern" | "isolation" | "skill" {
   return "pattern";
 }
 
-/** Hardest setup a level uses while an easier one still exists for that muscle.
- *  Beginners stay on machines and cables; if a muscle has neither, the next
- *  pattern is a dumbbell, then a Smith or hack squat, then a barbell.
- *  Intermediate adds those free and guided lifts. Advanced may also use a
- *  pull-up or dip bar. Bands are last. */
-const HOME_RUNG: Record<OnboardingExperience, number> = {
-  no_experience: STABILITY_RUNG.cable,
-  beginner: STABILITY_RUNG.cable,
-  intermediate: STABILITY_RUNG.barbell,
-  advanced: STABILITY_RUNG.loadable_bodyweight,
+/** Hardest setup a level may progress to later in the same 4-week block.
+ *  Week 1 still leads with the easiest option; later weeks step up this ladder
+ *  (machine → free weight → barbell) so weeks are visibly harder, not a remix. */
+const LADDER_MAX: Record<OnboardingExperience, number> = {
+  no_experience: STABILITY_RUNG.bodyweight,
+  beginner: STABILITY_RUNG.bodyweight,
+  intermediate: STABILITY_RUNG.bodyweight,
+  advanced: 99,
 };
 
 /** Within one rung, which setup leads. Beginners: machine then cable.
@@ -247,7 +250,7 @@ export function restrictToLevel(
   exercises: readonly ExerciseRecord[],
   experience: OnboardingExperience,
 ): ExerciseRecord[] {
-  const home = HOME_RUNG[experience];
+  const home = LADDER_MAX[experience];
   const groups = new Map<string, ExerciseRecord[]>();
   for (const e of exercises) {
     if (exerciseRole(e.slug) === "skill" && experience !== "advanced") continue;
@@ -275,7 +278,15 @@ export function restrictToLevel(
       if (next !== undefined) ceiling = next;
     }
     for (const e of list) {
-      if (rung(e) <= ceiling) kept.push(e);
+      if (rung(e) > ceiling) continue;
+      // True beginners can step up to dumbbells and bodyweight, not a barbell or pull-up.
+      if (
+        experience === "no_experience" &&
+        (exerciseStability(e) === "barbell" || exerciseStability(e) === "loadable_bodyweight")
+      ) {
+        continue;
+      }
+      kept.push(e);
     }
   }
   return kept;

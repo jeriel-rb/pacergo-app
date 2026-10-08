@@ -1,4 +1,5 @@
 import {
+  ONBOARDING_MUSCLE_GROUPS,
   REST_TIMER_RECOMMENDED_SEC,
   REST_TIMER_STEP_SEC,
   resolveTrainingDays,
@@ -10,7 +11,7 @@ import {
 } from "../onboarding/onboarding-types";
 import type { Bi } from "./plan-types";
 import { recommendSplit } from "./split-recommendation";
-import { compareForLevel, restrictToLevel } from "./exercise-fit";
+import { compareForLevel, exerciseEase, restrictToLevel } from "./exercise-fit";
 import { isAiEligible } from "./exercise-qa";
 import {
   ISOLATION_SLUGS,
@@ -18,6 +19,18 @@ import {
   repsForExercise,
   suitsExperience,
 } from "./exercise-meta";
+import {
+  WARMUP_IMPACT_RAISE_SLUGS,
+  WARMUP_MOBILITY_SLUGS,
+  baseSchemeForExperience,
+  compoundRepsFor,
+  goalProfile,
+  selectWarmupRaiseSlug,
+  setsForWeek,
+  volumeCurveFor,
+  weekLadderStep,
+  weekRirTarget,
+} from "./mesocycle-rules";
 import { selectCooldown, stretchToExercise, STRETCH_LIBRARY } from "./stretch-library";
 import type {
   ExerciseRecord,
@@ -68,15 +81,13 @@ const FOCUS_MUSCLES: Record<SessionFocus, readonly string[]> = {
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 10;
+export const PLAN_RULES_VERSION = 12;
 
-/** Extra sets on main lifts as the weeks go on (progressive overload): weeks 1–2
- *  as prescribed, weeks 3–4 one set more. Kept off for people who are short on
- *  time or working around an injury, whose sessions shouldn't grow. `week` is
- *  0-based. */
-export function progressionSets(week: number, obstacle: OnboardingAnswers["obstacle"]): number {
-  if (obstacle === "lack_of_time" || obstacle === "injuries") return 0;
-  return week >= 2 ? 1 : 0;
+/** @deprecated Compatibility shim — weekly set ramps are handled by
+ *  `setsForWeek` / volume curves. Always returns 0 so callers that still sum
+ *  this on top of base sets do not double-count. */
+export function progressionSets(_week: number, _obstacle: OnboardingAnswers["obstacle"]): number {
+  return 0;
 }
 
 const SPLIT_SEQUENCE: Record<TrainingSplit, SessionFocus[]> = {
@@ -100,26 +111,10 @@ export function focusSequence(
   return SPLIT_SEQUENCE[workoutSplit];
 }
 
-const SETS_REPS_BY_EXPERIENCE: Record<
-  NonNullable<TrainingPreferencesAnswers["experience"]>,
-  { sets: number; reps: string }
-> = {
-  no_experience: { sets: 2, reps: "12-15" },
-  beginner: { sets: 2, reps: "12-15" },
-  intermediate: { sets: 3, reps: "10-12" },
-  advanced: { sets: 4, reps: "8-10" },
-};
-
-// Catalog slugs (kebab-case) of the exercise library.
-const WARMUP_SLUGS = ["jumping-jack", "high-knees", "bodyweight-squat"];
-
 /** Impact / advanced-skill moves. Left out when the user says they have an
  *  injury, is 50 or over, or has a BMI of 30 or more. This is a cautious filter,
  *  not medical advice. */
 const HIGH_IMPACT = /jump|explosive|plyo|burpee|sprawl|squat-thrust|skater|dragon-flag|handstand|pistol|shrimp|hindu|archer|typewriter|kettlebell-swing|nordic|hop/;
-
-// Gentle warm-up used instead of jumping jacks and high knees.
-const LOW_IMPACT_WARMUP_SLUGS = ["arm-circles", "leg-swings-stretch", "bodyweight-squat"];
 
 /** Low-impact mode: an injury (the "Obstacle" answer), age 50+, or BMI 30+. */
 export function needsLowImpact(answers: OnboardingAnswers): boolean {
@@ -192,12 +187,13 @@ export function restSecFor(input: {
     ? { min: prefs.restTimerMinSec, max: prefs.restTimerMaxSec }
     : REST_TIMER_RECOMMENDED_SEC;
 
-  // Reps count for up to 0.4: 15 or more → 0, 6 or fewer → 0.4. Starting from
-  // 0.2, the exercise itself adds −0.25…+0.4 and the goal ±0.1, so even a heavy
-  // rep scheme still separates a barbell lift from a light isolation move.
-  const fromReps = 0.4 * clamp((15 - repsMidpoint(reps)) / (15 - 6), 0, 1);
+  // Reps count for up to 0.4: 15 or more → 0, 6 or fewer → 0.4. Fat-loss
+  // prescriptions often use higher reps for technique — do not let that alone
+  // shorten rest (muscle retention). Use a neutral mid-range for heaviness.
+  const repsForHeaviness = goal === "lose_weight" ? "10-12" : reps;
+  const fromReps = 0.4 * clamp((15 - repsMidpoint(repsForHeaviness)) / (15 - 6), 0, 1);
   const fromType = typeHeaviness(record);
-  const fromGoal = goal === "build_muscle" ? 0.1 : goal === "lose_weight" ? -0.1 : 0;
+  const fromGoal = goal === "build_muscle" ? 0.1 : 0;
   const heaviness = clamp(0.2 + fromReps + fromType + fromGoal, 0, 1);
 
   const raw = range.min + heaviness * (range.max - range.min);
@@ -207,7 +203,7 @@ export function restSecFor(input: {
 
 function toExercise(
   record: ExerciseRecord,
-  scheme: { sets: number; reps: string; restSec: number },
+  scheme: { sets: number; reps: string; restSec: number; rirTarget?: number },
 ): GeneratedExercise {
   return {
     slug: record.slug,
@@ -215,6 +211,7 @@ function toExercise(
     sets: scheme.sets,
     reps: scheme.reps,
     restSec: scheme.restSec,
+    ...(scheme.rirTarget !== undefined ? { rirTarget: scheme.rirTarget } : {}),
   };
 }
 
@@ -234,6 +231,7 @@ export const MUSCLE_GROUP_TOKENS: Record<OnboardingMuscleGroup, readonly string[
   lower_back: ["lower_back"],
   lats: ["lats"],
   trapezius: ["upper_back"],
+  /** No catalog exercises yet — kept for type completeness; omit from pickers via `PLAN_SELECTABLE_MUSCLE_GROUPS`. */
   neck: [],
   front_deltoid: ["shoulders"],
   middle_deltoid: ["shoulders"],
@@ -245,11 +243,17 @@ export const MUSCLE_GROUP_TOKENS: Record<OnboardingMuscleGroup, readonly string[
   hamstrings: ["hamstrings"],
   glutes: ["glutes"],
   calves: ["calves"],
+  /** No catalog exercises yet — omit from pickers via `PLAN_SELECTABLE_MUSCLE_GROUPS`. */
   shins: [],
   adductors: ["inner_thighs"],
   abductors: ["hips"],
   hip_flexors: ["hips"],
 };
+
+/** Muscle picker options that actually affect generation (non-empty token map).
+ *  Prefer this over `ONBOARDING_MUSCLE_GROUPS` in web AI Plan UI. */
+export const PLAN_SELECTABLE_MUSCLE_GROUPS: readonly OnboardingMuscleGroup[] =
+  ONBOARDING_MUSCLE_GROUPS.filter((m) => MUSCLE_GROUP_TOKENS[m].length > 0);
 
 function musclesToTokens(muscles: readonly OnboardingMuscleGroup[]): Set<string> {
   return new Set(muscles.flatMap((m) => MUSCLE_GROUP_TOKENS[m] ?? []));
@@ -272,31 +276,18 @@ function priorityScore(e: ExerciseRecord, priority: ReadonlySet<string>): number
   return e.muscleGroups.some((m) => priority.has(m)) ? 1 : 0;
 }
 
-/** Reps per set. Fat loss goes higher-rep; muscle gain goes heavier as
- *  experience allows; otherwise it follows experience. */
-function repsFor(
-  experience: NonNullable<TrainingPreferencesAnswers["experience"]>,
-  goal: OnboardingAnswers["goal"],
-  obstacle: OnboardingAnswers["obstacle"],
-): string {
-  if (obstacle === "injuries") return "12-15"; // lighter loads, more reps
-  if (goal === "lose_weight") return "12-15";
-  if (goal === "build_muscle") return SETS_REPS_BY_EXPERIENCE[experience].reps;
-  return SETS_REPS_BY_EXPERIENCE[experience].reps;
-}
-
 /** The exercises for one session in one week: one per muscle group first (in
  *  the order given — prioritized muscles lead), then a second round, and so on,
- *  so a leg day isn't five glute moves. Inside each muscle group the ranked list
- *  rotates by week according to the Variety choice: "fixed" never changes;
- *  "balanced" keeps each muscle's first pick as a staple and rotates the rest;
- *  "dynamic" rotates all of them. Rotation wraps, so it is deterministic. */
+ *  so a leg day isn't five glute moves. Each later week steps the main lift to
+ *  the next harder variation of that pattern (machine → free weight → barbell)
+ *  when one exists. `fixed` variety keeps week 1's choices all month. */
 function pickMain(
   pool: readonly ExerciseRecord[],
   muscleOrder: readonly string[],
   count: number,
   week: number,
   variety: NonNullable<TrainingPreferencesAnswers["variety"]>,
+  goal: OnboardingAnswers["goal"],
 ): ExerciseRecord[] {
   // Upper / lower chest are chest: one slot family, so a push day isn't three
   // chest moves before it reaches shoulders or triceps.
@@ -317,14 +308,7 @@ function pickMain(
         ...rest.filter((e) => !ISOLATION_SLUGS.has(e.slug)),
       ];
     })
-    .map((g) => {
-      if (week === 0 || variety === "fixed" || g.length < 2) return g;
-      const staples = variety === "dynamic" ? 0 : 1;
-      const head = g.slice(0, staples);
-      const tail = g.slice(staples);
-      const shift = week % tail.length;
-      return [...head, ...tail.slice(shift), ...tail.slice(0, shift)];
-    });
+    .map((g) => advanceToHarderVariation(g, week, variety, goal));
 
   const picked: ExerciseRecord[] = [];
   for (let round = 0; picked.length < count && groups.some((g) => g.length > round); round++) {
@@ -338,6 +322,38 @@ function pickMain(
     if (!picked.includes(e)) picked.push(e);
   }
   return picked;
+}
+
+/** Step the lead lift toward a harder variation. Week 0 is the easiest (or the
+ *  goal's preferred style). Later weeks take the next rung. */
+function advanceToHarderVariation(
+  group: ExerciseRecord[],
+  week: number,
+  variety: NonNullable<TrainingPreferencesAnswers["variety"]>,
+  goal: OnboardingAnswers["goal"],
+): ExerciseRecord[] {
+  if (variety === "fixed" || group.length < 2) return group;
+  const patterns = group.filter((e) => !ISOLATION_SLUGS.has(e.slug));
+  const isolations = group.filter((e) => ISOLATION_SLUGS.has(e.slug));
+  if (patterns.length < 2) return group;
+
+  const functionalish = (slug: string) =>
+    /lunge|split|carry|farmer|step-up|swing|single|unilateral|thruster|burpee/.test(slug);
+  const sorted = [...patterns].sort((a, b) => {
+    if (goal === "functional") {
+      const byKind = Number(functionalish(b.slug)) - Number(functionalish(a.slug));
+      if (byKind !== 0) return byKind;
+    }
+    if (goal === "stay_healthy") {
+      const bodyweight = (e: ExerciseRecord) => (exerciseEase(e) >= 6 ? 0 : 1);
+      const byBw = bodyweight(a) - bodyweight(b);
+      if (byBw !== 0) return byBw;
+    }
+    return exerciseEase(a) - exerciseEase(b) || a.slug.localeCompare(b.slug);
+  });
+  const step = Math.min(weekLadderStep(week, goal), sorted.length - 1);
+  const lead = sorted[step]!;
+  return [lead, ...isolations, ...sorted.filter((e) => e !== lead)];
 }
 
 /** Can the user do this exercise? By the equipment they ticked when the
@@ -413,13 +429,75 @@ function mainExerciseCount(
   return obstacle === "lack_of_time" ? Math.min(count, 4) : count;
 }
 
+/** Rough session length from prescribed work — used to trim accessories. */
+function estimateSessionMin(
+  main: readonly GeneratedExercise[],
+  warmupCount: number,
+  cooldownCount: number,
+  hasCardio: boolean,
+): number {
+  const mainMin = main.reduce((acc, e) => {
+    const mid = repsMidpoint(e.reps);
+    const workSec = e.sets * Math.min(90, Math.max(20, mid * 3));
+    const restSec = Math.max(0, e.sets - 1) * e.restSec;
+    return acc + (workSec + restSec) / 60;
+  }, 0);
+  return 6 + warmupCount * 1.2 + cooldownCount * 1 + mainMin + (hasCardio ? 12 : 0);
+}
+
+function trimMainToDuration(
+  mainRecords: ExerciseRecord[],
+  main: GeneratedExercise[],
+  durationMin: number,
+  warmupCount: number,
+  cooldownCount: number,
+  hasCardio: boolean,
+): { records: ExerciseRecord[]; exercises: GeneratedExercise[] } {
+  let records = [...mainRecords];
+  let exercises = [...main];
+  while (
+    exercises.length > 3 &&
+    estimateSessionMin(exercises, warmupCount, cooldownCount, hasCardio) > durationMin + 5
+  ) {
+    // Drop lowest-priority tail first (usually isolation / accessories).
+    records = records.slice(0, -1);
+    exercises = exercises.slice(0, -1);
+  }
+  return { records, exercises };
+}
+
+function buildWarmupPool(
+  exercises: readonly ExerciseRecord[],
+  raiseAvailable: ReadonlySet<string>,
+  lowImpact: boolean,
+  preferMachineRaise: boolean,
+): ExerciseRecord[] {
+  const raiseSlug = selectWarmupRaiseSlug({
+    available: raiseAvailable,
+    lowImpact,
+    preferMachine: preferMachineRaise || lowImpact,
+  });
+  const raise = raiseSlug ? byslugs(exercises, [raiseSlug]) : [];
+  if (raise.length === 0 && !lowImpact && !preferMachineRaise) {
+    return byslugs(exercises, [...WARMUP_IMPACT_RAISE_SLUGS, ...WARMUP_MOBILITY_SLUGS]);
+  }
+  if (raise.length === 0 && lowImpact) {
+    return byslugs(exercises, [...WARMUP_MOBILITY_SLUGS]);
+  }
+  if (raise.length === 0) {
+    // Novice wanted a machine Raise but none available — skip impact drills.
+    return byslugs(exercises, [...WARMUP_MOBILITY_SLUGS]);
+  }
+  const mobility = byslugs(exercises, [...WARMUP_MOBILITY_SLUGS]);
+  return [...raise, ...mobility];
+}
+
 /**
  * Deterministically compose a 4-week structured training plan from the
  * onboarding wizard's answers + the live `exercises` catalog. Same inputs
  * (including the same exercise catalog snapshot) always produce the same
- * plan — no randomness, no network/AI calls of any kind. Every week uses the
- * same day-of-week pattern; the exercises stay the same or rotate from week to
- * week according to the user's Variety choice.
+ * plan — no randomness, no network/AI calls of any kind. Frozen primary
+ * skeleton + week-indexed dose (reps/effort/RIR, mild set ramps when eligible).
  */
 export function generateTrainingPlan(input: {
   answers: OnboardingAnswers;
@@ -436,10 +514,18 @@ export function generateTrainingPlan(input: {
   const daysPerWeek = trainingPreferences.daysPerWeek ?? "3";
   const experience = trainingPreferences.experience ?? "beginner";
   const durationMin = trainingPreferences.durationMin ?? 45;
-  // Sets come from experience; reps from experience + goal. The rest after each
-  // set is worked out per exercise (restSecFor) inside the user's rest-timer range.
-  const experienceScheme = SETS_REPS_BY_EXPERIENCE[experience];
-  const scheme = { sets: experienceScheme.sets, reps: repsFor(experience, answers.goal, answers.obstacle) };
+  const experienceScheme = baseSchemeForExperience(experience);
+  const compoundReps = compoundRepsFor({
+    experience,
+    goal: answers.goal,
+    obstacle: answers.obstacle,
+  });
+  const curve = volumeCurveFor({
+    experience,
+    goal: answers.goal,
+    obstacle: answers.obstacle,
+  });
+  const profile = goalProfile(answers.goal);
 
   const selectedEquipment = new Set<string>(gymEquipment.equipment);
   const excluded = musclesToTokens(
@@ -456,7 +542,14 @@ export function generateTrainingPlan(input: {
   const mainCount = mainExerciseCount(durationMin, answers.obstacle, experience);
 
   const lowImpact = needsLowImpact(answers);
-  const warmupPool = byslugs(exercises, lowImpact ? LOW_IMPACT_WARMUP_SLUGS : WARMUP_SLUGS);
+  const preferMachineRaise =
+    experience === "no_experience" ||
+    experience === "beginner" ||
+    answers.goal === "stay_healthy" ||
+    answers.goal === "lose_weight" ||
+    profile.conditioningBias === "encouraged";
+  const raiseAvailable = new Set<string>([...selectedEquipment, ...gymEquipment.cardioTypes]);
+  const warmupPool = buildWarmupPool(exercises, raiseAvailable, lowImpact, preferMachineRaise);
   // Recovery / stretching: real stretches only, chosen per workout from the
   // muscles it trained (see selectCooldown). Equipment still applies (the
   // doorway stretch needs a doorway).
@@ -470,14 +563,25 @@ export function generateTrainingPlan(input: {
   const cardioTypes = gymEquipment.cardioTypes.filter(
     (c) => cardioTypeToSlug(c) !== null && !(lowImpact && c === "jump_rope"),
   );
+  // Cardio block only when the user opted in — goal profiles may encourage it
+  // in product copy, but generation never invents cardio without addCardio.
+  const wantCardio = gymEquipment.addCardio;
 
   /** One week's seven days. Every day sharing a focus gets identical content
-   *  within the week (deterministic, and no re-deriving the same pool); how much
-   *  the exercises change from week to week is the user's Variety choice. */
+   *  within the week; primaries stay frozen unless variety is `dynamic`. */
   function buildWeek(week: number): GeneratedDay[] {
     const sessionByFocus = new Map<SessionFocus, GeneratedSession>();
     let trainingDayCounter = 0;
     const days: GeneratedDay[] = [];
+    const rir = weekRirTarget(week, experience, curve);
+    const sets = setsForWeek({
+      baseSets: experienceScheme.sets,
+      week,
+      curve,
+      experience,
+      obstacle: answers.obstacle,
+      trainingDays: trainingDays.size,
+    });
 
     for (let dayIndex = 0; dayIndex < DAYS_PER_WEEK; dayIndex++) {
       if (!trainingDays.has(dayIndex)) {
@@ -496,26 +600,24 @@ export function generateTrainingPlan(input: {
           ...FOCUS_MUSCLES[focus].filter((m) => priority.has(m)),
           ...FOCUS_MUSCLES[focus].filter((m) => !priority.has(m)),
         ];
-        const sets = scheme.sets + progressionSets(week, answers.obstacle);
-        const mainRecords = pickMain(pool, muscleOrder, count, week, variety);
-        const main = mainRecords.map((e) => {
-          // Timed holds get a hold time, single-joint work a higher rep range.
-          const reps = repsForExercise(e.slug, scheme.reps, answers.goal);
+        let mainRecords = pickMain(pool, muscleOrder, count, week, variety, answers.goal);
+        let main = mainRecords.map((e) => {
+          const reps = repsForExercise(e.slug, compoundReps, answers.goal);
           return toExercise(e, {
-            ...scheme,
-            reps,
             sets,
+            reps,
             restSec: restSecFor({
               record: e,
               reps,
               goal: answers.goal,
               prefs: trainingPreferences,
             }),
+            rirTarget: rir,
           });
         });
 
         let cardio: GeneratedCardioBlock | null = null;
-        if (gymEquipment.addCardio && cardioTypes.length > 0) {
+        if (wantCardio && cardioTypes.length > 0) {
           const cardioSlug = cardioTypes[trainingDayCounter % cardioTypes.length]!;
           const mapped = cardioTypeToSlug(cardioSlug);
           const cardioExercise = mapped ? exercises.find((e) => e.slug === mapped) : undefined;
@@ -531,10 +633,35 @@ export function generateTrainingPlan(input: {
           }
         }
 
+        const trimmed = trimMainToDuration(
+          mainRecords,
+          main,
+          durationMin,
+          warmupPool.length,
+          cooldownCount,
+          cardio !== null,
+        );
+        mainRecords = trimmed.records;
+        main = trimmed.exercises;
+
+        const raiseReps =
+          warmupPool[0] &&
+          (warmupPool[0].slug === "cycling" ||
+            warmupPool[0].slug === "elliptical" ||
+            warmupPool[0].slug === "rowing" ||
+            warmupPool[0].slug === "running" ||
+            warmupPool[0].slug === "treadmill-incline-walk")
+            ? "3-5 min"
+            : "45 sec";
+
         session = {
           focus,
-          warmup: warmupPool.map((e) =>
-            toExercise(e, { sets: 1, reps: "45 sec", restSec: lightWorkRestSec(trainingPreferences) }),
+          warmup: warmupPool.map((e, i) =>
+            toExercise(e, {
+              sets: 1,
+              reps: i === 0 && raiseReps === "3-5 min" ? raiseReps : "45 sec",
+              restSec: lightWorkRestSec(trainingPreferences),
+            }),
           ),
           main,
           cooldown: selectCooldown({ main: mainRecords, available: stretchPool, count: cooldownCount }).map(

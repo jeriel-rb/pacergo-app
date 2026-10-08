@@ -45,8 +45,11 @@ export function clampTrainingDays(value: unknown): number {
 /** Drop out-of-range or non-numeric body facts from a saved About You slice —
  *  the row is client-written JSON, so it is untrusted on the way back in. */
 export function sanitizeAboutYou(answers: OnboardingAnswers): OnboardingAnswers {
+  const cleaned = { ...answers } as OnboardingAnswers & { useCases?: unknown };
+  // Rows saved before this unused field was removed may still carry it.
+  delete cleaned.useCases;
   return {
-    ...answers,
+    ...cleaned,
     age: sanitizeBodyMetric("age", answers.age),
     heightCm: sanitizeBodyMetric("heightCm", answers.heightCm),
     weightKg: sanitizeBodyMetric("weightKg", answers.weightKg),

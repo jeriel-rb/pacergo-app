@@ -107,7 +107,15 @@ export function FitnessProfileView({
     if (!dirty || saving) return;
     setSaving(true);
     try {
-      await saveOnboardingAnswers({ userId, answers, trainingPreferences: tp, gymEquipment: ge });
+      await saveOnboardingAnswers({
+        userId,
+        answers,
+        trainingPreferences: tp,
+        gymEquipment: ge,
+        // A target the user set on Nutrition stays. A formula target follows
+        // this profile, which is the screen that says targets recalculate.
+        proteinGrams: saved.nutrition?.proteinOverrideGrams,
+      });
       markClean();
       // Plan-relevant changes also bring the active plan up to date. Saving
       // the profile already succeeded, so a failure here is reported, not fatal.

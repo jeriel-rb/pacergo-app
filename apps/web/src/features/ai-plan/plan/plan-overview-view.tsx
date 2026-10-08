@@ -133,7 +133,8 @@ export function PlanOverviewView({
         ))}
       </div>
 
-      {progresses && <p className="-mt-3 text-xs text-muted-foreground">{t("weekProgress")}</p>}
+      <p className="-mt-3 text-sm text-muted-foreground">{t(`overview.weekPhase.${week}`)}</p>
+      {progresses && <p className="-mt-1 text-xs text-muted-foreground">{t("weekProgress")}</p>}
 
       {/* A flex column with a gap: the day cards are wrapped in <a> links, which
           are inline and would ignore vertical margins (space-y-*), leaving the

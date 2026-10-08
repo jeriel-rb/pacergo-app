@@ -507,11 +507,11 @@ create table if not exists exercises (
   created_at timestamptz not null default now()
 );
 
--- user_onboarding: the AI-plan wizard's collected answers, one row per user.
+-- user_onboarding: the fitness profile, one row per user. Goal lives in
+-- about_you, gym type in gym_equipment. A plan's own copy is
+-- user_training_plans.onboarding_snapshot.
 create table if not exists user_onboarding (
   user_id uuid primary key references auth.users (id) on delete cascade,
-  goal text,
-  gym_type text,
   about_you jsonb not null default '{}'::jsonb,
   training_preferences jsonb not null default '{}'::jsonb,
   gym_equipment jsonb not null default '{}'::jsonb,
@@ -2564,8 +2564,7 @@ begin
          au.email_confirmed_at,
          au.last_sign_in_at,
          o.about_you as ob_about_you,
-         o.training_preferences as ob_training_preferences,
-         o.goal as ob_goal
+         o.training_preferences as ob_training_preferences
     into u
   from users us
   join auth.users au on au.id = us.id
@@ -2667,7 +2666,7 @@ begin
     ),
     'fitness', jsonb_build_object(
       'primary_activity', u.ob_about_you ->> 'primaryActivity',
-      'goal', coalesce(u.ob_goal, u.ob_about_you ->> 'goal'),
+      'goal', u.ob_about_you ->> 'goal',
       'experience', u.ob_training_preferences ->> 'experience'
     ),
     'activity', jsonb_build_object(
@@ -4557,8 +4556,6 @@ revoke all on function assert_json_number_in_range(jsonb, text, numeric, numeric
 revoke all on function validate_fitness_profile(jsonb, jsonb, jsonb, jsonb) from public, anon, authenticated;
 
 create or replace function save_onboarding_answers(
-  p_goal text,
-  p_gym_type text,
   p_about_you jsonb,
   p_training_preferences jsonb,
   p_gym_equipment jsonb,
@@ -4581,18 +4578,16 @@ begin
   perform validate_fitness_profile(p_about_you, p_training_preferences, p_gym_equipment, p_nutrition);
 
   insert into user_onboarding (
-    user_id, goal, gym_type, about_you, training_preferences, gym_equipment,
+    user_id, about_you, training_preferences, gym_equipment,
     nutrition, nutrition_status
   )
   values (
-    auth.uid(), p_goal, p_gym_type, coalesce(p_about_you, '{}'::jsonb),
+    auth.uid(), coalesce(p_about_you, '{}'::jsonb),
     coalesce(p_training_preferences, '{}'::jsonb), coalesce(p_gym_equipment, '{}'::jsonb),
     case when p_nutrition_status = 'built' then p_nutrition end,
     p_nutrition_status
   )
   on conflict (user_id) do update set
-    goal = excluded.goal,
-    gym_type = excluded.gym_type,
     about_you = jsonb_strip_nulls(
       jsonb_build_object('primaryActivity', user_onboarding.about_you -> 'primaryActivity')
     ) || excluded.about_you,
@@ -4674,13 +4669,13 @@ begin
 end $$;
 
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
+grant execute on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -4696,13 +4691,13 @@ language sql security definer set search_path = public stable as $$
 $$;
 
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
+grant execute on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -4716,13 +4711,13 @@ language sql security definer set search_path = public stable as $$
 $$;
 
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
+grant execute on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -4739,13 +4734,13 @@ begin
   update user_onboarding set plan_generation_started_at = null where user_id = auth.uid();
 end $$;
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 revoke all on function my_training_plans() from public, anon, authenticated;
 revoke all on function training_plan_detail(uuid) from public, anon, authenticated;
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
+grant execute on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 grant execute on function my_training_plans() to authenticated;
 grant execute on function training_plan_detail(uuid) to authenticated;
@@ -5357,7 +5352,7 @@ revoke insert, update, delete, truncate, references, trigger on table
   exercises, user_onboarding, user_training_plans
 from authenticated;
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 
@@ -5367,7 +5362,7 @@ revoke all on function training_plan_detail(uuid) from public, anon, authenticat
 
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
+grant execute on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 
@@ -5377,7 +5372,7 @@ grant execute on function training_plan_detail(uuid) to authenticated;
 
 grant execute on function delete_training_plan(uuid) to authenticated;
 
-revoke all on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
+revoke all on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) from public, anon, authenticated;
 
 revoke all on function save_training_plan(text, jsonb, jsonb) from public, anon, authenticated;
 
@@ -5387,7 +5382,7 @@ revoke all on function training_plan_detail(uuid) from public, anon, authenticat
 
 revoke all on function delete_training_plan(uuid) from public, anon, authenticated;
 
-grant execute on function save_onboarding_answers(text, text, jsonb, jsonb, jsonb, jsonb, text) to authenticated;
+grant execute on function save_onboarding_answers(jsonb, jsonb, jsonb, jsonb, text) to authenticated;
 
 grant execute on function save_training_plan(text, jsonb, jsonb) to authenticated;
 

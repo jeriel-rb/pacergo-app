@@ -21,7 +21,9 @@ export type LoadReason =
   | "felt_too_light"
   | "within_range"
   | "missed_bottom_of_range"
-  | "felt_too_heavy";
+  | "felt_too_heavy"
+  | "repeated_miss"
+  | "fatigue_hold";
 
 export interface LoadRecommendation {
   weightKg: number;
@@ -29,6 +31,12 @@ export interface LoadRecommendation {
   reason: LoadReason;
   /** The working weight the recommendation is based on. */
   previousKg: number;
+}
+
+/** Extended live-progression result (Engine B). */
+export interface SessionProgressionRecommendation extends LoadRecommendation {
+  /** Caller should not increase weekly volume / sets. */
+  reassessDose: boolean;
 }
 
 /** Tunables for the basic calibration loop — kept together so they can be
@@ -40,6 +48,8 @@ export const PROGRESSION_RULES = {
   minStepKg: 1,
   maxStepKg: 5,
   roundToKg: 0.5,
+  /** Misses in a row before dose reassessment. */
+  repeatedMissThreshold: 2,
 } as const;
 
 /** "6-10" → { low: 6, high: 10 }, "12" → { 12, 12 }; timed work ("30 sec")
@@ -92,7 +102,10 @@ export function recommendLoad(input: {
   const step = stepFor(top);
 
   const result = (action: LoadAction, reason: LoadReason): LoadRecommendation => ({
-    weightKg: roundTo(action === "increase" ? top + step : action === "decrease" ? Math.max(0, top - step) : top, PROGRESSION_RULES.roundToKg),
+    weightKg: roundTo(
+      action === "increase" ? top + step : action === "decrease" ? Math.max(0, top - step) : top,
+      PROGRESSION_RULES.roundToKg,
+    ),
     action,
     reason,
     previousKg: top,
@@ -105,6 +118,46 @@ export function recommendLoad(input: {
   if (prev.effort === "too_light" && !missedBottom) return result("increase", "felt_too_light");
   if (missedBottom) return result("maintain", "missed_bottom_of_range");
   return result("maintain", "within_range");
+}
+
+/**
+ * Live training progression (Engine B): extends `recommendLoad` with repeated
+ * miss / fatigue handling. Does not rewrite the 4-week plan skeleton.
+ */
+export function recommendSessionProgression(input: {
+  targetReps: string;
+  previous: PreviousPerformance | null;
+  /** Prior exposures that missed the bottom of the rep range. */
+  consecutiveMisses?: number;
+  /** User or system fatigue flag — hold load and block dose increases. */
+  highFatigue?: boolean;
+}): SessionProgressionRecommendation | null {
+  const base = recommendLoad({ targetReps: input.targetReps, previous: input.previous });
+  if (!base) return null;
+
+  const misses = input.consecutiveMisses ?? 0;
+  if (input.highFatigue) {
+    return {
+      ...base,
+      action: base.action === "increase" ? "maintain" : base.action,
+      reason: "fatigue_hold",
+      reassessDose: true,
+      weightKg: base.action === "increase" ? base.previousKg : base.weightKg,
+    };
+  }
+
+  if (misses >= PROGRESSION_RULES.repeatedMissThreshold) {
+    const step = stepFor(base.previousKg);
+    return {
+      weightKg: roundTo(Math.max(0, base.previousKg - step), PROGRESSION_RULES.roundToKg),
+      action: "decrease",
+      reason: "repeated_miss",
+      previousKg: base.previousKg,
+      reassessDose: true,
+    };
+  }
+
+  return { ...base, reassessDose: false };
 }
 
 export const KG_PER_LB = 0.45359237;

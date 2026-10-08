@@ -6,7 +6,7 @@ import {
   GYM_EQUIPMENT_DEFAULT,
   ONBOARDING_ANSWERS_DEFAULT,
   ONBOARDING_EXCLUDED_MUSCLES_MAX,
-  ONBOARDING_MUSCLE_GROUPS,
+  PLAN_SELECTABLE_MUSCLE_GROUPS,
   ONBOARDING_PRIORITIZED_MUSCLES_MAX,
   TRAINING_PREFERENCES_DEFAULT,
   isPlanGender,
@@ -26,6 +26,9 @@ import {
   type OnboardingStepId,
   type OnboardingUnit,
   type OnboardingVariety,
+  calculateNutrition,
+  preservedProteinGrams,
+  toFitnessProfile,
   type ActivityLevel,
   type OnboardingWorkoutSplit,
   type TrainingPreferencesAnswers,
@@ -142,7 +145,7 @@ function migrateMuscleKeys(
   muscles: readonly string[] | undefined,
 ): OnboardingMuscleGroup[] {
   if (!muscles?.length) return [];
-  const allowed = new Set<string>(ONBOARDING_MUSCLE_GROUPS);
+  const allowed = new Set<string>(PLAN_SELECTABLE_MUSCLE_GROUPS);
   const next: OnboardingMuscleGroup[] = [];
   for (const raw of muscles) {
     const key = LEGACY_MUSCLE_KEYS[raw] ?? raw;
@@ -392,11 +395,20 @@ export function OnboardingProvider({
   const persistProfile = React.useCallback(async () => {
     if (!userId) throw new Error("Not signed in");
     const { answers, trainingPreferences, gymEquipment } = stateRef.current;
+    const saved = savedProfileRef.current;
+    const calculated = calculateNutrition(
+      toFitnessProfile(answers, trainingPreferences, gymEquipment),
+    );
+    const proteinGrams =
+      saved?.nutritionStatus === "built"
+        ? preservedProteinGrams(saved.nutrition, calculated)
+        : undefined;
     const { updatedAt } = await saveOnboardingAnswers({
       userId,
       answers,
       trainingPreferences,
       gymEquipment,
+      proteinGrams,
     });
     dispatch({ type: "setBaseUpdatedAt", updatedAt });
   }, [userId]);

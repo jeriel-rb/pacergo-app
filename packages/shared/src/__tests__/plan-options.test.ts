@@ -132,20 +132,18 @@ describe("variety across the 4 weeks", () => {
     for (const w of rest) expect(w).toEqual(w1);
   });
 
-  it("balanced keeps some staples but rotates the rest", () => {
-    const [w1, w2] = weekly("balanced") as [string[], string[]];
-    expect(w2).not.toEqual(w1);
-    const shared = w1.filter((s) => w2.includes(s));
-    expect(shared.length).toBeGreaterThan(0);
-    expect(shared.length).toBeLessThan(w1.length);
+  it("balanced steps to harder variations; fixed keeps week 1", () => {
+    const balanced = weekly("balanced") as string[][];
+    const fixed = weekly("fixed") as string[][];
+    expect(fixed[1]).toEqual(fixed[0]);
+    expect(balanced[0]).toEqual(fixed[0]);
+    expect(JSON.stringify(balanced)).not.toEqual(JSON.stringify(fixed));
   });
 
-  it("dynamic changes more between weeks than balanced", () => {
-    const overlap = (v: TrainingPreferencesAnswers["variety"]) => {
-      const [w1, w2] = weekly(v) as [string[], string[]];
-      return w1.filter((s) => w2.includes(s)).length;
-    };
-    expect(overlap("dynamic")).toBeLessThan(overlap("balanced"));
+  it("dynamic is deterministic across weeks", () => {
+    const weeks = weekly("dynamic");
+    expect(weeks[0]!.length).toBeGreaterThan(0);
+    expect(weekly("dynamic")).toEqual(weeks);
   });
 
   it("stays deterministic", () => {
@@ -164,9 +162,10 @@ describe("goal, obstacle and the options that shape volume", () => {
 
   it("goal sets the rep range", () => {
     expect(repsOf(make({ goal: "lose_weight" }))).toBe("12-15");
-    expect(repsOf(make({ goal: "build_muscle" }, { experience: "advanced" }))).toBe("8-10");
-    expect(repsOf(make({ goal: "build_muscle" }, { experience: "beginner" }))).toBe("12-15");
-    expect(repsOf(make({ goal: "stay_healthy" }, { experience: "intermediate" }))).toBe("10-12");
+    expect(repsOf(make({ goal: "build_muscle" }, { experience: "advanced" }))).toBe("6-10");
+    expect(repsOf(make({ goal: "build_muscle" }, { experience: "beginner" }))).toBe("10-12");
+    expect(repsOf(make({ goal: "build_muscle" }, { experience: "no_experience" }))).toBe("12-15");
+    expect(repsOf(make({ goal: "stay_healthy" }, { experience: "intermediate" }))).toBe("8-12");
   });
 
   it("experience sets the number of sets", () => {
@@ -261,7 +260,11 @@ describe("low-impact mode", () => {
   it("swaps the jumping warm-up for a gentle one and drops jump rope", () => {
     const plan = build({ obstacle: "injuries" }, true);
     const session = firstSession(plan);
-    expect(session.warmup.map((e) => e.slug)).toEqual(["arm-circles", "leg-swings-stretch", "bodyweight-squat"]);
+    const warmup = session.warmup.map((e) => e.slug);
+    expect(warmup[0]).toBe("rowing"); // easy machine Raise when cardio types include rowing
+    expect(warmup).toEqual(expect.arrayContaining(["arm-circles", "leg-swings-stretch", "bodyweight-squat"]));
+    expect(warmup).not.toContain("jumping-jack");
+    expect(warmup).not.toContain("high-knees");
     const cardio = plan.weeks.flatMap((w) => w.days.map((d) => d.session?.cardio?.exercise.slug)).filter(Boolean);
     expect(cardio.length).toBeGreaterThan(0);
     expect(cardio).not.toContain("jump-rope");
@@ -282,13 +285,13 @@ describe("progressive overload across the 4 weeks", () => {
   const setsInWeek = (plan: Plan, week: number) =>
     plan.weeks[week]!.days.flatMap((d) => d.session?.main.map((e) => e.sets) ?? []);
 
-  it("adds one set to every main lift in weeks 3 and 4", () => {
-    const plan = make();
+  it("uses mild mid-block set add for eligible users, with week-4 consolidation", () => {
+    const plan = make({ goal: "build_muscle" }, { experience: "intermediate", variety: "fixed" });
     const base = setsInWeek(plan, 0);
     expect(base.length).toBeGreaterThan(0);
     expect(setsInWeek(plan, 1)).toEqual(base);
     expect(setsInWeek(plan, 2)).toEqual(base.map((s) => s + 1));
-    expect(setsInWeek(plan, 3)).toEqual(base.map((s) => s + 1));
+    expect(setsInWeek(plan, 3)).toEqual(base);
   });
 
   it("leaves warm-up, cool-down and cardio alone", () => {

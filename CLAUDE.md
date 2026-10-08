@@ -55,8 +55,9 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
   mapping, an illustration and a QA pass. Exercises that failed QA are listed with
   reasons in `QA_EXCLUDED_EXERCISES` (`packages/shared/src/plan/exercise-qa.ts`) and
   filtered out inside `generateTrainingPlan`; remove an entry once its art/instructions
-  are fixed. Illustrations are static (one `frame-1.svg` per exercise; the sync script
-  keeps only that). Cooldowns are real stretches only, picked from `STRETCH_LIBRARY`
+  are fixed. Illustrations sync all SVG frames from bryllim/workout-guide for catalog
+slugs only (see `apps/web/scripts/sync-exercise-art.mjs`); detail views
+animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, picked from `STRETCH_LIBRARY`
   (`plan/stretch-library.ts`) by the muscles each workout trained — add a stretch there
   (with art + instructions) rather than reusing strength/core moves. Bump
   `PLAN_RULES_VERSION` when generation output changes; the plan overview then offers to

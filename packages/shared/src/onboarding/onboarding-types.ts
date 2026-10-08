@@ -5,12 +5,13 @@ import type { PrimaryActivity } from '../enums/profile-setup';
  *  existing plan-composer's authored content) — this is a different,
  *  richer question set feeding a not-yet-built onboarding flow. */
 
-export type OnboardingGoal = "lose_weight" | "build_muscle" | "stay_healthy";
+export type OnboardingGoal = "lose_weight" | "build_muscle" | "stay_healthy" | "functional";
 
 export const ONBOARDING_GOALS: readonly OnboardingGoal[] = [
   "lose_weight",
   "build_muscle",
   "stay_healthy",
+  "functional",
 ] as const;
 
 export type OnboardingObstacle =

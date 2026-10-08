@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import { Check, History, Sparkles } from "lucide-react";
+import { Check, History } from "lucide-react";
 import { EFFORT_FEEDBACK, type LoggedSet } from "@pacergo/shared";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { useDurationFormat } from "@/lib/format-duration";
@@ -94,7 +94,6 @@ export function SetLogger({
 
       {loaded && log.suggestion && (
         <div className="flex items-start gap-2 rounded-xl bg-primary/10 px-3 py-2">
-          <Sparkles size={14} className="mt-0.5 shrink-0 text-primary" aria-hidden />
           <div className="min-w-0 flex-1 text-xs">
             <p className="font-semibold">
               {t("workout.log.suggested", { weight: `${displayWeight(log.suggestion.weightKg, unit)} ${unit}` })}

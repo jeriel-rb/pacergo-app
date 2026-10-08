@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { Sparkles } from "lucide-react";
 import { focusSequence, recommendSplit, resolveTrainingDays } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -48,8 +47,7 @@ export function RecommendedSplitView() {
       <h1 className="text-lg font-semibold">{t("split.recommended.title")}</h1>
 
       <section className="space-y-3 rounded-2xl border-2 border-primary bg-primary/5 p-5">
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">
-          <Sparkles size={12} aria-hidden />
+        <span className="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-primary-foreground">
           {t("split.recommended.badge")}
         </span>
         <p className="text-2xl font-extrabold">{t(`split.names.${rec.split}`)}</p>

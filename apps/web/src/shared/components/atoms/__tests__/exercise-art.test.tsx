@@ -1,16 +1,35 @@
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, render } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ExerciseArt } from "../exercise-art";
 import { ListOptionRow } from "../list-option-row";
+import { exerciseArtFrameCount } from "@/shared/assets/exercise-art";
 
 const masks = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>("span[style*='mask-image']")];
 
 describe("ExerciseArt", () => {
-  it("shows one static illustration (the first frame)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows the first frame when not animating", () => {
     const { container } = render(<ExerciseArt slug="bench-press" />);
     expect(masks(container).map((m) => m.style.maskImage)).toEqual([
       "url(/exercise-art/bench-press/frame-1.svg)",
     ]);
+  });
+
+  it("cycles frames when animate is on and the slug has more than one", () => {
+    const count = exerciseArtFrameCount("bench-press");
+    expect(count).toBeGreaterThan(1);
+    const { container } = render(<ExerciseArt slug="bench-press" animate />);
+    expect(masks(container)[0].style.maskImage).toContain("frame-1.svg");
+    act(() => {
+      vi.advanceTimersByTime(280);
+    });
+    expect(masks(container)[0].style.maskImage).toContain("frame-2.svg");
   });
 
   it("is named for assistive tech only when given a label", () => {

@@ -78,7 +78,7 @@ function DetailBody({
 
       {artSlug ? (
         <div className="flex aspect-video w-full items-center justify-center rounded-2xl bg-muted">
-          <ExerciseArt slug={artSlug} label={name} className="h-[90%] aspect-square" />
+          <ExerciseArt slug={artSlug} label={name} animate className="h-[90%] aspect-square" />
         </div>
       ) : (
         <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-muted/50">

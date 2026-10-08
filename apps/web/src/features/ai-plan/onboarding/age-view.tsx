@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Zap } from "lucide-react";
 import { WheelPicker } from "@/shared/components/atoms/wheel-picker";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { useAboutYouNav } from "./about-you-steps";
@@ -33,8 +32,7 @@ export function AgeView() {
       }}
       onBack={goBack}
     >
-      <div className="flex items-start gap-3 rounded-2xl bg-muted p-4">
-        <Zap size={18} className="mt-0.5 shrink-0 text-warning" aria-hidden />
+      <div className="rounded-2xl bg-muted p-4">
         <p className="text-sm text-muted-foreground">{t("age.hint")}</p>
       </div>
 

@@ -1,22 +1,31 @@
 import { EXERCISE_CATALOG } from "./exercise-catalog";
+import FRAME_COUNTS from "./exercise-art-frames.json";
 
 /**
  * Exercise/equipment line art from bryllim/workout-guide (CC BY-SA 4.0,
  * derived from Everkinetic). The files under `public/exercise-art/` are synced
- * by `apps/web/scripts/sync-exercise-art.mjs` (one static
- * frame each). Attribution lives on `/credits`, linked from the Terms of Service and
- * Privacy Policy pages rather than from the art itself — keep that link when
- * touching those pages, and keep the license/attribution files in
+ * by `apps/web/scripts/sync-exercise-art.mjs` (all SVG frames for catalog
+ * slugs only). Attribution lives on `/credits`, linked from the Terms of
+ * Service and Privacy Policy pages rather than from the art itself — keep that
+ * link when touching those pages, and keep the license/attribution files in
  * `public/exercise-art/`.
  */
 
 const ART_DIR = "/exercise-art";
 
 const AVAILABLE = new Set(EXERCISE_CATALOG.map((entry) => entry.slug));
+const COUNTS = FRAME_COUNTS as Record<string, number>;
 
-/** The static illustration for an art slug (the first frame is all we keep). */
-export function exerciseArtFrame(artSlug: string): string {
-  return `${ART_DIR}/${artSlug}/frame-1.svg`;
+/** How many SVG frames were synced for this art slug (1 if unknown). */
+export function exerciseArtFrameCount(artSlug: string): number {
+  return COUNTS[artSlug] ?? 1;
+}
+
+/** One illustration frame for an art slug (`frame` is 1-based). */
+export function exerciseArtFrame(artSlug: string, frame = 1): string {
+  const count = exerciseArtFrameCount(artSlug);
+  const index = Math.min(Math.max(1, frame), count);
+  return `${ART_DIR}/${artSlug}/frame-${index}.svg`;
 }
 
 /** Legacy exercise slugs (the old snake_case `exercises.slug` list, still

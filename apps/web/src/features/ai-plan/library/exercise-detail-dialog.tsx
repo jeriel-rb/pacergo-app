@@ -36,6 +36,7 @@ export function ExerciseDetailDialog({
               <ExerciseArt
                 slug={exercise.slug}
                 label={nameOf(exercise)}
+                animate
                 className="h-[92%] w-[92%]"
               />
             </div>

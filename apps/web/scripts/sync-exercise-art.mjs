@@ -1,19 +1,18 @@
 /**
- * Copy every exercise illustration from bryllim/workout-guide
+ * Copy exercise illustrations from bryllim/workout-guide
  * (https://github.com/bryllim/workout-guide, art licensed CC BY-SA 4.0,
  * derived from Everkinetic) into the web app.
  *
- * Writes:
- *  - public/exercise-art/<slug>/frame-1.svg        (SVG only, no PNGs; the app shows one
- *    static illustration per exercise, so only the first frame is kept)
- *  - public/exercise-art/manifest.json             (full per-frame credit/source/changes)
- *  - public/exercise-art/ATTRIBUTION.md, LICENSE-ASSETS (upstream, verbatim)
- *  - src/shared/assets/exercise-catalog.json       (compact catalog the app bundles:
- *    slug, name, equipment, muscles — no attribution, so the big manifest never
- *    ships in the JS bundle)
+ * Only exercises already in `exercise-catalog.json` are synced — upstream
+ * additions are ignored so intentionally removed catalog entries stay gone.
  *
- * Credits page: /credits (linked from the Terms of Service and Privacy Policy).
- * Registry: src/shared/assets/exercise-art.ts.
+ * Writes:
+ *  - public/exercise-art/<slug>/frame-N.svg       (all SVG frames)
+ *  - public/exercise-art/manifest.json             (per-frame credit)
+ *  - public/exercise-art/ATTRIBUTION.md, LICENSE-ASSETS
+ *  - src/shared/assets/exercise-art-frames.json    (slug → frame count)
+ *  - refreshes equipment/muscle fields on the existing catalog rows from
+ *    upstream when the slug still exists there (does not append new slugs)
  *
  * Usage:
  *   git clone --depth 1 https://github.com/bryllim/workout-guide.git <dir>
@@ -26,6 +25,7 @@ import { fileURLToPath } from "node:url";
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.resolve(SCRIPT_DIR, "../public/exercise-art");
 const CATALOG_FILE = path.resolve(SCRIPT_DIR, "../src/shared/assets/exercise-catalog.json");
+const FRAMES_FILE = path.resolve(SCRIPT_DIR, "../src/shared/assets/exercise-art-frames.json");
 
 const upstreamArg = process.argv[2];
 if (!upstreamArg) {
@@ -35,15 +35,30 @@ if (!upstreamArg) {
 const PKG = path.resolve(upstreamArg, "packages/workout-guide");
 
 const manifest = JSON.parse(await fs.readFile(path.join(PKG, "manifest.json"), "utf8"));
+const catalog = JSON.parse(await fs.readFile(CATALOG_FILE, "utf8"));
+const allowed = new Set(catalog.map((e) => e.slug));
+const bySlug = new Map(manifest.map((e) => [e.slug, e]));
 
 await fs.rm(OUT_DIR, { recursive: true, force: true });
+await fs.mkdir(OUT_DIR, { recursive: true });
 
 const full = [];
-const catalog = [];
-for (const entry of manifest) {
-  // Static illustrations: keep the first SVG frame only.
-  const svgFrames = entry.frames.filter((f) => f.format === "svg" && f.index === 1);
-  if (svgFrames.length !== 1) throw new Error(`${entry.slug}: expected a first SVG frame`);
+const frameCounts = {};
+let missingUpstream = 0;
+
+for (const row of catalog) {
+  const entry = bySlug.get(row.slug);
+  if (!entry) {
+    missingUpstream += 1;
+    // Keep a placeholder so hasExerciseArt stays true only when we actually
+    // copied art — catalog rows without upstream art lose their folder.
+    continue;
+  }
+  const svgFrames = entry.frames
+    .filter((f) => f.format === "svg")
+    .sort((a, b) => a.index - b.index);
+  if (svgFrames.length === 0) throw new Error(`${entry.slug}: no SVG frames`);
+
   await fs.mkdir(path.join(OUT_DIR, entry.slug), { recursive: true });
   for (const frame of svgFrames) {
     await fs.copyFile(
@@ -51,6 +66,7 @@ for (const entry of manifest) {
       path.join(OUT_DIR, entry.slug, `frame-${frame.index}.svg`),
     );
   }
+  frameCounts[entry.slug] = svgFrames.length;
   full.push({
     slug: entry.slug,
     name: entry.name,
@@ -60,19 +76,23 @@ for (const entry of manifest) {
       attribution: f.attribution,
     })),
   });
-  catalog.push({
-    slug: entry.slug,
-    name: entry.name,
-    equipment: entry.equipment,
-    primaryMuscle: entry.primaryMuscle,
-    secondaryMuscles: entry.secondaryMuscles,
-    isStretch: entry.isStretch,
-  });
+  // Refresh metadata for existing rows only — never grow the catalog.
+  row.name = entry.name;
+  row.equipment = entry.equipment;
+  row.primaryMuscle = entry.primaryMuscle;
+  row.secondaryMuscles = entry.secondaryMuscles;
+  row.isStretch = entry.isStretch;
 }
+
+if (!allowed.size) throw new Error("exercise-catalog.json is empty");
 
 await fs.writeFile(path.join(OUT_DIR, "manifest.json"), `${JSON.stringify(full, null, 2)}\n`);
 await fs.copyFile(path.join(PKG, "ATTRIBUTION.md"), path.join(OUT_DIR, "ATTRIBUTION.md"));
 await fs.copyFile(path.join(PKG, "LICENSE-ASSETS"), path.join(OUT_DIR, "LICENSE-ASSETS"));
 await fs.writeFile(CATALOG_FILE, `${JSON.stringify(catalog, null, 2)}\n`);
+await fs.writeFile(FRAMES_FILE, `${JSON.stringify(frameCounts, null, 2)}\n`);
 
-console.log(`Copied ${catalog.length} exercises (one static frame each) → ${OUT_DIR}`);
+const multi = Object.values(frameCounts).filter((n) => n > 1).length;
+console.log(
+  `Synced ${full.length}/${catalog.length} catalog exercises (${multi} with multiple frames; ${missingUpstream} missing upstream) → ${OUT_DIR}`,
+);

@@ -7,7 +7,7 @@ import {
   ZapOff,
   Bandage,
   Package,
-  Sparkles,
+  CircleDashed,
   type LucideIcon,
 } from "lucide-react";
 import { ONBOARDING_OBSTACLES, type OnboardingObstacle } from "@pacergo/shared";
@@ -22,7 +22,7 @@ const OBSTACLE_ICONS: Record<OnboardingObstacle, LucideIcon> = {
   low_motivation: ZapOff,
   injuries: Bandage,
   lack_of_equipment: Package,
-  never_tried: Sparkles,
+  never_tried: CircleDashed,
 };
 
 export function ObstacleView() {

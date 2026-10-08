@@ -222,19 +222,42 @@ export function sanitizeItemDesc(value: string): string {
     .slice(0, 50) || "PacerGo booking";
 }
 
+/**
+ * Read a NewebPay callback body. The browser `return` posts a normal form, but
+ * NewebPay's server-to-server `notify` isn't reliably labelled
+ * `application/x-www-form-urlencoded`, so the body is parsed whatever the
+ * content type: multipart form, URL-encoded string, or JSON.
+ */
 export async function parseNewebPayFormData(request: Request): Promise<Record<string, string>> {
   const contentType = request.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/x-www-form-urlencoded") && !contentType.includes("multipart/form-data")) {
-    throw new Error("payment_callback_invalid");
+  let get: (key: string) => string;
+  if (contentType.includes("multipart/form-data")) {
+    const form = await request.formData();
+    get = (key) => String(form.get(key) ?? "");
+  } else {
+    const raw = (await request.text()).trim();
+    if (raw.startsWith("{")) {
+      let body: Record<string, unknown>;
+      try {
+        body = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        throw new Error("payment_callback_invalid");
+      }
+      get = (key) => String(body[key] ?? "");
+    } else {
+      const params = new URLSearchParams(raw);
+      get = (key) => params.get(key) ?? "";
+    }
   }
-  const form = await request.formData();
-  return {
-    Status: String(form.get("Status") ?? ""),
-    MerchantID: String(form.get("MerchantID") ?? ""),
-    TradeInfo: String(form.get("TradeInfo") ?? ""),
-    TradeSha: String(form.get("TradeSha") ?? ""),
-    Version: String(form.get("Version") ?? ""),
+  const fields = {
+    Status: get("Status"),
+    MerchantID: get("MerchantID"),
+    TradeInfo: get("TradeInfo"),
+    TradeSha: get("TradeSha"),
+    Version: get("Version"),
   };
+  if (!fields.TradeInfo || !fields.TradeSha) throw new Error("payment_callback_invalid");
+  return fields;
 }
 
 export function verifyAndDecodeCallback(

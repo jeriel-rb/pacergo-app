@@ -5,9 +5,13 @@ import {
   decryptTradeInfo,
   encryptTradeInfo,
   getNewebPayConfig,
+  getAmount,
+  getMerchantOrderNo,
   mapProviderStatus,
+  parseNewebPayFormData,
   parseTradeInfo,
   serializeTradeInfo,
+  verifyAndDecodeCallback,
   verifyTradeSha,
 } from "../newebpay";
 
@@ -106,5 +110,69 @@ describe("NewebPay cryptography", () => {
         Result: { MerchantOrderNo: "PG1", Amt: 1200, PaymentMethod: "WEBATM", PayTime: "2026-07-23 10:00:00" },
       }),
     ).toBe("paid");
+  });
+});
+
+describe("NewebPay callbacks", () => {
+  const KEY = "1234567890ABCDEF1234567890ABCDEF";
+  const IV = "ABCDEF1234567890";
+
+  /** A notify body signed the way NewebPay signs it (RespondType=JSON). */
+  function signedFields() {
+    const decoded = {
+      Status: "SUCCESS",
+      Message: "付款成功",
+      Result: {
+        MerchantID: "MS123456789",
+        Amt: 400,
+        TradeNo: "26100822420561861",
+        MerchantOrderNo: "PG2610081441426D98E2B63D",
+        PaymentType: "WEBATM",
+        PayTime: "2026-10-08 22:42:05",
+      },
+    };
+    const tradeInfo = encryptTradeInfo(JSON.stringify(decoded), KEY, IV);
+    return {
+      Status: "SUCCESS",
+      MerchantID: "MS123456789",
+      Version: "2.3",
+      TradeInfo: tradeInfo,
+      TradeSha: createTradeSha(tradeInfo, KEY, IV),
+    };
+  }
+
+  function request(body: string, contentType?: string) {
+    return new Request("https://app.pacergo.app/api/payments/newebpay/notify", {
+      method: "POST",
+      body,
+      headers: contentType ? { "content-type": contentType } : {},
+    });
+  }
+
+  async function decodes(req: Request) {
+    setPaymentEnv();
+    const fields = await parseNewebPayFormData(req);
+    const parsed = verifyAndDecodeCallback(fields, getNewebPayConfig());
+    expect(getMerchantOrderNo(parsed.decoded)).toBe("PG2610081441426D98E2B63D");
+    expect(getAmount(parsed.decoded)).toBe(400);
+    expect(mapProviderStatus(parsed.decoded)).toBe("paid");
+  }
+
+  it("accepts a normal form post", async () => {
+    await decodes(request(new URLSearchParams(signedFields()).toString(), "application/x-www-form-urlencoded"));
+  });
+
+  it("accepts a URL-encoded body with no or a different content type", async () => {
+    const body = new URLSearchParams(signedFields()).toString();
+    await decodes(request(body));
+    await decodes(request(body, "text/plain; charset=utf-8"));
+  });
+
+  it("accepts a JSON body", async () => {
+    await decodes(request(JSON.stringify(signedFields()), "application/json"));
+  });
+
+  it("rejects a body without the signed fields", async () => {
+    await expect(parseNewebPayFormData(request("hello=world"))).rejects.toThrow("payment_callback_invalid");
   });
 });

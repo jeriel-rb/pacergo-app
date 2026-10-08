@@ -86,6 +86,27 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
 - Don't rotate or lose `ENCRYPTION_KEY` casually: existing ciphertext becomes
   unreadable (the UI then shows the number as missing, never a crash).
 
+## Payments (NewebPay 藍新金流)
+
+- MPG 2.3 hosted checkout: `apps/web/src/lib/payments/newebpay.ts` (AES-256-CBC
+  `TradeInfo` + SHA-256 `TradeSha`), routes under `apps/web/src/app/api/payments/newebpay/`
+  (`create`, `return`, `notify` — notify answers `1|OK`). `PAYMENT_PROVIDER=simulated`
+  switches checkout to the built-in fake provider instead.
+- **Sandbox store:** merchant `MS159835515` (PacerGo 陪練動), portal
+  `https://cwww.newebpay.com` (the `c` prefix = test site; live is `www.newebpay.com`),
+  gateway `https://ccore.newebpay.com/MPG/mpg_gateway`. Keys: 會員中心 → 商店管理 →
+  商店資料設定 → 設定 → API串接金鑰. Don't press 更換商店金鑰 (regenerates the keys and
+  breaks the integration).
+- **HashKey / HashIV live only in env** (`NEWEBPAY_HASH_KEY` 32 chars, `NEWEBPAY_HASH_IV`
+  16 chars — web `.env.local` + Vercel), never in git: with them anyone can sign a fake
+  "paid" notify to our endpoint. Copy them from the portal, not from chat — the HashKey
+  contains a lowercase `l` that looks like a capital `I`, and that one-letter swap is what
+  made every early attempt fail with **MPG03009 (交易資料 SHA 256 檢查不符合)**.
+- Sandbox payment methods enabled: WebATM, ATM 轉帳, 超商代碼, 條碼. 信用卡一次付清 is
+  **not enabled** yet (enable it in the portal before testing with a card).
+- Quick key check: POST a signed checkout to the sandbox gateway — a page containing
+  `錯誤代碼：MPG…` means rejected; the Vue payment page (our order no. + amount) means OK.
+
 ## Profile validation
 
 - Body facts (age 13–100, height 90–275 cm, weight 25–250 kg) are bounded by

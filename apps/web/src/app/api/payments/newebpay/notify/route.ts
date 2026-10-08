@@ -51,8 +51,13 @@ export async function POST(request: Request) {
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : "";
     console.warn("newebpay_payment_rejected", {
-      error: err instanceof Error ? sanitizeError(err.message) : "payment_callback_invalid",
+      error: sanitizeError(message),
+      // The real reason when it isn't one of the named codes (no secrets:
+      // decode/parse/DB error text only), and how NewebPay labelled the body.
+      detail: message.slice(0, 160),
+      contentType: request.headers.get("content-type"),
     });
     return new NextResponse("0|FAIL", {
       status: 400,

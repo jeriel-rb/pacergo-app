@@ -5,11 +5,8 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import type { UserProfile } from "@pacergo/shared";
-import { NAV_ITEMS, isNavItemActive } from "./nav-items";
-import {
-  ADMIN_NAV_ITEMS,
-  isAdminNavItemActive,
-} from "./admin-nav-items";
+import { NAV_ITEMS, isNavItemActive, type NavItem } from "./nav-items";
+import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "./admin-nav-items";
 import type { ShellNavItem } from "./shell-nav-item";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "./language-switcher";
@@ -44,22 +41,18 @@ export function SideNav(props: SideNavProps) {
   const isAdmin = props.variant === "admin";
 
   const { t } = useTranslation(isAdmin ? "admin" : "nav");
-  // Settings lives in the footer (and mobile bottom bar) — not as a nav link.
-  const items: ShellNavItem[] = isAdmin
-    ? ADMIN_NAV_ITEMS
-    : NAV_ITEMS.filter((item) => item.key !== "settings");
+  // Settings is a regular item here (last), opening the sheet — same as the mobile bar.
+  const items: ShellNavItem[] = isAdmin ? ADMIN_NAV_ITEMS : NAV_ITEMS;
   const isItemActive = isAdmin ? isAdminNavItemActive : isNavItemActive;
   const menuLabel = isAdmin ? t("nav.menu") : t("menu");
   const brandHref = isAdmin
     ? getLocalizedPath("/admin", locale)
     : getLocalizedPath("/", locale);
   const brandLabel = isAdmin ? t("nav.console") : "Pacergo";
-  const labelFor = (key: string) =>
-    isAdmin ? t(`nav.${key}`) : t(key);
+  const labelFor = (key: string) => (isAdmin ? t(`nav.${key}`) : t(key));
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 backdrop-blur lg:flex">
-      {/* pr-3 matches the footer wrapper so bell + gear share one right edge */}
       <div className="flex h-16 items-center justify-between gap-2 pl-6 pr-3">
         <Link
           href={brandHref}
@@ -103,6 +96,27 @@ export function SideNav(props: SideNavProps) {
             );
           }
 
+          if (!isAdmin && (item as NavItem).sheet === "settings") {
+            return (
+              <SettingsSheet
+                key={item.key}
+                user={props.user}
+                trigger={
+                  <button
+                    type="button"
+                    className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
+                  >
+                    <Icon
+                      size={20}
+                      className="group-data-[state=open]:text-primary"
+                    />
+                    {labelFor(item.key)}
+                  </button>
+                }
+              />
+            );
+          }
+
           const active = isItemActive(stripped, item.href);
           return (
             <Link
@@ -123,46 +137,41 @@ export function SideNav(props: SideNavProps) {
         })}
       </nav>
 
-      <div className="border-t border-border p-3">
-        {isAdmin ? (
-          <div className="flex items-center gap-1">
-            <Link
-              href={getLocalizedPath("/", locale)}
-              aria-label={t("nav.backToApp")}
-              title={t("nav.backToApp")}
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
-            >
-              <ArrowLeft size={18} className="shrink-0" />
-              <span className="truncate">{t("nav.back")}</span>
-            </Link>
-            <ThemeToggle />
-            <LanguageSwitcher />
-          </div>
-        ) : props.user ? (
-          <div className="flex items-center gap-3">
-            <InitialAvatar
-              name={props.user.display_name}
-              src={props.user.photo_url}
-              size={36}
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex h-7 items-center">
-                <p className="min-w-0 flex-1 truncate text-sm font-semibold">
+      {(isAdmin || props.user) && (
+        <div className="border-t border-border p-3">
+          {isAdmin ? (
+            <div className="flex items-center gap-1">
+              <Link
+                href={getLocalizedPath("/", locale)}
+                aria-label={t("nav.backToApp")}
+                title={t("nav.backToApp")}
+                className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+              >
+                <ArrowLeft size={18} className="shrink-0" />
+                <span className="truncate">{t("nav.back")}</span>
+              </Link>
+              <ThemeToggle />
+              <LanguageSwitcher />
+            </div>
+          ) : props.user ? (
+            <div className="flex items-center gap-3">
+              <InitialAvatar
+                name={props.user.display_name}
+                src={props.user.photo_url}
+                size={36}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
                   {props.user.display_name}
                 </p>
-                <SettingsSheet user={props.user} />
+                <p className="truncate text-xs text-muted-foreground">
+                  {props.user.email}
+                </p>
               </div>
-              <p className="truncate text-xs text-muted-foreground">
-                {props.user.email}
-              </p>
             </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-end">
-            <SettingsSheet user={props.user} />
-          </div>
-        )}
-      </div>
+          ) : null}
+        </div>
+      )}
     </aside>
   );
 }

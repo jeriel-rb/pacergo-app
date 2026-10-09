@@ -165,17 +165,20 @@ export function exerciseDifficulty(slug: string): ExerciseDifficulty {
   return FOUNDATIONAL_SLUGS.has(slug) ? 1 : 2;
 }
 
-/** The hardest tier a level is given by default, and the hardest it may ever be
- *  stretched to when too few exercises fit (a bodyweight-only setup has few
- *  tier-1 moves). Beginners are never given tier 3; advanced lifters get it all. */
+/** The hardest tier a level is given for a muscle, and the hardest it may ever
+ *  be stretched to when that muscle has nothing easier (a bodyweight-only setup
+ *  has few tier-1 moves). Applied to people with no experience (and, via the
+ *  generator, to anyone who says they lack the know-how); Basic users may step
+ *  up to tier 2 and only get a tier-3 move when nothing easier trains that
+ *  muscle. Intermediate and advanced lifters are not capped. */
 export const DIFFICULTY_LIMITS: Record<OnboardingExperience, { start: ExerciseDifficulty; max: ExerciseDifficulty }> = {
   no_experience: { start: 1, max: 2 },
-  beginner: { start: 1, max: 2 },
-  intermediate: { start: 2, max: 3 },
+  basic: { start: 2, max: 3 },
+  intermediate: { start: 3, max: 3 },
   advanced: { start: 3, max: 3 },
 };
 
-const NOVICE: ReadonlySet<OnboardingExperience> = new Set(["no_experience", "beginner"]);
+const NOVICE: ReadonlySet<OnboardingExperience> = new Set(["no_experience", "basic"]);
 
 export function isAdvancedSkill(slug: string): boolean {
   return ADVANCED_SKILL_SLUGS.has(slug);

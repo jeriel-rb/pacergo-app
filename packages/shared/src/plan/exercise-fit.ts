@@ -61,14 +61,30 @@ export function exerciseModality(e: Pick<ExerciseRecord, "slug" | "equipment">):
   return "bodyweight";
 }
 
-/** Lifts that need real technique to load safely. */
-const TECHNICAL = /deadlift|clean|snatch|front[-_]squat|good[-_]morning|pistol|muscle[-_]up|overhead[-_]squat|pendlay/;
+/** Lifts that need real technique to load safely. Whole slugs only. */
+const TECHNICAL: ReadonlySet<string> = new Set([
+  "deadlift",
+  "romanian-deadlift",
+  "front-squat",
+  "good-morning",
+  "pendlay-row",
+  "sumo-deadlift",
+  "trap-bar-deadlift",
+  "single-leg-romanian-deadlift",
+  "smith-machine-romanian-deadlift",
+  "dumbbell-romanian-deadlift",
+  "kettlebell-romanian-deadlift",
+  "dumbbell-sumo-deadlift",
+  "landmine-romanian-deadlift",
+  "pistol-squat",
+  "assisted-pistol-squat",
+]);
 
 /** 0 = simple, 1 = moderate, 2 = technical. Free-weight compounds (2+
  *  non-core muscle groups) are moderate; barbell compounds and named
  *  technical lifts are technical. */
 export function exerciseComplexity(e: Pick<ExerciseRecord, "slug" | "equipment" | "muscleGroups">): 0 | 1 | 2 {
-  if (TECHNICAL.test(e.slug) || isAdvancedSkill(e.slug)) return 2;
+  if (TECHNICAL.has(e.slug) || isAdvancedSkill(e.slug)) return 2;
   const modality = exerciseModality(e);
   const compound = e.muscleGroups.filter((m) => m !== "cardio" && m !== "core" && m !== "abs").length >= 2;
   if (modality === "barbell") return compound ? 2 : 1;
@@ -84,7 +100,7 @@ export function exerciseComplexity(e: Pick<ExerciseRecord, "slug" | "equipment" 
  *  bodyweight-only setup), never by default. */
 const MODALITY_FIT: Record<OnboardingExperience, Record<ExerciseModality, number>> = {
   no_experience: { machine: 4, cable: 3, free_weight: 3, bodyweight: 3, band: 2, loadable_bodyweight: 0, barbell: 0 },
-  beginner: { machine: 4, free_weight: 4, cable: 3, bodyweight: 2, barbell: 2, band: 1, loadable_bodyweight: 1 },
+  basic: { machine: 4, free_weight: 4, cable: 3, bodyweight: 2, barbell: 2, band: 1, loadable_bodyweight: 1 },
   intermediate: { barbell: 4, free_weight: 4, cable: 3, machine: 3, loadable_bodyweight: 3, bodyweight: 1, band: 0 },
   advanced: { barbell: 5, free_weight: 4, loadable_bodyweight: 4, cable: 3, machine: 3, bodyweight: 0, band: -2 },
 };
@@ -92,7 +108,7 @@ const MODALITY_FIT: Record<OnboardingExperience, Record<ExerciseModality, number
 /** Penalty (or bonus) per complexity level. */
 const COMPLEXITY_FIT: Record<OnboardingExperience, readonly [number, number, number]> = {
   no_experience: [1, -1, -6],
-  beginner: [1, 0, -3],
+  basic: [1, 0, -3],
   intermediate: [0, 1, 1],
   advanced: [0, 1, 2],
 };
@@ -104,7 +120,7 @@ const COMPLEXITY_FIT: Record<OnboardingExperience, readonly [number, number, num
  *  lifters the harder work. */
 const DIFFICULTY_FIT: Record<OnboardingExperience, Record<ExerciseDifficulty, number>> = {
   no_experience: { 1: 12, 2: 0, 3: -12 },
-  beginner: { 1: 12, 2: 0, 3: -12 },
+  basic: { 1: 12, 2: 0, 3: -12 },
   intermediate: { 1: 1, 2: 3, 3: -1 },
   advanced: { 1: 0, 2: 2, 3: 3 },
 };
@@ -154,42 +170,84 @@ export function exerciseEase(e: Pick<ExerciseRecord, "slug" | "equipment">): num
  * full push-up — this rank stops that. Unknown slugs sit in the middle so
  * they neither steal week 1 nor block the top of the ladder.
  */
+const PATTERN_RANK: Readonly<Record<string, number>> = {
+  "wall-push-up": 0,
+  "incline-push-up": 1,
+  "knee-push-up": 2,
+  "push-up": 3,
+  "diamond-push-up": 4,
+  "decline-push-up": 4,
+  "weighted-push-up": 5,
+  "archer-push-up": 5,
+  "wall-sit": 0,
+  "bodyweight-squat": 1,
+  "goblet-squat": 2,
+  "single-leg-box-squat": 2,
+  "step-up": 3,
+  "reverse-lunge": 3,
+  "split-squat": 3,
+  "forward-lunge": 3,
+  "lateral-lunge": 3,
+  "bulgarian-split-squat": 4,
+  "walking-lunge": 4,
+  "smith-machine-bulgarian-split-squat": 4,
+  "pistol-squat": 5,
+  "assisted-pistol-squat": 5,
+  "shrimp-squat": 5,
+  "assisted-pull-up": 0,
+  "assisted-chin-up": 0,
+  "negative-pull-up": 1,
+  "pull-up": 2,
+  "chin-up": 2,
+  "weighted-pull-up": 3,
+  "weighted-chin-up": 3,
+  "chair-dip": 0,
+  "bench-dip": 0,
+  "assisted-dip": 1,
+  dip: 2,
+  "weighted-dip": 3,
+};
+
 export function patternProgressionRank(slug: string): number {
-  // Push-up family
-  if (slug === "wall-push-up") return 0;
-  if (slug === "incline-push-up") return 1;
-  if (slug === "knee-push-up") return 2;
-  if (slug === "push-up") return 3;
-  if (slug === "diamond-push-up" || slug === "decline-push-up") return 4;
-  if (slug === "weighted-push-up" || slug === "archer-push-up") return 5;
-
-  // Squat / single-leg family
-  if (slug === "wall-sit") return 0;
-  if (slug === "bodyweight-squat") return 1;
-  if (slug === "goblet-squat" || slug.endsWith("box-squat")) return 2;
-  if (/^(forward|lateral|reverse)-lunge$|^step-up$|^split-squat$/.test(slug)) return 3;
-  if (/bulgarian|walking-lunge/.test(slug)) return 4;
-  if (/pistol|shrimp/.test(slug)) return 5;
-
-  // Pull-up / chin-up family
-  if (/^assisted-(pull|chin)-up$/.test(slug)) return 0;
-  if (/negative/.test(slug)) return 1;
-  if (/^(pull|chin)-up$/.test(slug)) return 2;
-  if (/weighted|archer|typewriter/.test(slug) && /(pull|chin)-up/.test(slug)) return 3;
-
-  // Dip family
-  if (slug === "chair-dip" || slug === "bench-dip") return 0;
-  if (slug === "assisted-dip") return 1;
-  if (slug === "dip") return 2;
-  if (slug === "weighted-dip") return 3;
-
-  return 50;
+  return PATTERN_RANK[slug] ?? 50;
 }
 
+/** A hyphen-separated word that makes a move high impact. `hop` does not match `woodchop`. */
+const IMPACT_WORDS: ReadonlySet<string> = new Set([
+  "jump",
+  "jumping",
+  "explosive",
+  "plyo",
+  "burpee",
+  "sprawl",
+  "skater",
+  "pistol",
+  "shrimp",
+  "hindu",
+  "archer",
+  "typewriter",
+  "nordic",
+  "hop",
+  "handstand",
+]);
+
+const IMPACT_PHRASES = ["squat-thrust", "dragon-flag", "kettlebell-swing"] as const;
+
+export function isHighImpact(slug: string): boolean {
+  if (IMPACT_PHRASES.some((phrase) => slug.includes(phrase))) return true;
+  return slug.split("-").some((part) => IMPACT_WORDS.has(part));
+}
+
+/** Assisted pull-ups, dips and pistol squats: a counterweight, not a selectorized machine. */
+const LOADABLE_ASSISTED: ReadonlySet<string> = new Set([
+  "assisted-pull-up",
+  "assisted-chin-up",
+  "assisted-dip",
+  "assisted-pistol-squat",
+]);
+
 export function exerciseStability(e: Pick<ExerciseRecord, "slug" | "equipment">): ExerciseStability {
-  // An assisted pull-up or dip is a bodyweight move with a counterweight, not
-  // a selectorized machine. It waits until no pulldown or pushdown exists.
-  if (e.slug.startsWith("assisted-")) return "loadable_bodyweight";
+  if (LOADABLE_ASSISTED.has(e.slug)) return "loadable_bodyweight";
   const eq = e.equipment;
   if (eq && eq.length > 0 && eq.some((id) => GUIDED.has(id)) && !eq.some((id) => BARBELL.has(id))) return "guided";
   const modality = exerciseModality(e);
@@ -209,7 +267,7 @@ export function exerciseRole(slug: string): "pattern" | "isolation" | "skill" {
  *  (machine → free weight → barbell) so weeks are visibly harder, not a remix. */
 const LADDER_MAX: Record<OnboardingExperience, number> = {
   no_experience: STABILITY_RUNG.bodyweight,
-  beginner: STABILITY_RUNG.bodyweight,
+  basic: STABILITY_RUNG.bodyweight,
   intermediate: STABILITY_RUNG.bodyweight,
   advanced: 99,
 };
@@ -218,7 +276,7 @@ const LADDER_MAX: Record<OnboardingExperience, number> = {
  *  Advanced: barbell then dumbbell, machine as the fallback. */
 const STABILITY_ORDER: Record<OnboardingExperience, readonly ExerciseStability[]> = {
   no_experience: ["machine", "cable", "guided", "free_weight", "barbell", "loadable_bodyweight", "bodyweight", "band"],
-  beginner: ["machine", "cable", "guided", "free_weight", "barbell", "loadable_bodyweight", "bodyweight", "band"],
+  basic: ["machine", "cable", "guided", "free_weight", "barbell", "loadable_bodyweight", "bodyweight", "band"],
   intermediate: ["guided", "free_weight", "barbell", "machine", "cable", "loadable_bodyweight", "bodyweight", "band"],
   advanced: ["barbell", "free_weight", "guided", "loadable_bodyweight", "machine", "cable", "bodyweight", "band"],
 };
@@ -272,9 +330,23 @@ function stapleBucket(experience: OnboardingExperience): "novice" | "trained" | 
   return "novice";
 }
 
-/** Upper and lower chest share one slot, matching `pickMain`. */
+/** Muscles that share one slot in a session, matching `pickMain`: upper and
+ *  lower chest are chest, middle delts are shoulders, traps are upper back,
+ *  abductors are glutes. */
 export function canonMuscle(muscle: string): string {
-  return muscle === "upper_chest" || muscle === "lower_chest" ? "chest" : muscle;
+  switch (muscle) {
+    case "upper_chest":
+    case "lower_chest":
+      return "chest";
+    case "middle_delts":
+      return "shoulders";
+    case "traps":
+      return "upper_back";
+    case "abductors":
+      return "glutes";
+    default:
+      return muscle;
+  }
 }
 
 /**

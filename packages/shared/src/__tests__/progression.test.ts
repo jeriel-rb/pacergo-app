@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { kgToLb, lbToKg, parseRepRange, recommendLoad } from "../plan/progression";
+import { consecutiveRangeMisses, kgToLb, lbToKg, parseRepRange, recommendLoad, recommendSessionProgression } from "../plan/progression";
 
 const sets = (kg: number, ...reps: number[]) => reps.map((r) => ({ weightKg: kg, reps: r }));
 
@@ -51,5 +51,32 @@ describe("unit conversion", () => {
   it("round-trips kg and lb", () => {
     expect(kgToLb(100)).toBeCloseTo(220.462, 2);
     expect(lbToKg(kgToLb(62.5))).toBeCloseTo(62.5, 6);
+  });
+});
+
+describe("consecutive range misses", () => {
+  const miss = { sets: sets(50, 6, 5), effort: "too_heavy" as const };
+  const hit = { sets: sets(50, 10, 10), effort: "just_right" as const };
+
+  it("counts a newest-first streak and stops at the first session inside the range", () => {
+    expect(consecutiveRangeMisses("8-12", [miss, miss, hit])).toBe(2);
+    expect(consecutiveRangeMisses("8-12", [hit, miss])).toBe(0);
+  });
+
+  it("drops the weight once that streak reaches the repeated-miss threshold", () => {
+    const once = recommendSessionProgression({
+      targetReps: "8-12",
+      previous: miss,
+      consecutiveMisses: consecutiveRangeMisses("8-12", [miss]),
+    })!;
+    const twice = recommendSessionProgression({
+      targetReps: "8-12",
+      previous: miss,
+      consecutiveMisses: consecutiveRangeMisses("8-12", [miss, miss]),
+    })!;
+    expect(once.reason).toBe("felt_too_heavy");
+    expect(twice.reason).toBe("repeated_miss");
+    expect(twice.action).toBe("decrease");
+    expect(twice.reassessDose).toBe(true);
   });
 });

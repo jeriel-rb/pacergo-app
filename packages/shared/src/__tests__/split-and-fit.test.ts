@@ -41,7 +41,7 @@ describe("recommendSplit", () => {
 
   it("uses experience: advanced muscle-builders get PPL + upper on 4 days, beginners upper/lower", () => {
     expect(rec({}).split).toBe("ppl_upper");
-    expect(rec({ tp: { experience: "beginner" } }).split).toBe("upper_lower");
+    expect(rec({ tp: { experience: "basic" } }).split).toBe("upper_lower");
   });
 
   it("uses the goal", () => {
@@ -55,8 +55,8 @@ describe("recommendSplit", () => {
   });
 
   it("uses the selected days: back-to-back days avoid repeated full-body sessions", () => {
-    const spread = rec({ tp: { daysPerWeek: "3", trainingDays: [0, 2, 4], experience: "beginner" } });
-    const together = rec({ tp: { daysPerWeek: "3", trainingDays: [0, 1, 2], experience: "beginner" } });
+    const spread = rec({ tp: { daysPerWeek: "3", trainingDays: [0, 2, 4], experience: "basic" } });
+    const together = rec({ tp: { daysPerWeek: "3", trainingDays: [0, 1, 2], experience: "basic" } });
     expect(spread.split).toBe("full_body");
     expect(together.split).toBe("upper_lower");
     expect(together.consecutiveDays).toBe(true);

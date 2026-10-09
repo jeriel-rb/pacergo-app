@@ -104,7 +104,7 @@
           "title": "Beginner",
           "description": "New to training. Not familiar with common exercises or training equipment. Focus on building a solid foundation."
         },
-        "beginner": {
+        "basic": {
           "title": "Basic",
           "description": "Some training experience (<1 year). Familiar with basic exercises but still learning proper form and technique."
         },

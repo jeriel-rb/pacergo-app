@@ -104,11 +104,7 @@ export async function refreshActivePlanFromProfile(profile: {
   const next = applyProfileToPlan(current, profile);
   if (planInputsSignature(next) === planInputsSignature(current)) return false;
 
-  const [exercises, performanceHistory] = await Promise.all([
-    fetchAllExercises(),
-    fetchPlanPerformanceHistory(),
-  ]);
-  const plan = generateTrainingPlan({ ...next, exercises, performanceHistory });
+  const plan = await composeSavedPlan(next);
   await updateTrainingPlan({
     id: planId as string,
     label: row.label,
@@ -140,12 +136,17 @@ export async function regeneratePlanUnderCurrentRules(planId: string): Promise<v
     trainingPreferences: snap.trainingPreferences,
     gymEquipment: upgradeLegacyEquipment(snap.gymEquipment),
   };
+  const plan = await composeSavedPlan(next);
+  await updateTrainingPlan({ id: planId, label: row.label, plan, onboardingSnapshot: next });
+}
+
+/** Builds a plan from a saved answer snapshot and the live catalog plus recent logs. */
+export async function composeSavedPlan(snapshot: PlanOnboardingSnapshot): Promise<GeneratedPlan> {
   const [exercises, performanceHistory] = await Promise.all([
     fetchAllExercises(),
     fetchPlanPerformanceHistory(),
   ]);
-  const plan = generateTrainingPlan({ ...next, exercises, performanceHistory });
-  await updateTrainingPlan({ id: planId, label: row.label, plan, onboardingSnapshot: next });
+  return generateTrainingPlan({ ...snapshot, exercises, performanceHistory });
 }
 
 /** "Skip" on the nutrition intro — not offered automatically again. */

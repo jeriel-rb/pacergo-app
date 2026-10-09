@@ -2,6 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 import type { OnboardingUnit } from "@pacergo/shared";
+import { kgToLb, lbToKg } from "@pacergo/shared";
 import { WheelPicker } from "@/shared/components/atoms/wheel-picker";
 import { Switch } from "@/shared/components/ui/switch";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
@@ -26,11 +27,11 @@ function cmToFtIn(cm: number): { ft: number; inches: number } {
 function ftInToCm(ft: number, inches: number): number {
   return Math.round((ft * 12 + inches) * 2.54);
 }
-function kgToLb(kg: number): number {
-  return Math.round(kg * 2.20462);
+function kgToWholeLb(kg: number): number {
+  return Math.round(kgToLb(kg));
 }
-function lbToKg(lb: number): number {
-  return Math.round(lb / 2.20462);
+function lbToWholeKg(lb: number): number {
+  return Math.round(lbToKg(lb));
 }
 
 export function HeightWeightView() {
@@ -164,8 +165,8 @@ export function BodyMeasurementsPicker({
           ) : (
             <WheelPicker
               values={LB_VALUES}
-              value={kgToLb(weightKg)}
-              onChange={(v) => onWeightChange(lbToKg(v))}
+              value={kgToWholeLb(weightKg)}
+              onChange={(v) => onWeightChange(lbToWholeKg(v))}
               suffix="lb"
               ariaLabel={t("heightWeight.weight")}
             />

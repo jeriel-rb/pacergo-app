@@ -62,6 +62,30 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   (with art + instructions) rather than reusing strength/core moves. Bump
   `PLAN_RULES_VERSION` when generation output changes; the plan overview then offers to
   update older plans.
+- **Experience is stored twice, under different words.** The plan answer
+  (`user_onboarding.training_preferences.experience`, and the same field on a saved
+  plan snapshot) is Beginner = `no_experience` (2×12–15) and Basic = `basic`
+  (3×10–12). A stored plan `beginner` is still read as Basic. The public column
+  `users.experience_level` is Beginner = `beginner` and Basic = `basic`.
+  `save_profile_setup` / `save_onboarding_answers` copy `no_experience` → `beginner`
+  and leave `basic` as `basic`; a leftover plan `beginner` still maps to public
+  `basic`. A blank plan answer does not write a public level. Generation still
+  fills a missing experience with the Basic scheme.
+  The mobile composer does not offer Basic.
+- **Plan quality:** the guard rails (difficulty ceiling for novices, exclusions by main
+  muscle only, reachable priorities, walking instead of running for novice / low-impact /
+  low-BMI users, high-impact moves kept out of low-impact plans by whole slug words
+  so a woodchop is not a hop, one move per movement family, compounds before accessories) live in
+  `generateTrainingPlan` and are described in `docs/plan-engine/architecture.md`.
+  `packages/shared/src/__tests__/plan-invariants.test.ts` runs the generator over the real
+  catalog, read from the generated block in `0001_init.sql` by `__tests__/helpers/
+  migration-catalog.ts` — nothing to keep in sync. Use that helper for new plan tests.
+- **Muscle tags:** the catalog uses the picker's vocabulary where exercises exist
+  (`middle_delts`, `traps`, `abductors` besides the older tags) — set in
+  `refineMainMuscle` (`apps/web/scripts/exercise-seed-entry.ts`) and regenerated into
+  `0001_init.sql`. Deploy the app code **before** loading the new tags into the live
+  `exercises` table: old code does not know those tags and would drop lateral raises,
+  shrugs and hip-abduction moves from plans. New code works on old tags.
 
 ## Sensitive fields (bank account numbers)
 
@@ -104,6 +128,12 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   made every early attempt fail with **MPG03009 (交易資料 SHA 256 檢查不符合)**.
 - Sandbox payment methods enabled: WebATM, ATM 轉帳, 超商代碼, 條碼. 信用卡一次付清 is
   **not enabled** yet (enable it in the portal before testing with a card).
+- **Callback order is not guaranteed.** NewebPay's server `notify` and the customer's
+  browser `return` can land in either order (notify usually first, return a few seconds
+  later). The DB functions `apply_newebpay_notification` / `observe_newebpay_return` must
+  stay order-independent: a return must never move a paid payment's booking backwards
+  (it once reset `accepted` to `payment_processing`), and a repeated notify repairs a
+  booking left mid-payment.
 - Quick key check: POST a signed checkout to the sandbox gateway — a page containing
   `錯誤代碼：MPG…` means rejected; the Vue payment page (our order no. + amount) means OK.
 

@@ -62,6 +62,14 @@ export function orderGroupForExposure(
 
   const patterns = group.filter((e) => !ISOLATION_SLUGS.has(e.slug));
   const isolations = group.filter((e) => ISOLATION_SLUGS.has(e.slug));
+  // The pool ranks compounds ahead of single-joint moves, so an isolation at
+  // the head of a group that also has compounds is a prioritised one (shrugs
+  // for traps, lateral raises for middle delts). It keeps the lead; the rest
+  // of the group is ordered as usual.
+  if (patterns.length > 0 && ISOLATION_SLUGS.has(group[0]!.slug)) {
+    return [group[0]!, ...orderGroupForExposure(group.slice(1), exposureIndex, variety, softAvoid, history)];
+  }
+
   const avoid = softAvoidSet(history, softAvoid);
 
   const rotate = <T>(arr: T[], offset: number): T[] => {

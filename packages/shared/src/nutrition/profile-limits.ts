@@ -1,5 +1,6 @@
 import {
   ONBOARDING_DAYS_PER_WEEK,
+  planExperience,
   ONBOARDING_DURATION_MAX,
   ONBOARDING_DURATION_MIN,
   REST_TIMER_MAX_SEC,
@@ -73,6 +74,7 @@ export function sanitizeTrainingPreferences(
     prefs.restTimerMinSec <= prefs.restTimerMaxSec;
   return {
     ...prefs,
+    experience: planExperience(prefs.experience),
     daysPerWeek: ONBOARDING_DAYS_PER_WEEK.includes(prefs.daysPerWeek as never) ? prefs.daysPerWeek : null,
     trainingDays: Array.isArray(prefs.trainingDays) ? prefs.trainingDays.filter((d) => Number.isInteger(d)) : [],
     durationMin: isNumberIn(prefs.durationMin, ONBOARDING_DURATION_MIN, ONBOARDING_DURATION_MAX)

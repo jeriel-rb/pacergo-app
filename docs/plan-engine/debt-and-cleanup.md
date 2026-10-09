@@ -4,25 +4,16 @@ Inventory of leftovers, empty maps, dual systems, and half-wired features after 
 
 ```mermaid
 flowchart TB
-  subgraph Live["Live web path — keep"]
+  subgraph Live["Live web path"]
     G[generateTrainingPlan]
     M[mesocycle-rules]
-    P[progression recommendLoad]
+    P[recommendSessionProgression]
   end
-  subgraph Half["Half-wired — finish or hide"]
-    RIR[rirTarget on exercises]
-    RSP[recommendSessionProgression]
-    QW[goal qualityWeights]
-  end
-  subgraph Legacy["Legacy / parallel — decide"]
+  subgraph Legacy["Still running on mobile"]
     MC[Mobile composeTrainingPlan]
     PD[plan-data.ts authored blocks]
-    TG[TrainingGoal enums ≠ OnboardingGoal]
+    TG[TrainingGoal enums]
   end
-  subgraph Empty["Empty or no-op — clarify UX"]
-    NK[neck / shins muscle tokens]
-  end
-  Live --> Half
   Live -.-> Legacy
 ```
 
@@ -54,7 +45,7 @@ flowchart TB
 | Build muscle | `build_muscle` | `muscle_gain` |
 | Fat loss | `lose_weight` | `fat_loss` |
 | General | `stay_healthy` | `general_fitness` |
-| Experience | 4 levels incl. `no_experience` | 3-level `ExperienceLevel` |
+| Experience | Plan answers `no_experience` (Beginner), `basic` (Basic), `intermediate`, `advanced`. A stored plan `beginner` is still read as Basic. Public column `beginner`, `basic`, `intermediate`, `advanced` | Mobile composer offers `beginner`, `intermediate`, `advanced` (`ComposerExperienceLevel`). It does not offer Basic |
 
 **Cleanup:** One public glossary (see [glossary.md](./glossary.md)); migrate mobile; eventually deprecate `TrainingGoal` for AI Plan or add a single mapping module used everywhere.
 
@@ -62,18 +53,15 @@ flowchart TB
 
 ## 3. Empty muscle tokens (picker options that do nothing)
 
-In `MUSCLE_GROUP_TOKENS`:
+In `MUSCLE_GROUP_TOKENS`, three options map to `[]` because **no catalog exercise has them as its main muscle**: `neck`, `shins`, `hip_flexors`.
 
-```ts
-neck: [],
-shins: [],
-```
+**Done:** the catalog's muscle tags now follow the picker where the exercises exist. `refineMainMuscle` in `apps/web/scripts/exercise-seed-entry.ts` splits the broad catalog names by exercise name: lateral raises and upright rows are `middle_delts` (presses stay `shoulders`, the front delt), shrugs are `traps` (not `upper_back`), and the twelve hip-abduction / clamshell / band-walk moves are `abductors` (keeping `glutes` as a second tag). The generator treats middle delts as part of the shoulder slot, traps as upper back and abductors as glutes when filling a session.
 
-These remain on the type for completeness, but **no catalog exercises** map to them.
+**Done (web):** pickers use `PLAN_SELECTABLE_MUSCLE_GROUPS` (non-empty tokens only), and a saved list is cleaned on load by `keepSelectableMuscles`, so a hidden option can't sit in the selection count. A test fails if a shown option has no eligible exercise in the catalog snapshot.
 
-**Done (web):** pickers and migrate paths use `PLAN_SELECTABLE_MUSCLE_GROUPS` (non-empty tokens only), so neck/shins no longer appear as selectable options.
+**Still open:** `hip_flexors` has no exercise of its own. The knee- and leg-raise family trains it but is tagged `lower_abs`; retagging would take those moves out of lower-abs priority and exclusion, so it needs a product call. Neck and shins need new exercises.
 
-**Still open:** add real exercises later, or delete the type members entirely once no saved rows reference them.
+`lower_back` (3 exercises), `inner_thighs` (2) and `forearms` (5) are thin: they are honoured, but a plan will show the same few moves.
 
 ---
 
@@ -81,13 +69,10 @@ These remain on the type for completeness, but **no catalog exercises** map to t
 
 | Feature | Status | Risk if ignored |
 | --- | --- | --- |
-| `rirTarget` on main exercises | Written into plan JSON | Users never see week-to-week effort change → “weeks look the same” returns as a ticket |
-| `recommendSessionProgression` | Implemented + tested | UI still calls only `recommendLoad` — no repeated-miss / fatigue reassessment in product |
-| `GOAL_PROFILES.qualityWeights` | Defined for Functional / General | **Not used** in exercise selection yet — Functional is mostly a parameter profile, not a true quality allocator |
-| Exercise roles `PRIMARY`… | Spec’d; code still has `pattern \| isolation \| skill` | Duration trim drops “tail” heuristically, not by formal role |
-| Week progression UI cue | Spec’d in design | Overview may still look identical week-to-week without badges/copy |
+| Exercise roles `PRIMARY`… | Not built. Code uses `pattern`, `isolation`, `skill` | Duration trim drops the tail of the list, not a named role |
+| Week labels in the plan overview | Not built | A flat plan can look the same every week, because the exercises and the reps are the same |
 
-**Cleanup:** Either ship the UI for RIR + progression copy, or treat those fields as internal until the UI is ready (document “internal only”).
+Removed, and not coming back unless a screen asks for them: an effort target on each exercise, goal quality weights, fatigue sensitivity, and a “shorten rest for density” flag. None of those were onboarding questions. The generator never read the three goal fields. The effort target was written into the plan JSON and no screen displayed it.
 
 ---
 
@@ -119,6 +104,7 @@ These remain on the type for completeness, but **no catalog exercises** map to t
 | --- | --- |
 | Cardio machines live in `cardioTypes`, not `equipment` | Warm-up Raise correctly reads both; easy to break if someone only checks `equipment` |
 | Orphan cardio ids | Comments mention hiking/swimming removed from catalog — `cardioTypeToSlug` returns null and skips |
+| Treadmill = running | Only for trained, healthy users. Novices, low-impact mode and BMI < 18.5 get `treadmill-incline-walk`; BMI < 16 gets no cardio block. If the walk slug ever leaves the catalog or fails QA, those users silently lose their cardio block |
 | Raise slug missing from catalog | `byslugs` silently drops it → user gets mobility-only warm-up (safe, but surprising) |
 | `treadmill-incline-walk` | Preferred for treadmill Raise; must stay QA-eligible |
 
@@ -132,31 +118,55 @@ These remain on the type for completeness, but **no catalog exercises** map to t
 
 ---
 
-## 9. Research / reports folders
+## 9. Inputs collected but not used by generation
 
-`research_notes/` and `reports/` hold deep research for the mesocycle work. They are **not** runtime code.
+Onboarding asks for these; `packages/shared/src/plan` never reads them, so they cannot change a plan. `plan-inputs.ts` leaves them out of the plan fingerprint on purpose.
 
-**Cleanup:** Keep; link from this handbook. Do not treat as product docs for clients unless summarized.
+| Input | Notes |
+| --- | --- |
+| `activityLevel` | Feeds nutrition only |
+| `primaryActivity` (e.g. hiking) | Feeds companion ranking. Generation does not add sport-specific exercises |
+| `gender` | Feeds nutrition. `other` yields no calorie target. Generation ignores it |
+| Obstacle `low_motivation`, `lack_of_equipment` | Stored. Only `lack_of_time`, `injuries`, `lack_of_knowledge`, `never_tried` change a plan |
+| `injuries` | One generic switch → low-impact mode. It is not body-part specific; use *exclude muscles* for a specific area |
+| `useCases` | Old saved JSON only. Stripped on load. Not an onboarding question |
+
+**Cleanup:** each is a product decision (use it, or stop asking). Do not wire any of them in speculatively.
 
 ---
 
-## 10. Suggested cleanup order (product + eng)
+## 10. Known limits of the safety rails
+
+- Only BMI is used for body-size safety (≥ 30 low-impact, < 18.5 walk-only, < 16 no cardio). Age 50+ is low-impact. There is no onboarding warning or block for a very low weight.
+- Basic users can still be given a tier-3 move when nothing easier trains that muscle (a bodyweight-only setup with a pull-up bar gets a pull-up). By design.
+- Small bodyweight-only pools repeat: two same-focus days in a week can be near-identical when only a handful of moves fit.
+- `ppl_full_body` (retired) on 3 days never reaches its full-body day.
+
+---
+
+## 11. Research / reports folders
+
+`research_notes/` and `reports/` hold the evidence behind the mesocycle work. They are **not** runtime code and they cite each other and the design spec, so they are kept together. The second round (`research_notes/4 week plan rule engine/`) corrects the first round on three points — a mandatory week-4 deload of −40–50% sets, live recovery-gated set adds treated as generation-time law, and a physiologic "week 3 peak" — and the shipped engine follows the second round.
+
+Do not treat them as client-facing product docs unless summarized.
+
+---
+
+## 12. Suggested cleanup order (product + eng)
 
 | Priority | Item | Outcome |
 | --- | --- | --- |
-| P0 | Show week progression / RIR in plan UI | Client can *see* weeks differ |
-| P0 | Wire `recommendSessionProgression` or drop from “done” claims | Live engine matches the brief |
-| P1 | Hide or implement `neck` / `shins` | No empty picker options |
-| P1 | Use or remove `qualityWeights` for Functional | Functional is real or renamed |
-| P1 | Mobile → `generateTrainingPlan` or explicitly legacy | One product story |
-| P2 | Isolate `plan-data` / `TrainingGoal` | Less engineer foot-guns |
-| P2 | Formal exercise roles for trim/substitution | Cleaner duration + stability |
+| P1 | Mobile → `generateTrainingPlan`, or label the mobile screen as a different, authored plan | One product story |
+| P1 | Decide on the inputs in §9 that generation ignores | Stop asking a question that changes nothing, or use the answer |
+| P2 | Keep `plan-data` and `TrainingGoal` on the mobile path only | Less chance of editing the wrong plan |
+| P2 | Formal exercise roles for trim | Duration cuts follow a named role |
 
 ---
 
-## 11. What is *not* debt
+## 13. What is *not* debt
 
-- Deterministic generation (feature).  
+- Deterministic generation (feature).
+- `recommendSessionProgression` in the set logger (feature).  
 - Frozen skeleton by default (feature — matches research).  
 - `PLAN_RULES_VERSION` + refresh banner (feature).  
 - Stretch library separate from strength moves (feature).  

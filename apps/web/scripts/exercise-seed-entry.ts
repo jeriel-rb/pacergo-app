@@ -51,10 +51,18 @@ const lit = (s: string) => `'${s.replace(/'/g, "''")}'`;
 const arr = (items: readonly string[]) =>
   items.length === 0 ? "array[]::text[]" : `array[${items.map(lit).join(", ")}]`;
 
-/** The catalog has one "Chest" and one "Core". The plan's muscle options are
- *  finer (upper / middle / lower chest; abs / obliques / lower abs), so the
- *  main muscle is refined from the exercise name. */
+/** Hip abduction, side-lying and band-walk moves: gluteus medius work. */
+const ABDUCTOR_SLUG = /abduction|lateral-walk|monster-walk|clamshell|fire-hydrant|side-lying/;
+
+/** The catalog has one "Chest", one "Core", one "Shoulders", one "Upper Back"
+ *  and files hip abduction under "Glutes". The plan's muscle options are finer
+ *  (upper / middle / lower chest; abs / obliques / lower abs; front / middle
+ *  deltoid; trapezius vs upper back; abductors), so the main muscle is refined
+ *  from the exercise name. */
 function refineMainMuscle(slug: string, token: string): string {
+  if (token === "shoulders" && /lateral-raise|upright-row/.test(slug)) return "middle_delts";
+  if (token === "upper_back" && /shrug/.test(slug)) return "traps";
+  if (token === "glutes" && ABDUCTOR_SLUG.test(slug)) return "abductors";
   if (token === "chest") {
     if (/incline|upper/.test(slug) && !/decline/.test(slug)) return "upper_chest";
     if (/decline|dip/.test(slug)) return "lower_chest";
@@ -102,7 +110,8 @@ function muscleGroupsFor(e: (typeof EXERCISE_CATALOG)[number]): string[] {
     if (refined !== out[0]) {
       const broad = out[0];
       out[0] = refined;
-      if (broad === "core" && !out.includes("core")) out.splice(1, 0, "core");
+      // Keep the broad tag as a second one where other rules key on the family.
+      if ((broad === "core" || broad === "glutes") && !out.includes(broad)) out.splice(1, 0, broad);
     }
   }
   return out;

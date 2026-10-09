@@ -4,11 +4,9 @@ import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Check, Loader2 } from "lucide-react";
-import { generateTrainingPlan } from "@pacergo/shared";
 import { cn } from "@/lib/utils";
-import { fetchAllExercises } from "@/lib/exercises";
-import { beginPlanGeneration, saveTrainingPlan } from "@/lib/plans";
-import { fetchPlanPerformanceHistory } from "@/lib/workout-logs";
+import { aiPlanHref } from "@/lib/ai-plan-path";
+import { beginPlanGeneration, composeSavedPlan, saveTrainingPlan } from "@/lib/plans";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 
 const DURATION_MS = 4500;
@@ -28,9 +26,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  *  chevron, no progress bar) that animates a 0→100% ring while the
  *  checklist below ticks through in sequence, then hands off to the summary
  *  screen. The ring's pace is decorative (a minimum-duration UX flourish),
- *  but the plan behind it is real: exercises are fetched and
- *  `generateTrainingPlan()` (pure, deterministic, no network/AI calls of its
- *  own) runs in parallel, and navigation waits for both to finish. */
+ *  but the plan behind it is real: `composeSavedPlan` runs in parallel, and navigation waits for both to finish. */
 export function CreatingPlanView() {
   const { t } = useTranslation("onboarding");
   const router = useRouter();
@@ -46,6 +42,31 @@ export function CreatingPlanView() {
   } = useOnboarding();
   const [percent, setPercent] = React.useState(0);
 
+  const work = React.useRef({
+    answers,
+    trainingPreferences,
+    gymEquipment,
+    persistProfile,
+    setGeneratedPlan,
+    setSavedPlanId,
+    markStepComplete,
+    router,
+    pathname,
+    t,
+  });
+  work.current = {
+    answers,
+    trainingPreferences,
+    gymEquipment,
+    persistProfile,
+    setGeneratedPlan,
+    setSavedPlanId,
+    markStepComplete,
+    router,
+    pathname,
+    t,
+  };
+
   React.useEffect(() => {
     let cancelled = false;
     let animationDone = false;
@@ -53,7 +74,8 @@ export function CreatingPlanView() {
 
     function proceedIfReady() {
       if (cancelled || !animationDone || !generationDone) return;
-      router.push(pathname.replace(/\/creating-plan$/, "/plan-ready"));
+      const { router: go, pathname: path } = work.current;
+      go.push(aiPlanHref(path, "/plan-ready"));
     }
 
     const start = performance.now();
@@ -73,57 +95,45 @@ export function CreatingPlanView() {
     }
     raf = requestAnimationFrame(tick);
 
-    // Generate, then save straight to the account: the profile (incl. the
-    // selected equipment list) and the plan, which becomes the active plan.
-    // Nothing depends on a later "save" tap, so leaving now can't lose it.
-    // The profile is saved first (a fresh start holds its answers in memory
-    // until now), then the build is marked started: if the tab closes before
-    // the plan lands, /ai-plan resumes here from that saved profile instead of
-    // showing "no plan"; saving the plan clears the mark.
+    // The ring is a minimum wait. The plan is built in parallel, and the next
+    // screen is the retry surface if the build fails. Profile save and the
+    // resume marker are safety nets: a failure there must not block the plan.
+    const current = work.current;
     (async () => {
-      await persistProfile().catch(() => {
-        // Non-fatal: the plan below still saves; the profile saves again later.
-      });
-      await beginPlanGeneration().catch(() => {
-        // Non-fatal: only the resume-after-close safety net is lost.
-      });
-      const [exercises, performanceHistory] = await Promise.all([
-        fetchAllExercises(),
-        fetchPlanPerformanceHistory(),
-      ]);
-      if (cancelled) return;
-      const plan = generateTrainingPlan({
-        answers,
-        trainingPreferences,
-        gymEquipment,
-        exercises,
-        performanceHistory,
-      });
-      setGeneratedPlan(plan);
-      if (cancelled) return;
-      const planId = await saveTrainingPlan({
-        label: answers.goal ? t(`goal.options.${answers.goal}.title`) : t("gymEquipment.planReady.headline"),
-        plan,
-        onboardingSnapshot: { answers, trainingPreferences, gymEquipment },
-      });
-      setSavedPlanId(planId);
-      markStepComplete("gymEquipment");
-    })()
-      .catch(() => {
-        // Fall through — plan-ready-view offers to retry generating/saving
-        // when it finds no saved plan.
-      })
-      .finally(() => {
+      await current.persistProfile().catch(() => undefined);
+      await beginPlanGeneration().catch(() => undefined);
+      try {
+        const snapshot = {
+          answers: current.answers,
+          trainingPreferences: current.trainingPreferences,
+          gymEquipment: current.gymEquipment,
+        };
+        const plan = await composeSavedPlan(snapshot);
+        if (cancelled) return;
+        current.setGeneratedPlan(plan);
+        const planId = await saveTrainingPlan({
+          label: snapshot.answers.goal
+            ? current.t(`goal.options.${snapshot.answers.goal}.title`)
+            : current.t("gymEquipment.planReady.headline"),
+          plan,
+          onboardingSnapshot: snapshot,
+        });
+        if (cancelled) return;
+        current.setSavedPlanId(planId);
+        current.markStepComplete("gymEquipment");
+      } catch {
+        // plan-ready offers the retry. Leave the saved id unset.
+      } finally {
         generationDone = true;
         proceedIfReady();
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount with the answers as of entry
-  }, []);
+  }, [pathname]);
 
   const offset = CIRCUMFERENCE * (1 - percent / 100);
   const thresholdFor = (i: number) => ((i + 1) / CHECKLIST_KEYS.length) * 100;

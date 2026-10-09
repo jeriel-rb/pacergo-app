@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createMerchantOrderNo } from "@/lib/payments/newebpay";
 import {
   getPaymentProvider,
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
     const provider = getPaymentProvider();
     const attemptInput = {
       supabase,
+      userId: user.id,
       bookingId: body.bookingId,
       amount: review.agreed_price,
       email: user.email ?? null,
@@ -54,7 +56,7 @@ export async function POST(request: Request) {
         err instanceof ProviderRpcError &&
         mapDatabaseError(err.message) === "payment_attempt_in_progress";
       if (!inProgress || provider.type !== "simulated") throw err;
-      await abandonOpenSimulatedAttempts(supabase, body.bookingId);
+      await abandonOpenSimulatedAttempts(supabase, body.bookingId, user.id);
       result = await provider.createAttempt({
         ...attemptInput,
         merchantOrderNo: createMerchantOrderNo(),
@@ -112,6 +114,7 @@ export async function POST(request: Request) {
 async function abandonOpenSimulatedAttempts(
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
   bookingId: string,
+  userId: string,
 ) {
   const { data, error } = await supabase
     .from("payments")
@@ -121,9 +124,10 @@ async function abandonOpenSimulatedAttempts(
     .in("status", ["created", "redirected", "processing", "awaiting_payment"]);
   if (error) throw new Error(error.message);
   for (const row of data ?? []) {
-    const { error: confirmError } = await supabase.rpc("confirm_simulated_payment", {
+    const { error: confirmError } = await createSupabaseAdminClient().rpc("confirm_simulated_payment", {
       p_payment_id: row.id,
       p_approve: false,
+      p_user_id: userId,
     });
     if (confirmError) throw new Error(confirmError.message);
   }

@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@/shared/components/atoms/confirm-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { deleteTrainingPlan, setActiveTrainingPlan } from "@/lib/plans";
+import { aiPlanHref } from "@/lib/ai-plan-path";
 import { useToast } from "@/shared/components/ui/toast";
 import { NutritionLinkCard } from "@/features/ai-plan/nutrition/nutrition-link-card";
 import { FitnessProfileLinkCard } from "@/features/ai-plan/fitness-profile/fitness-profile-link-card";
@@ -37,7 +38,7 @@ export function MyPlansView({
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
 
   function planHref(id: string) {
-    return pathname.replace(/\/my-plans$/, `/plan/${id}`);
+    return aiPlanHref(pathname, `/plan/${id}`);
   }
 
   // Live-translated title from the promoted `goal` column — `label` (the
@@ -79,7 +80,7 @@ export function MyPlansView({
         {/* Home → AI plan opens the active plan, so starting another one lives here. */}
         {plans.length > 0 && (
           <Link
-            href={pathname.replace(/\/my-plans$/, "/new")}
+            href={aiPlanHref(pathname, "/new")}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             <Plus size={16} aria-hidden />
@@ -89,8 +90,8 @@ export function MyPlansView({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <NutritionLinkCard href={pathname.replace(/\/my-plans$/, "/nutrition")} />
-        <FitnessProfileLinkCard href={pathname.replace(/\/my-plans$/, "/fitness-profile")} />
+        <NutritionLinkCard href={aiPlanHref(pathname, "/nutrition")} />
+        <FitnessProfileLinkCard href={aiPlanHref(pathname, "/fitness-profile")} />
       </div>
 
       {plans.length === 0 ? (
@@ -98,7 +99,7 @@ export function MyPlansView({
           <ClipboardList size={28} className="text-muted-foreground/60" aria-hidden />
           <p className="text-sm text-muted-foreground">{t("myPlans.empty")}</p>
           <Link
-            href={pathname.replace(/\/my-plans$/, "/setup")}
+            href={aiPlanHref(pathname, "/setup")}
             className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             {t("myPlans.createPlan")}

@@ -26,6 +26,7 @@
   },
   "experience": {
     "beginner": "初學",
+    "basic": "基礎",
     "intermediate": "中階",
     "advanced": "進階"
   },

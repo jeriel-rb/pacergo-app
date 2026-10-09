@@ -1,5 +1,6 @@
 import {
   ONBOARDING_DURATION_DEFAULT,
+  planExperience,
   resolveTrainingDays,
   trainingDaysCount,
   type GymEquipmentAnswers,
@@ -84,14 +85,14 @@ export function recommendSplit(input: {
   const { answers, trainingPreferences: tp, gymEquipment } = input;
   const daysPerWeek = tp.daysPerWeek ?? "3";
   const n = trainingDaysCount(daysPerWeek);
-  const experience = tp.experience ?? "beginner";
+  const experience = planExperience(tp.experience) ?? "basic";
   const goal = answers.goal;
   const consecutiveDays = longestConsecutiveRun(resolveTrainingDays(daysPerWeek, tp.trainingDays)) >= 3;
   const loading = gymEquipment.equipment.filter((e) => LOADING_EQUIPMENT.has(e)).length;
   const limitedEquipment = gymEquipment.gymType === "bodyweight_only" || loading < 2;
   const shortSessions = (tp.durationMin ?? ONBOARDING_DURATION_DEFAULT) <= 30;
 
-  const novice = experience === "no_experience" || experience === "beginner";
+  const novice = experience === "no_experience" || experience === "basic";
   const simple = novice || limitedEquipment || shortSessions;
   const muscleFocus = goal === "build_muscle";
 

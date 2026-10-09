@@ -24,7 +24,7 @@ flowchart LR
     B --> D[GeneratedPlan JSON]
   end
   subgraph Live["Training progression — session time"]
-    E[Logged sets + effort] --> F[recommendLoad]
+    E[Logged sets + effort] --> F[recommendSessionProgression]
     F --> G[Next weight suggestion]
   end
   D -.->|user trains| E
@@ -35,8 +35,8 @@ flowchart LR
 | **When** | Create / refresh plan | During / after a workout |
 | **Input** | Goal, experience, days, duration, equipment, catalog | Previous sets, effort feedback |
 | **Output** | Full 4-week structure | Suggested next load |
-| **Code** | `generate-plan.ts` + `mesocycle-rules.ts` | `progression.ts` |
-| **Product surface** | Web AI Plan | Web set logger (partial) |
+| **Code** | `generate-plan.ts` + `mesocycle-rules.ts` | `progression.ts` (`recommendSessionProgression`) |
+| **Product surface** | Web AI Plan | Web set logger |
 
 ## Where it runs today
 
@@ -55,3 +55,5 @@ yarn workspace @pacergo/shared typecheck
 ```
 
 Bump `PLAN_RULES_VERSION` in `generate-plan.ts` whenever generation output changes — the plan overview can offer a refresh.
+
+Plan-quality tests (`plan-invariants.test.ts`) run against the real catalog, read straight from the generated block in `backend/migrations/0001_init.sql` by `__tests__/helpers/migration-catalog.ts` — there is no copy to refresh. Use that helper (not a hand-made catalog) for any test that depends on which exercises exist.

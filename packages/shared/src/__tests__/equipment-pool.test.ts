@@ -42,7 +42,7 @@ const plan = (equipment: string[], split: "ppl_full_body" | "ai_custom" = "ppl_f
     answers: { ...ONBOARDING_ANSWERS_DEFAULT, goal: "build_muscle" },
     trainingPreferences: {
       ...TRAINING_PREFERENCES_DEFAULT,
-      experience: "beginner",
+      experience: "basic",
       daysPerWeek: "4",
       workoutSplit: split,
       durationMin: 90,
@@ -89,7 +89,7 @@ describe("equipment-driven exercise pool", () => {
     const noArt = EXERCISES.map((e) => (e.slug === "push-up" ? { ...e, hasIllustration: false } : e));
     const p = generateTrainingPlan({
       answers: { ...ONBOARDING_ANSWERS_DEFAULT, goal: "build_muscle" },
-      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "beginner", daysPerWeek: "4", workoutSplit: "ppl_full_body", durationMin: 90 },
+      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "basic", daysPerWeek: "4", workoutSplit: "ppl_full_body", durationMin: 90 },
       gymEquipment: { ...GYM_EQUIPMENT_DEFAULT, gymType: "large_gym", equipment: [] as never, addCardio: false },
       exercises: noArt,
     });
@@ -104,7 +104,7 @@ describe("equipment-driven exercise pool", () => {
     const legacy = EXERCISES.map((e) => ({ ...e, equipment: undefined }));
     const p = generateTrainingPlan({
       answers: ONBOARDING_ANSWERS_DEFAULT,
-      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "beginner", daysPerWeek: "3" },
+      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "basic", daysPerWeek: "3" },
       gymEquipment: { ...GYM_EQUIPMENT_DEFAULT, gymType: "large_gym", equipment: [], addCardio: false },
       exercises: legacy,
     });

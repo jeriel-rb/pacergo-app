@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { focusSequence, recommendSplit, resolveTrainingDays } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
+import { aiPlanRoot } from "@/lib/ai-plan-path";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 
@@ -19,7 +20,7 @@ export function RecommendedSplitView() {
   const router = useRouter();
   const pathname = usePathname();
   const { answers, trainingPreferences, gymEquipment, setWorkoutSplit } = useOnboarding();
-  const root = pathname.replace(/\/recommended-split$/, "");
+  const root = aiPlanRoot(pathname);
 
   const rec = recommendSplit({ answers, trainingPreferences, gymEquipment });
   const days = new Set(resolveTrainingDays(trainingPreferences.daysPerWeek ?? "3", trainingPreferences.trainingDays));

@@ -66,7 +66,7 @@ describe("calculateNutrition — hand-verified numbers", () => {
       weightKg: 60,
       activityLevel: "low",
       goal: "stay_healthy",
-      experience: "beginner",
+      experience: "basic",
       trainingDaysPerWeek: 0,
     })!;
     expect(r.bmrKcal).toBe(1330);
@@ -184,7 +184,7 @@ describe("calculateNutrition — invariants across the whole profile space", () 
         prev = g;
       }
     }
-    for (const p of profiles.filter((x) => x.goal === "stay_healthy" && x.experience === "beginner")) {
+    for (const p of profiles.filter((x) => x.goal === "stay_healthy" && x.experience === "basic")) {
       const more = calculateNutrition({ ...p, trainingDaysPerWeek: Math.min(7, (p.trainingDaysPerWeek ?? 0) + 1) })!;
       expect(more.maintenanceKcal).toBeGreaterThanOrEqual(calculateNutrition(p)!.maintenanceKcal);
     }

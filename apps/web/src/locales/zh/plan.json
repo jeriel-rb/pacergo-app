@@ -87,7 +87,8 @@
         "felt_too_light": "上次感覺太輕，可以試著再加一點。",
         "within_range": "維持這個重量，試著多做幾下。",
         "missed_bottom_of_range": "上次有幾組沒達到目標次數，先維持這個重量。",
-        "felt_too_heavy": "上次感覺太重，調降到你能掌握的重量。"
+        "felt_too_heavy": "上次感覺太重，調降到你能掌握的重量。",
+        "repeated_miss": "最近幾次都沒達到目標次數，先減輕一點重量再往上加。"
       },
       "useSuggestion": "套用",
       "effortTitle": "這個動作感覺如何？",
@@ -194,7 +195,10 @@
       "lower_abs": "下腹",
       "obliques": "腹斜肌",
       "upper_chest": "上胸",
-      "lower_chest": "下胸"
+      "lower_chest": "下胸",
+      "middle_delts": "中三角肌",
+      "traps": "斜方肌",
+      "abductors": "外展肌"
     }
   },
   "myPlans": {

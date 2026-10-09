@@ -462,6 +462,14 @@
       "experience": {
         "no_experience": "No experience",
         "beginner": "Beginner",
+        "basic": "Basic",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "planExperience": {
+        "no_experience": "Beginner",
+        "beginner": "Basic",
+        "basic": "Basic",
         "intermediate": "Intermediate",
         "advanced": "Advanced"
       },

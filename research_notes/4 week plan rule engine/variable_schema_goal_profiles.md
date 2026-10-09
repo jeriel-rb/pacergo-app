@@ -61,7 +61,7 @@ Model the engine as **global rules** (frozen skeleton, weekly hard sets as prima
 - Helms / Zourdos RIR-based RPE: RPE 10 = 0 RIR, 9 = 1 RIR, 8 = 2 RIR; novices less accurate far from failure—use conservatively. — [Helms et al. RIR-RPE PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC4961270/)
 - Proximity-to-failure: training to failure increases acute neuromuscular fatigue vs **1–3 RIR**; stopping short still supports adaptations. — [PMC proximity-to-failure study](https://pmc.ncbi.nlm.nih.gov/articles/PMC9908800/)
 - Circuit/meta fat-loss RT: greater fat-mass reduction with **low–moderate loads** and **short inter-exercise rest (10–30 s)** in resistance circuit meta-analysis. — [PMC circuit RT meta](https://pmc.ncbi.nlm.nih.gov/articles/PMC8145598/)
-- PacerGo live variables today: `SETS_REPS_BY_EXPERIENCE`, `progressionSets(+1 wk3–4)`, `restSecFor` (heaviness + goal), `mainExerciseCount` from duration, focus sequences, variety rotation, optional cardio block 15–20 min. — `packages/shared/src/plan/generate-plan.ts`
+- PacerGo live variables: `EXPERIENCE_SCHEME` (Beginner `no_experience` 2×12–15, Basic `basic` 3×10–12, intermediate 3×8–12, advanced 4×6–10), `volumeCurveFor` / `setsForWeek` (flat by default; +1 set in weeks 3–4 only on a mild ramp), `restSecFor` (heaviness, with a small build-muscle add and no fat-loss cut), `mainExerciseCount` from duration, focus sequences, variety rotation, optional cardio block. — `packages/shared/src/plan/generate-plan.ts`, `mesocycle-rules.ts`
 
 ### Inferences
 
@@ -207,7 +207,7 @@ Both remain on the **same 4-week frozen-skeleton engine**. Functional biases **m
 - ACSM 2026: **power** work (moderate loads **30–70% 1RM**, fast concentrics, low–moderate volume) enhances **physical function**; nontraditional tools (bands, bodyweight, home) effective. — [ACSM 2026](https://acsm.org/resistance-training-guidelines-update-2026/); [ACSM PPT](https://www.acsm.org/wp-content/uploads/2026/03/Pronouncement-ppt-deck_resistance-training-ps.pdf)
 - ACSM 2026: for average adults, complex periodization and failure training are often unnecessary; function improves from consistent RT. — [PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/)
 - PacerGo authored `functional` copy targets Hyrox/CrossFit-style mixed work; `general_fitness` is “cardio + strength + mobility,” nothing maximal. — `plan-data.ts` `GOAL_INTRO` / `GOAL_NOTES`
-- Live onboarding collapses functional/general into `stay_healthy` today—parameter profiles must **re-expand** if product restores four goals. — `OnboardingGoal`
+- Live onboarding has four goals: `build_muscle`, `lose_weight`, `stay_healthy`, `functional`. — `OnboardingGoal`
 
 ### Inferences
 
@@ -380,10 +380,10 @@ Implement four user-facing profiles + optional internal Strength accent. Numbers
 PacerGo already implements a **coach-template 4-week deterministic composer** with experience-gated sets/reps, split recommendation, rest-by-heaviness, optional cardio, low-impact gates, and +1 set in weeks 3–4. Align the new schema with these rails; **diverge** where research says weekly hard sets, RIR schedule, fixed variety, and four goal profiles should be first-class—not only side effects of reps/rest hacks.
 
 ### Cited Findings
-- Live goals: `lose_weight | build_muscle | stay_healthy`. Composer-era goals: `muscle_gain | fat_loss | functional | general_fitness`. — `onboarding-types.ts`; `enums/training.ts`
-- Live scheme table: `no_experience/beginner → 2×12–15`; `intermediate → 3×10–12`; `advanced → 4×8–10`. Fat loss forces `12–15`; injuries force `12–15`. — `generate-plan.ts` `SETS_REPS_BY_EXPERIENCE` / `repsFor`
-- Progression: `progressionSets` → +1 main-lift set weeks 3–4 unless `lack_of_time` or `injuries`. `PLAN_RULES_VERSION = 10`. — `generate-plan.ts`
-- Rest: `restSecFor` maps heaviness from reps + exercise type + goal (`build_muscle +0.1`, `lose_weight -0.1`) into user timer band (default 60–180 s). — `generate-plan.ts`; `REST_TIMER_RECOMMENDED_SEC`
+- Live goals: `lose_weight | build_muscle | stay_healthy | functional`. Composer-era goals: `muscle_gain | fat_loss | functional | general_fitness`. — `onboarding-types.ts`; `enums/training.ts`
+- Live scheme table: Beginner `no_experience` → 2×12–15; Basic `basic` → 3×10–12; `intermediate` → 3×8–12; `advanced` → 4×6–10. Fat loss forces `12–15`; injuries force `12–15`. The public column stores Beginner as `beginner` and Basic as `basic`. — `mesocycle-rules.ts` `EXPERIENCE_SCHEME`
+- Progression: `volumeCurveFor` / `setsForWeek`. Flat unless Basic or above on build muscle or functional, who get +1 main-lift set in weeks 3–4. Intermediate and advanced drop that extra set in week 4. Lack of time and injuries stay flat. `PLAN_RULES_VERSION` is 17. — `mesocycle-rules.ts`; `generate-plan.ts`
+- Rest: `restSecFor` maps heaviness from reps + exercise type. Build muscle adds 0.1. Fat loss does not shorten rest. The result sits in the user's timer band (default 60–180 s). — `generate-plan.ts`; `REST_TIMER_RECOMMENDED_SEC`
 - Split: `recommendSplit` frequency/experience/goal/equipment/duration/consecutive-day rules. — `split-recommendation.ts`
 - Fingerprint inputs listed in plan-inputs section. Soft plan settings (variety, rest timer, cardio, muscle focus) persist via `applyProfileToPlan`. — `plan-inputs.ts`
 - Authored composer differs more by goal (STRENGTH vs CIRCUIT schemes, functional/general menus) than the live AI-eligible generator does. — `plan-data.ts`
@@ -397,13 +397,13 @@ PacerGo already implements a **coach-template 4-week deterministic composer** wi
 **Diverge (schema upgrade rationale):**
 | Area | PacerGo today | Proposed schema | Rationale |
 | --- | --- | --- | --- |
-| Goals | 3 live / 4 authored | unify 4 profiles + map `stay_healthy`→general, `lose_weight`→fat_loss | product completeness |
+| Goals | 4 live (`build_muscle`, `lose_weight`, `stay_healthy`, `functional`) plus the older authored ids | keep the live four; map only when talking about the mobile composer | product completeness |
 | Weekly sets/muscle | implicit via exercises×sets×exposures | **explicit** primary dose | ACSM/Schoenfeld **evidence** |
-| Variety default | `balanced` rotates accessories | default **fixed** for 4-wk block | progressive overload visibility **heuristic**/prior report |
+| Variety default | `balanced` steps the lead lift up the equipment ladder; `fixed` keeps week 1 | default **fixed** for 4-wk block | progressive overload visibility **heuristic**/prior report |
 | RIR | not emitted | week RIR targets in profile | consumer intensity without 1RM **practice** |
 | Strength | copy-only | internal objective / accents | ACSM strength vs hypertrophy split **evidence** |
-| Fat loss | reps+rest+cardio only | add fatigue budget vs cardio | NSCA total stress **heuristic** |
-| Functional/general | weak in live generator | patternBias + cardioDefault profiles | match authored intent without new engine |
+| Fat loss | higher reps and optional cardio; rest is not shortened | add fatigue budget vs cardio | NSCA total stress **heuristic** |
+| Functional/general | `functional` uses the build-muscle ramp and a machine warm-up; `stay_healthy` stays flat | patternBias + cardioDefault profiles | match authored intent without new engine |
 | Advanced sets | 4 sets default | often 3 + weekly-set cap | ACSM diminishing returns **evidence** |
 
 ### Gaps

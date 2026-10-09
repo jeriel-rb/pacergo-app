@@ -4,13 +4,12 @@ import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, Calendar, BarChart3, Dumbbell, Layers } from "lucide-react";
-import { generateTrainingPlan } from "@pacergo/shared";
+import { kgToLb } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
+import { aiPlanHref } from "@/lib/ai-plan-path";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
-import { fetchAllExercises } from "@/lib/exercises";
-import { saveTrainingPlan } from "@/lib/plans";
-import { fetchPlanPerformanceHistory } from "@/lib/workout-logs";
+import { composeSavedPlan, saveTrainingPlan } from "@/lib/plans";
 
 const BMI_MIN = 15;
 const BMI_MAX = 35;
@@ -56,7 +55,7 @@ export function PlanReadyView() {
   const isMetric = answers.unit === "metric";
   const weightLabel = isMetric
     ? `${weightKg.toFixed(1)} kg`
-    : `${(weightKg * 2.20462).toFixed(1)} lb`;
+    : `${kgToLb(weightKg).toFixed(1)} lb`;
   const heightLabel = isMetric
     ? `${heightCm} cm`
     : (() => {
@@ -67,10 +66,10 @@ export function PlanReadyView() {
   /** Into the plan — via the AI Nutrition offer the first time (nutrition
    *  never built or skipped), which reuses everything just answered. */
   function openPlan(planId: string) {
-    const planPath = pathname.replace(/\/plan-ready$/, `/plan/${planId}`);
+    const planPath = aiPlanHref(pathname, `/plan/${planId}`);
     router.push(
       nutritionStatus === null
-        ? `${pathname.replace(/\/plan-ready$/, "/nutrition")}?next=${encodeURIComponent(planPath)}`
+        ? `${aiPlanHref(pathname, "/nutrition")}?next=${encodeURIComponent(planPath)}`
         : planPath,
     );
   }
@@ -83,17 +82,7 @@ export function PlanReadyView() {
     try {
       let plan = generatedPlan;
       if (!plan) {
-        const [exercises, performanceHistory] = await Promise.all([
-          fetchAllExercises(),
-          fetchPlanPerformanceHistory(),
-        ]);
-        plan = generateTrainingPlan({
-          answers,
-          trainingPreferences,
-          gymEquipment,
-          exercises,
-          performanceHistory,
-        });
+        plan = await composeSavedPlan({ answers, trainingPreferences, gymEquipment });
         setGeneratedPlan(plan);
       }
       await persistProfile();

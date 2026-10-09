@@ -1,4 +1,5 @@
 import {
+  planExperience,
   resolveTrainingDays,
   type GymEquipmentAnswers,
   type OnboardingAnswers,
@@ -29,7 +30,7 @@ export function planInputsSignature(input: PlanAnswers): string {
     age: answers.age,
     heightCm: answers.heightCm,
     weightKg: answers.weightKg,
-    experience: tp.experience,
+    experience: planExperience(tp.experience),
     daysPerWeek: tp.daysPerWeek,
     trainingDays: tp.daysPerWeek ? resolveTrainingDays(tp.daysPerWeek, tp.trainingDays) : [],
     durationMin: tp.durationMin,

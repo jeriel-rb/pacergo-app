@@ -22,8 +22,7 @@ export type LoadReason =
   | "within_range"
   | "missed_bottom_of_range"
   | "felt_too_heavy"
-  | "repeated_miss"
-  | "fatigue_hold";
+  | "repeated_miss";
 
 export interface LoadRecommendation {
   weightKg: number;
@@ -63,6 +62,39 @@ export function parseRepRange(reps: string): { low: number; high: number } | nul
 
 const roundTo = (n: number, step: number) => Math.round(n / step) * step;
 
+/** Sets at the heaviest weight that was actually lifted. Null when nothing was loaded. */
+function heaviestWorkingSets(
+  previous: PreviousPerformance,
+): { weightKg: number; reps: number }[] | null {
+  const working = previous.sets.filter(
+    (s): s is { weightKg: number; reps: number } => (s.weightKg ?? 0) > 0 && (s.reps ?? 0) > 0,
+  );
+  if (working.length === 0) return null;
+  const top = Math.max(...working.map((s) => s.weightKg));
+  return working.filter((s) => s.weightKg === top);
+}
+
+/** A set at the working weight finished under the bottom of the target range. */
+export function missedRepRange(targetReps: string, previous: PreviousPerformance | null): boolean {
+  const range = parseRepRange(targetReps);
+  const atTop = previous ? heaviestWorkingSets(previous) : null;
+  if (!range || !atTop) return false;
+  return atTop.some((s) => s.reps < range.low);
+}
+
+/** How many newest-first logs in a row missed the bottom of the range. */
+export function consecutiveRangeMisses(
+  targetReps: string,
+  history: readonly PreviousPerformance[],
+): number {
+  let count = 0;
+  for (const entry of history) {
+    if (!missedRepRange(targetReps, entry)) break;
+    count += 1;
+  }
+  return count;
+}
+
 function stepFor(weightKg: number): number {
   const r = PROGRESSION_RULES;
   const raw = Math.min(r.maxStepKg, Math.max(r.minStepKg, weightKg * r.stepFraction));
@@ -88,15 +120,10 @@ export function recommendLoad(input: {
 }): LoadRecommendation | null {
   const range = parseRepRange(input.targetReps);
   const prev = input.previous;
-  if (!range || !prev) return null;
+  const atTop = prev ? heaviestWorkingSets(prev) : null;
+  if (!range || !prev || !atTop) return null;
 
-  const working = prev.sets.filter(
-    (s): s is { weightKg: number; reps: number } => (s.weightKg ?? 0) > 0 && (s.reps ?? 0) > 0,
-  );
-  if (working.length === 0) return null;
-
-  const top = Math.max(...working.map((s) => s.weightKg));
-  const atTop = working.filter((s) => s.weightKg === top);
+  const top = atTop[0]!.weightKg;
   const allHitTop = atTop.every((s) => s.reps >= range.high);
   const missedBottom = atTop.some((s) => s.reps < range.low);
   const step = stepFor(top);
@@ -121,31 +148,19 @@ export function recommendLoad(input: {
 }
 
 /**
- * Live training progression (Engine B): extends `recommendLoad` with repeated
- * miss / fatigue handling. Does not rewrite the 4-week plan skeleton.
+ * Extends `recommendLoad` when the same lift has missed its range often enough
+ * to drop the weight. Does not rewrite the 4-week plan.
  */
 export function recommendSessionProgression(input: {
   targetReps: string;
   previous: PreviousPerformance | null;
-  /** Prior exposures that missed the bottom of the rep range. */
+  /** Newest-first streak of sessions that missed the bottom of the range, including `previous`. */
   consecutiveMisses?: number;
-  /** User or system fatigue flag — hold load and block dose increases. */
-  highFatigue?: boolean;
 }): SessionProgressionRecommendation | null {
   const base = recommendLoad({ targetReps: input.targetReps, previous: input.previous });
   if (!base) return null;
 
   const misses = input.consecutiveMisses ?? 0;
-  if (input.highFatigue) {
-    return {
-      ...base,
-      action: base.action === "increase" ? "maintain" : base.action,
-      reason: "fatigue_hold",
-      reassessDose: true,
-      weightKg: base.action === "increase" ? base.previousKg : base.weightKg,
-    };
-  }
-
   if (misses >= PROGRESSION_RULES.repeatedMissThreshold) {
     const step = stepFor(base.previousKg);
     return {

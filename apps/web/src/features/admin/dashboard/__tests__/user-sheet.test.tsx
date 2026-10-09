@@ -43,7 +43,7 @@ const member: AdminUserDetail = {
   last_sign_in_at: "2026-10-04T08:00:00Z",
   profile: { bio: "Loves morning runs", gender: "female", age: 29, home_area: "Taipei", locale: "zh", experience_level: "beginner", weekly_target: 4 },
   setup: { profile_setup_status: "completed", onboarding_completed: true },
-  fitness: { primary_activity: "running", goal: "lose_weight", experience: "beginner" },
+  fitness: { primary_activity: "running", goal: "lose_weight", experience: "basic" },
   activity: { bookings_made: 5, bookings_received: 0, reviews_given: 3, saved_trainers: 7 },
   safety: {
     blocked_by_me: 1,

@@ -1,3 +1,4 @@
+import { planExperience } from "../onboarding/onboarding-types";
 import { isPlanGender, type FitnessProfile } from "./fitness-profile";
 import { DEFAULT_NUTRITION_RULES, type NutritionRules } from "./nutrition-rules";
 import { clampTrainingDays, isValidBodyMetric } from "./profile-limits";
@@ -108,7 +109,7 @@ export function calculateNutrition(
   if (missingNutritionInputs(profile).length > 0) return null;
   if (!isPlanGender(gender) || !age || !heightCm || !weightKg || !activityLevel || !goal) return null;
 
-  const experience = profile.experience ?? "beginner";
+  const experience = planExperience(profile.experience) ?? "basic";
   const sessions = clampTrainingDays(profile.trainingDaysPerWeek);
 
   const bmr =

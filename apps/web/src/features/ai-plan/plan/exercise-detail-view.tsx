@@ -10,6 +10,7 @@ import { exerciseArtSlugForDbSlug } from "@/shared/assets/exercise-art";
 import { ExerciseArt } from "@/shared/components/atoms/exercise-art";
 import { SetTracker, type ExerciseWorkout } from "./set-tracker";
 import { useWorkoutProgress } from "./use-workout-progress";
+import { workoutDayHref } from "@/lib/ai-plan-path";
 
 /** A-5 exercise detail: name, an animated line-art illustration (exercises
  *  without artwork yet keep the "coming soon" placeholder), the workout's sets to
@@ -60,7 +61,7 @@ function DetailBody({
 
   // Back returns to the same week's day list (the week rides along in ?week=).
   const week = useSearchParams().get("week");
-  const dailyPath = pathname.replace(/\/exercise\/[^/]+$/, "") + (week ? `?week=${week}` : "");
+  const dailyPath = workoutDayHref(pathname) + (week ? `?week=${week}` : "");
   const artSlug = exerciseArtSlugForDbSlug(exercise.slug);
 
   return (

@@ -25,17 +25,17 @@ export interface StretchDef {
 }
 
 export const STRETCH_LIBRARY: readonly StretchDef[] = [
-  { slug: "doorway-chest-stretch", region: "chest", targets: ["chest", "upper_chest", "lower_chest", "shoulders", "biceps"], holdSec: 30, perSide: false },
-  { slug: "childs-pose", region: "back", targets: ["lats", "back", "upper_back", "lower_back", "shoulders"], holdSec: 40, perSide: false },
-  { slug: "cross-body-shoulder-stretch", region: "shoulder", targets: ["rear_delts", "shoulders", "upper_back"], holdSec: 30, perSide: true },
-  { slug: "kneeling-hip-flexor-stretch", region: "hip_flexor", targets: ["quads", "glutes", "abs", "core"], holdSec: 30, perSide: true },
-  { slug: "hamstring-stretch", region: "hamstring", targets: ["hamstrings", "glutes", "calves", "lower_back"], holdSec: 30, perSide: true },
+  { slug: "doorway-chest-stretch", region: "chest", targets: ["chest", "upper_chest", "lower_chest", "shoulders", "middle_delts", "biceps"], holdSec: 30, perSide: false },
+  { slug: "childs-pose", region: "back", targets: ["lats", "back", "upper_back", "traps", "lower_back", "shoulders", "middle_delts"], holdSec: 40, perSide: false },
+  { slug: "cross-body-shoulder-stretch", region: "shoulder", targets: ["rear_delts", "shoulders", "middle_delts", "upper_back", "traps"], holdSec: 30, perSide: true },
+  { slug: "kneeling-hip-flexor-stretch", region: "hip_flexor", targets: ["quads", "glutes", "abductors", "abs", "core"], holdSec: 30, perSide: true },
+  { slug: "hamstring-stretch", region: "hamstring", targets: ["hamstrings", "glutes", "abductors", "calves", "lower_back"], holdSec: 30, perSide: true },
   { slug: "seated-forward-fold-stretch", region: "hamstring", targets: ["hamstrings", "lower_back", "back", "calves"], holdSec: 40, perSide: false },
   { slug: "standing-quad-stretch", region: "quad", targets: ["quads"], holdSec: 30, perSide: true },
   { slug: "wall-calf-stretch", region: "calf", targets: ["calves"], holdSec: 30, perSide: true },
-  { slug: "butterfly-stretch", region: "inner_hip", targets: ["inner_thighs", "glutes"], holdSec: 40, perSide: false },
-  { slug: "cat-cow-stretch", region: "spine", targets: ["lower_back", "back", "upper_back", "core", "abs", "obliques"], holdSec: 0, perSide: false, reps: "8-10", mobility: true },
-  { slug: "worlds-greatest-stretch", region: "full_body", targets: ["upper_back", "glutes", "hamstrings", "quads", "chest", "obliques"], holdSec: 0, perSide: true, reps: "5", mobility: true },
+  { slug: "butterfly-stretch", region: "inner_hip", targets: ["inner_thighs", "glutes", "abductors"], holdSec: 40, perSide: false },
+  { slug: "cat-cow-stretch", region: "spine", targets: ["lower_back", "back", "upper_back", "traps", "core", "abs", "obliques"], holdSec: 0, perSide: false, reps: "8-10", mobility: true },
+  { slug: "worlds-greatest-stretch", region: "full_body", targets: ["upper_back", "traps", "glutes", "abductors", "hamstrings", "quads", "chest", "obliques"], holdSec: 0, perSide: true, reps: "5", mobility: true },
 ];
 
 /** Used to top up when a session's muscles match fewer stretches than needed:

@@ -5,7 +5,7 @@ import type {
   TrainingLocation,
   WeightClass,
 } from "../enums/training";
-import type { ExperienceLevel } from "../enums/experience";
+import type { ComposerExperienceLevel } from "../enums/experience";
 import type { PlanGender } from "../enums/gender";
 import type { Bi, DietGuidance } from "./plan-types";
 
@@ -52,7 +52,7 @@ export const GENDER_LABEL: Record<PlanGender, Bi> = {
   female: { zh: "女性", en: "female" },
 };
 
-export const LEVEL_LABEL: Record<ExperienceLevel, Bi> = {
+export const LEVEL_LABEL: Record<ComposerExperienceLevel, Bi> = {
   beginner: { zh: "初學者", en: "beginners" },
   intermediate: { zh: "中級", en: "intermediate trainees" },
   advanced: { zh: "進階", en: "advanced trainees" },
@@ -234,7 +234,7 @@ export const COOLDOWN: Bi[] = [
 /* ------------------------------------------------------ main blocks */
 
 /** How to run the block at each level (rounds / sets / rest scheme). */
-type Scheme = Record<ExperienceLevel, Bi>;
+type Scheme = Record<ComposerExperienceLevel, Bi>;
 
 const STRENGTH: Scheme = {
   beginner: {

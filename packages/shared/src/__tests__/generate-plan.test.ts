@@ -50,7 +50,7 @@ describe("generateTrainingPlan", () => {
     expect(JSON.stringify(a)).toEqual(JSON.stringify(b));
   });
 
-  it("progresses effort (RIR) across weeks on a stable skeleton when variety is fixed", () => {
+  it("keeps the exercise list stable when variety is fixed, and does not stamp an effort target", () => {
     const plan = generateTrainingPlan({
       answers: ANSWERS,
       trainingPreferences: { ...TRAINING, variety: "fixed" },
@@ -60,8 +60,8 @@ describe("generateTrainingPlan", () => {
     const mainSlugs = (w: number) => plan.weeks[w]!.days.flatMap((d) => d.session?.main.map((e) => e.slug) ?? []);
     expect(mainSlugs(0).length).toBeGreaterThan(0);
     expect(mainSlugs(2)).toEqual(mainSlugs(0));
-    const rir = (w: number) => plan.weeks[w]!.days.find((d) => d.session)!.session!.main[0]!.rirTarget;
-    expect(rir(0)).toBeGreaterThanOrEqual(rir(2)!);
+    const first = plan.weeks[0]!.days.find((d) => d.session)!.session!.main[0]!;
+    expect(first).not.toHaveProperty("rirTarget");
   });
 
   it("respects the chosen training frequency's rest-day pattern", () => {
@@ -131,7 +131,7 @@ describe("generateTrainingPlan", () => {
   it("varies sets/reps/rest by experience level", () => {
     const beginner = generateTrainingPlan({
       answers: ANSWERS,
-      trainingPreferences: { ...TRAINING, experience: "beginner" },
+      trainingPreferences: { ...TRAINING, experience: "basic" },
       gymEquipment: { ...GYM, gymType: "large_gym" },
       exercises: EXERCISES,
     });

@@ -1,6 +1,6 @@
 /** Personalized Workout Plan Generator (Beta) dimensions — see
  *  ../plan/plan-types.ts (structured plan) and ../plan/plan-composer.ts.
- *  The plan *level* reuses `ExperienceLevel` (beginner/intermediate/advanced)
+ *  The plan *level* reuses the composer levels (beginner/intermediate/advanced)
  *  — see ../enums/experience.
  *
  *  Exactly 6 onboarding inputs (spec A-1), no others: goal, experience,

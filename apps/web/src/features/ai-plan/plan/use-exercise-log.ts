@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import {
+  consecutiveRangeMisses,
   parseRepRange,
-  recommendLoad,
+  recommendSessionProgression,
   type EffortFeedback,
   type LoadRecommendation,
   type LoggedSet,
@@ -63,9 +64,14 @@ export function useExerciseLog({
       .then(([dayLogs, past]) => {
         if (cancelled) return;
         const today = dayLogs[slug];
-        const rec = recommendLoad({ targetReps, previous: past[0] ?? null });
+        const previous = past[0] ?? null;
+        const rec = recommendSessionProgression({
+          targetReps,
+          previous,
+          consecutiveMisses: consecutiveRangeMisses(targetReps, past),
+        });
         // Starting reference: the calibrated suggestion, else last time's load.
-        const lastTop = past[0]?.sets.reduce((m, s) => Math.max(m, s.weightKg ?? 0), 0) || null;
+        const lastTop = previous?.sets.reduce((m, s) => Math.max(m, s.weightKg ?? 0), 0) || null;
         const startKg = rec?.weightKg ?? lastTop;
         const base = empty();
         const merged = base.map((s, i) => today?.sets[i] ?? { ...s, weightKg: startKg });

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
+import { aiPlanHref } from "@/lib/ai-plan-path";
 
 /** `/ai-plan/new` — My Plans → "New plan" for a user who already has one. Starts a
  *  blank onboarding (no answers carried over from the previous plan) and opens
@@ -24,7 +25,7 @@ export function NewPlanStart() {
     if (!ready || started.current) return;
     started.current = true;
     startFresh();
-    router.replace(`${pathname.replace(/\/new\/?$/, "")}/setup`);
+    router.replace(aiPlanHref(pathname, "/setup"));
   }, [ready, startFresh, router, pathname]);
 
   return null;

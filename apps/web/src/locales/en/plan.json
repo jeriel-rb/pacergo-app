@@ -87,7 +87,8 @@
         "felt_too_light": "It felt too light last time — try a little more.",
         "within_range": "Keep this weight and aim for a few more reps.",
         "missed_bottom_of_range": "Some sets fell short last time — stay at this weight.",
-        "felt_too_heavy": "It felt too heavy last time — eased off to a weight you can own."
+        "felt_too_heavy": "It felt too heavy last time — eased off to a weight you can own.",
+        "repeated_miss": "The last few sessions fell short — take a little weight off and build back up."
       },
       "useSuggestion": "Use",
       "effortTitle": "How did it feel?",
@@ -194,7 +195,10 @@
       "lower_abs": "Lower Abs",
       "obliques": "Obliques",
       "upper_chest": "Upper Chest",
-      "lower_chest": "Lower Chest"
+      "lower_chest": "Lower Chest",
+      "middle_delts": "Middle Delts",
+      "traps": "Traps",
+      "abductors": "Abductors"
     }
   },
   "myPlans": {

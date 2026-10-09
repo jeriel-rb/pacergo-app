@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   generateTrainingPlan,
-  progressionSets,
   PLAN_RULES_VERSION,
   restSecFor,
 } from "../plan/generate-plan";
@@ -9,11 +8,10 @@ import {
   baseSchemeForExperience,
   volumeCurveFor,
   weekSetDelta,
-  weekRirTarget,
   selectWarmupRaiseSlug,
 } from "../plan/mesocycle-rules";
 import { recommendLoad, recommendSessionProgression } from "../plan/progression";
-import { patternProgressionRank } from "../plan/exercise-fit";
+import { exerciseStability, isHighImpact, patternProgressionRank } from "../plan/exercise-fit";
 import {
   GYM_EQUIPMENT_DEFAULT,
   ONBOARDING_ANSWERS_DEFAULT,
@@ -89,7 +87,7 @@ function plan(opts: {
     },
     trainingPreferences: {
       ...TRAINING_PREFERENCES_DEFAULT,
-      experience: "beginner",
+      experience: "basic",
       daysPerWeek: "3",
       workoutSplit: "full_body",
       durationMin: 45,
@@ -114,18 +112,24 @@ const mainSlugs = (p: GeneratedPlan, week = 0) =>
 describe("mesocycle experience tables", () => {
   it("gives Beginner and Basic different base sets", () => {
     expect(baseSchemeForExperience("no_experience").sets).toBe(2);
-    expect(baseSchemeForExperience("beginner").sets).toBe(3);
-    expect(baseSchemeForExperience("no_experience").reps).not.toBe(baseSchemeForExperience("beginner").reps);
+    expect(baseSchemeForExperience("basic").sets).toBe(3);
+    expect(baseSchemeForExperience("no_experience").reps).not.toBe(baseSchemeForExperience("basic").reps);
   });
 
   it("generates different prescriptions for Beginner vs Basic", () => {
     const beginner = plan({ prefs: { experience: "no_experience" } });
-    const basic = plan({ prefs: { experience: "beginner" } });
+    const basic = plan({ prefs: { experience: "basic" } });
     const b0 = beginner.weeks[0]!.days.find((d) => d.session)!.session!.main[0]!;
     const a0 = basic.weeks[0]!.days.find((d) => d.session)!.session!.main[0]!;
     expect(b0.sets).toBe(2);
     expect(a0.sets).toBe(3);
     expect(b0.reps).not.toEqual(a0.reps);
+  });
+
+  it("reads a stored beginner as Basic", () => {
+    const main = plan({ prefs: { experience: "beginner" as never } }).weeks[0]!.days.find((d) => d.session)!.session!.main[0]!;
+    expect(main.sets).toBe(3);
+    expect(main.reps).toBe("10-12");
   });
 });
 
@@ -157,11 +161,21 @@ describe("mesocycle volume / week progression", () => {
     expect(patternProgressionRank("incline-push-up")).toBeLessThan(patternProgressionRank("knee-push-up"));
     expect(patternProgressionRank("knee-push-up")).toBeLessThan(patternProgressionRank("push-up"));
     expect(patternProgressionRank("push-up")).toBeLessThan(patternProgressionRank("diamond-push-up"));
+    expect(patternProgressionRank("dip")).toBe(2);
+    expect(patternProgressionRank("negative-pull-up")).toBe(1);
+    expect(patternProgressionRank("cable-woodchop")).toBe(50);
+    expect(isHighImpact("skater-hop")).toBe(true);
+    expect(isHighImpact("box-jump")).toBe(true);
+    expect(isHighImpact("burpee")).toBe(true);
+    expect(isHighImpact("cable-woodchop")).toBe(false);
+    expect(isHighImpact("banded-woodchop")).toBe(false);
+    expect(exerciseStability({ slug: "assisted-pull-up", equipment: ["assisted_machine"] })).toBe("loadable_bodyweight");
+    expect(exerciseStability({ slug: "assisted-woodchop", equipment: [] })).toBe("bodyweight");
 
     // Bodyweight-only Functional: same catalog family lanoire hit in production.
     const p = plan({
       answers: { goal: "functional" },
-      prefs: { experience: "beginner", daysPerWeek: "3", workoutSplit: "upper_lower", variety: "balanced" },
+      prefs: { experience: "basic", daysPerWeek: "3", workoutSplit: "upper_lower", variety: "balanced" },
       gym: { gymType: "bodyweight_only", equipment: [] },
     });
     const chestLead = (w: number) =>
@@ -176,17 +190,11 @@ describe("mesocycle volume / week progression", () => {
     expect(chestLead(3)).not.toBe("wall-push-up");
   });
 
-  it("tightens RIR across weeks while keeping FLAT sets for Basic", () => {
-    expect(weekRirTarget(0, "beginner", "FLAT")).toBeGreaterThan(weekRirTarget(2, "beginner", "FLAT"));
-    const p = plan({ prefs: { experience: "beginner" } });
-    const rir = (w: number) => p.weeks[w]!.days.find((d) => d.session)!.session!.main[0]!.rirTarget;
-    expect(rir(0)).toBeGreaterThan(rir(2)!);
-  });
-
-  it("keeps progressionSets as a compatibility shim that no longer auto-ramps novices", () => {
-    expect(progressionSets(0, null)).toBe(0);
-    expect(progressionSets(3, null)).toBe(0);
-    expect(progressionSets(3, "injuries")).toBe(0);
+  it("keeps sets flat for Basic on stay-healthy, and does not stamp an effort target", () => {
+    const p = plan({ answers: { goal: "stay_healthy" }, prefs: { experience: "basic" } });
+    const sets = (w: number) => p.weeks[w]!.days.find((d) => d.session)!.session!.main[0]!.sets;
+    expect(sets(0)).toBe(sets(2));
+    expect(p.weeks[0]!.days.find((d) => d.session)!.session!.main[0]).not.toHaveProperty("rirTarget");
   });
 });
 
@@ -240,8 +248,8 @@ describe("warm-up Raise chain", () => {
 
 describe("duration-aware generation", () => {
   it("keeps short sessions smaller than long ones", () => {
-    const short = plan({ prefs: { durationMin: 30, experience: "beginner" } });
-    const long = plan({ prefs: { durationMin: 90, experience: "beginner" } });
+    const short = plan({ prefs: { durationMin: 30, experience: "basic" } });
+    const long = plan({ prefs: { durationMin: 90, experience: "basic" } });
     const count = (p: GeneratedPlan) =>
       Math.max(...p.weeks[0]!.days.filter((d) => d.session).map((d) => d.session!.main.length));
     expect(count(short)).toBeLessThanOrEqual(count(long));

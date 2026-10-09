@@ -84,22 +84,29 @@ export const ONBOARDING_STEPS: readonly OnboardingStepId[] = [
   "gymEquipment",
 ] as const;
 
-/** "Training Preferences" (hub step 2) inputs. Distinct from
- *  ../enums/experience.ts's ExperienceLevel (tied to the old plan-composer's
- *  3-value content) — this screen has a 4th "no experience" option. */
+/** Plan answer for the training-experience step. Beginner is `no_experience`.
+ *  Basic is `basic`. A stored `beginner` is a Basic pick from before that
+ *  rename. The public profile stores Beginner as `beginner` and Basic as `basic`. */
 
 export type OnboardingExperience =
   | "no_experience"
-  | "beginner"
+  | "basic"
   | "intermediate"
   | "advanced";
 
 export const ONBOARDING_EXPERIENCES: readonly OnboardingExperience[] = [
   "no_experience",
-  "beginner",
+  "basic",
   "intermediate",
   "advanced",
 ] as const;
+
+/** The plan's experience word. A leftover `beginner` is Basic. */
+export function planExperience(value: unknown): OnboardingExperience | null {
+  if (value === "basic" || value === "beginner") return "basic";
+  if (value === "no_experience" || value === "intermediate" || value === "advanced") return value;
+  return null;
+}
 
 export type OnboardingDaysPerWeek = "2" | "3" | "4" | "5" | "6" | "every_day";
 

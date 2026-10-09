@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateTrainingPlan, needsLowImpact, PLAN_RULES_VERSION } from "../plan/generate-plan";
+import { generateTrainingPlan, needsLowImpact, PLAN_RULES_VERSION, WARMUP_MOVE_COUNT } from "../plan/generate-plan";
 import { QA_EXCLUDED_EXERCISES } from "../plan/exercise-qa";
 import { STRETCH_LIBRARY } from "../plan/stretch-library";
 import { ADVANCED_SKILL_SLUGS } from "../plan/exercise-meta";
@@ -192,7 +192,7 @@ describe("goal, experience and obstacle drive the prescription", () => {
   it("sets scale with experience (Beginner ≠ Basic)", () => {
     const sets = (experience: OnboardingExperience) => firstMain(plan({ prefs: { experience } }))[0]!.sets;
     expect(sets("no_experience")).toBe(2);
-    expect(sets("beginner")).toBe(3);
+    expect(sets("basic")).toBe(3);
     expect(sets("intermediate")).toBe(3);
     expect(sets("advanced")).toBe(4);
   });
@@ -210,8 +210,11 @@ describe("goal, experience and obstacle drive the prescription", () => {
     expect(mainSets(novice, 3)).toEqual(mainSets(novice, 0));
     const intermediate = plan({ prefs: { experience: "intermediate" }, answers: { goal: "build_muscle" } });
     // Week 3 (index 2) may add a set; week 4 consolidates back for intermediate+.
-    expect(mainSets(intermediate, 2)).toEqual(mainSets(intermediate, 0).map((s) => s + 1));
-    expect(mainSets(intermediate, 3)).toEqual(mainSets(intermediate, 0));
+    // (A longer week-3 session can trim a lift to stay in time, so compare the set counts, not the lists.)
+    const distinct = (p: GeneratedPlan, w: number) => [...new Set(mainSets(p, w))];
+    expect(distinct(intermediate, 0)).toHaveLength(1);
+    expect(distinct(intermediate, 2)).toEqual([distinct(intermediate, 0)[0]! + 1]);
+    expect(distinct(intermediate, 3)).toEqual(distinct(intermediate, 0));
     for (const obstacle of ["lack_of_time", "injuries"] as const) {
       const p = plan({ answers: { obstacle } });
       expect(mainSets(p, 3)).toEqual(mainSets(p, 0));
@@ -234,7 +237,7 @@ describe("goal, experience and obstacle drive the prescription", () => {
           const p = plan({ answers: { obstacle, goal }, prefs: { experience } });
           for (const s of sessions(p)) {
             expect(s.main.length, `${obstacle}/${goal}/${experience}`).toBeGreaterThanOrEqual(3);
-            expect(s.warmup.length, `${obstacle}/${goal}/${experience} warm-up`).toBe(2);
+            expect(s.warmup.length, `${obstacle}/${goal}/${experience} warm-up`).toBe(WARMUP_MOVE_COUNT);
             expect(s.cooldown.length).toBeGreaterThan(0);
           }
         }
@@ -297,7 +300,7 @@ describe("hard filters: equipment, experience, QA, excluded muscles", () => {
   });
 
   it("beginners never get advanced-skill moves; advanced lifters may", () => {
-    for (const experience of ["no_experience", "beginner"] as const)
+    for (const experience of ["no_experience", "basic"] as const)
       expect(mainSlugs(plan({ prefs: { experience } })).filter((s) => ADVANCED_SKILL_SLUGS.has(s))).toEqual([]);
   });
 

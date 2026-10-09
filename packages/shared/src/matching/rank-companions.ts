@@ -1,4 +1,5 @@
 import type { ActivitySlug } from '../enums/activity';
+import type { ExperienceLevel } from '../enums/experience';
 import type { ProfileSetupState } from '../enums/profile-setup';
 import type { OnboardingExperience } from '../onboarding/onboarding-types';
 import type { TrainerSummary } from '../types/trainer';
@@ -9,11 +10,16 @@ export const MATCH_WEIGHTS = { activity: 3, city: 2, level: 1 } as const;
 
 const ACTIVITY_RANK: Record<OnboardingExperience, number> = {
   no_experience: 0,
-  beginner: 1,
+  basic: 1,
   intermediate: 2,
   advanced: 3,
 };
-const TRAINER_LEVEL_RANK = { beginner: 1, intermediate: 2, advanced: 3 } as const;
+const TRAINER_LEVEL_RANK: Record<ExperienceLevel, number> = {
+  beginner: 0,
+  basic: 1,
+  intermediate: 2,
+  advanced: 3,
+};
 
 /** "Other" has no matching activity, so it never scores. */
 function slugFor(activity: ProfileSetupState['primaryActivity']): ActivitySlug | null {

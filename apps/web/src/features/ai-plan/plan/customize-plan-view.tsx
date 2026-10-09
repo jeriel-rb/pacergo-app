@@ -39,7 +39,8 @@ import {
   REST_TIMER_STEP_SEC,
   ONBOARDING_VARIETIES,
   TRAINING_PREFERENCES_DEFAULT,
-  generateTrainingPlan,
+  keepSelectableMuscles,
+  planExperience,
   recommendSplit,
   resolveTrainingDays,
   trainingDaysComplete,
@@ -54,6 +55,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
 import { CardioPicker } from "@/features/ai-plan/onboarding/cardio-picker";
 import { EquipmentPicker } from "@/features/ai-plan/onboarding/equipment-picker";
+import { aiPlanHref, planOverviewHref } from "@/lib/ai-plan-path";
 import { cn } from "@/lib/utils";
 import { Button } from "@/shared/components/ui/button";
 import { useToast } from "@/shared/components/ui/toast";
@@ -63,16 +65,16 @@ import { Switch } from "@/shared/components/ui/switch";
 import { RangeSlider } from "@/shared/components/ui/range-slider";
 import { OptionCard } from "@/shared/components/atoms/option-card";
 import { MuscleGrid } from "@/features/ai-plan/onboarding/muscle-grid";
-import { fetchAllExercises } from "@/lib/exercises";
 import { useDurationFormat } from "@/lib/format-duration";
 import {
+  composeSavedPlan,
   fetchFitnessProfile,
   getCurrentUserId,
   saveOnboardingAnswers,
   updateTrainingPlan,
   type PlanOnboardingSnapshot,
 } from "@/lib/plans";
-import { fetchPlanPerformanceHistory } from "@/lib/workout-logs";
+import { profileAfterPlanEdit } from "@/features/ai-plan/plan/merge-profile-edits";
 import { TrainingDaysPicker } from "@/features/ai-plan/onboarding/training-days-picker";
 
 type FieldKey =
@@ -147,14 +149,24 @@ export function CustomizePlanView({
   // whatever locale prefix (or lack of one, for zh) is currently active, so
   // this survives a plain locale-rewritten default route the way
   // `router.back()` didn't (that's what caused #locale-reset-on-save).
-  const myPlansHref = pathname.replace(/\/plan\/[^/]+\/update$/, "/my-plans");
-  const planOverviewHref = pathname.replace(/\/update$/, "");
+  const myPlansHref = aiPlanHref(pathname, "/my-plans");
+  const overviewHref = planOverviewHref(pathname);
   const [answers, setAnswers] = React.useState<OnboardingAnswers>(() => ({
     ...ONBOARDING_ANSWERS_DEFAULT,
     ...onboardingSnapshot.answers,
   }));
   const [tp, setTp] = React.useState<TrainingPreferencesAnswers>(() => {
-    const saved = { ...TRAINING_PREFERENCES_DEFAULT, ...onboardingSnapshot.trainingPreferences };
+    const loaded = {
+      ...TRAINING_PREFERENCES_DEFAULT,
+      ...onboardingSnapshot.trainingPreferences,
+      experience: planExperience(onboardingSnapshot.trainingPreferences.experience),
+    };
+    // Muscles the picker no longer offers would sit in the count, unseen and unclearable.
+    const saved = {
+      ...loaded,
+      excludedMuscles: keepSelectableMuscles(loaded.excludedMuscles),
+      prioritizedMuscles: keepSelectableMuscles(loaded.prioritizedMuscles),
+    };
     // Plans saved before weekday picking show the days they actually train on.
     return saved.daysPerWeek && !trainingDaysComplete(saved.daysPerWeek, saved.trainingDays)
       ? { ...saved, trainingDays: resolveTrainingDays(saved.daysPerWeek, saved.trainingDays) }
@@ -226,23 +238,13 @@ export function CustomizePlanView({
     setError(false);
     try {
       const trainingPreferences = { ...tp, workoutSplit: recommended };
-      const [exercises, performanceHistory] = await Promise.all([
-        fetchAllExercises(),
-        fetchPlanPerformanceHistory(),
-      ]);
-      const plan = generateTrainingPlan({
-        answers,
-        trainingPreferences,
-        gymEquipment: ge,
-        exercises,
-        performanceHistory,
-      });
-      const label = answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : currentLabel;
       const snapshot: PlanOnboardingSnapshot = { answers, trainingPreferences, gymEquipment: ge };
+      const plan = await composeSavedPlan(snapshot);
+      const label = answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : currentLabel;
       await updateTrainingPlan({ id: planId, label, plan, onboardingSnapshot: snapshot });
       await syncSharedProfile(trainingPreferences);
       toast.show(t("toast.planUpdated"), "success");
-      router.push(planOverviewHref);
+      router.push(overviewHref);
       router.refresh();
     } catch {
       setError(true);
@@ -264,31 +266,17 @@ export function CustomizePlanView({
       if (!userId) return;
       const current = await fetchFitnessProfile();
       const was = opened.current;
-      const differs = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
-
-      let next = {
-        answers: answers,
-        trainingPreferences,
-        gymEquipment: ge,
-      };
-      if (current.updatedAt) {
-        const mergedTp: Record<string, unknown> = { ...current.trainingPreferences };
-        for (const [k, v] of Object.entries(trainingPreferences)) {
-          // The split is derived (recommendSplit), not a profile answer.
-          if (k !== "workoutSplit" && differs(v, was.tp[k as keyof TrainingPreferencesAnswers])) mergedTp[k] = v;
-        }
-        const mergedGe: Record<string, unknown> = { ...current.gymEquipment };
-        for (const [k, v] of Object.entries(ge)) {
-          if (differs(v, was.ge[k as keyof GymEquipmentAnswers])) mergedGe[k] = v;
-        }
-        next = {
-          answers:
-            differs(answers.goal, was.goal) ? { ...current.answers, goal: answers.goal } : current.answers,
-          trainingPreferences: mergedTp as unknown as TrainingPreferencesAnswers,
-          gymEquipment: mergedGe as unknown as GymEquipmentAnswers,
-        };
-        if (!differs(next, { answers: current.answers, trainingPreferences: current.trainingPreferences, gymEquipment: current.gymEquipment })) return;
-      }
+      const edited: PlanOnboardingSnapshot = { answers, trainingPreferences, gymEquipment: ge };
+      const next = current.updatedAt
+        ? profileAfterPlanEdit({
+            current,
+            edited,
+            openedGoal: was.goal,
+            openedPreferences: was.tp,
+            openedGym: was.ge,
+          })
+        : edited;
+      if (!next) return;
       await saveOnboardingAnswers({ userId, ...next });
     } catch {
       // Leave the profile as it was; the next profile save reconciles it.
@@ -315,7 +303,7 @@ export function CustomizePlanView({
       <p className="-mt-2 text-xs text-muted-foreground">
         {t("update.profileNote")}{" "}
         <Link
-          href={pathname.replace(/\/plan\/[^/]+\/update$/, "/fitness-profile")}
+          href={aiPlanHref(pathname, "/fitness-profile")}
           className="font-semibold text-primary hover:underline"
         >
           {t("fitnessProfile.title")}
@@ -416,6 +404,147 @@ function FieldEditorDialog({
   const { t } = useTranslation(["plan", "onboarding"]);
   const close = () => onOpenChange(false);
 
+  function fieldControls(open: FieldKey) {
+    switch (open) {
+      case "goal":
+        return ONBOARDING_GOALS.map((g) => (
+          <OptionCard
+            key={g}
+            title={t(`goal.options.${g}.title`, { ns: "onboarding" })}
+            description={t(`goal.options.${g}.description`, { ns: "onboarding" })}
+            selected={answers.goal === g}
+            onSelect={() => {
+              setAnswers((prev) => ({ ...prev, goal: g }));
+              close();
+            }}
+          />
+        ));
+      case "frequency":
+        return (
+          <>
+            {ONBOARDING_DAYS_PER_WEEK.map((d) => (
+              <OptionCard
+                key={d}
+                badge={
+                  ONBOARDING_DAYS_RECOMMENDED.includes(d)
+                    ? t("trainingPreferences.daysPerWeek.recommendedBadge", { ns: "onboarding" })
+                    : undefined
+                }
+                title={t(`trainingPreferences.daysPerWeek.options.${d}`, { ns: "onboarding" })}
+                selected={tp.daysPerWeek === d}
+                onSelect={() =>
+                  setTp((prev) => ({
+                    ...prev,
+                    daysPerWeek: d,
+                    trainingDays: d === prev.daysPerWeek ? prev.trainingDays : [],
+                  }))
+                }
+              />
+            ))}
+            {tp.daysPerWeek && (
+              <div className="pt-3">
+                <TrainingDaysPicker
+                  daysPerWeek={tp.daysPerWeek}
+                  value={tp.trainingDays}
+                  onChange={(trainingDays) => setTp((prev) => ({ ...prev, trainingDays }))}
+                />
+              </div>
+            )}
+          </>
+        );
+      case "split":
+        return (
+          <div className="space-y-2 rounded-2xl border-2 border-primary bg-primary/5 p-4">
+            <p className="text-xs font-bold text-primary">{t("split.recommended.badge", { ns: "onboarding" })}</p>
+            <p className="text-lg font-bold">
+              {t(`split.names.${recommendSplit({ answers, trainingPreferences: tp, gymEquipment: ge }).split}`, {
+                ns: "onboarding",
+              })}
+            </p>
+            <p className="text-sm text-muted-foreground">{t("update.splitAuto")}</p>
+          </div>
+        );
+      case "experience":
+        return ONBOARDING_EXPERIENCES.map((e) => (
+          <OptionCard
+            key={e}
+            title={t(`trainingPreferences.experience.options.${e}.title`, { ns: "onboarding" })}
+            description={t(`trainingPreferences.experience.options.${e}.description`, { ns: "onboarding" })}
+            selected={tp.experience === e}
+            onSelect={() => {
+              setTp((prev) => ({ ...prev, experience: e }));
+              close();
+            }}
+          />
+        ));
+      case "variety":
+        return ONBOARDING_VARIETIES.map((v) => (
+          <OptionCard
+            key={v}
+            title={t(`trainingPreferences.variety.options.${v}.title`, { ns: "onboarding" })}
+            description={t(`trainingPreferences.variety.options.${v}.description`, { ns: "onboarding" })}
+            selected={tp.variety === v}
+            onSelect={() => {
+              setTp((prev) => ({ ...prev, variety: v }));
+              close();
+            }}
+          />
+        ));
+      case "duration":
+        return (
+          <DurationEditor
+            value={tp.durationMin ?? ONBOARDING_DURATION_DEFAULT}
+            onChange={(v) => setTp((prev) => ({ ...prev, durationMin: v }))}
+          />
+        );
+      case "gymType":
+        return (
+          <EquipmentPicker
+            scrollable
+            gymType={ge.gymType}
+            selected={ge.equipment}
+            onSelectGymType={(g) => setGe((prev) => withGymType(prev, g))}
+            onToggle={(id) =>
+              setGe((prev) => ({
+                ...prev,
+                equipment: prev.equipment.includes(id)
+                  ? prev.equipment.filter((e) => e !== id)
+                  : [...prev.equipment, id],
+              }))
+            }
+          />
+        );
+      case "cardio":
+        return <CardioEditor ge={ge} setGe={setGe} />;
+      case "prioritizedMuscles":
+        return (
+          <MuscleGrid
+            selected={tp.prioritizeMuscles === true ? tp.prioritizedMuscles : []}
+            onToggle={(m) => setTp((prev) => toggleMuscle(prev, "prioritized", m))}
+            max={ONBOARDING_PRIORITIZED_MUSCLES_MAX}
+            blocked={tp.excludeMuscles === true ? tp.excludedMuscles : []}
+            blockedBy="excluded"
+          />
+        );
+      case "excludedMuscles":
+        return (
+          <MuscleGrid
+            selected={tp.excludeMuscles === true ? tp.excludedMuscles : []}
+            onToggle={(m) => setTp((prev) => toggleMuscle(prev, "excluded", m))}
+            max={ONBOARDING_EXCLUDED_MUSCLES_MAX}
+            blocked={tp.prioritizeMuscles === true ? tp.prioritizedMuscles : []}
+            blockedBy="prioritized"
+          />
+        );
+      case "restTimer":
+        return <RestTimerEditor tp={tp} setTp={setTp} />;
+      default: {
+        const unexpected: never = open;
+        return unexpected;
+      }
+    }
+  }
+
   return (
     <Dialog open={field !== null} onOpenChange={onOpenChange}>
       {/* Equipment is a fixed-height dialog: its search + chips stay pinned
@@ -435,137 +564,7 @@ function FieldEditorDialog({
                 field === "gymType" ? "min-h-0 pb-3" : "space-y-2 overflow-y-auto pb-5",
               )}
             >
-              {field === "goal" &&
-                ONBOARDING_GOALS.map((g) => (
-                  <OptionCard
-                    key={g}
-                    title={t(`goal.options.${g}.title`, { ns: "onboarding" })}
-                    description={t(`goal.options.${g}.description`, { ns: "onboarding" })}
-                    selected={answers.goal === g}
-                    onSelect={() => {
-                      setAnswers((prev) => ({ ...prev, goal: g }));
-                      close();
-                    }}
-                  />
-                ))}
-
-              {field === "frequency" &&
-                ONBOARDING_DAYS_PER_WEEK.map((d) => (
-                  <OptionCard
-                    key={d}
-                    badge={
-                      ONBOARDING_DAYS_RECOMMENDED.includes(d)
-                        ? t("trainingPreferences.daysPerWeek.recommendedBadge", { ns: "onboarding" })
-                        : undefined
-                    }
-                    title={t(`trainingPreferences.daysPerWeek.options.${d}`, { ns: "onboarding" })}
-                    selected={tp.daysPerWeek === d}
-                    onSelect={() =>
-                      setTp((prev) => ({
-                        ...prev,
-                        daysPerWeek: d,
-                        trainingDays: d === prev.daysPerWeek ? prev.trainingDays : [],
-                      }))
-                    }
-                  />
-                ))}
-              {field === "frequency" && tp.daysPerWeek && (
-                <div className="pt-3">
-                  <TrainingDaysPicker
-                    daysPerWeek={tp.daysPerWeek}
-                    value={tp.trainingDays}
-                    onChange={(trainingDays) => setTp((prev) => ({ ...prev, trainingDays }))}
-                  />
-                </div>
-              )}
-
-              {field === "split" && (
-                <div className="space-y-2 rounded-2xl border-2 border-primary bg-primary/5 p-4">
-                  <p className="text-xs font-bold text-primary">
-                    {t("split.recommended.badge", { ns: "onboarding" })}
-                  </p>
-                  <p className="text-lg font-bold">
-                    {t(`split.names.${recommendSplit({ answers, trainingPreferences: tp, gymEquipment: ge }).split}`, { ns: "onboarding" })}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{t("update.splitAuto")}</p>
-                </div>
-              )}
-
-              {field === "experience" &&
-                ONBOARDING_EXPERIENCES.map((e) => (
-                  <OptionCard
-                    key={e}
-                    title={t(`trainingPreferences.experience.options.${e}.title`, { ns: "onboarding" })}
-                    description={t(`trainingPreferences.experience.options.${e}.description`, { ns: "onboarding" })}
-                    selected={tp.experience === e}
-                    onSelect={() => {
-                      setTp((prev) => ({ ...prev, experience: e }));
-                      close();
-                    }}
-                  />
-                ))}
-
-              {field === "variety" &&
-                ONBOARDING_VARIETIES.map((v) => (
-                  <OptionCard
-                    key={v}
-                    title={t(`trainingPreferences.variety.options.${v}.title`, { ns: "onboarding" })}
-                    description={t(`trainingPreferences.variety.options.${v}.description`, { ns: "onboarding" })}
-                    selected={tp.variety === v}
-                    onSelect={() => {
-                      setTp((prev) => ({ ...prev, variety: v }));
-                      close();
-                    }}
-                  />
-                ))}
-
-              {field === "duration" && (
-                <DurationEditor
-                  value={tp.durationMin ?? ONBOARDING_DURATION_DEFAULT}
-                  onChange={(v) => setTp((prev) => ({ ...prev, durationMin: v }))}
-                />
-              )}
-
-              {field === "gymType" && (
-                <EquipmentPicker
-                  scrollable
-                  gymType={ge.gymType}
-                  selected={ge.equipment}
-                  onSelectGymType={(g) => setGe((prev) => withGymType(prev, g))}
-                  onToggle={(id) =>
-                    setGe((prev) => ({
-                      ...prev,
-                      equipment: prev.equipment.includes(id)
-                        ? prev.equipment.filter((e) => e !== id)
-                        : [...prev.equipment, id],
-                    }))
-                  }
-                />
-              )}
-
-              {field === "cardio" && <CardioEditor ge={ge} setGe={setGe} />}
-
-              {field === "prioritizedMuscles" && (
-                <MuscleGrid
-                  selected={tp.prioritizeMuscles === true ? tp.prioritizedMuscles : []}
-                  onToggle={(m) => setTp((prev) => toggleMuscle(prev, "prioritized", m))}
-                  max={ONBOARDING_PRIORITIZED_MUSCLES_MAX}
-                  blocked={tp.excludeMuscles === true ? tp.excludedMuscles : []}
-                  blockedBy="excluded"
-                />
-              )}
-
-              {field === "excludedMuscles" && (
-                <MuscleGrid
-                  selected={tp.excludeMuscles === true ? tp.excludedMuscles : []}
-                  onToggle={(m) => setTp((prev) => toggleMuscle(prev, "excluded", m))}
-                  max={ONBOARDING_EXCLUDED_MUSCLES_MAX}
-                  blocked={tp.prioritizeMuscles === true ? tp.prioritizedMuscles : []}
-                  blockedBy="prioritized"
-                />
-              )}
-
-              {field === "restTimer" && <RestTimerEditor tp={tp} setTp={setTp} />}
+              {fieldControls(field)}
             </div>
 
             {MULTI_STEP_FIELDS.includes(field) && (

@@ -18,6 +18,7 @@ import { useLocale } from "@/shared/hooks/use-locale";
 import { saveOnboardingAnswers } from "@/lib/plans";
 import type { SavedFitnessProfile } from "@/lib/fitness-profile-row";
 import { cn } from "@/lib/utils";
+import { aiPlanHref } from "@/lib/ai-plan-path";
 import { NutritionMissingNotice, NutritionTargetsCard } from "./nutrition-targets-card";
 
 /** The saved AI Nutrition result: daily calories, protein and food guidance.
@@ -68,7 +69,7 @@ export function NutritionView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const profileHref = pathname.replace(/\/nutrition$/, "/fitness-profile");
+  const profileHref = aiPlanHref(pathname, "/fitness-profile");
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">

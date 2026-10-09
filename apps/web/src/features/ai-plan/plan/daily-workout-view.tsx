@@ -15,6 +15,7 @@ import { RestCountdown } from "./rest-countdown";
 import { useExerciseSummary } from "./exercise-summary";
 import { useWorkoutProgress } from "./use-workout-progress";
 import { sessionProgress, setKey, type WorkoutGroup, type WorkoutProgress } from "./workout-progress";
+import { workoutOverviewHref } from "@/lib/ai-plan-path";
 
 /** A-4 daily workout screen: warm-up / main / cool-down (+ cardio, placed per
  *  the user's chosen start/end preference). It is the overview of the workout:
@@ -42,7 +43,7 @@ export function DailyWorkoutView({
   const toast = useToast();
   const [resetOpen, setResetOpen] = React.useState(false);
 
-  const overviewPath = pathname.replace(/\/day\/\d+$/, "");
+  const overviewPath = workoutOverviewHref(pathname);
   const { progress, rest, left, nudge, stop, reset } = useWorkoutProgress({
     planId,
     week,

@@ -1,6 +1,7 @@
 import {
   GYM_EQUIPMENT_DEFAULT,
   isValidSavedNutrition,
+  keepSelectableMuscles,
   ONBOARDING_ANSWERS_DEFAULT,
   TRAINING_PREFERENCES_DEFAULT,
   sanitizeAboutYou,
@@ -46,13 +47,23 @@ interface FitnessProfileRow {
  *  user with no row yet gets all defaults. The row is client-written JSON, so
  *  out-of-range body facts, unknown frequencies and malformed nutrition blobs
  *  are dropped rather than trusted. */
+function dropUnofferedMuscles(prefs: TrainingPreferencesAnswers): TrainingPreferencesAnswers {
+  return {
+    ...prefs,
+    excludedMuscles: keepSelectableMuscles(prefs.excludedMuscles),
+    prioritizedMuscles: keepSelectableMuscles(prefs.prioritizedMuscles),
+  };
+}
+
 export function parseFitnessProfileRow(data: unknown): SavedFitnessProfile {
   const row = (data ?? null) as FitnessProfileRow | null;
   return {
     answers: sanitizeAboutYou({ ...ONBOARDING_ANSWERS_DEFAULT, ...row?.about_you }),
-    trainingPreferences: sanitizeTrainingPreferences(
-      { ...TRAINING_PREFERENCES_DEFAULT, ...row?.training_preferences },
-      TRAINING_PREFERENCES_DEFAULT,
+    trainingPreferences: dropUnofferedMuscles(
+      sanitizeTrainingPreferences(
+        { ...TRAINING_PREFERENCES_DEFAULT, ...row?.training_preferences },
+        TRAINING_PREFERENCES_DEFAULT,
+      ),
     ),
     gymEquipment: upgradeLegacyEquipment({ ...GYM_EQUIPMENT_DEFAULT, ...row?.gym_equipment }),
     nutrition: isValidSavedNutrition(row?.nutrition) ? row.nutrition : null,

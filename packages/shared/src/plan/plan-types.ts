@@ -5,7 +5,7 @@ import type {
   TrainingLocation,
   WeightClass,
 } from "../enums/training";
-import type { ExperienceLevel } from "../enums/experience";
+import type { ComposerExperienceLevel } from "../enums/experience";
 import type { PlanGender } from "../enums/gender";
 
 /** A bilingual string pair — every piece of authored/generated copy in the
@@ -19,7 +19,7 @@ export interface Bi {
 export interface PlanSelection {
   goal: TrainingGoal;
   gender: PlanGender;
-  level: ExperienceLevel;
+  level: ComposerExperienceLevel;
   weightClass: WeightClass;
   frequency: TrainingFrequency;
   location: TrainingLocation;

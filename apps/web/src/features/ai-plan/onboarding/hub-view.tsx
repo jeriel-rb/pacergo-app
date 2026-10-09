@@ -13,6 +13,7 @@ import {
 } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/lib/utils";
+import { aiPlanRoot } from "@/lib/ai-plan-path";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { ABOUT_YOU_STEPS, type AboutYouStep } from "./about-you-steps";
 import { GYM_EQUIPMENT_STEPS } from "./gym-equipment-steps";
@@ -50,7 +51,7 @@ export function HubView({ activePlanId }: { activePlanId: string | null }) {
     useOnboarding();
   const pathname = usePathname();
   const router = useRouter();
-  const root = pathname.replace(/\/setup\/?$/, ""); // ".../ai-plan"
+  const root = aiPlanRoot(pathname);
 
   // -1 once every step is complete — no step is "active" then.
   const activeIndex = !completedSteps.aboutYou

@@ -32,6 +32,8 @@ describe("equipment catalog", () => {
     expect(EQUIPMENT_PRESETS.large_gym).toHaveLength(ONBOARDING_EQUIPMENT.length);
     expect(EQUIPMENT_PRESETS.small_gym.length).toBeLessThan(EQUIPMENT_PRESETS.large_gym.length);
     expect(EQUIPMENT_PRESETS.garage_gym).toContain("squat_rack");
+    const machines = EQUIPMENT_CATALOG.filter((e) => e.category === "machines").map((e) => e.id);
+    for (const id of machines) expect(EQUIPMENT_PRESETS.small_gym, id).toContain(id);
     expect(EQUIPMENT_PRESETS.bodyweight_only.length).toBeLessThan(EQUIPMENT_PRESETS.garage_gym.length);
   });
 

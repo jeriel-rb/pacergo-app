@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Loader2, RefreshCw } from "lucide-react";
 import { regeneratePlanUnderCurrentRules } from "@/lib/plans";
+import { aiPlanHref } from "@/lib/ai-plan-path";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/shared/components/ui/toast";
 import { useLocale } from "@/shared/hooks/use-locale";
@@ -83,7 +84,7 @@ export function PlanOverviewView({
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div className="flex items-center gap-2">
         <Link
-          href={pathname.replace(/\/plan\/[^/]+$/, "/my-plans")}
+          href={aiPlanHref(pathname, "/my-plans")}
           aria-label={t("back")}
           className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent"
         >
@@ -111,7 +112,7 @@ export function PlanOverviewView({
         </div>
       )}
 
-      <NutritionLinkCard href={pathname.replace(/\/plan\/[^/]+$/, "/nutrition")} />
+      <NutritionLinkCard href={aiPlanHref(pathname, "/nutrition")} />
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {plan.weeks.map((w) => (

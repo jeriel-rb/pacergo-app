@@ -26,14 +26,16 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 do $$ begin
-  create type experience_level as enum ('beginner', 'intermediate', 'advanced');
+  create type experience_level as enum ('beginner', 'basic', 'intermediate', 'advanced');
 exception when duplicate_object then null; end $$;
 
 -- updated_at helper;
 
 do $$ begin
-  create type experience_level as enum ('beginner', 'intermediate', 'advanced');
+  create type experience_level as enum ('beginner', 'basic', 'intermediate', 'advanced');
 exception when duplicate_object then null; end $$;
+
+alter type experience_level add value if not exists 'basic' after 'beginner';
 
 -- updated_at helper;
 
@@ -1434,7 +1436,9 @@ begin
   if p_primary_activity is not null and p_primary_activity not in ('gym', 'running', 'hiking', 'other') then
     raise exception 'invalid activity';
   end if;
-  if p_experience is not null and p_experience not in ('no_experience', 'beginner', 'intermediate', 'advanced') then
+  -- Plan Beginner is `no_experience`. Plan Basic is `basic`. A leftover `beginner`
+  -- is still the Basic pick from before that rename.
+  if p_experience is not null and p_experience not in ('no_experience', 'beginner', 'basic', 'intermediate', 'advanced') then
     raise exception 'invalid experience';
   end if;
 
@@ -1451,7 +1455,7 @@ begin
   update users set
     home_area = coalesce(nullif(regexp_replace(btrim(p_city), '\s+', ' ', 'g'), ''), home_area),
     experience_level = coalesce(
-      (case p_experience when 'no_experience' then 'beginner' else p_experience end)::experience_level,
+      (case p_experience when 'no_experience' then 'beginner' when 'beginner' then 'basic' else p_experience end)::experience_level,
       experience_level
     ),
     profile_setup_status = 'completed',
@@ -3560,13 +3564,20 @@ begin
       expired_at = case when p_observed_status = 'expired' then coalesce(expired_at, now()) else expired_at end
   where id = p.id;
 
-  update bookings
-  set status = case
-    when status in ('cancelled', 'completed') then status
-    when p_observed_status in ('failed', 'cancelled', 'expired') then 'pending_payment'
-    else 'payment_processing'
-  end
-  where id = p.booking_id;
+  -- The customer's browser return can arrive AFTER NewebPay's server notify
+  -- (the normal order). By then the payment is paid and the booking is
+  -- accepted, so a return must never move either backwards: only touch a
+  -- booking that is still waiting on payment, and never one whose payment this
+  -- return is merely reporting on after it was already paid.
+  if p.status <> 'paid' then
+    update bookings
+    set status = case
+      when p_observed_status in ('failed', 'cancelled', 'expired') then 'pending_payment'
+      else 'payment_processing'
+    end
+    where id = p.booking_id
+      and status in ('pending_payment', 'payment_processing', 'payment_failed');
+  end if;
 
   return p.id;
 end $$;
@@ -3614,6 +3625,14 @@ begin
         provider_trade_no = coalesce(provider_trade_no, nullif(p_provider_trade_no, '')),
         provider_status = coalesce(nullif(p_provider_status, ''), provider_status)
     where id = p.id;
+    -- NewebPay re-sends notifications. A booking still mid-payment although
+    -- its payment is paid (e.g. a browser return overwrote it) is repaired here.
+    update bookings
+    set status = 'accepted'
+    where id = b.id
+      and status in ('pending_payment', 'payment_processing', 'payment_failed')
+      and p_next_status = 'paid'
+      and p.refund_status = 'none';
     return p.id;
   end if;
 
@@ -4038,6 +4057,7 @@ begin
   where settlement_eligibility_status = 'ineligible'
     and settlement_status = 'unsettled'
     and status = 'paid'
+    and provider <> 'simulated' -- a test payment moves no money, so nobody is owed for it
     and refund_status = 'none'
     and admin_hold = false
     and service_completed_at is not null
@@ -4050,7 +4070,7 @@ begin
   set settlement_eligibility_status = 'ineligible'
   where settlement_eligibility_status = 'eligible'
     and settlement_status = 'unsettled'
-    and (status <> 'paid' or refund_status <> 'none' or admin_hold = true);
+    and (status <> 'paid' or provider = 'simulated' or refund_status <> 'none' or admin_hold = true);
 end $$;
 
 create or replace function run_settlement_cycle()
@@ -4544,14 +4564,15 @@ grant execute on function admin_set_withdrawal_status(uuid, text, text) to authe
 create or replace function create_simulated_payment_attempt(
   p_booking_id uuid,
   p_merchant_order_no text,
-  p_amount int
+  p_amount int,
+  p_user_id uuid
 ) returns jsonb
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  v_uid uuid := auth.uid();
+  v_uid uuid := p_user_id; -- the server passes the verified caller; only service_role may call this
   b record;
   existing record;
   inserted payments%rowtype;
@@ -4608,14 +4629,15 @@ end $$;
 
 create or replace function confirm_simulated_payment(
   p_payment_id uuid,
-  p_approve boolean
+  p_approve boolean,
+  p_user_id uuid
 ) returns void
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  v_uid uuid := auth.uid();
+  v_uid uuid := p_user_id; -- the server passes the verified caller; only service_role may call this
   pay payments%rowtype;
 begin
   if v_uid is null then raise exception 'payment_unauthenticated'; end if;
@@ -4641,7 +4663,7 @@ begin
     case when p_approve then 'paid'::payment_status else 'failed'::payment_status end
   );
 end $$;
-grant execute on function confirm_simulated_payment(uuid, boolean) to authenticated;
+grant execute on function confirm_simulated_payment(uuid, boolean, uuid) to service_role;
 
 -- The simulated review/result screens reuse the existing payment_detail()
 -- RPC (0033) â€” already owner-gated (p.user_id = auth.uid()) and already
@@ -4757,12 +4779,14 @@ begin
       and gender is distinct from v_gender;
   end if;
 
-  if v_experience in ('no_experience', 'beginner', 'intermediate', 'advanced') then
+  -- Plan Beginner is `no_experience` (public `beginner`). Plan Basic is `basic`.
+  -- A leftover plan `beginner` is still Basic and maps to public `basic`.
+  if v_experience in ('no_experience', 'beginner', 'basic', 'intermediate', 'advanced') then
     update users set
-      experience_level = (case v_experience when 'no_experience' then 'beginner' else v_experience end)::experience_level
+      experience_level = (case v_experience when 'no_experience' then 'beginner' when 'beginner' then 'basic' else v_experience end)::experience_level
     where id = auth.uid()
       and experience_level is distinct from
-        (case v_experience when 'no_experience' then 'beginner' else v_experience end)::experience_level;
+        (case v_experience when 'no_experience' then 'beginner' when 'beginner' then 'basic' else v_experience end)::experience_level;
   end if;
 
   return v_updated_at;
@@ -5477,14 +5501,14 @@ grant execute on function admin_withdrawal_detail(uuid) to authenticated;
 
 grant execute on function admin_set_withdrawal_status(uuid, text, text) to authenticated;
 
-grant execute on function create_simulated_payment_attempt(uuid, text, int) to authenticated;
+grant execute on function create_simulated_payment_attempt(uuid, text, int, uuid) to service_role;
 
 -- Trainee-callable "gateway" for the simulated provider â€” an explicit
 -- approve/decline in place of NewebPay's hosted page + real NotifyURL.
 -- Clearly test-only: only ever touches rows this same user owns and with
 -- provider='simulated', so it can never be used to fake a live payment.;
 
-grant execute on function confirm_simulated_payment(uuid, boolean) to authenticated;
+grant execute on function confirm_simulated_payment(uuid, boolean, uuid) to service_role;
 
 -- The simulated review/result screens reuse the existing payment_detail()
 -- RPC (0033) â€” already owner-gated (p.user_id = auth.uid()) and already
@@ -5492,9 +5516,15 @@ grant execute on function confirm_simulated_payment(uuid, boolean) to authentica
 -- needed; payment_detail's `booking` join doesn't reference "newebpay"
 -- either, so it's already provider-agnostic.;
 
-grant execute on function create_simulated_payment_attempt(uuid, text, int) to authenticated;
+grant execute on function create_simulated_payment_attempt(uuid, text, int, uuid) to service_role;
 
-grant execute on function confirm_simulated_payment(uuid, boolean) to authenticated;
+grant execute on function confirm_simulated_payment(uuid, boolean, uuid) to service_role;
+
+-- The simulated provider fakes a "paid" payment, so a browser must never be
+-- able to call it: only the server (service_role) may, after it has verified
+-- the user and that PAYMENT_PROVIDER=simulated.
+revoke all on function create_simulated_payment_attempt(uuid, text, int, uuid) from public, anon, authenticated;
+revoke all on function confirm_simulated_payment(uuid, boolean, uuid) from public, anon, authenticated;
 
 -- Match 0030 RPC-only write model for new tables.
 revoke all on table exercises, user_onboarding, user_training_plans from anon;
@@ -6811,13 +6841,13 @@ values
 ('overhead-press', 'Overhead Press', '槓鈴肩推', array['shoulders', 'triceps'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold the bar at shoulder height, hands just outside shoulders.', 'Press the bar straight overhead until arms are locked out.', 'Lower back to shoulder height with control.'], array['將槓置於肩膀高度，握距略寬於肩。', '將槓直直推至頭頂上方伸直。', '控制放下回到肩膀高度。'], array['Brace your core to avoid over-arching your lower back.'], array['繃緊核心，避免下背過度後仰。']),
 ('seated-dumbbell-press', 'Dumbbell Seated Shoulder Press', '啞鈴肩推', array['shoulders', 'triceps'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a dumbbell in each hand at shoulder height.', 'Press both dumbbells overhead until arms are extended.', 'Lower back to shoulder height with control.'], array['雙手各持啞鈴於肩膀高度。', '將啞鈴向上推至手臂伸直。', '控制放下回到肩膀高度。'], array['Avoid arching your lower back to press the weight up.'], array['避免用下背過度後仰來推起重量。']),
 ('arnold-press', 'Arnold Press', '阿諾肩推', array['shoulders', 'triceps'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold dumbbells at chest height with palms facing you.', 'Press up while rotating your palms to face forward.', 'Reverse the rotation as you lower back to the start.'], array['雙手持啞鈴於胸前，掌心朝向自己。', '向上推的同時將掌心轉為朝前。', '下放時反向旋轉，回到起始位置。'], array['Use lighter weights than a regular shoulder press — the rotation adds range.'], array['重量比一般肩推輕一些，因為旋轉增加了動作範圍。']),
-('lateral-raise', 'Lateral Raise', '啞鈴側平舉', array['shoulders', 'upper_back'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a dumbbell in each hand at your sides.', 'Raise both arms out to the sides until shoulder height.', 'Lower back down with control.'], array['雙手各持啞鈴放在身體兩側。', '將雙臂向外側抬起至肩膀高度。', '控制放下。'], array['Use a light weight — this is a shoulder isolation move.'], array['使用較輕的重量，這是肩部孤立訓練動作。']),
-('cable-lateral-raise', 'Cable Lateral Raise', '滑輪側平舉', array['shoulders', 'upper_back'], array['cable_machine'], array['large_gym', 'small_gym'], array['Stand between two low pulleys with a handle in each hand, arms at your sides.', 'Raise both arms out to the sides to shoulder height.', 'Lower back down with control.'], array['站在兩個低位滑輪之間，雙手各握一個把手，手臂放在身體兩側。', '將雙臂向外側抬起至肩膀高度。', '控制放下。'], array['The cable keeps tension on your shoulder throughout the range.'], array['滑輪能讓肩部全程維持張力。']),
+('lateral-raise', 'Lateral Raise', '啞鈴側平舉', array['middle_delts', 'upper_back'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a dumbbell in each hand at your sides.', 'Raise both arms out to the sides until shoulder height.', 'Lower back down with control.'], array['雙手各持啞鈴放在身體兩側。', '將雙臂向外側抬起至肩膀高度。', '控制放下。'], array['Use a light weight — this is a shoulder isolation move.'], array['使用較輕的重量，這是肩部孤立訓練動作。']),
+('cable-lateral-raise', 'Cable Lateral Raise', '滑輪側平舉', array['middle_delts', 'upper_back'], array['cable_machine'], array['large_gym', 'small_gym'], array['Stand between two low pulleys with a handle in each hand, arms at your sides.', 'Raise both arms out to the sides to shoulder height.', 'Lower back down with control.'], array['站在兩個低位滑輪之間，雙手各握一個把手，手臂放在身體兩側。', '將雙臂向外側抬起至肩膀高度。', '控制放下。'], array['The cable keeps tension on your shoulder throughout the range.'], array['滑輪能讓肩部全程維持張力。']),
 ('front-raise', 'Front Raise', '前平舉', array['shoulders', 'chest'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand tall holding dumbbells in front of your thighs.', 'Raise both arms straight forward to shoulder height.', 'Lower slowly back to the start.'], array['站直，雙手持啞鈴放於大腿前方。', '將雙臂向前平舉至肩膀高度。', '緩慢放回起始位置。'], array['Don''t swing your torso — keep your core braced.'], array['避免身體甩動借力，核心保持繃緊。']),
 ('rear-delt-fly', 'Rear Delt Fly', '後三角飛鳥', array['rear_delts', 'upper_back'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Hinge forward at the hips with a flat back, dumbbells hanging below your chest.', 'Raise both arms out to the sides with a slight elbow bend.', 'Lower with control.'], array['髖部前傾、背部打平，啞鈴垂在胸口下方。', '手肘微彎，將雙臂向兩側抬起。', '控制放下。'], array['Pinch your shoulder blades lightly at the top — don''t shrug.'], array['頂端輕輕夾緊肩胛，但不要聳肩。']),
 ('reverse-pec-deck', 'Reverse Pec Deck', '蝴蝶機反向飛鳥', array['rear_delts', 'upper_back'], array['pec_deck'], array['large_gym'], array['Sit facing the pad, chest supported, grips at shoulder height.', 'Pull the handles back and out until your arms are in line with your shoulders.', 'Return slowly without letting the weights touch.'], array['面向椅墊坐好，胸口靠住，把手位於肩膀高度。', '向後向外拉開把手，直到手臂與肩同高。', '緩慢放回，重量片不要碰撞。'], array['Lead with your elbows, not your hands.'], array['以手肘帶動，而不是用手掌拉。']),
 ('face-pull', 'Face Pull', '滑輪臉拉', array['upper_back', 'rear_delts', 'shoulders'], array['cable_machine'], array['large_gym', 'small_gym'], array['Set a rope attachment at upper-chest height.', 'Pull the rope toward your face, elbows flaring out wide.', 'Return with control to the start.'], array['將繩索把手設置於上胸高度。', '將繩索拉向臉部，手肘向外展開。', '控制放回起始位置。'], array['Great for shoulder health and posture.'], array['對肩關節健康與體態有良好幫助。']),
-('upright-row', 'Upright Row', '直立划船', array['shoulders', 'upper_back', 'biceps'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a bar with a shoulder-width grip in front of your thighs.', 'Pull the bar up along your body to lower-chest height, elbows leading.', 'Lower with control.'], array['以與肩同寬的握距持槓於大腿前方。', '沿身體將槓拉至下胸高度，手肘帶領。', '控制放下。'], array['Stop at chest height — pulling higher can irritate the shoulders.'], array['拉到胸口高度即可，拉更高可能刺激肩關節。']),
+('upright-row', 'Upright Row', '直立划船', array['middle_delts', 'upper_back', 'biceps'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a bar with a shoulder-width grip in front of your thighs.', 'Pull the bar up along your body to lower-chest height, elbows leading.', 'Lower with control.'], array['以與肩同寬的握距持槓於大腿前方。', '沿身體將槓拉至下胸高度，手肘帶領。', '控制放下。'], array['Stop at chest height — pulling higher can irritate the shoulders.'], array['拉到胸口高度即可，拉更高可能刺激肩關節。']),
 ('deadlift', 'Deadlift', '槓鈴硬舉', array['hamstrings', 'glutes', 'lower_back', 'back', 'forearms'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand with the bar over mid-foot, grip just outside your legs.', 'Hinge at the hips, keeping your back flat, and lift the bar close to your body.', 'Stand tall, then lower the bar back down with control.'], array['站在槓鈴前，槓在腳掌中段上方，雙手握在腿外側。', '髖部後推，背部打平，將槓貼近身體拉起。', '站直後控制放下槓鈴。'], array['Keep the bar in contact with your legs throughout the lift.'], array['全程讓槓鈴貼近腿部移動。']),
 ('romanian-deadlift', 'Romanian Deadlift', '羅馬尼亞硬舉', array['hamstrings', 'glutes', 'lower_back'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold the bar at hip height, knees slightly bent.', 'Hinge at the hips, sliding the bar down your legs.', 'Feel a stretch in your hamstrings, then drive hips forward to stand.'], array['雙手握槓於髖部高度，膝蓋微彎。', '髖部後推，讓槓貼腿下滑。', '感受到腿後側伸展後，推髖站直。'], array['Keep the bar close to your legs the entire time.'], array['槓鈴全程貼近腿部移動。']),
 ('barbell-row', 'Barbell Row', '槓鈴俯身划船', array['back', 'biceps', 'rear_delts'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hinge forward at the hips holding the bar, back flat.', 'Pull the bar toward your lower ribs.', 'Lower with control back to the start.'], array['髖部前傾握槓，背部打平。', '將槓拉向下肋骨處。', '控制放下回到起始位置。'], array['Avoid using momentum — pull with your back, not a swing.'], array['避免借力擺盪，靠背部肌肉發力拉起。']),
@@ -6834,7 +6864,7 @@ values
 ('assisted-pull-up', 'Assisted Pull-up', '輔助引體向上', array['lats', 'biceps'], array['assisted_machine'], array['large_gym'], array['Kneel or stand on the platform, choose the assistance weight, and grip the bars.', 'Pull yourself up until your chin clears the bar.', 'Lower with control to straight arms.'], array['跪或站在踏板上，設定輔助重量並握住把手。', '將身體拉起，直到下巴超過橫桿。', '控制放下至手臂伸直。'], array['Reduce the assistance over time until you can do it unassisted.'], array['逐漸減少輔助重量，直到能獨立完成。']),
 ('weighted-pull-up', 'Weighted Pull-up', '負重引體向上', array['lats', 'biceps'], array['pull_up_bar'], array['large_gym', 'small_gym', 'garage_gym'], array['Attach weight to a belt, hang from the bar with hands wider than shoulders.', 'Pull up until your chin clears the bar.', 'Lower with control to a full hang.'], array['以腰帶掛上負重，雙手寬於肩懸掛在單槓上。', '拉起身體，直到下巴超過單槓。', '控制放下回到完全懸掛。'], array['Only add weight once you can do 10 strict bodyweight pull-ups.'], array['能標準完成10下徒手引體向上後再加重。']),
 ('chin-up', 'Chin-up', '反手引體向上', array['biceps', 'lats'], array['pull_up_bar'], array['large_gym', 'small_gym', 'garage_gym'], array['Hang from a bar, palms facing you, hands shoulder-width.', 'Pull yourself up until your chin clears the bar.', 'Lower back down with control.'], array['雙手掌心朝自己，與肩同寬，懸掛於單槓上。', '將身體拉起，直到下巴超過單槓。', '控制放下。'], array['Emphasizes biceps more than a standard pull-up.'], array['比一般引體向上更加強化二頭肌。']),
-('shrug', 'Barbell Shrug', '槓鈴聳肩', array['upper_back', 'forearms'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a barbell in front of your thighs, arms straight.', 'Lift your shoulders straight up toward your ears.', 'Pause, then lower slowly.'], array['雙手持槓於大腿前方，手臂伸直。', '將肩膀直直向上聳向耳朵。', '停頓後緩慢放下。'], array['Move straight up and down — don''t roll your shoulders.'], array['上下垂直移動，不要轉動肩膀。']),
+('shrug', 'Barbell Shrug', '槓鈴聳肩', array['traps', 'forearms'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a barbell in front of your thighs, arms straight.', 'Lift your shoulders straight up toward your ears.', 'Pause, then lower slowly.'], array['雙手持槓於大腿前方，手臂伸直。', '將肩膀直直向上聳向耳朵。', '停頓後緩慢放下。'], array['Move straight up and down — don''t roll your shoulders.'], array['上下垂直移動，不要轉動肩膀。']),
 ('squat', 'Squat', '槓鈴後蹲舉', array['quads', 'glutes', 'core'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Set the bar across your upper back, feet shoulder-width.', 'Bend your knees and hips to squat until thighs are parallel.', 'Drive through your heels to stand back up.'], array['將槓鈴置於上背，雙腳與肩同寬。', '屈膝屈髖蹲下，直到大腿與地面平行。', '用腳跟發力站起。'], array['Brace your core hard before descending.'], array['下蹲前先繃緊核心。']),
 ('front-squat', 'Front Squat', '槓鈴前蹲舉', array['quads', 'core', 'glutes'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Rest the bar across the front of your shoulders, elbows high.', 'Squat down keeping your torso upright.', 'Drive up through your heels to standing.'], array['將槓鈴置於前肩，手肘抬高。', '蹲下同時保持軀幹直立。', '用腳跟發力站起。'], array['A more upright torso protects your lower back.'], array['軀幹越直立，越能保護下背部。']),
 ('hack-squat', 'Hack Squat', '哈克深蹲', array['quads', 'glutes'], array['hack_squat_machine'], array['large_gym'], array['Place your back on the pad and feet shoulder-width on the platform.', 'Lower until your thighs are parallel or lower.', 'Press through your whole foot to stand back up.'], array['背靠椅墊，雙腳與肩同寬踩在踏板上。', '下蹲至大腿與地面平行或更低。', '用整個腳掌發力站起。'], array['Feet lower on the platform emphasize the quads more.'], array['雙腳踩得越低，股四頭肌參與越多。']),
@@ -6881,7 +6911,7 @@ values
 ('machine-shoulder-press', 'Machine Shoulder Press', '坐姿肩推機', array['shoulders', 'triceps'], array['shoulder_press_machine'], array['large_gym'], array['Sit in the machine, grips at shoulder height.', 'Press the handles up until arms extend.', 'Lower back down with control.'], array['坐在機台上，把手位於肩膀高度。', '將把手向上推至手臂伸直。', '控制放下。'], array['Keep your back against the pad throughout.'], array['背部全程貼緊椅背。']),
 ('standing-dumbbell-press', 'Standing Dumbbell Press', '站姿啞鈴肩推', array['shoulders', 'triceps', 'core'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand tall holding dumbbells at shoulder height.', 'Press both overhead until your arms are straight.', 'Lower back to your shoulders.'], array['站直，雙手持啞鈴於肩膀高度。', '將雙手同時推過頭頂至手臂伸直。', '放回肩膀高度。'], array['Squeeze your glutes to avoid leaning back.'], array['夾緊臀部，避免身體後仰。']),
 ('push-press', 'Push Press', '推舉', array['shoulders', 'triceps', 'quads'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a bar at shoulder height, feet shoulder-width.', 'Dip slightly at the knees, then drive up explosively.', 'Use that momentum to press the bar overhead and lower it back.'], array['將槓置於肩膀高度，雙腳與肩同寬。', '膝蓋微蹲後爆發向上。', '借助這股力量將槓推過頭頂，再放回。'], array['The power comes from your legs — keep the dip short and quick.'], array['力量來自雙腿，下蹲幅度要短而快。']),
-('machine-lateral-raise', 'Machine Lateral Raise', '器械側平舉', array['shoulders', 'upper_back'], array['lateral_raise_machine'], array['large_gym'], array['Sit with your arms against the pads and your elbows just below shoulder height.', 'Raise your arms out to the sides until they reach shoulder height.', 'Lower slowly.'], array['坐好，手臂靠住護墊，手肘略低於肩膀高度。', '向兩側抬起手臂至肩膀高度。', '緩慢放下。'], array['Push through your elbows, not your hands.'], array['用手肘推動，而不是手掌。']),
+('machine-lateral-raise', 'Machine Lateral Raise', '器械側平舉', array['middle_delts', 'upper_back'], array['lateral_raise_machine'], array['large_gym'], array['Sit with your arms against the pads and your elbows just below shoulder height.', 'Raise your arms out to the sides until they reach shoulder height.', 'Lower slowly.'], array['坐好，手臂靠住護墊，手肘略低於肩膀高度。', '向兩側抬起手臂至肩膀高度。', '緩慢放下。'], array['Push through your elbows, not your hands.'], array['用手肘推動，而不是手掌。']),
 ('cable-front-raise', 'Cable Front Raise', '滑輪前平舉', array['shoulders', 'chest'], array['cable_machine'], array['large_gym', 'small_gym'], array['Stand facing away from a low pulley, handle in one hand between your legs.', 'Raise your arm straight forward to shoulder height.', 'Lower slowly.'], array['背對低位滑輪站立，一手握著從雙腿間穿過的把手。', '將手臂向前平舉至肩膀高度。', '緩慢放下。'], array['Keep your torso still and your arm nearly straight.'], array['軀幹保持不動，手臂接近伸直。']),
 ('plate-front-raise', 'Plate Front Raise', '槓片前平舉', array['shoulders', 'chest'], array['plates'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a weight plate at the sides with both hands, arms straight.', 'Raise the plate forward to eye level.', 'Lower slowly.'], array['雙手握住槓片兩側，手臂伸直。', '將槓片向前抬至眼睛高度。', '緩慢放下。'], array['Don''t lean back to lift it — use a lighter plate if you do.'], array['不要靠後仰借力，若會後仰請換較輕的槓片。']),
 ('bent-over-rear-delt-raise', 'Bent-Over Rear Delt Raise', '俯身後三角側平舉', array['rear_delts', 'upper_back'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Hinge forward with a flat back holding light dumbbells under your chest.', 'Raise your arms out to the sides, elbows slightly bent.', 'Lower with control.'], array['身體前傾、背部打平，雙手持輕啞鈴垂在胸口下方。', '手肘微彎，將雙臂向兩側抬起。', '控制放下。'], array['Light weights work best for the small rear delts.'], array['後三角肌較小，使用輕重量效果最好。']),
@@ -6896,7 +6926,7 @@ values
 ('weighted-chin-up', 'Weighted Chin-up', '負重反握引體向上', array['biceps', 'lats'], array['pull_up_bar'], array['large_gym', 'small_gym', 'garage_gym'], array['Attach weight to a belt and hang from the bar with an underhand grip.', 'Pull up until your chin clears the bar.', 'Lower to a full hang.'], array['以腰帶掛上負重，反手握住單槓懸吊。', '拉起身體，直到下巴超過單槓。', '放下回到完全懸掛。'], array['Keep your body still — no kipping.'], array['身體保持穩定，不要甩動借力。']),
 ('rack-pull', 'Rack Pull', '架上硬舉', array['back', 'glutes', 'hamstrings'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Set the bar on safety pins at knee height and grip it just outside your legs.', 'Keeping your back flat, drive your hips forward to stand tall.', 'Lower the bar back to the pins with control.'], array['將槓放在膝蓋高度的安全栓上，握距略寬於雙腿。', '背部保持平直，推髖向前站直。', '控制將槓放回安全栓。'], array['Squeeze your shoulder blades at the top.'], array['頂端時夾緊肩胛。']),
 ('back-extension', 'Back Extension', '背部伸展', array['lower_back', 'glutes', 'hamstrings'], array['back_extension_bench'], array['large_gym'], array['Set the pad below your hips and cross your arms over your chest.', 'Lower your torso by hinging at the hips.', 'Raise back up until your body is in a straight line.'], array['將護墊調至髖部下方，雙手交叉放在胸前。', '以髖部為軸下放上身。', '抬起至身體呈一直線。'], array['Don''t hyperextend past a straight line.'], array['不要過度後仰超過身體一直線。']),
-('dumbbell-shrug', 'Dumbbell Shrug', '啞鈴聳肩', array['upper_back', 'forearms'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand holding a dumbbell in each hand at your sides.', 'Lift your shoulders straight up toward your ears.', 'Pause, then lower slowly.'], array['站立，雙手各持一顆啞鈴垂於身側。', '將肩膀直直向上聳向耳朵。', '停頓後緩慢放下。'], array['Keep your arms straight and don''t roll your shoulders.'], array['手臂保持伸直，不要轉動肩膀。']),
+('dumbbell-shrug', 'Dumbbell Shrug', '啞鈴聳肩', array['traps', 'forearms'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand holding a dumbbell in each hand at your sides.', 'Lift your shoulders straight up toward your ears.', 'Pause, then lower slowly.'], array['站立，雙手各持一顆啞鈴垂於身側。', '將肩膀直直向上聳向耳朵。', '停頓後緩慢放下。'], array['Keep your arms straight and don''t roll your shoulders.'], array['手臂保持伸直，不要轉動肩膀。']),
 ('goblet-squat', 'Goblet Squat', '啞鈴高腳杯深蹲', array['quads', 'glutes', 'core'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold one dumbbell vertically against your chest.', 'Squat down between your knees, keeping your torso upright.', 'Drive through your heels to stand back up.'], array['雙手於胸前直立握持一顆啞鈴。', '蹲下時讓身體在雙膝間下降，軀幹保持直立。', '用腳跟發力站起。'], array['Keep your elbows pointed down toward the floor.'], array['手肘朝下方向，貼近身體。']),
 ('smith-machine-squat', 'Smith Machine Squat', '史密斯機深蹲', array['quads', 'glutes', 'core'], array['smith_machine'], array['large_gym', 'small_gym'], array['Set the bar across your upper back, feet slightly forward.', 'Squat down until thighs are parallel to the floor.', 'Drive through your heels to stand back up.'], array['將槓置於上背，雙腳略往前站。', '蹲下直到大腿與地面平行。', '用腳跟發力站起。'], array['The fixed bar path makes this a good beginner squat option.'], array['固定軌道的槓桿設計，適合初學者練習深蹲。']),
 ('belt-squat', 'Belt Squat', '腰帶深蹲', array['quads', 'glutes'], array['hack_squat_machine'], array['large_gym'], array['Attach the belt and stand on the platforms with the weight hanging below your hips.', 'Squat down until your thighs are parallel to the floor.', 'Drive up to standing.'], array['穿上腰帶，站在踏板上，讓重量垂在髖部下方。', '下蹲至大腿與地面平行。', '發力站起。'], array['Loads your legs without loading your spine.'], array['能訓練腿部，同時不對脊椎施加壓力。']),
@@ -6908,7 +6938,7 @@ values
 ('reverse-lunge', 'Reverse Lunge', '後跨步蹲', array['quads', 'glutes', 'hamstrings'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand tall, step one foot backward into a lunge.', 'Lower until both knees form roughly 90 degrees.', 'Push through the front foot to return to standing.'], array['站直，單腳向後跨步蹲下。', '下降至雙膝約呈90度。', '用前腳發力站回起始位置。'], array['Easier on the knees than a forward lunge for most people.'], array['對大多數人來說，比向前弓箭步更輕鬆對待膝蓋。']),
 ('split-squat', 'Split Squat', '分腿蹲', array['quads', 'glutes', 'core'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand in a long stride with dumbbells at your sides.', 'Lower straight down until your back knee nearly touches the floor.', 'Drive through your front heel to stand.'], array['前後大步站立，雙手持啞鈴垂於身側。', '垂直下蹲，直到後膝接近地面。', '用前腳腳跟發力站起。'], array['Keep your torso upright.'], array['上身保持直立。']),
 ('cable-kickback', 'Cable Kickback', '滑輪後踢', array['glutes', 'hamstrings'], array['cable_machine'], array['large_gym', 'small_gym'], array['Attach an ankle strap to a low pulley and face the machine, holding on for balance.', 'Kick your working leg straight back, squeezing your glute.', 'Return slowly.'], array['將踝帶接在低位滑輪，面向機台並扶住穩住身體。', '將工作腿向後踢直，夾緊臀部。', '緩慢放回。'], array['Don''t arch your lower back to kick higher.'], array['不要為了踢更高而拱下背。']),
-('hip-abduction-machine', 'Hip Abduction Machine', '髖外展機', array['glutes', 'core'], array['hip_machine'], array['large_gym'], array['Sit in the machine, outer thighs against the pads.', 'Push your legs outward against the resistance.', 'Return with control to the start.'], array['坐在機台上，大腿外側靠著滾墊。', '將雙腿向外側推開對抗阻力。', '控制回到起始位置。'], array['Keep your torso still — the legs do all the work.'], array['軀幹保持穩定，全靠雙腿發力。']),
+('hip-abduction-machine', 'Hip Abduction Machine', '髖外展機', array['abductors', 'glutes', 'core'], array['hip_machine'], array['large_gym'], array['Sit in the machine, outer thighs against the pads.', 'Push your legs outward against the resistance.', 'Return with control to the start.'], array['坐在機台上，大腿外側靠著滾墊。', '將雙腿向外側推開對抗阻力。', '控制回到起始位置。'], array['Keep your torso still — the legs do all the work.'], array['軀幹保持穩定，全靠雙腿發力。']),
 ('single-leg-glute-bridge', 'Single-Leg Glute Bridge', '單腳臀橋', array['glutes', 'hamstrings'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your back, one knee bent, other leg extended straight.', 'Drive through the planted heel to lift your hips.', 'Lower with control, then repeat on the other side.'], array['仰躺，一腳屈膝，另一腳伸直。', '用著地那隻腳的腳跟發力抬起髖部。', '控制放下，換邊重複。'], array['Keep hips level — avoid rotating toward the lifted leg.'], array['保持髖部水平，避免朝伸直腳那側旋轉。']),
 ('barbell-glute-bridge', 'Barbell Glute Bridge', '槓鈴臀橋', array['glutes', 'hamstrings', 'core'], array['barbell'], array['large_gym', 'small_gym', 'garage_gym'], array['Lie on your back with a barbell across your hips (use a pad).', 'Drive through your heels to lift your hips until your body is straight.', 'Lower slowly.'], array['仰躺，將槓鈴（加護墊）放在髖部上方。', '用腳跟發力抬起髖部，直到身體呈一直線。', '緩慢放下。'], array['Squeeze your glutes hard at the top.'], array['頂端時用力夾緊臀部。']),
 ('dumbbell-glute-bridge', 'Dumbbell Glute Bridge', '啞鈴臀橋', array['glutes', 'hamstrings', 'core'], array['dumbbells'], array['large_gym', 'small_gym', 'garage_gym'], array['Lie on your back with a dumbbell across your hips.', 'Drive through your heels to lift your hips.', 'Lower with control.'], array['仰躺，將啞鈴放在髖部上方。', '用腳跟發力抬起髖部。', '控制放下。'], array['Pause for a second at the top.'], array['頂端停頓一秒。']),
@@ -6919,7 +6949,7 @@ values
 ('kettlebell-romanian-deadlift', 'Kettlebell Romanian Deadlift', '壺鈴羅馬尼亞硬舉', array['hamstrings', 'glutes', 'lower_back'], array['kettlebell'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a kettlebell with both hands in front of your thighs.', 'Hinge at the hips, lowering it along your legs.', 'Drive your hips forward to stand tall.'], array['雙手握壺鈴於大腿前方。', '髖部後推，讓壺鈴沿腿部下放。', '推髖向前站直。'], array['Keep your back flat and shoulders back.'], array['背部保持平直，肩膀向後。']),
 ('cable-pull-through', 'Cable Pull-Through', '滑輪拉穿', array['glutes', 'hamstrings', 'lower_back'], array['cable_machine'], array['large_gym', 'small_gym'], array['Face away from a low pulley with the rope between your legs, hips hinged back.', 'Drive your hips forward to stand tall, squeezing your glutes.', 'Hinge back to return.'], array['背對低位滑輪，繩索從雙腿間穿過，髖部後推。', '推髖向前站直，夾緊臀部。', '髖部後推回到起始位置。'], array['Use your hips, not your arms, to move the weight.'], array['用髖部而不是手臂移動重量。']),
 ('machine-glute-kickback', 'Machine Glute Kickback', '器械臀部後踢', array['glutes', 'hamstrings'], array['hip_machine'], array['large_gym'], array['Set up on the machine with the pad against your heel or back of the thigh.', 'Press your leg back until it''s extended.', 'Return slowly.'], array['在機台上就位，護墊貼住腳跟或大腿後側。', '將腿向後蹬直。', '緩慢放回。'], array['Keep your torso still and squeeze at the end of the push.'], array['軀幹保持穩定，蹬到底時夾緊臀部。']),
-('cable-standing-hip-abduction', 'Cable Standing Hip Abduction', '滑輪站姿髖外展', array['glutes', 'core'], array['cable_machine'], array['large_gym', 'small_gym'], array['Attach an ankle strap to a low pulley and stand sideways to the machine.', 'Raise the outer leg out to the side.', 'Return slowly.'], array['將踝帶接在低位滑輪，側身站在機台旁。', '將外側腿向側邊抬起。', '緩慢放回。'], array['Keep your torso upright — don''t lean to lift higher.'], array['上身保持直立，不要為了抬更高而傾斜。']),
+('cable-standing-hip-abduction', 'Cable Standing Hip Abduction', '滑輪站姿髖外展', array['abductors', 'glutes', 'core'], array['cable_machine'], array['large_gym', 'small_gym'], array['Attach an ankle strap to a low pulley and stand sideways to the machine.', 'Raise the outer leg out to the side.', 'Return slowly.'], array['將踝帶接在低位滑輪，側身站在機台旁。', '將外側腿向側邊抬起。', '緩慢放回。'], array['Keep your torso upright — don''t lean to lift higher.'], array['上身保持直立，不要為了抬更高而傾斜。']),
 ('cable-standing-hip-adduction', 'Cable Standing Hip Adduction', '滑輪站姿髖內收', array['inner_thighs', 'core', 'glutes'], array['cable_machine'], array['large_gym', 'small_gym'], array['Attach an ankle strap to a low pulley and stand sideways with the near leg attached.', 'Pull that leg across in front of your other leg.', 'Return slowly.'], array['將踝帶接在低位滑輪，側身站立，靠近機台的腿繫上踝帶。', '將該腿向內橫跨至另一腿前方。', '緩慢放回。'], array['Hold something for balance and keep the movement controlled.'], array['扶住穩固物體維持平衡，動作保持控制。']),
 ('hip-adduction-machine', 'Hip Adduction Machine', '髖內收機', array['inner_thighs', 'core'], array['hip_machine'], array['large_gym'], array['Sit in the machine, inner thighs against the pads.', 'Squeeze your legs together against the resistance.', 'Return with control to the start.'], array['坐在機台上，大腿內側靠著滾墊。', '將雙腿向內夾緊對抗阻力。', '控制回到起始位置。'], array['Move through a controlled, moderate range.'], array['動作範圍適中且全程控制。']),
 ('smith-machine-bulgarian-split-squat', 'Smith Machine Bulgarian Split Squat', '史密斯機保加利亞分腿蹲', array['quads', 'glutes', 'core'], array['smith_machine'], array['large_gym', 'small_gym'], array['Rest your back foot on a bench behind you with the smith bar on your shoulders.', 'Lower until your front thigh is parallel to the floor.', 'Drive through your front heel to stand.'], array['後腳放在身後的訓練椅上，史密斯機的槓放在肩上。', '下蹲至前腿大腿與地面平行。', '用前腳腳跟發力站起。'], array['Set your front foot far enough forward to keep your knee over your ankle.'], array['前腳跨遠一些，讓膝蓋保持在腳踝上方。']),
@@ -7027,25 +7057,25 @@ values
 ('glute-bridge-march', 'Glute Bridge March', '臀橋抬腿踏步', array['glutes', 'hamstrings', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your back and lift into a glute bridge.', 'Lift one foot off the floor, then switch.', 'Keep your hips level as you march.'], array['仰躺並抬起成臀橋姿勢。', '抬起一隻腳離地，然後換腳。', '踏步時保持髖部水平。'], array['Don''t let your hips drop on the lifted side.'], array['抬腳側的髖部不要下沉。']),
 ('frog-pump', 'Frog Pump', '青蛙臀推', array['glutes', 'hamstrings'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your back with the soles of your feet together and knees out wide.', 'Drive your hips up by squeezing your glutes.', 'Lower slowly.'], array['仰躺，雙腳腳掌相對，膝蓋向外打開。', '夾緊臀部將髖部向上推。', '緩慢放下。'], array['Use higher reps for a strong burn.'], array['使用較高次數可獲得強烈燃燒感。']),
 ('donkey-kick', 'Donkey Kick', '驢子後踢', array['glutes', 'hamstrings', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Start on hands and knees with a flat back.', 'Kick one leg back and up, knee bent at 90 degrees.', 'Lower and repeat, then switch legs.'], array['四足跪姿，背部保持平直。', '將一腿向後向上踢，膝蓋維持90度。', '放下並重複，之後換腳。'], array['Don''t arch your lower back to lift higher.'], array['不要為了抬更高而拱下背。']),
-('fire-hydrant', 'Fire Hydrant', '消防栓式', array['glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Start on hands and knees.', 'Lift one knee out to the side, keeping it bent.', 'Lower and repeat, then switch legs.'], array['四足跪姿開始。', '將一側膝蓋向外側抬起並保持彎曲。', '放下並重複，之後換腳。'], array['Keep your torso still — only your hip moves.'], array['軀幹保持穩定，只有髖部在動。']),
-('clamshell', 'Clamshell', '蚌殼式', array['glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your side with knees bent and feet together.', 'Open your top knee like a clamshell without moving your pelvis.', 'Lower slowly.'], array['側躺，屈膝，雙腳併攏。', '骨盆不動，像蚌殼一樣打開上方膝蓋。', '緩慢放下。'], array['Don''t roll your hips back.'], array['髖部不要向後翻。']),
+('fire-hydrant', 'Fire Hydrant', '消防栓式', array['abductors', 'glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Start on hands and knees.', 'Lift one knee out to the side, keeping it bent.', 'Lower and repeat, then switch legs.'], array['四足跪姿開始。', '將一側膝蓋向外側抬起並保持彎曲。', '放下並重複，之後換腳。'], array['Keep your torso still — only your hip moves.'], array['軀幹保持穩定，只有髖部在動。']),
+('clamshell', 'Clamshell', '蚌殼式', array['abductors', 'glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your side with knees bent and feet together.', 'Open your top knee like a clamshell without moving your pelvis.', 'Lower slowly.'], array['側躺，屈膝，雙腳併攏。', '骨盆不動，像蚌殼一樣打開上方膝蓋。', '緩慢放下。'], array['Don''t roll your hips back.'], array['髖部不要向後翻。']),
 ('hip-airplane', 'Hip Airplane', '髖部飛機式', array['glutes', 'hamstrings', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Stand on one leg and hinge forward, the other leg extended back.', 'Rotate your hips open, then closed, like airplane wings.', 'Return to standing.'], array['單腳站立，身體前傾，另一腿向後伸直。', '將髖部向外打開再關閉，像飛機機翼一樣。', '回到站姿。'], array['Hold a wall lightly if you need balance.'], array['需要平衡時可輕扶牆壁。']),
-('side-lying-hip-abduction', 'Side-Lying Hip Abduction', '側躺髖外展', array['glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your side with legs straight and stacked.', 'Lift your top leg toward the ceiling.', 'Lower slowly.'], array['側躺，雙腿伸直疊放。', '將上方腿向天花板抬起。', '緩慢放下。'], array['Keep your toes pointing forward.'], array['腳尖保持朝前。']),
-('side-lying-leg-raise', 'Side-Lying Leg Raise', '側躺抬腿', array['glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your side with your bottom arm supporting your head.', 'Raise your top leg with control.', 'Lower without letting your hips rock back.'], array['側躺，下方手臂撐住頭部。', '有控制地抬起上方腿。', '放下時髖部不要向後晃動。'], array['Move slowly rather than lifting as high as possible.'], array['放慢速度比抬到最高更重要。']),
+('side-lying-hip-abduction', 'Side-Lying Hip Abduction', '側躺髖外展', array['abductors', 'glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your side with legs straight and stacked.', 'Lift your top leg toward the ceiling.', 'Lower slowly.'], array['側躺，雙腿伸直疊放。', '將上方腿向天花板抬起。', '緩慢放下。'], array['Keep your toes pointing forward.'], array['腳尖保持朝前。']),
+('side-lying-leg-raise', 'Side-Lying Leg Raise', '側躺抬腿', array['abductors', 'glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your side with your bottom arm supporting your head.', 'Raise your top leg with control.', 'Lower without letting your hips rock back.'], array['側躺，下方手臂撐住頭部。', '有控制地抬起上方腿。', '放下時髖部不要向後晃動。'], array['Move slowly rather than lifting as high as possible.'], array['放慢速度比抬到最高更重要。']),
 ('lying-hamstring-walkout', 'Lying Hamstring Walkout', '仰臥腿後側滑行', array['hamstrings', 'glutes', 'core'], array[]::text[], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your back in a glute bridge.', 'Walk your feet out away from you while keeping your hips up.', 'Walk them back in.'], array['仰躺成臀橋姿勢。', '保持髖部抬高，將雙腳向外走遠。', '再走回來。'], array['Only go as far as you can control.'], array['只走到自己能控制的距離。']),
 ('towel-hamstring-curl', 'Towel Hamstring Curl', '毛巾腿彎舉', array['hamstrings', 'glutes', 'core'], array['towel'], array['large_gym', 'small_gym', 'garage_gym', 'bodyweight_only'], array['Lie on your back with your heels on towels on a smooth floor and hips lifted.', 'Slide your heels away, then curl them back in.', 'Keep your hips high.'], array['仰躺，雙腳腳跟放在光滑地板上的毛巾上，髖部抬起。', '將腳跟向外滑出，再彎收回來。', '髖部保持抬高。'], array['Slow controlled reps are harder than they look.'], array['慢而有控制的動作比看起來更困難。']),
 ('stability-ball-hamstring-curl', 'Stability Ball Hamstring Curl', '瑞士球腿彎舉', array['hamstrings', 'glutes', 'core'], array['stability_ball'], array['large_gym'], array['Lie on your back with your heels on a stability ball and hips lifted.', 'Roll the ball toward your glutes.', 'Roll it back out slowly.'], array['仰躺，雙腳腳跟放在瑞士球上，髖部抬起。', '將球滾向臀部。', '緩慢滾回。'], array['Keep your hips lifted throughout.'], array['全程保持髖部抬高。']),
 ('banded-glute-bridge', 'Banded Glute Bridge', '彈力帶臀橋', array['glutes', 'hamstrings', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Lie on your back with a band above your knees.', 'Drive your hips up while pushing your knees out against the band.', 'Lower slowly.'], array['仰躺，膝蓋上方套上彈力帶。', '抬起髖部，同時將膝蓋向外撐開對抗彈力帶。', '緩慢放下。'], array['Keep tension on the band the whole time.'], array['全程保持彈力帶的張力。']),
 ('banded-hip-thrust', 'Banded Hip Thrust', '彈力帶臀推', array['glutes', 'hamstrings', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Sit with your upper back on a bench and a band above your knees.', 'Thrust your hips up and push your knees out.', 'Lower with control.'], array['上背靠在椅上，膝蓋上方套上彈力帶。', '向上推髖並將膝蓋向外撐開。', '控制放下。'], array['Squeeze your glutes hard at the top.'], array['頂端時用力夾緊臀部。']),
-('banded-clamshell', 'Banded Clamshell', '彈力帶蚌殼式', array['glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Lie on your side with a band above your knees, feet together.', 'Open your top knee against the band.', 'Lower slowly.'], array['側躺，膝蓋上方套彈力帶，雙腳併攏。', '對抗彈力帶打開上方膝蓋。', '緩慢放下。'], array['Keep your pelvis stable.'], array['骨盆保持穩定。']),
-('banded-lateral-walk', 'Banded Lateral Walk', '彈力帶側走', array['glutes', 'quads', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Place a loop band around your legs above the knees.', 'Bend your knees slightly and step sideways.', 'Take several steps in one direction, then reverse.'], array['將環狀彈力帶套在膝蓋上方。', '微屈膝，向側邊跨步。', '朝一個方向走數步後，反方向走回。'], array['Keep tension on the band throughout — don''t let your feet drift together.'], array['全程保持彈力帶張力，避免雙腳靠攏。']),
-('banded-monster-walk', 'Banded Monster Walk', '彈力帶怪物走', array['glutes', 'quads', 'hamstrings', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Place a band around your ankles or above your knees and bend your knees slightly.', 'Step out to the side, keeping tension on the band.', 'Step the other foot in without letting it slacken.'], array['將彈力帶套在腳踝或膝蓋上方，膝蓋微彎。', '向側邊跨步，保持彈力帶張力。', '另一腳跟上，不要讓彈力帶鬆掉。'], array['Stay low and keep your toes pointing forward.'], array['身體保持低姿，腳尖朝前。']),
+('banded-clamshell', 'Banded Clamshell', '彈力帶蚌殼式', array['abductors', 'glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Lie on your side with a band above your knees, feet together.', 'Open your top knee against the band.', 'Lower slowly.'], array['側躺，膝蓋上方套彈力帶，雙腳併攏。', '對抗彈力帶打開上方膝蓋。', '緩慢放下。'], array['Keep your pelvis stable.'], array['骨盆保持穩定。']),
+('banded-lateral-walk', 'Banded Lateral Walk', '彈力帶側走', array['abductors', 'glutes', 'quads', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Place a loop band around your legs above the knees.', 'Bend your knees slightly and step sideways.', 'Take several steps in one direction, then reverse.'], array['將環狀彈力帶套在膝蓋上方。', '微屈膝，向側邊跨步。', '朝一個方向走數步後，反方向走回。'], array['Keep tension on the band throughout — don''t let your feet drift together.'], array['全程保持彈力帶張力，避免雙腳靠攏。']),
+('banded-monster-walk', 'Banded Monster Walk', '彈力帶怪物走', array['abductors', 'glutes', 'quads', 'hamstrings', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Place a band around your ankles or above your knees and bend your knees slightly.', 'Step out to the side, keeping tension on the band.', 'Step the other foot in without letting it slacken.'], array['將彈力帶套在腳踝或膝蓋上方，膝蓋微彎。', '向側邊跨步，保持彈力帶張力。', '另一腳跟上，不要讓彈力帶鬆掉。'], array['Stay low and keep your toes pointing forward.'], array['身體保持低姿，腳尖朝前。']),
 ('banded-squat', 'Banded Squat', '彈力帶深蹲', array['quads', 'glutes', 'hamstrings', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand on the band, hold the handles at shoulder height.', 'Squat down until thighs are near parallel to the floor.', 'Drive through your heels to stand back up.'], array['雙腳踩住彈力帶，雙手握把手於肩膀高度。', '蹲下直到大腿接近與地面平行。', '用腳跟發力站起。'], array['The band adds resistance that increases as you stand up.'], array['彈力帶阻力會隨站起而增加。']),
 ('banded-donkey-kick', 'Banded Donkey Kick', '彈力帶驢子後踢', array['glutes', 'hamstrings', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Start on hands and knees with a band around your feet or above your knees.', 'Kick one leg back and up against the band.', 'Lower and repeat.'], array['四足跪姿，彈力帶套在腳上或膝蓋上方。', '對抗彈力帶將一腿向後向上踢。', '放下並重複。'], array['Keep your hips square to the floor.'], array['髖部保持正對地面。']),
-('banded-fire-hydrant', 'Banded Fire Hydrant', '彈力帶消防栓式', array['glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Start on hands and knees with a band above your knees.', 'Lift one knee out to the side against the band.', 'Lower and repeat.'], array['四足跪姿，膝蓋上方套彈力帶。', '對抗彈力帶將一側膝蓋向外抬起。', '放下並重複。'], array['Keep your torso still.'], array['軀幹保持穩定。']),
+('banded-fire-hydrant', 'Banded Fire Hydrant', '彈力帶消防栓式', array['abductors', 'glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Start on hands and knees with a band above your knees.', 'Lift one knee out to the side against the band.', 'Lower and repeat.'], array['四足跪姿，膝蓋上方套彈力帶。', '對抗彈力帶將一側膝蓋向外抬起。', '放下並重複。'], array['Keep your torso still.'], array['軀幹保持穩定。']),
 ('banded-kickback', 'Banded Kickback', '彈力帶後踢', array['glutes', 'hamstrings', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Anchor a band low and loop it around one ankle, holding a support.', 'Kick the leg straight back, squeezing your glute.', 'Return slowly.'], array['將彈力帶固定在低處並套在一側腳踝，手扶支撐物。', '將腿向後踢直並夾緊臀部。', '緩慢放回。'], array['Don''t lean forward to gain range.'], array['不要靠前傾來增加幅度。']),
-('banded-standing-hip-abduction', 'Banded Standing Hip Abduction', '彈力帶站姿髖外展', array['glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand with a band around your ankles or above your knees.', 'Lift one leg out to the side against the band.', 'Return slowly.'], array['站立，彈力帶套在腳踝或膝蓋上方。', '對抗彈力帶將一腿向側邊抬起。', '緩慢放回。'], array['Keep your torso upright.'], array['上身保持直立。']),
-('banded-seated-hip-abduction', 'Banded Seated Hip Abduction', '彈力帶坐姿髖外展', array['glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Sit on a chair with a band above your knees.', 'Push your knees apart against the band.', 'Bring them back slowly.'], array['坐在椅子上，膝蓋上方套彈力帶。', '對抗彈力帶將雙膝向外打開。', '緩慢收回。'], array['Sit tall and squeeze at the end range.'], array['坐挺，在最大幅度時用力。']),
+('banded-standing-hip-abduction', 'Banded Standing Hip Abduction', '彈力帶站姿髖外展', array['abductors', 'glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Stand with a band around your ankles or above your knees.', 'Lift one leg out to the side against the band.', 'Return slowly.'], array['站立，彈力帶套在腳踝或膝蓋上方。', '對抗彈力帶將一腿向側邊抬起。', '緩慢放回。'], array['Keep your torso upright.'], array['上身保持直立。']),
+('banded-seated-hip-abduction', 'Banded Seated Hip Abduction', '彈力帶坐姿髖外展', array['abductors', 'glutes', 'core'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Sit on a chair with a band above your knees.', 'Push your knees apart against the band.', 'Bring them back slowly.'], array['坐在椅子上，膝蓋上方套彈力帶。', '對抗彈力帶將雙膝向外打開。', '緩慢收回。'], array['Sit tall and squeeze at the end range.'], array['坐挺，在最大幅度時用力。']),
 ('band-pull-apart', 'Band Pull-Apart', '彈力帶拉開', array['upper_back', 'rear_delts', 'shoulders'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Hold a band with both hands, arms extended in front of you.', 'Pull the band apart by moving your arms out to the sides.', 'Return with control to the start.'], array['雙手握彈力帶，雙臂向前伸直。', '雙臂向外側拉開彈力帶。', '控制放回起始位置。'], array['Keep your arms straight throughout the movement.'], array['全程保持手臂伸直。']),
 ('banded-face-pull', 'Banded Face Pull', '彈力帶面拉', array['upper_back', 'rear_delts', 'shoulders'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Anchor a band at head height and hold both ends with straight arms.', 'Pull toward your face, elbows high and out.', 'Return slowly.'], array['將彈力帶固定在頭部高度，雙手伸直握住兩端。', '手肘抬高外展，將彈力帶拉向臉部。', '緩慢放回。'], array['Squeeze your rear delts at the end.'], array['拉到底時夾緊後三角肌。']),
 ('banded-row', 'Banded Row', '彈力帶划船', array['back', 'biceps', 'upper_back'], array['resistance_bands'], array['large_gym', 'small_gym', 'garage_gym'], array['Anchor the band at chest height, hold an end in each hand.', 'Pull both handles toward your torso, elbows close to your body.', 'Return with control to the start.'], array['將彈力帶固定於胸口高度，雙手各握一端。', '將把手拉向軀幹，手肘貼近身體。', '控制放回起始位置。'], array['Squeeze your shoulder blades together at the end of the pull.'], array['拉到底時夾緊肩胛骨。']),
@@ -7106,3 +7136,23 @@ on conflict (slug) do update set
 
 delete from exercises where slug <> all (array['bench-press', 'incline-bench-press', 'incline-dumbbell-press', 'dumbbell-bench-press', 'decline-bench-press', 'machine-chest-press', 'pec-deck', 'cable-fly', 'push-up', 'weighted-push-up', 'overhead-press', 'seated-dumbbell-press', 'arnold-press', 'lateral-raise', 'cable-lateral-raise', 'front-raise', 'rear-delt-fly', 'reverse-pec-deck', 'face-pull', 'upright-row', 'deadlift', 'romanian-deadlift', 'barbell-row', 't-bar-row', 'dumbbell-bent-over-row', 'one-arm-dumbbell-row', 'chest-supported-row', 'seated-row', 'machine-row', 'lat-pulldown', 'close-grip-lat-pulldown', 'straight-arm-pulldown', 'pull-up', 'assisted-pull-up', 'weighted-pull-up', 'chin-up', 'shrug', 'squat', 'front-squat', 'hack-squat', 'leg-press', 'bulgarian-split-squat', 'walking-lunge', 'step-up', 'leg-extension', 'leg-curl', 'seated-leg-curl', 'hip-thrust', 'glute-bridge', 'good-morning', 'standing-calf-raise', 'seated-calf-raise', 'bicep-curl', 'hammer-curl', 'preacher-curl', 'cable-curl', 'reverse-curl', 'wrist-curl', 'tricep-pushdown', 'overhead-tricep-extension', 'skull-crusher', 'close-grip-bench-press', 'dip', 'assisted-dip', 'plank', 'side-plank', 'hanging-leg-raise', 'cable-crunch', 'ab-wheel', 'running', 'walking', 'cycling', 'rowing', 'stair-climber', 'dumbbell-fly', 'incline-cable-fly', 'decline-dumbbell-press', 'smith-machine-bench-press', 'landmine-press', 'weighted-dip', 'machine-shoulder-press', 'standing-dumbbell-press', 'push-press', 'machine-lateral-raise', 'cable-front-raise', 'plate-front-raise', 'bent-over-rear-delt-raise', 'cable-rear-delt-fly', 'pendlay-row', 'inverted-row', 'meadows-row', 'single-arm-cable-row', 'wide-grip-lat-pulldown', 'neutral-grip-pull-up', 'assisted-chin-up', 'weighted-chin-up', 'rack-pull', 'back-extension', 'dumbbell-shrug', 'goblet-squat', 'smith-machine-squat', 'belt-squat', 'sumo-deadlift', 'trap-bar-deadlift', 'lying-leg-curl', 'nordic-hamstring-curl', 'single-leg-romanian-deadlift', 'reverse-lunge', 'split-squat', 'cable-kickback', 'hip-abduction-machine', 'single-leg-glute-bridge', 'barbell-glute-bridge', 'dumbbell-glute-bridge', 'dumbbell-hip-thrust', 'smith-machine-hip-thrust', 'smith-machine-romanian-deadlift', 'dumbbell-romanian-deadlift', 'kettlebell-romanian-deadlift', 'cable-pull-through', 'machine-glute-kickback', 'cable-standing-hip-abduction', 'cable-standing-hip-adduction', 'hip-adduction-machine', 'smith-machine-bulgarian-split-squat', 'smith-machine-reverse-lunge', 'smith-machine-split-squat', 'heel-elevated-goblet-squat', 'dumbbell-sumo-squat', 'dumbbell-sumo-deadlift', 'front-foot-elevated-split-squat', 'deficit-reverse-lunge', 'dumbbell-lateral-lunge', 'dumbbell-curtsy-lunge', 'landmine-squat', 'landmine-romanian-deadlift', 'kettlebell-swing', 'glute-focused-back-extension', 'reverse-hyperextension', 'leg-press-calf-raise', 'wall-sit', 'jump-squat', 'incline-dumbbell-curl', 'concentration-curl', 'ez-bar-curl', 'spider-curl', 'rope-hammer-curl', 'drag-curl', 'rope-tricep-pushdown', 'dumbbell-skull-crusher', 'single-dumbbell-skullcrusher', 'dumbbell-overhead-tricep-extension', 'single-arm-dumbbell-tricep-extension', 'bench-dip', 'tricep-kickback', 'wrist-extension', 'farmer-carry', 'crunch', 'reverse-crunch', 'russian-twist', 'bicycle-crunch', 'mountain-climber', 'dead-bug', 'bird-dog', 'pallof-press', 'cable-woodchop', 'half-kneeling-pallof-press', 'cable-pallof-hold', 'hanging-knee-raise', 'captains-chair-knee-raise', 'decline-sit-up', 'weighted-crunch', 'weighted-russian-twist', 'dumbbell-side-bend', 'elliptical', 'jump-rope', 'assault-bike', 'skierg', 'treadmill-incline-walk', 'battle-ropes', 'incline-push-up', 'knee-push-up', 'wide-push-up', 'diamond-push-up', 'decline-push-up', 'pike-push-up', 'feet-elevated-pike-push-up', 'archer-push-up', 'typewriter-push-up', 'explosive-push-up', 'hindu-push-up', 'scapular-push-up', 'push-up-shoulder-tap', 'wall-push-up', 'wall-walk', 'wall-handstand-push-up', 'handstand-push-up', 'chair-dip', 'doorway-row', 'towel-row', 'prone-y-raise', 'prone-t-raise', 'superman', 'superman-hold', 'reverse-snow-angel', 'dead-hang', 'active-hang', 'scapular-pull-up', 'negative-pull-up', 'commando-pull-up', 'l-sit-pull-up', 'towel-pull-up', 'bodyweight-squat', 'pistol-squat', 'assisted-pistol-squat', 'shrimp-squat', 'cossack-squat', 'sissy-squat', 'forward-lunge', 'lateral-lunge', 'curtsy-lunge', 'skater-squat', 'single-leg-box-squat', 'step-down', 'calf-raise', 'single-leg-calf-raise', 'glute-bridge-march', 'frog-pump', 'donkey-kick', 'fire-hydrant', 'clamshell', 'hip-airplane', 'side-lying-hip-abduction', 'side-lying-leg-raise', 'lying-hamstring-walkout', 'towel-hamstring-curl', 'stability-ball-hamstring-curl', 'banded-glute-bridge', 'banded-hip-thrust', 'banded-clamshell', 'banded-lateral-walk', 'banded-monster-walk', 'banded-squat', 'banded-donkey-kick', 'banded-fire-hydrant', 'banded-kickback', 'banded-standing-hip-abduction', 'banded-seated-hip-abduction', 'band-pull-apart', 'banded-face-pull', 'banded-row', 'banded-lat-pulldown', 'banded-pallof-press', 'banded-woodchop', 'banded-dead-bug', 'hollow-body-hold', 'hollow-rock', 'v-up', 'flutter-kick', 'lying-leg-raise', 'toe-touch', 'heel-tap', 'plank-shoulder-tap', 'plank-jack', 'bear-plank', 'bear-crawl', 'crab-walk', 'inchworm', 'l-sit-hold', 'seated-knee-tuck', 'side-plank-hip-dip', 'copenhagen-plank', 'dragon-flag', 'burpee', 'half-burpee', 'squat-thrust', 'high-knees', 'jumping-jack', 'skater-hop', 'lateral-shuffle', 'sprawl', 'cat-cow-stretch', 'arm-circles', 'worlds-greatest-stretch', 'leg-swings-stretch', 'torso-twist-stretch', 'doorway-chest-stretch', 'childs-pose', 'kneeling-hip-flexor-stretch', 'hamstring-stretch', 'standing-quad-stretch', 'seated-forward-fold-stretch', 'cross-body-shoulder-stretch', 'wall-calf-stretch', 'butterfly-stretch']);
 -- END ai_plan_exercises
+
+-- Basic plan answers were stored as `beginner`. Rewrite those copies to `basic`.
+-- Beginner stays `no_experience`. `users.experience_level` is already correct
+-- and is not touched. Idempotent: a second run matches no rows.
+-- Run this after the web that writes `basic` is deployed. That web still reads
+-- a leftover `beginner` as Basic.
+update user_onboarding
+set training_preferences = jsonb_set(training_preferences, '{experience}', '"basic"'::jsonb)
+where jsonb_typeof(training_preferences) = 'object'
+  and training_preferences ->> 'experience' = 'beginner';
+
+update user_training_plans
+set onboarding_snapshot = jsonb_set(
+  onboarding_snapshot,
+  '{trainingPreferences,experience}',
+  '"basic"'::jsonb
+)
+where jsonb_typeof(onboarding_snapshot) = 'object'
+  and jsonb_typeof(onboarding_snapshot -> 'trainingPreferences') = 'object'
+  and onboarding_snapshot -> 'trainingPreferences' ->> 'experience' = 'beginner';

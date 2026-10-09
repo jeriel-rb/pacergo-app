@@ -461,6 +461,14 @@
       "experience": {
         "no_experience": "完全新手",
         "beginner": "初學者",
+        "basic": "基礎",
+        "intermediate": "中階",
+        "advanced": "進階"
+      },
+      "planExperience": {
+        "no_experience": "初學者",
+        "beginner": "基礎",
+        "basic": "基礎",
         "intermediate": "中階",
         "advanced": "進階"
       },

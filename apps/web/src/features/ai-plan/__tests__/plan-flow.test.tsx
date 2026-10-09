@@ -14,18 +14,15 @@ vi.mock("next/navigation", () => ({
 
 const saveTrainingPlan = vi.fn();
 const beginPlanGeneration = vi.fn();
+const composeSavedPlan = vi.fn();
 vi.mock("@/lib/plans", () => ({
   saveTrainingPlan: (...a: unknown[]) => saveTrainingPlan(...a),
   beginPlanGeneration: () => beginPlanGeneration(),
+  composeSavedPlan: (...a: unknown[]) => composeSavedPlan(...a),
 }));
 vi.mock("@/lib/exercises", () => ({ fetchAllExercises: vi.fn().mockResolvedValue([]) }));
 vi.mock("@/lib/workout-logs", () => ({
   fetchPlanPerformanceHistory: vi.fn().mockResolvedValue({}),
-}));
-const generateTrainingPlan = vi.fn();
-vi.mock("@pacergo/shared", async (orig) => ({
-  ...(await orig<typeof import("@pacergo/shared")>()),
-  generateTrainingPlan: (...a: unknown[]) => generateTrainingPlan(...a),
 }));
 
 const setSavedPlanId = vi.fn();
@@ -75,9 +72,9 @@ beforeEach(() => {
   push.mockClear();
   saveTrainingPlan.mockReset();
   beginPlanGeneration.mockReset().mockResolvedValue(undefined);
+  composeSavedPlan.mockReset().mockResolvedValue({ weeks: [{ days: [] }] });
   setSavedPlanId.mockClear();
   markStepComplete.mockClear();
-  generateTrainingPlan.mockReset().mockReturnValue({ weeks: [{ days: [] }] });
   pathname = "/en/ai-plan/plan-ready";
   makeStore();
 });
@@ -115,7 +112,7 @@ describe("Plan-ready (setup-complete) screen — not a dead end", () => {
     render(wrap(<PlanReadyView />));
     fireEvent.click(screen.getByRole("button", { name: "Save My Plan" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/en/ai-plan/plan/plan-3"));
-    expect(generateTrainingPlan).toHaveBeenCalledTimes(1);
+    expect(composeSavedPlan).toHaveBeenCalledTimes(1);
   });
 
   it("shows an error and keeps the retry button when saving fails", async () => {

@@ -13,6 +13,7 @@ import type { useWorkoutProgress } from "./use-workout-progress";
 import { isSetDone, setKey, type ExerciseSlot } from "./workout-progress";
 import { SetLogger } from "./set-logger";
 import { useExerciseSummary } from "./exercise-summary";
+import { workoutDayHref } from "@/lib/ai-plan-path";
 import { useExerciseLog } from "./use-exercise-log";
 
 /** Everything the exercise screen needs to track this exercise in its workout. */
@@ -61,7 +62,7 @@ export function SetTracker({
   const logsPerformance = group === "main" && parseRepRange(exercise.reps) !== null;
   const loaded = !["bodyweight", "band"].includes(exerciseModality({ slug: exercise.slug, equipment }));
 
-  const exerciseBase = pathname.replace(/\/exercise\/[^/]+$/, "");
+  const exerciseBase = workoutDayHref(pathname);
   const nextHref = slot.next
     ? `${exerciseBase}/exercise/${slot.next.exercise.slug}?week=${week}&group=${slot.next.group}`
     : `${exerciseBase}?week=${week}`;

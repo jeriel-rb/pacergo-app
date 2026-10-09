@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { kgToLb } from "@pacergo/shared";
+import { aiPlanHref } from "@/lib/ai-plan-path";
 import {
   Activity,
   BarChart3,
@@ -101,7 +103,7 @@ export function FitnessProfileView({
 
   const { dirty, markClean } = useFormDirty({ answers, tp, ge });
   const daysIncomplete = !trainingDaysComplete(tp.daysPerWeek, tp.trainingDays);
-  const nutritionHref = pathname.replace(/\/fitness-profile$/, "/nutrition");
+  const nutritionHref = aiPlanHref(pathname, "/nutrition");
 
   async function onSave() {
     if (!dirty || saving) return;
@@ -152,7 +154,7 @@ export function FitnessProfileView({
           ? `${answers.heightCm} cm · ${answers.weightKg} kg`
           : (() => {
               const totalIn = Math.round(answers.heightCm / 2.54);
-              return `${Math.floor(totalIn / 12)}'${totalIn % 12}" · ${Math.round(answers.weightKg * 2.20462)} lb`;
+              return `${Math.floor(totalIn / 12)}'${totalIn % 12}" · ${Math.round(kgToLb(answers.weightKg))} lb`;
             })()
         : "—",
     goal: answers.goal ? t(`goal.options.${answers.goal}.title`, { ns: "onboarding" }) : "—",

@@ -66,7 +66,7 @@ const everything = (p: ReturnType<typeof plan>) =>
 
 describe("exercise suitability by experience", () => {
   it("never gives advanced-skill moves to beginners or people with no experience", () => {
-    for (const level of ["no_experience", "beginner"] as const) {
+    for (const level of ["no_experience", "basic"] as const) {
       const slugs = everything(plan(level, "full_body")).map((e) => e.slug);
       for (const skill of ADVANCED_SKILL_SLUGS) expect(slugs, `${level}: ${skill}`).not.toContain(skill);
     }
@@ -75,7 +75,7 @@ describe("exercise suitability by experience", () => {
   it("still allows them for advanced lifters", () => {
     expect(suitsExperience("dragon-flag", "advanced")).toBe(true);
     expect(suitsExperience("dragon-flag", "intermediate")).toBe(true);
-    expect(suitsExperience("dragon-flag", "beginner")).toBe(false);
+    expect(suitsExperience("dragon-flag", "basic")).toBe(false);
     expect(suitsExperience("bench-press", "no_experience")).toBe(true);
   });
 });
@@ -131,19 +131,19 @@ describe("difficulty by experience level", () => {
   });
 
   it("starts on machines, and only Basic users may step up to a barbell later", () => {
-    const slugs = (level: "no_experience" | "beginner") =>
+    const slugs = (level: "no_experience" | "basic") =>
       everything(withKit(level, "dynamic")).map((e) => e.slug);
     expect(slugs("no_experience")).toContain("machine-chest-press");
     expect(slugs("no_experience")).not.toContain("bench-press");
-    expect(slugs("beginner")).toContain("machine-chest-press");
-    expect(slugs("beginner")).toContain("bench-press");
+    expect(slugs("basic")).toContain("machine-chest-press");
+    expect(slugs("basic")).toContain("bench-press");
   });
 
   it("uses a pull-up only when a beginner has no easier lat exercise", () => {
     const thin = [rec("push-up", ["chest"]), rec("pike-push-up", ["shoulders"]), rec("pull-up", ["lats"], ["pull_up_bar"])];
     const p = generateTrainingPlan({
       answers: { ...ONBOARDING_ANSWERS_DEFAULT, goal: "build_muscle" },
-      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "beginner", daysPerWeek: "3", trainingDays: [0, 2, 4], workoutSplit: "push_pull_legs", variety: "fixed" },
+      trainingPreferences: { ...TRAINING_PREFERENCES_DEFAULT, experience: "basic", daysPerWeek: "3", trainingDays: [0, 2, 4], workoutSplit: "push_pull_legs", variety: "fixed" },
       gymEquipment: { ...GYM_EQUIPMENT_DEFAULT, gymType: "large_gym", equipment: ["pull_up_bar"] as never, addCardio: false },
       exercises: thin,
     });
@@ -154,18 +154,18 @@ describe("difficulty by experience level", () => {
   });
 
   it("keeps the standing calf raise for a beginner", () => {
-    expect(everything(withKit("beginner", "fixed")).map((e) => e.slug)).toContain("standing-calf-raise");
+    expect(everything(withKit("basic", "fixed")).map((e) => e.slug)).toContain("standing-calf-raise");
   });
 
   it("leads each level with a different kind of lift, not the same list", () => {
     const lead = (level: OnboardingExperience, focus: string) =>
       withKit(level, "fixed").weeks[0]!.days.find((d) => d.session?.focus === focus)!.session!.main[0]!.slug;
-    expect(lead("beginner", "push")).toBe("machine-chest-press");
-    expect(lead("beginner", "legs")).toBe("leg-press");
+    expect(lead("basic", "push")).toBe("machine-chest-press");
+    expect(lead("basic", "legs")).toBe("leg-press");
     expect(lead("intermediate", "push")).toBe("bench-press");
     expect(lead("advanced", "push")).toBe("bench-press");
     expect(lead("advanced", "legs")).toBe("squat");
-    expect(lead("beginner", "push")).not.toBe(lead("advanced", "push"));
+    expect(lead("basic", "push")).not.toBe(lead("advanced", "push"));
   });
 });
 

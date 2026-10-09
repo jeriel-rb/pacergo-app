@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   buildPaymentForm,
   getNewebPayConfig,
@@ -22,6 +23,9 @@ export function getActiveProviderType(): ProviderType {
 
 interface CreateAttemptInput {
   supabase: SupabaseClient;
+  /** The signed-in user, already verified by the route. The simulated provider
+   *  acts as this user through the server-only database functions. */
+  userId: string;
   bookingId: string;
   merchantOrderNo: string;
   amount: number;
@@ -91,15 +95,20 @@ export const newebpayProvider: PaymentProvider = {
 };
 
 /** Simulated — Phase 1 test provider (B-2). No card data, no external
- *  redirect; the client shows an explicit approve/decline screen and calls
- *  confirm_simulated_payment directly. */
+ *  redirect; the client shows an explicit approve/decline screen that confirms
+ *  through /api/payments/simulated/confirm.
+ *
+ *  It fakes a "paid" payment, so the database functions behind it are
+ *  service_role only: a browser can never call them. The route verifies the user
+ *  and passes the id; settlement also ignores simulated payments. */
 export const simulatedProvider: PaymentProvider = {
   type: "simulated",
-  async createAttempt({ supabase, bookingId, merchantOrderNo, amount }) {
-    const { data, error } = await supabase.rpc("create_simulated_payment_attempt", {
+  async createAttempt({ userId, bookingId, merchantOrderNo, amount }) {
+    const { data, error } = await createSupabaseAdminClient().rpc("create_simulated_payment_attempt", {
       p_booking_id: bookingId,
       p_merchant_order_no: merchantOrderNo,
       p_amount: amount,
+      p_user_id: userId,
     });
     if (error) throw new ProviderRpcError(error.message);
     const attempt = data as {

@@ -1,6 +1,10 @@
-export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
+/** Public profile column. `beginner` is the Beginner pick; `basic` is the Basic pick. */
+export type ExperienceLevel = 'beginner' | 'basic' | 'intermediate' | 'advanced';
 
-export const EXPERIENCE_LEVELS: readonly ExperienceLevel[] = [
+/** Levels the original mobile plan composer offers. Basic is not one of them. */
+export type ComposerExperienceLevel = Exclude<ExperienceLevel, 'basic'>;
+
+export const EXPERIENCE_LEVELS: readonly ComposerExperienceLevel[] = [
   'beginner',
   'intermediate',
   'advanced',

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MUSCLE_GROUP_TOKENS, PLAN_RULES_VERSION, generateTrainingPlan, needsLowImpact } from "../plan/generate-plan";
+import {
+  MUSCLE_GROUP_TOKENS,
+  PLAN_RULES_VERSION,
+  generateTrainingPlan,
+  keepSelectableMuscles,
+  needsLowImpact,
+} from "../plan/generate-plan";
 import {
   GYM_EQUIPMENT_DEFAULT,
   ONBOARDING_ANSWERS_DEFAULT,
@@ -9,6 +15,7 @@ import {
   type TrainingPreferencesAnswers,
 } from "../onboarding/onboarding-types";
 import type { ExerciseRecord } from "../plan/generated-plan-types";
+import { WARMUP_MOBILITY_SLUGS } from "../plan/mesocycle-rules";
 
 const ex = (slug: string, muscleGroups: string[], hasInstructions = true): ExerciseRecord => ({
   slug,
@@ -34,7 +41,7 @@ const EXERCISES: ExerciseRecord[] = [
   ex("d-push-up", ["chest", "triceps"]),
   ex("e-cable-fly", ["chest"]),
   ex("f-overhead-press", ["shoulders", "triceps"]),
-  ex("g-lateral-raise", ["shoulders"]),
+  ex("g-lateral-raise", ["middle_delts"]),
   ex("h-tricep-pushdown", ["triceps"]),
   ex("i-dip", ["triceps", "chest"]),
   // pull
@@ -79,13 +86,26 @@ const allMain = (plan: Plan) =>
 const firstSession = (plan: Plan) => plan.weeks[0]!.days.find((d) => d.session)!.session!;
 
 describe("excluded muscles", () => {
-  it("keeps exercises that work an excluded muscle out of every week", () => {
+  it("keeps an excluded muscle's own lifts out of every week, but not the lifts it only assists", () => {
+    // Front deltoid = the presses. The bench press only uses it as a helper, so it stays.
     const plan = make({}, { excludeMuscles: true, excludedMuscles: ["front_deltoid"] });
     const slugs = allMain(plan);
     expect(slugs.length).toBeGreaterThan(0);
-    for (const s of slugs) {
-      expect(["a-bench-press", "b-incline-press", "f-overhead-press", "g-lateral-raise"]).not.toContain(s);
-    }
+    expect(slugs).not.toContain("f-overhead-press");
+    expect(slugs).toContain("a-bench-press");
+    expect(slugs).toContain("g-lateral-raise");
+  });
+
+  it("excluding the middle deltoid drops the lateral raise, not the overhead press", () => {
+    const slugs = allMain(make({}, { excludeMuscles: true, excludedMuscles: ["middle_deltoid"] }));
+    expect(slugs).not.toContain("g-lateral-raise");
+    expect(slugs).toContain("f-overhead-press");
+  });
+
+  it("excluding both deltoids drops every shoulder lift", () => {
+    const slugs = allMain(make({}, { excludeMuscles: true, excludedMuscles: ["front_deltoid", "middle_deltoid"] }));
+    expect(slugs).not.toContain("f-overhead-press");
+    expect(slugs).not.toContain("g-lateral-raise");
   });
 
   it("ignores the list when the user answered No to excluding muscles", () => {
@@ -101,6 +121,17 @@ describe("excluded muscles", () => {
 
   it("maps every picker option to a token list", () => {
     for (const m of ONBOARDING_MUSCLE_GROUPS) expect(MUSCLE_GROUP_TOKENS[m], m).toBeDefined();
+  });
+});
+
+describe("saved muscle lists", () => {
+  it("drop options the picker no longer offers, unknown values and repeats", () => {
+    expect(keepSelectableMuscles(["hip_flexors", "glutes", "neck", "abductors", "shins", "glutes", "nonsense"])).toEqual([
+      "glutes",
+      "abductors",
+    ]);
+    expect(keepSelectableMuscles(undefined)).toEqual([]);
+    expect(keepSelectableMuscles(["biceps", "upper_chest"])).toEqual(["biceps", "upper_chest"]);
   });
 });
 
@@ -163,7 +194,7 @@ describe("goal, obstacle and the options that shape volume", () => {
   it("goal sets the rep range", () => {
     expect(repsOf(make({ goal: "lose_weight" }))).toBe("12-15");
     expect(repsOf(make({ goal: "build_muscle" }, { experience: "advanced" }))).toBe("6-10");
-    expect(repsOf(make({ goal: "build_muscle" }, { experience: "beginner" }))).toBe("10-12");
+    expect(repsOf(make({ goal: "build_muscle" }, { experience: "basic" }))).toBe("10-12");
     expect(repsOf(make({ goal: "build_muscle" }, { experience: "no_experience" }))).toBe("12-15");
     expect(repsOf(make({ goal: "stay_healthy" }, { experience: "intermediate" }))).toBe("8-12");
   });
@@ -171,7 +202,7 @@ describe("goal, obstacle and the options that shape volume", () => {
   it("experience sets the number of sets", () => {
     const sets = (experience: TrainingPreferencesAnswers["experience"]) =>
       firstSession(make({}, { experience })).main[0]!.sets;
-    expect(sets("beginner")).toBeLessThan(sets("advanced"));
+    expect(sets("basic")).toBeLessThan(sets("advanced"));
   });
 
   it("'lack of time' caps the main exercises even for long sessions", () => {
@@ -262,8 +293,8 @@ describe("low-impact mode", () => {
     const session = firstSession(plan);
     const warmup = session.warmup.map((e) => e.slug);
     expect(warmup[0]).toBe("rowing"); // easy machine Raise when cardio types include rowing
-    expect(warmup).toHaveLength(2); // Raise + one mobility drill
-    expect(["arm-circles", "leg-swings-stretch", "bodyweight-squat"]).toContain(warmup[1]);
+    expect(warmup).toHaveLength(2); // Raise + one drill
+    expect([...WARMUP_MOBILITY_SLUGS]).toContain(warmup[1]);
     expect(warmup).not.toContain("jumping-jack");
     expect(warmup).not.toContain("high-knees");
     const cardio = plan.weeks.flatMap((w) => w.days.map((d) => d.session?.cardio?.exercise.slug)).filter(Boolean);

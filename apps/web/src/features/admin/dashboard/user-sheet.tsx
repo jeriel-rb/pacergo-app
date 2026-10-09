@@ -290,7 +290,7 @@ export function UserSheet({
             </InfoRow>
             <InfoRow icon={Target} label={f("goal")}>{named("goal", d.fitness.goal)}</InfoRow>
             <InfoRow icon={Award} label={f("fitnessLevel")}>
-              {named("experience", d.fitness.experience)}
+              {named("planExperience", d.fitness.experience)}
             </InfoRow>
           </div>
         ),

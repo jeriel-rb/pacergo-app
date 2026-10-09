@@ -73,7 +73,9 @@ export const EQUIPMENT_CATALOG: readonly {
 const HOUSEHOLD: readonly OnboardingEquipment[] = ["chair", "towel", "doorway", "step_box"];
 
 /** The typical kit for each gym type — what tapping that gym chip selects.
- *  Users then add/remove individual items. */
+ *  Users then add/remove individual items. A small gym includes every
+ *  selectorized machine the exercise catalog maps; a large gym adds the
+ *  specialty bars (EZ, trap, landmine) and the loose accessories. */
 export const EQUIPMENT_PRESETS: Record<OnboardingGymType, readonly OnboardingEquipment[]> = {
   large_gym: ONBOARDING_EQUIPMENT,
   small_gym: [
@@ -85,10 +87,25 @@ export const EQUIPMENT_PRESETS: Record<OnboardingGymType, readonly OnboardingEqu
     "squat_rack",
     "pull_up_bar",
     "dip_station",
+    "back_extension_bench",
+    "preacher_bench",
     "cable_machine",
     "lat_pulldown",
     "smith_machine",
+    "chest_press_machine",
+    "pec_deck",
+    "shoulder_press_machine",
+    "lateral_raise_machine",
+    "row_machine",
+    "chest_supported_row_machine",
     "leg_press",
+    "leg_extension_machine",
+    "leg_curl_machine",
+    "lying_leg_curl_machine",
+    "hack_squat_machine",
+    "calf_machine",
+    "hip_machine",
+    "assisted_machine",
     "resistance_bands",
     ...HOUSEHOLD,
   ],
@@ -156,7 +173,7 @@ export const CARDIO_PRESETS: Record<OnboardingGymType, readonly OnboardingCardio
     "ski_erg",
     "battle_ropes",
   ],
-  small_gym: ["treadmill", "elliptical", "cycling_stationary", "rowing"],
+  small_gym: ["treadmill", "elliptical", "stair_climber", "cycling_stationary", "rowing"],
   garage_gym: ["rowing", "air_bike", "battle_ropes"],
   bodyweight_only: [],
 };

@@ -46,3 +46,8 @@ src/
   lib/             cn, i18n init, locale-path helpers
   locales/{zh,en}/ common, nav, home, trainer, auth namespaces
 ```
+
+## Deploying
+
+Vercel builds this app from `apps/web` (see `vercel.json`). Pushing to `main`
+deploys production; a push only rebuilds when files under `apps/web` change.

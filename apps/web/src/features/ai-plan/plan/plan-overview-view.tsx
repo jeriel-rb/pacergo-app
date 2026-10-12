@@ -34,6 +34,7 @@ export function PlanOverviewView({
   goal,
   plan,
   createdAt,
+  isActive,
   userId,
   profileAnswers,
   trainingPreferences,
@@ -49,6 +50,8 @@ export function PlanOverviewView({
   plan: GeneratedPlan;
   /** UTC instant the plan row was created. Editing the plan does not change it. */
   createdAt: string;
+  /** Only the active plan nudges the profile goal to match; older plans don't. */
+  isActive: boolean;
   userId: string;
   profileAnswers: OnboardingAnswers;
   trainingPreferences: TrainingPreferencesAnswers;
@@ -127,14 +130,16 @@ export function PlanOverviewView({
         </div>
       )}
 
-      <GoalAlignBanner
-        userId={userId}
-        planGoal={goal}
-        profileGoal={profileAnswers.goal}
-        answers={profileAnswers}
-        trainingPreferences={trainingPreferences}
-        gymEquipment={gymEquipment}
-      />
+      {isActive && (
+        <GoalAlignBanner
+          userId={userId}
+          planGoal={goal}
+          profileGoal={profileAnswers.goal}
+          answers={profileAnswers}
+          trainingPreferences={trainingPreferences}
+          gymEquipment={gymEquipment}
+        />
+      )}
 
       <NutritionLinkCard href={aiPlanHref(pathname, "/nutrition")} />
 

@@ -1,4 +1,4 @@
-import { getTrainingPlanServer } from "@/lib/plan-view.server";
+import { getActivePlanIdServer, getTrainingPlanServer } from "@/lib/plan-view.server";
 import { getSavedFitnessProfileServer } from "@/lib/fitness-profile.server";
 import { getCurrentProfile } from "@/lib/profile";
 import { PlanOverviewView } from "@/features/ai-plan/plan/plan-overview-view";
@@ -12,10 +12,11 @@ export default async function PlanOverviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [result, saved, profile] = await Promise.all([
+  const [result, saved, profile, activePlanId] = await Promise.all([
     getTrainingPlanServer(id),
     getSavedFitnessProfileServer(),
     getCurrentProfile(),
+    getActivePlanIdServer().catch(() => null),
   ]);
   if (!result || !saved || !profile) return <PlanNotFound />;
   return (
@@ -25,6 +26,7 @@ export default async function PlanOverviewPage({
       goal={result.goal}
       plan={result.plan}
       createdAt={result.createdAt}
+      isActive={activePlanId === id}
       userId={profile.id}
       profileAnswers={saved.answers}
       trainingPreferences={saved.trainingPreferences}

@@ -386,6 +386,7 @@
       "yes": "是",
       "no": "否",
       "free": "免費",
+      "minutes_one": "{{count}} 分鐘",
       "minutes_other": "{{count}} 分鐘",
       "consents": "已同意的文件",
       "noConsents": "尚未同意任何文件",

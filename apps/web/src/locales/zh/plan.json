@@ -255,9 +255,9 @@
     "restTimerMax": "最長休息",
     "restTimerHint": "休息時間會依動作強度與該組次數自動調整，並維持在此範圍內。建議範圍：{{min}}–{{max}} 秒。",
     "restTimerSound": "提示音",
-    "save": "更新",
-    "saving": "更新中…",
-    "saveError": "發生錯誤，請再試一次。",
+    "save": "儲存計畫",
+    "saving": "儲存中…",
+    "saveError": "無法儲存計畫，請再試一次。",
     "doneEditing": "完成",
     "splitAuto": "依據你的目標、經驗、訓練日、訓練時長與器材自動為你挑選；修改這些設定時會跟著更新。",
     "profileNote": "這裡的訓練經驗、訓練日與器材屬於你的"

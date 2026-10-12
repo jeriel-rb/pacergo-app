@@ -255,9 +255,9 @@
     "restTimerMax": "Longest rest",
     "restTimerHint": "Rest time adjusts automatically based on exercise intensity and reps in the current set, and stays within this range. Recommended range: {{min}}–{{max}} seconds.",
     "restTimerSound": "Sound",
-    "save": "Update",
-    "saving": "Updating…",
-    "saveError": "Something went wrong. Please try again.",
+    "save": "Save the plan",
+    "saving": "Saving…",
+    "saveError": "Couldn't save your plan. Please try again.",
     "doneEditing": "Done",
     "splitAuto": "Chosen for you from your goal, experience, training days, session length and equipment. Change those settings and it updates.",
     "profileNote": "Experience, training days and equipment here are part of your"

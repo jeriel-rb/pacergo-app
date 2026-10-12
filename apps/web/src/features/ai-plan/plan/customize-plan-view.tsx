@@ -177,11 +177,11 @@ export function CustomizePlanView({
     upgradeLegacyEquipment({ ...GYM_EQUIPMENT_DEFAULT, ...onboardingSnapshot.gymEquipment }),
   );
   // One AI-recommended structure, re-derived from the edited settings (no
-  // template picker) — saved with the plan on "Update".
+  // template picker) — saved with the plan on "Save the plan".
   const recommended = recommendSplit({ answers, trainingPreferences: tp, gymEquipment: ge }).split;
   // What this screen opened with — to tell which fields the user changed.
   const opened = React.useRef({ tp, ge, goal: answers.goal });
-  // "Update" stays disabled until the user actually changes the goal or settings.
+  // "Save the plan" stays disabled until the user actually changes the goal or settings.
   const { dirty } = useFormDirty({ goal: answers.goal, tp, ge });
   const [openField, setOpenField] = React.useState<FieldKey | null>(null);
   const [saving, setSaving] = React.useState(false);

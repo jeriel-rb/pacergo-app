@@ -1,9 +1,10 @@
 import { create } from 'zustand';
+import type { ExperienceLevel } from '@pacergo/shared';
 
 type OnboardingState = {
   displayName: string;
   birthdate: string;
-  experienceLevel: 'beginner' | 'intermediate' | 'advanced';
+  experienceLevel: ExperienceLevel;
   homeArea: string;
   activityIds: string[];
   setField: (k: 'displayName' | 'birthdate' | 'experienceLevel' | 'homeArea', v: string) => void;

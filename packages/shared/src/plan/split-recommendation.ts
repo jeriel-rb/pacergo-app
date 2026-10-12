@@ -92,7 +92,7 @@ export function recommendSplit(input: {
   const limitedEquipment = gymEquipment.gymType === "bodyweight_only" || loading < 2;
   const shortSessions = (tp.durationMin ?? ONBOARDING_DURATION_DEFAULT) <= 30;
 
-  const novice = experience === "no_experience" || experience === "basic";
+  const novice = experience === "beginner" || experience === "basic";
   const simple = novice || limitedEquipment || shortSessions;
   const muscleFocus = goal === "build_muscle";
 

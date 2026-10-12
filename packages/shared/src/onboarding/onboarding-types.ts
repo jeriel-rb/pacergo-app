@@ -1,9 +1,8 @@
 import type { PrimaryActivity } from '../enums/profile-setup';
 
-/** "About You" onboarding wizard (Let's Get Started → About You) inputs.
- *  Distinct from ../enums/training.ts's TrainingGoal (spec A-1, tied to the
- *  existing plan-composer's authored content) — this is a different,
- *  richer question set feeding a not-yet-built onboarding flow. */
+/** "About You" answers. These are the words the live generator reads.
+ *  The mobile plan screen still shows the shorter TrainingGoal chips and
+ *  maps them here in `from-mobile-selection`. */
 
 export type OnboardingGoal = "lose_weight" | "build_muscle" | "stay_healthy" | "functional";
 
@@ -54,6 +53,12 @@ export interface OnboardingAnswers {
   goal: OnboardingGoal | null;
   obstacle: OnboardingObstacle | null;
   gender: "male" | "female" | "other" | null;
+  /**
+   * ISO calendar date `YYYY-MM-DD`. Source of truth for age when set.
+   * Older snapshots may only have `age`; new saves write both.
+   */
+  birthdate: string | null;
+  /** Whole years, derived from `birthdate` when that is set. */
   age: number | null;
   unit: OnboardingUnit;
   heightCm: number | null;
@@ -68,6 +73,7 @@ export const ONBOARDING_ANSWERS_DEFAULT: OnboardingAnswers = {
   goal: null,
   obstacle: null,
   gender: null,
+  birthdate: null,
   age: null,
   unit: "metric",
   heightCm: null,
@@ -84,31 +90,31 @@ export const ONBOARDING_STEPS: readonly OnboardingStepId[] = [
   "gymEquipment",
 ] as const;
 
-/** Plan answer for the training-experience step. Beginner is `no_experience`.
- *  Basic is `basic`. A stored `beginner` is a Basic pick from before that
- *  rename. The public profile stores Beginner as `beginner` and Basic as `basic`. */
+/** Plan and public profile use the same experience words. */
 
 export type OnboardingExperience =
-  | "no_experience"
+  | "beginner"
   | "basic"
   | "intermediate"
   | "advanced";
 
 export const ONBOARDING_EXPERIENCES: readonly OnboardingExperience[] = [
-  "no_experience",
+  "beginner",
   "basic",
   "intermediate",
   "advanced",
 ] as const;
 
-/** The plan's experience word. A leftover `beginner` is Basic. */
+/** Returns a known experience word, or null. */
 export function planExperience(value: unknown): OnboardingExperience | null {
-  if (value === "basic" || value === "beginner") return "basic";
-  if (value === "no_experience" || value === "intermediate" || value === "advanced") return value;
+  if (value === "beginner" || value === "basic" || value === "intermediate" || value === "advanced") {
+    return value;
+  }
   return null;
 }
 
-export type OnboardingDaysPerWeek = "2" | "3" | "4" | "5" | "6" | "every_day";
+/** "1" is the mobile once-a-week chip. Web onboarding does not offer it. */
+export type OnboardingDaysPerWeek = "1" | "2" | "3" | "4" | "5" | "6" | "every_day";
 
 export const ONBOARDING_DAYS_PER_WEEK: readonly OnboardingDaysPerWeek[] = [
   "2",
@@ -135,6 +141,7 @@ const DEFAULT_TRAINING_DAYS: Record<OnboardingDaysPerWeek, readonly number[]> = 
   "4": [0, 1, 3, 4],
   "3": [0, 2, 4],
   "2": [1, 3],
+  "1": [2],
 };
 
 export function trainingDaysCount(daysPerWeek: OnboardingDaysPerWeek): number {

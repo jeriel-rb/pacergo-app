@@ -71,12 +71,14 @@ export function useCompleteOnboarding() {
       experienceLevel: ExperienceLevel;
       homeArea: string | null;
       activityIds: string[];
+      birthdate: string;
     }) => {
       const { error } = await supabase.rpc('complete_onboarding', {
         p_display_name: input.displayName,
         p_experience_level: input.experienceLevel,
         p_home_area: input.homeArea,
         p_activity_ids: input.activityIds,
+        p_birthdate: input.birthdate,
       });
       if (error) throw error;
     },

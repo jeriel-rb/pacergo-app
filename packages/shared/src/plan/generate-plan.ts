@@ -7,6 +7,7 @@ import {
   type GymEquipmentAnswers,
   type TrainingSplit,
   type OnboardingAnswers,
+  type OnboardingExperience,
   type OnboardingMuscleGroup,
   type TrainingPreferencesAnswers,
 } from "../onboarding/onboarding-types";
@@ -21,12 +22,14 @@ import {
   isHighImpact,
   patternProgressionRank,
   restrictToLevel,
+  trainedVariationOrder,
 } from "./exercise-fit";
 import { isAiEligible } from "./exercise-qa";
 import {
   DIFFICULTY_LIMITS,
   ISOLATION_SLUGS,
   LOW_PRIORITY_ISOLATION_SLUGS,
+  TIMED_SLUGS,
   exerciseDifficulty,
   repsForExercise,
   suitsExperience,
@@ -129,10 +132,33 @@ function focusMuscles(focus: SessionFocus, priority: ReadonlySet<string>): strin
   return [...base, ...FOCUS_PRIORITY_EXTRAS[focus].filter((m) => priority.has(m) && !base.includes(m))];
 }
 
+/** How many prioritized muscles may lead a session. About one third of the
+ *  slots — the rest follow the split (press / squat / hinge on full body). */
+function priorityLeadCap(sessionCount: number): number {
+  return Math.max(1, Math.floor(sessionCount / 3));
+}
+
+/** Put a small rotating set of priorities first, then the focus muscles, then
+ *  any leftover priorities. Stops three arm priorities from eating a full-body day. */
+function orderMusclesForSession(
+  sessionMuscles: readonly string[],
+  priority: ReadonlySet<string>,
+  sessionCount: number,
+  rotateBy: number,
+): string[] {
+  const prioritized = sessionMuscles.filter((m) => priority.has(m));
+  const base = sessionMuscles.filter((m) => !priority.has(m));
+  if (prioritized.length === 0) return [...sessionMuscles];
+  const cap = Math.min(prioritized.length, priorityLeadCap(sessionCount));
+  const start = ((rotateBy % prioritized.length) + prioritized.length) % prioritized.length;
+  const rotated = [...prioritized.slice(start), ...prioritized.slice(0, start)];
+  return [...rotated.slice(0, cap), ...base, ...rotated.slice(cap)];
+}
+
 /** Plan-rule revision stamped on every generated plan. Bump it whenever the
  *  generator's output would change for the same answers, so the app can offer
  *  to refresh plans saved under older rules. */
-export const PLAN_RULES_VERSION = 17;
+export const PLAN_RULES_VERSION = 18;
 
 const SPLIT_SEQUENCE: Record<TrainingSplit, SessionFocus[]> = {
   full_body: ["full_body"],
@@ -360,10 +386,12 @@ function priorityScore(e: ExerciseRecord, priority: ReadonlySet<string>): number
 
 /** The exercises for one session in one week: one per muscle group first (in
  *  the order given — prioritized muscles lead), then a second round, and so on,
- *  so a leg day isn't five glute moves. Each later week steps the main lift to
- *  the next harder variation of that pattern (machine → free weight → barbell)
- *  when one exists. `fixed` variety keeps week 1's Exposure A/B choices all
- *  month. `exposureIndex` rotates emphasis when the same focus repeats in the
+ *  so a leg day isn't five glute moves. For a novice, each later week steps the
+ *  main lift up from the easiest setup (machine, then free weight, then barbell).
+ *  A trained lifter starts on the staple lift for their level (the barbell bench,
+ *  not the machine) and later weeks rotate through the other variations.
+ *  `fixed` variety keeps week 1's Exposure A/B choices all month.
+ *  `exposureIndex` rotates emphasis when the same focus repeats in the
  *  week (structured A/B — not random). */
 function pickMain(
   pool: readonly ExerciseRecord[],
@@ -376,6 +404,7 @@ function pickMain(
   softAvoid: ReadonlySet<string>,
   history: PlanPerformanceHistory | undefined,
   priority: ReadonlySet<string>,
+  experience: OnboardingExperience,
 ): ExerciseRecord[] {
   // Upper / lower chest are chest: one slot family, so a push day isn't three
   // chest moves before it reaches shoulders or triceps.
@@ -396,7 +425,7 @@ function pickMain(
         ...rest.filter((e) => !ISOLATION_SLUGS.has(e.slug)),
       ];
     })
-    .map((g) => advanceToHarderVariation(g, week, variety, goal, priority))
+    .map((g) => advanceToHarderVariation(g, week, variety, goal, priority, experience))
     .map((g) => orderGroupForExposure(g, exposureIndex, variety, softAvoid, history));
 
   const picked: ExerciseRecord[] = [];
@@ -423,28 +452,38 @@ function pickMain(
       if (next) take(next);
     }
   }
-  // Anything still short (fewer muscles than slots) tops up from the ranked
-  // pool: new patterns first, a repeated family only if nothing else is left.
+  // Anything still short tops up from the ranked pool. A family already used
+  // stays used, unless the day would otherwise have a single exercise — a
+  // bodyweight pull day whose only moves are two rows still gets both.
   const rest = preferUnused(
     pool.filter((e) => !pickedSlugs.has(e.slug)),
     softAvoid,
   );
-  for (const e of [...rest.filter((e) => !familyTaken(e)), ...rest.filter(familyTaken)]) {
+  for (const e of rest) {
     if (picked.length >= count) break;
-    if (pickedSlugs.has(e.slug)) continue;
+    if (pickedSlugs.has(e.slug) || familyTaken(e)) continue;
     take(e);
+  }
+  if (picked.length < 2) {
+    for (const e of rest) {
+      if (picked.length >= 2) break;
+      if (pickedSlugs.has(e.slug)) continue;
+      take(e);
+    }
   }
   return picked;
 }
 
-/** Step the lead lift toward a harder variation. Week 0 is the easiest (or the
- *  goal's preferred style). Later weeks take the next rung. */
+/** Step the lead lift along the variation ladder. Novices start at the easiest
+ *  setup. A trained lifter starts on the staple for that muscle. Later weeks
+ *  take the next rung. */
 function advanceToHarderVariation(
   group: ExerciseRecord[],
   week: number,
   variety: NonNullable<TrainingPreferencesAnswers["variety"]>,
   goal: OnboardingAnswers["goal"],
   priority: ReadonlySet<string>,
+  experience: OnboardingExperience,
 ): ExerciseRecord[] {
   if (variety === "fixed" || group.length < 2) return group;
   const patterns = group.filter((e) => !ISOLATION_SLUGS.has(e.slug));
@@ -456,9 +495,14 @@ function advanceToHarderVariation(
   const patternTop = Math.max(...patterns.map((e) => priorityScore(e, priority)));
   if (priorityScore(group[0]!, priority) > patternTop) return group;
 
+  const trained = experience === "intermediate" || experience === "advanced";
   const functionalish = (slug: string) =>
     /lunge|split|carry|farmer|step-up|swing|single|unilateral|thruster|burpee|pistol/.test(slug);
   const sorted = [...patterns].sort((a, b) => {
+    // A trained lifter's first week is the staple (barbell bench), not the machine.
+    if (trained && goal !== "stay_healthy" && goal !== "functional") {
+      return trainedVariationOrder(a, b, experience);
+    }
     // Maintain Health: prefer bodyweight, but never ahead of a clearer easy→hard order.
     if (goal === "stay_healthy") {
       const bodyweight = (e: ExerciseRecord) => (exerciseEase(e) >= 6 ? 0 : 1);
@@ -567,7 +611,7 @@ export function difficultyCeiling(
   obstacle: OnboardingAnswers["obstacle"],
 ): DifficultyCeiling | null {
   const unsure = obstacle === "lack_of_knowledge" || obstacle === "never_tried";
-  if (experience === "no_experience" || (experience === "basic" && unsure)) return DIFFICULTY_LIMITS.no_experience;
+  if (experience === "beginner" || (experience === "basic" && unsure)) return DIFFICULTY_LIMITS.beginner;
   if (experience === "basic") return DIFFICULTY_LIMITS.basic;
   return unsure ? { start: 2, max: 2 } : null;
 }
@@ -596,16 +640,17 @@ function limitDifficulty(list: ExerciseRecord[], ceiling: DifficultyCeiling | nu
  *  one yet. Once the real one is on offer, a trained lifter isn't given both
  *  (or the assisted one at all). */
 function preferUnassisted(list: ExerciseRecord[], experience: string): ExerciseRecord[] {
-  if (experience === "no_experience" || experience === "basic") return list;
+  if (experience === "beginner" || experience === "basic") return list;
   const slugs = new Set(list.map((e) => e.slug));
   const unassistedOn = (base: string) => slugs.has(base) || slugs.has(`weighted-${base}`);
   return list.filter((e) => !(e.slug.startsWith("assisted-") && unassistedOn(e.slug.slice("assisted-".length))));
 }
 
-/** Single-joint work, core and grip: the accessories that finish a session. */
+/** Single-joint work, core, grip, and holds: the accessories that finish a
+ *  session and are the first thing dropped when the hour is already full. */
 function isAccessory(e: ExerciseRecord): boolean {
   const main = e.muscleGroups[0] ?? "";
-  return ISOLATION_SLUGS.has(e.slug) || CORE_FAMILY.has(main) || main === "forearms";
+  return ISOLATION_SLUGS.has(e.slug) || TIMED_SLUGS.has(e.slug) || CORE_FAMILY.has(main) || main === "forearms";
 }
 
 /** Compound lifts first, accessories after (stable). Selection already ranked
@@ -621,17 +666,23 @@ function compoundsFirst(
   return { records: order.map((i) => records[i]!), exercises: order.map((i) => exercises[i]!) };
 }
 
-/** Moves that train the same pattern. A session takes one of each family, so a
- *  day isn't a pull-up and a chin-up, or two glute bridges and a hip thrust. */
+/** Moves that train the same pattern. A session takes one of each family.
+ *  An incline press stays its own angle. Pike and handstand push-ups are
+ *  overhead presses, matched before the flat press. */
 const MOVEMENT_FAMILIES: readonly (readonly [string, RegExp])[] = [
-  ["vertical-pull", /(^|-)(pull|chin)-up$/],
+  ["vertical-pull", /(pull-up|chin-up|pulldown|hang)$/],
   ["glute-bridge", /hip-thrust|glute-bridge|frog-pump/],
-  ["romanian-deadlift", /romanian-deadlift/],
+  ["hinge", /deadlift|good-morning/],
   ["calf-raise", /calf-raise/],
   ["shrug", /shrug/],
   ["overhead-press", /overhead-press|shoulder-press|(seated|standing)-dumbbell-press|arnold-press|push-press|landmine-press|pike-push-up|handstand-push-up/],
-  ["flat-press", /^((smith-machine|dumbbell)-)?bench-press$|^machine-chest-press$/],
-  ["horizontal-push-up", /^((wall|incline|knee|decline|diamond|weighted)-)?push-up$/],
+  ["incline-press", /^incline-.*(?:press|push-up)$/],
+  ["upright-row", /^upright-row$/],
+  ["horizontal-row", /row$/],
+  ["bilateral-squat", /(^|-)(front-squat|hack-squat|goblet-squat|belt-squat|sissy-squat|leg-press)$|(?<!split-)squat$/],
+  ["lunge", /lunge|split-squat|step-up/],
+  ["dip", /(^|-)dip$/],
+  ["flat-press", /^(close-grip-|decline-|smith-machine-|dumbbell-)?bench-press$|^machine-chest-press$|push-up$|decline-.*press$|floor-press$/],
   ["plank", /(^|-)plank(-|$)/],
 ];
 
@@ -653,7 +704,7 @@ function mainExerciseCount(
   // budget roughly 8 min per main exercise (sets + rest included) — more for
   // newcomers, who need time to learn each movement.
   const mainMinutes = Math.max(20, durationMin - 15);
-  const perExercise = experience === "no_experience" ? 10 : 8;
+  const perExercise = experience === "beginner" ? 10 : 8;
   const count = Math.min(6, Math.max(3, Math.round(mainMinutes / perExercise)));
   // "Lack of time" keeps sessions short and focused whatever length was chosen.
   return obstacle === "lack_of_time" ? Math.min(count, 4) : count;
@@ -689,9 +740,18 @@ function trimMainToDuration(
     exercises.length > 3 &&
     estimateSessionMin(exercises, warmupCount, cooldownCount, hasCardio) > durationMin + 5
   ) {
-    // Drop lowest-priority tail first (usually isolation / accessories).
-    records = records.slice(0, -1);
-    exercises = exercises.slice(0, -1);
+    // Drop an accessory before a later compound. The second chest angle is
+    // picked after the hang, so cutting the tail used to keep the hang and
+    // lose the incline.
+    let dropAt = records.length - 1;
+    for (let i = records.length - 1; i >= 3; i--) {
+      if (isAccessory(records[i]!)) {
+        dropAt = i;
+        break;
+      }
+    }
+    records.splice(dropAt, 1);
+    exercises.splice(dropAt, 1);
   }
   return { records, exercises };
 }
@@ -814,7 +874,7 @@ export function generateTrainingPlan(input: {
   const lowImpact = needsLowImpact(answers);
   const ceiling = difficultyCeiling(experience, answers.obstacle);
   const preferMachineRaise =
-    experience === "no_experience" ||
+    experience === "beginner" ||
     experience === "basic" ||
     answers.goal === "stay_healthy" ||
     answers.goal === "lose_weight" ||
@@ -838,7 +898,7 @@ export function generateTrainingPlan(input: {
   // and an underweight BMI all get the treadmill as an incline walk.
   const walkOnly =
     lowImpact ||
-    experience === "no_experience" ||
+    experience === "beginner" ||
     experience === "basic" ||
     (bmi !== null && bmi < UNDERWEIGHT_BMI);
   let cardioTypes = gymEquipment.cardioTypes.filter(
@@ -904,10 +964,12 @@ export function generateTrainingPlan(input: {
         experience,
         ceiling,
       );
-      const muscleOrder = [
-        ...sessionMuscles.filter((m) => priority.has(m)),
-        ...sessionMuscles.filter((m) => !priority.has(m)),
-      ];
+      const muscleOrder = orderMusclesForSession(
+        sessionMuscles,
+        priority,
+        count,
+        trainingDayCounter + week,
+      );
       let mainRecords = pickMain(
         pool,
         muscleOrder,
@@ -919,20 +981,8 @@ export function generateTrainingPlan(input: {
         softAvoid,
         performanceHistory,
         priority,
+        experience,
       );
-      let main = mainRecords.map((e) => {
-        const reps = repsForExercise(e.slug, compoundReps, answers.goal);
-        return toExercise(e, {
-          sets,
-          reps,
-          restSec: restSecFor({
-            record: e,
-            reps,
-            goal: answers.goal,
-            prefs: trainingPreferences,
-          }),
-        });
-      });
 
       let cardio: GeneratedCardioBlock | null = null;
       if (wantCardio && cardioTypes.length > 0) {
@@ -955,15 +1005,56 @@ export function generateTrainingPlan(input: {
       // A stretch used as a warm-up drill isn't repeated in the cool-down.
       const warmupSlugs = new Set(warmupRecords.map((e) => e.slug));
       const sessionStretchPool = stretchPool.filter((e) => !warmupSlugs.has(e.slug));
+
+      // Fixed variety means the same lifts every week. Size the cut with week-1
+      // sets so a heavier week does not drop accessories and stop being fixed.
+      const sizingSets =
+        variety === "fixed"
+          ? setsForWeek({
+              baseSets: experienceScheme.sets,
+              week: 0,
+              curve,
+              experience,
+              obstacle: answers.obstacle,
+              trainingDays: trainingDays.size,
+            })
+          : sets;
+      const sizingMain = mainRecords.map((e) => {
+        const reps = repsForExercise(e.slug, compoundReps, answers.goal);
+        return toExercise(e, {
+          sets: sizingSets,
+          reps,
+          restSec: restSecFor({
+            record: e,
+            reps,
+            goal: answers.goal,
+            prefs: trainingPreferences,
+          }),
+        });
+      });
       const trimmed = trimMainToDuration(
         mainRecords,
-        main,
+        sizingMain,
         durationMin,
         warmupRecords.length,
         cooldownCount,
         cardio !== null,
       );
-      ({ records: mainRecords, exercises: main } = compoundsFirst(trimmed.records, trimmed.exercises));
+      mainRecords = trimmed.records;
+      let main = mainRecords.map((e) => {
+        const reps = repsForExercise(e.slug, compoundReps, answers.goal);
+        return toExercise(e, {
+          sets,
+          reps,
+          restSec: restSecFor({
+            record: e,
+            reps,
+            goal: answers.goal,
+            prefs: trainingPreferences,
+          }),
+        });
+      });
+      ({ records: mainRecords, exercises: main } = compoundsFirst(mainRecords, main));
 
       const raiseReps =
         warmupRecords[0] &&

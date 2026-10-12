@@ -19,12 +19,14 @@ export function CompanionCard({
       className="mb-3 flex-row items-center gap-3 rounded-lg bg-dark-surface p-4"
     >
       <Avatar name={companion.display_name ?? ''} photoUrl={companion.photo_url} size={56} />
-      <View className="flex-1 gap-1">
+      <View className="min-w-0 flex-1 gap-1">
         <View className="flex-row items-center gap-2">
           <TierBadge tier={companion.tier} />
-          <AppText variant="h3">{companion.display_name ?? ''}</AppText>
+          <AppText variant="h3" numberOfLines={1} className="min-w-0 flex-1">
+            {companion.display_name ?? ''}
+          </AppText>
         </View>
-        <AppText variant="caption">
+        <AppText variant="caption" numberOfLines={1}>
           {companion.activity_slug} · {formatDistanceMeters(companion.distance_m)}
           {companion.home_area ? ` · ${companion.home_area}` : ''}
         </AppText>

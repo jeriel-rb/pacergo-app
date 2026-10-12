@@ -99,7 +99,7 @@ export function exerciseComplexity(e: Pick<ExerciseRecord, "slug" | "equipment" 
  *  advanced users — still picked when nothing loaded fits (e.g. a
  *  bodyweight-only setup), never by default. */
 const MODALITY_FIT: Record<OnboardingExperience, Record<ExerciseModality, number>> = {
-  no_experience: { machine: 4, cable: 3, free_weight: 3, bodyweight: 3, band: 2, loadable_bodyweight: 0, barbell: 0 },
+  beginner: { machine: 4, cable: 3, free_weight: 3, bodyweight: 3, band: 2, loadable_bodyweight: 0, barbell: 0 },
   basic: { machine: 4, free_weight: 4, cable: 3, bodyweight: 2, barbell: 2, band: 1, loadable_bodyweight: 1 },
   intermediate: { barbell: 4, free_weight: 4, cable: 3, machine: 3, loadable_bodyweight: 3, bodyweight: 1, band: 0 },
   advanced: { barbell: 5, free_weight: 4, loadable_bodyweight: 4, cable: 3, machine: 3, bodyweight: 0, band: -2 },
@@ -107,7 +107,7 @@ const MODALITY_FIT: Record<OnboardingExperience, Record<ExerciseModality, number
 
 /** Penalty (or bonus) per complexity level. */
 const COMPLEXITY_FIT: Record<OnboardingExperience, readonly [number, number, number]> = {
-  no_experience: [1, -1, -6],
+  beginner: [1, -1, -6],
   basic: [1, 0, -3],
   intermediate: [0, 1, 1],
   advanced: [0, 1, 2],
@@ -119,7 +119,7 @@ const COMPLEXITY_FIT: Record<OnboardingExperience, readonly [number, number, num
  *  of the same muscle. Intermediates favor tier 2 over tier 1, advanced
  *  lifters the harder work. */
 const DIFFICULTY_FIT: Record<OnboardingExperience, Record<ExerciseDifficulty, number>> = {
-  no_experience: { 1: 12, 2: 0, 3: -12 },
+  beginner: { 1: 12, 2: 0, 3: -12 },
   basic: { 1: 12, 2: 0, 3: -12 },
   intermediate: { 1: 1, 2: 3, 3: -1 },
   advanced: { 1: 0, 2: 2, 3: 3 },
@@ -263,10 +263,10 @@ export function exerciseRole(slug: string): "pattern" | "isolation" | "skill" {
 }
 
 /** Hardest setup a level may progress to later in the same 4-week block.
- *  Week 1 still leads with the easiest option; later weeks step up this ladder
- *  (machine → free weight → barbell) so weeks are visibly harder, not a remix. */
+ *  A novice still opens on the easiest option. A trained lifter opens on the
+ *  staple and later weeks rotate within this ceiling. */
 const LADDER_MAX: Record<OnboardingExperience, number> = {
-  no_experience: STABILITY_RUNG.bodyweight,
+  beginner: STABILITY_RUNG.bodyweight,
   basic: STABILITY_RUNG.bodyweight,
   intermediate: STABILITY_RUNG.bodyweight,
   advanced: 99,
@@ -275,7 +275,7 @@ const LADDER_MAX: Record<OnboardingExperience, number> = {
 /** Within one rung, which setup leads. Beginners: machine then cable.
  *  Advanced: barbell then dumbbell, machine as the fallback. */
 const STABILITY_ORDER: Record<OnboardingExperience, readonly ExerciseStability[]> = {
-  no_experience: ["machine", "cable", "guided", "free_weight", "barbell", "loadable_bodyweight", "bodyweight", "band"],
+  beginner: ["machine", "cable", "guided", "free_weight", "barbell", "loadable_bodyweight", "bodyweight", "band"],
   basic: ["machine", "cable", "guided", "free_weight", "barbell", "loadable_bodyweight", "bodyweight", "band"],
   intermediate: ["guided", "free_weight", "barbell", "machine", "cable", "loadable_bodyweight", "bodyweight", "band"],
   advanced: ["barbell", "free_weight", "guided", "loadable_bodyweight", "machine", "cable", "bodyweight", "band"],
@@ -391,7 +391,7 @@ export function restrictToLevel(
       if (rung(e) > ceiling) continue;
       // True beginners can step up to dumbbells and bodyweight, not a barbell or pull-up.
       if (
-        experience === "no_experience" &&
+        experience === "beginner" &&
         (exerciseStability(e) === "barbell" || exerciseStability(e) === "loadable_bodyweight")
       ) {
         continue;
@@ -422,4 +422,23 @@ export function compareForLevel(a: ExerciseRecord, b: ExerciseRecord, experience
   const byStaple = index(a.slug) - index(b.slug);
   if (byStaple !== 0) return byStaple;
   return a.slug.localeCompare(b.slug);
+}
+
+/** Week-to-week order for a trained lifter. The staple lead (barbell bench)
+ *  comes before the dumbbell and the machine, instead of starting at the
+ *  easiest setup. */
+export function trainedVariationOrder(
+  a: ExerciseRecord,
+  b: ExerciseRecord,
+  experience: OnboardingExperience,
+): number {
+  const muscle = canonMuscle(a.muscleGroups[0] ?? "");
+  const staples = STAPLES[stapleBucket(experience)][muscle] ?? [];
+  const index = (slug: string) => {
+    const at = staples.indexOf(slug);
+    return at === -1 ? staples.length : at;
+  };
+  const byStaple = index(a.slug) - index(b.slug);
+  if (byStaple !== 0) return byStaple;
+  return compareForLevel(a, b, experience);
 }

@@ -57,8 +57,10 @@ export default function BookingsScreen() {
               className="mb-3 flex-row items-center gap-3 rounded-lg bg-dark-surface p-4"
             >
               <Avatar name={name ?? ''} photoUrl={photo} size={48} />
-              <View className="flex-1 gap-1">
-                <AppText variant="h3">{name ?? ''}</AppText>
+              <View className="min-w-0 flex-1 gap-1">
+                <AppText variant="h3" numberOfLines={1}>
+                  {name ?? ''}
+                </AppText>
                 <StatusPill status={item.status} />
               </View>
             </Pressable>

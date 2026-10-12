@@ -36,6 +36,7 @@ export default function OnboardingScreen() {
         experienceLevel: parsed.data.experienceLevel,
         homeArea: store.homeArea || null,
         activityIds: parsed.data.activityIds,
+        birthdate: parsed.data.birthdate.slice(0, 10),
       });
       store.reset();
       router.replace('/(tabs)');

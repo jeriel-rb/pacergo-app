@@ -8,8 +8,12 @@ import { ChevronLeft, ChevronRight, Moon } from "lucide-react";
 import {
   ONBOARDING_GOALS,
   PLAN_RULES_VERSION,
+  planBlockWeek,
   type GeneratedPlan,
+  type GymEquipmentAnswers,
+  type OnboardingAnswers,
   type OnboardingGoal,
+  type TrainingPreferencesAnswers,
 } from "@pacergo/shared";
 import { useRouter } from "next/navigation";
 import { Loader2, RefreshCw } from "lucide-react";
@@ -19,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/shared/components/ui/toast";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { NutritionLinkCard } from "@/features/ai-plan/nutrition/nutrition-link-card";
+import { GoalAlignBanner } from "./goal-align-banner";
 
 /** A-3 program overview: week tabs + one card per day. All 4 weeks exist up
  *  front ("nothing drip-released"); the exercise mix rotates week to week
@@ -28,6 +33,11 @@ export function PlanOverviewView({
   label,
   goal,
   plan,
+  createdAt,
+  userId,
+  profileAnswers,
+  trainingPreferences,
+  gymEquipment,
 }: {
   planId: string;
   label: string;
@@ -37,6 +47,12 @@ export function PlanOverviewView({
    *  rows saved before this column existed, or an unrecognized goal. */
   goal: string | null;
   plan: GeneratedPlan;
+  /** UTC instant the plan row was created. Editing the plan does not change it. */
+  createdAt: string;
+  userId: string;
+  profileAnswers: OnboardingAnswers;
+  trainingPreferences: TrainingPreferencesAnswers;
+  gymEquipment: GymEquipmentAnswers;
 }) {
   const { t } = useTranslation(["plan", "onboarding"]);
   const locale = useLocale();
@@ -67,18 +83,17 @@ export function PlanOverviewView({
       ? t(`goal.options.${goal}.title`, { ns: "onboarding" })
       : label;
   const pathname = usePathname();
-  // Opens on the week the user came back from (?week=), otherwise week 1.
+  // ?week= is the week they opened a day from. Otherwise the Taipei week of
+  // the block since created_at, wrapped onto the stored weeks.
   const weekParam = Number(useSearchParams().get("week"));
+  const blockWeek = planBlockWeek(createdAt);
   const [week, setWeek] = React.useState(
-    Number.isInteger(weekParam) && weekParam >= 1 && weekParam <= plan.weeks.length ? weekParam : 1,
+    Number.isInteger(weekParam) && weekParam >= 1 && weekParam <= plan.weeks.length
+      ? weekParam
+      : blockWeek,
   );
 
   const days = plan.weeks[week - 1]?.days ?? [];
-
-  // Say so when the plan builds up week by week (main lifts gain a set later on).
-  const firstMainSets = (w: number) =>
-    plan.weeks[w]?.days.find((d) => d.session?.main.length)?.session?.main[0]?.sets ?? 0;
-  const progresses = plan.weeks.length >= 3 && firstMainSets(2) > firstMainSets(0);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -112,6 +127,15 @@ export function PlanOverviewView({
         </div>
       )}
 
+      <GoalAlignBanner
+        userId={userId}
+        planGoal={goal}
+        profileGoal={profileAnswers.goal}
+        answers={profileAnswers}
+        trainingPreferences={trainingPreferences}
+        gymEquipment={gymEquipment}
+      />
+
       <NutritionLinkCard href={aiPlanHref(pathname, "/nutrition")} />
 
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -131,9 +155,6 @@ export function PlanOverviewView({
           </button>
         ))}
       </div>
-
-      <p className="-mt-3 text-sm text-muted-foreground">{t(`overview.weekPhase.${week}`)}</p>
-      {progresses && <p className="-mt-1 text-xs text-muted-foreground">{t("weekProgress")}</p>}
 
       {/* A flex column with a gap: the day cards are wrapped in <a> links, which
           are inline and would ignore vertical margins (space-y-*), leaving the

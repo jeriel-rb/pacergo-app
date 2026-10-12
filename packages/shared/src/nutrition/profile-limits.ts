@@ -8,6 +8,7 @@ import {
   type OnboardingAnswers,
   type TrainingPreferencesAnswers,
 } from "../onboarding/onboarding-types";
+import { ageFromBirthdate } from "../time/age-from-birthdate";
 
 /** Plausible human bounds for the body facts the plans are computed from.
  *  Deliberately wider than what the pickers offer (age 13–90, 120–220 cm,
@@ -49,9 +50,16 @@ export function sanitizeAboutYou(answers: OnboardingAnswers): OnboardingAnswers 
   const cleaned = { ...answers } as OnboardingAnswers & { useCases?: unknown };
   // Rows saved before this unused field was removed may still carry it.
   delete cleaned.useCases;
+  const birthdate =
+    typeof answers.birthdate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(answers.birthdate)
+      ? answers.birthdate
+      : null;
+  const fromBirth = birthdate ? ageFromBirthdate(birthdate) : null;
   return {
     ...cleaned,
-    age: sanitizeBodyMetric("age", answers.age),
+    birthdate,
+    // Birthdate wins when present so a saved age can't drift after a birthday.
+    age: sanitizeBodyMetric("age", fromBirth ?? answers.age),
     heightCm: sanitizeBodyMetric("heightCm", answers.heightCm),
     weightKg: sanitizeBodyMetric("weightKg", answers.weightKg),
   };

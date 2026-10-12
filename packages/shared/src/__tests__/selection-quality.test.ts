@@ -66,7 +66,7 @@ const everything = (p: ReturnType<typeof plan>) =>
 
 describe("exercise suitability by experience", () => {
   it("never gives advanced-skill moves to beginners or people with no experience", () => {
-    for (const level of ["no_experience", "basic"] as const) {
+    for (const level of ["beginner", "basic"] as const) {
       const slugs = everything(plan(level, "full_body")).map((e) => e.slug);
       for (const skill of ADVANCED_SKILL_SLUGS) expect(slugs, `${level}: ${skill}`).not.toContain(skill);
     }
@@ -76,7 +76,7 @@ describe("exercise suitability by experience", () => {
     expect(suitsExperience("dragon-flag", "advanced")).toBe(true);
     expect(suitsExperience("dragon-flag", "intermediate")).toBe(true);
     expect(suitsExperience("dragon-flag", "basic")).toBe(false);
-    expect(suitsExperience("bench-press", "no_experience")).toBe(true);
+    expect(suitsExperience("bench-press", "beginner")).toBe(true);
   });
 });
 
@@ -131,10 +131,10 @@ describe("difficulty by experience level", () => {
   });
 
   it("starts on machines, and only Basic users may step up to a barbell later", () => {
-    const slugs = (level: "no_experience" | "basic") =>
+    const slugs = (level: "beginner" | "basic") =>
       everything(withKit(level, "dynamic")).map((e) => e.slug);
-    expect(slugs("no_experience")).toContain("machine-chest-press");
-    expect(slugs("no_experience")).not.toContain("bench-press");
+    expect(slugs("beginner")).toContain("machine-chest-press");
+    expect(slugs("beginner")).not.toContain("bench-press");
     expect(slugs("basic")).toContain("machine-chest-press");
     expect(slugs("basic")).toContain("bench-press");
   });

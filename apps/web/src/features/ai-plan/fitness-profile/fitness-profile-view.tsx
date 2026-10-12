@@ -87,7 +87,7 @@ export function FitnessProfileView({
 }: {
   userId: string;
   saved: SavedFitnessProfile;
-  /** Saved answers merged with the account profile's gender. */
+  /** Saved Shared Fitness Profile answers. */
   answers: OnboardingAnswers;
 }) {
   const { t } = useTranslation(["plan", "onboarding", "home"]);

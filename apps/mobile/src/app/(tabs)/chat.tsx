@@ -28,8 +28,10 @@ export default function ChatInboxScreen() {
             className="mb-3 flex-row items-center gap-3 rounded-lg bg-dark-surface p-4"
           >
             <Avatar name={item.other_name ?? ''} photoUrl={item.other_photo} size={48} />
-            <View className="flex-1 gap-0.5">
-              <AppText variant="h3">{item.other_name ?? ''}</AppText>
+            <View className="min-w-0 flex-1 gap-0.5">
+              <AppText variant="h3" numberOfLines={1}>
+                {item.other_name ?? ''}
+              </AppText>
               {item.last_body ? (
                 <AppText variant="caption" numberOfLines={1}>
                   {item.last_body}

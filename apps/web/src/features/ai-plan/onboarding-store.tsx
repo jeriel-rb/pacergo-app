@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  ageFromBirthdate,
   EQUIPMENT_PRESETS,
   GYM_EQUIPMENT_DEFAULT,
   ONBOARDING_ANSWERS_DEFAULT,
@@ -295,6 +296,7 @@ interface OnboardingContextValue {
   setObstacle: (obstacle: OnboardingObstacle) => void;
   setGender: (gender: OnboardingAnswers["gender"]) => void;
   setAge: (age: number) => void;
+  setBirthdate: (birthdate: string | null) => void;
   setUnit: (unit: OnboardingUnit) => void;
   setHeightCm: (heightCm: number) => void;
   setWeightKg: (weightKg: number) => void;
@@ -424,7 +426,11 @@ export function OnboardingProvider({
       setGoal: (goal) => dispatch({ type: "patch", patch: { goal } }),
       setObstacle: (obstacle) => dispatch({ type: "patch", patch: { obstacle } }),
       setGender: (gender) => dispatch({ type: "patch", patch: { gender } }),
-      setAge: (age) => dispatch({ type: "patch", patch: { age } }),
+      setAge: (age) => dispatch({ type: "patch", patch: { age, birthdate: null } }),
+      setBirthdate: (birthdate) => {
+        const age = birthdate ? ageFromBirthdate(birthdate) : null;
+        dispatch({ type: "patch", patch: { birthdate, age } });
+      },
       setUnit: (unit) => dispatch({ type: "patch", patch: { unit } }),
       setHeightCm: (heightCm) => dispatch({ type: "patch", patch: { heightCm } }),
       setWeightKg: (weightKg) => dispatch({ type: "patch", patch: { weightKg } }),

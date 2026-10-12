@@ -7,18 +7,15 @@
     "planRulesUpdated": "Plan updated to the latest version",
     "planRulesUpdateFailed": "Couldn't update the plan. Please try again.",
     "workoutReset": "Workout progress cleared",
+    "workoutSaveFailed": "Couldn't record this workout. Please try again.",
     "nutritionBuilt": "Nutrition plan ready",
     "nutritionBuildFailed": "Couldn't build your nutrition plan. Please try again.",
-    "nutritionSkipFailed": "Couldn't skip nutrition. Please try again."
+    "nutritionSkipFailed": "Couldn't skip nutrition. Please try again.",
+    "goalAligned": "Fitness profile and nutrition updated to match this plan",
+    "goalAlignFailed": "Couldn't update your fitness profile. Please try again."
   },
   "overview": {
     "week": "Week {{number}}",
-    "weekPhase": {
-      "1": "Lighter start — simpler versions of each movement.",
-      "2": "Harder versions of the same movements.",
-      "3": "The most demanding versions in this block.",
-      "4": "Hold the harder work, or ease the dose if the block has been heavy."
-    },
     "restDay": "Rest day",
     "viewDay": "View",
     "focus": {
@@ -32,11 +29,17 @@
     "minutes": "{{count}} min",
     "outdated": {
       "title": "A better version of this plan is available",
-      "body": "Your plan was built before we improved it — workouts now end with real stretching for the muscles you trained. Updating keeps all your settings.",
+      "body": "Your plan was built under older session rules. Updating keeps your settings and rebuilds the workouts with the current exercise selection.",
       "cta": "Update this plan",
       "updating": "Updating…",
       "error": "Couldn't update the plan. Please try again.",
-      "dayHint": "This workout may still use the old cooldown. Tap to update the plan."
+      "dayHint": "This workout may still use the older session layout. Tap to update the plan."
+    },
+    "goalAlign": {
+      "title": "Your goals don't match yet",
+      "body": "This plan is set up for {{plan}}, but your fitness profile (and nutrition) still say {{profile}}. You can keep both, or align the profile to this plan.",
+      "cta": "Use {{goal}} for my profile",
+      "updating": "Updating…"
     }
   },
   "daily": {
@@ -104,7 +107,6 @@
       }
     }
   },
-  "weekProgress": "Each week steps up to a harder version of the main movements. Sets stay steady unless your level calls for a small mid-block increase.",
   "detail": {
     "targetMuscles": "Target Muscles",
     "steps": "Steps",
@@ -274,7 +276,8 @@
     "goalNote": {
       "lose_weight": "Set below maintenance to support steady fat loss.",
       "build_muscle": "Set slightly above maintenance to support muscle gain.",
-      "stay_healthy": "Set at maintenance to keep your current weight."
+      "stay_healthy": "Set at maintenance to keep your current weight.",
+      "functional": "Set near maintenance to support mixed training and recovery."
     },
     "disclaimer": "These are estimates based on your current information and goal, not medical advice. Your actual needs may differ — adjust based on how your body responds.",
     "missing": "Complete your fitness profile to see your daily calorie and protein targets.",
@@ -282,10 +285,9 @@
     "viewCta": "View nutrition targets",
     "cardTitle": "Your daily nutrition",
     "profileTitle": "Your fitness profile",
-    "profileHint": "Changing any of these recalculates your targets.",
     "fields": {
       "goal": "Fitness Goal",
-      "age": "Age",
+      "age": "Birthdate",
       "heightCm": "Height",
       "weightKg": "Weight",
       "body": "Height & Weight",
@@ -319,7 +321,7 @@
       "hydration": "Drink about {{liters}} L of water a day, more on hot days and training days."
     },
     "continueToPlan": "Continue to My Plan",
-    "editInProfile": "Calories follow your Fitness Profile. Your protein target stays when you create a new training plan — change it here, or use the suggestion when your goal changes."
+    "editInProfile": "Calories and protein are calculated from your Fitness Profile. Edit the profile to update these targets."
   },
   "openCurrentPlan": "Open my current plan",
   "fitnessProfile": {
@@ -333,7 +335,7 @@
     },
     "fields": {
       "gender": "Gender",
-      "age": "Age",
+      "age": "Birthdate",
       "body": "Height & Weight",
       "goal": "Fitness Goal",
       "activityLevel": "Daily Activity Level",

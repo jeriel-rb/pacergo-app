@@ -1,6 +1,8 @@
 {
   "title": "Notifications",
   "empty": "No notifications yet.",
+  "loadMore": "Show earlier notifications",
+  "loadingMore": "Loading…",
   "type": {
     "booking_requested": "You have a new booking request",
     "booking_accepted": "Your booking was accepted",

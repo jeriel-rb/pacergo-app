@@ -13,9 +13,9 @@ export interface ExperienceScheme {
   reps: string;
 }
 
-/** Beginner (`no_experience`) ≠ Basic (`basic`). */
+/** Beginner (`beginner`) ≠ Basic (`basic`). */
 export const EXPERIENCE_SCHEME: Record<OnboardingExperience, ExperienceScheme> = {
-  no_experience: { sets: 2, reps: "12-15" },
+  beginner: { sets: 2, reps: "12-15" },
   basic: { sets: 3, reps: "10-12" },
   intermediate: { sets: 3, reps: "8-12" },
   advanced: { sets: 4, reps: "6-10" },
@@ -68,7 +68,7 @@ export function volumeCurveFor(input: {
 }): VolumeCurve {
   const { experience, goal, obstacle } = input;
   if (obstacle === "lack_of_time" || obstacle === "injuries") return "FLAT";
-  if (experience === "no_experience") return "FLAT";
+  if (experience === "beginner") return "FLAT";
   if (goal === "lose_weight") return "FLAT";
   // Basic+ hypertrophy / functional may take a mild mid-block set add.
   if (
@@ -96,7 +96,7 @@ export function shouldConsolidateWeek4(input: {
 }): boolean {
   if (input.week !== 3) return false;
   if (input.obstacle === "lack_of_time" || input.obstacle === "injuries") return false;
-  if (input.experience === "no_experience" || input.experience === "basic") return false;
+  if (input.experience === "beginner" || input.experience === "basic") return false;
   return input.curve === "MILD_RAMP";
 }
 
@@ -185,7 +185,7 @@ export function compoundRepsFor(input: {
   const base = baseSchemeForExperience(input.experience).reps;
   if (profile.preferHigherReps && input.experience !== "advanced") {
     if (input.goal === "lose_weight") return "12-15";
-    if (input.goal === "stay_healthy" && input.experience === "no_experience") return "12-15";
+    if (input.goal === "stay_healthy" && input.experience === "beginner") return "12-15";
   }
   return base;
 }

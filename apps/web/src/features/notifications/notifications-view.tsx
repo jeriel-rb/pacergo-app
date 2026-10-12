@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ACTIVITY_META, formatInAppTimeZone, type ActivitySlug } from "@pacergo/shared";
+import { ACTIVITY_META, NOTIFICATION_PAGE_SIZE, formatInAppTimeZone, type ActivitySlug } from "@pacergo/shared";
 import type { AppNotification } from "@/lib/notifications";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
-import { markNotificationsRead } from "./notification-actions";
+import { fetchNotificationPage, markNotificationsRead } from "./notification-actions";
 
 /** Notifications list. Marks everything read on view. */
 export function NotificationsView({
@@ -32,13 +32,28 @@ export function NotificationsView({
   const pathname = usePathname();
   const router = useRouter();
   const [rejected, setRejected] = useState<AppNotification | null>(null);
+  const [more, setMore] = useState<AppNotification[]>([]);
+  const [hasMore, setHasMore] = useState(notifications.length === NOTIFICATION_PAGE_SIZE);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const items = [...notifications, ...more];
 
-  const hasUnread = notifications.some((n) => !n.read_at);
+  const hasUnread = items.some((n) => !n.read_at);
   useEffect(() => {
     if (hasUnread) {
       markNotificationsRead().then(() => router.refresh());
     }
   }, [hasUnread, router]);
+
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const next = await fetchNotificationPage(items.length);
+      setMore((current) => [...current, ...next]);
+      setHasMore(next.length === NOTIFICATION_PAGE_SIZE);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -46,14 +61,14 @@ export function NotificationsView({
         <h1 className="text-2xl font-bold lg:text-3xl">{t("title")}</h1>
       </header>
 
-      {notifications.length === 0 ? (
+      {items.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-6 py-16 text-center">
           <Bell size={28} className="text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">{t("empty")}</p>
         </div>
       ) : (
         <div className="space-y-2">
-          {notifications.map((n) => {
+          {items.map((n) => {
             const bookingId = n.payload?.booking_id;
             const href = bookingId
               ? getLocalizedPath(
@@ -112,6 +127,17 @@ export function NotificationsView({
             );
           })}
         </div>
+      )}
+
+      {hasMore && (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={loadingMore}
+          className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+        >
+          {loadingMore ? t("loadingMore") : t("loadMore")}
+        </button>
       )}
 
       <Dialog open={rejected !== null} onOpenChange={(open) => !open && setRejected(null)}>

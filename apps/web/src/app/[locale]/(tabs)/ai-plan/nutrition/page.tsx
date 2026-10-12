@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/lib/profile";
 import { getLocalizedPath } from "@/lib/locale-path";
 import { getSavedFitnessProfileServer } from "@/lib/fitness-profile.server";
+import { getActivePlanIdServer, getTrainingPlanServer } from "@/lib/plan-view.server";
 import { NutritionView } from "@/features/ai-plan/nutrition/nutrition-view";
 import { NutritionOnboarding } from "@/features/ai-plan/nutrition/nutrition-onboarding";
 
@@ -21,16 +22,18 @@ export default async function NutritionPage({
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ next?: string | string[] }>;
 }) {
-  const [{ locale }, { next }, profile, saved] = await Promise.all([
+  const [{ locale }, { next }, profile, saved, activePlanId] = await Promise.all([
     params,
     searchParams,
     getCurrentProfile(),
     getSavedFitnessProfileServer(),
+    getActivePlanIdServer().catch(() => null),
   ]);
   if (!profile || !saved) notFound();
 
   const answers = saved.answers;
   const nextHref = safeNext(next);
+  const activePlan = activePlanId ? await getTrainingPlanServer(activePlanId) : null;
 
   if (saved.nutritionStatus !== "built") {
     return (
@@ -43,5 +46,13 @@ export default async function NutritionPage({
       />
     );
   }
-  return <NutritionView userId={profile.id} saved={saved} answers={answers} nextHref={nextHref} />;
+  return (
+    <NutritionView
+      userId={profile.id}
+      saved={saved}
+      answers={answers}
+      nextHref={nextHref}
+      activePlanGoal={activePlan?.goal ?? null}
+    />
+  );
 }

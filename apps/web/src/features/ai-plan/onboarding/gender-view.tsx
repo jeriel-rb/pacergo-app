@@ -7,9 +7,9 @@ import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { useAboutYouNav } from "./about-you-steps";
 import { StepScreen } from "./step-screen";
 
-/** Required male/female question. Saved to the Shared Fitness Profile (and
- *  mirrored to the account's profile gender), where AI Training and AI
- *  Nutrition both read it — prefilled, so it's never asked twice. */
+/** Required male/female question. Saved to the Shared Fitness Profile and
+ *  mirrored to `users.gender`. Nutrition uses it for BMR; the training plan
+ *  does not. Prefill so it is never asked twice. */
 export function GenderView() {
   const { t } = useTranslation("onboarding");
   const { answers, setGender } = useOnboarding();

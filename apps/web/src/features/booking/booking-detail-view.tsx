@@ -16,6 +16,7 @@ import {
   ACTIVITY_META,
   TIER_LABELS,
   type BookingRecord,
+  type OnboardingObstacle,
 } from "@pacergo/shared";
 import { Card } from "@/shared/components/ui/card";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
@@ -33,10 +34,13 @@ export function BookingDetailView({
   booking,
   currentUserId,
   myReview,
+  clientObstacle,
 }: {
   booking: BookingRecord;
   currentUserId: string | null;
   myReview: MyReview | null;
+  /** Set only when the viewer is the trainer on this booking. */
+  clientObstacle: OnboardingObstacle | null;
 }) {
   const { t } = useTranslation("sessions");
   const locale = useLocale();
@@ -116,6 +120,12 @@ export function BookingDetailView({
             <div className="border-t border-border pt-3">
               <p className="text-muted-foreground">{t("detail.note")}</p>
               <p className="mt-1 text-foreground/80">{booking.seeker_note}</p>
+            </div>
+          )}
+          {clientObstacle && currentUserId === booking.companion_id && (
+            <div className="border-t border-border pt-3">
+              <p className="text-muted-foreground">{t("detail.obstacle")}</p>
+              <p className="mt-1 text-foreground/80">{t(`detail.obstacles.${clientObstacle}`)}</p>
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { NOTIFICATION_PAGE_SIZE } from '@pacergo/shared';
 import { supabase } from '@/lib/supabase/client';
 import { useSession } from '@/features/auth/useSession';
 
@@ -13,14 +14,20 @@ export type AppNotification = {
 export function useNotifications() {
   const { session } = useSession();
   const uid = session?.user.id;
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['notifications', uid],
     enabled: Boolean(uid),
-    queryFn: async (): Promise<AppNotification[]> => {
-      const { data, error } = await supabase.rpc('my_notifications');
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }): Promise<AppNotification[]> => {
+      const { data, error } = await supabase.rpc('my_notifications', {
+        p_limit: NOTIFICATION_PAGE_SIZE,
+        p_offset: pageParam,
+      });
       if (error) throw error;
       return (data ?? []) as AppNotification[];
     },
+    getNextPageParam: (lastPage, _pages, lastOffset) =>
+      lastPage.length === NOTIFICATION_PAGE_SIZE ? lastOffset + NOTIFICATION_PAGE_SIZE : undefined,
   });
 }
 

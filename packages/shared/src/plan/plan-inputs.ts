@@ -19,8 +19,10 @@ export interface PlanAnswers {
  * to generating a training plan: goal, obstacle, age and BMI inputs (low-impact
  * mode), experience, training days, session length, gym type and the exact
  * equipment list. Two plans with the same fingerprint would be generated
- * identically as far as the profile goes. Fields that don't change a plan
- * (gender, activity level, nutrition) are deliberately left out.
+ * identically as far as the profile goes. Gender and activity level are left
+ * out because they feed the calorie estimate, not the exercises. The main
+ * sport is left out because it ranks companions. Nutrition results are left
+ * out because they are computed from those answers.
  */
 export function planInputsSignature(input: PlanAnswers): string {
   const { answers, trainingPreferences: tp, gymEquipment: ge } = input;

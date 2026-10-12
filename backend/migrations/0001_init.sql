@@ -1265,7 +1265,8 @@ $$;
 
 -- companion_profile: previously `(l.status = 'active' or l.id is null)` leaked
 -- non-companion users' profiles to anon; now active listings only. Also
--- restores the reviews list (dropped by 0022's restatement), capped at 50.;
+-- restores the reviews list (dropped by 0022's restatement). First page only;
+-- companion_reviews pages the rest.
 
 create or replace function companion_profile(p_id uuid)
 returns jsonb
@@ -1341,7 +1342,7 @@ language sql security definer set search_path = public stable as $$
       from reviews r0
       where r0.reviewee_id = p.id
       order by r0.created_at desc
-      limit 50
+      limit 10
     ) r
     join users ru on ru.id = r.reviewer_id
   ) rv on true
@@ -1436,9 +1437,8 @@ begin
   if p_primary_activity is not null and p_primary_activity not in ('gym', 'running', 'hiking', 'other') then
     raise exception 'invalid activity';
   end if;
-  -- Plan Beginner is `no_experience`. Plan Basic is `basic`. A leftover `beginner`
-  -- is still the Basic pick from before that rename.
-  if p_experience is not null and p_experience not in ('no_experience', 'beginner', 'basic', 'intermediate', 'advanced') then
+  -- Plan and public profile share beginner / basic / intermediate / advanced.
+  if p_experience is not null and p_experience not in ('beginner', 'basic', 'intermediate', 'advanced') then
     raise exception 'invalid experience';
   end if;
 
@@ -1454,10 +1454,7 @@ begin
 
   update users set
     home_area = coalesce(nullif(regexp_replace(btrim(p_city), '\s+', ' ', 'g'), ''), home_area),
-    experience_level = coalesce(
-      (case p_experience when 'no_experience' then 'beginner' when 'beginner' then 'basic' else p_experience end)::experience_level,
-      experience_level
-    ),
+    experience_level = coalesce(p_experience::experience_level, experience_level),
     profile_setup_status = 'completed',
     profile_setup_at = now()
   where id = auth.uid();
@@ -1688,7 +1685,9 @@ begin
       o.tier,
       case when o.is_free or o.price_ntd <= 0 then 'requested'::booking_status else 'pending_payment'::booking_status end,
       p_scheduled_start,
-      least(greatest(coalesce(p_duration_min, o.session_minutes), 15), 480),
+      -- Length is the listing's session, clamped. p_duration_min is ignored so a
+      -- caller cannot shorten the payout clock or stretch the booking.
+      least(greatest(coalesce(o.session_minutes, 60), 15), 480),
       p_location_name,
       o.price_ntd,
       o.is_free,
@@ -1865,8 +1864,11 @@ $$;
 -- Notifications reads via RPCs. Rows are created by the notify_booking_event
 -- trigger (0006); these expose them to the web client.
 
--- The caller's notifications (newest 50).
-create or replace function my_notifications()
+-- The caller's notifications, newest first, one page at a time.
+create or replace function my_notifications(
+  p_limit int default 20,
+  p_offset int default 0
+)
 returns jsonb
 language sql
 security definer
@@ -1879,7 +1881,8 @@ as $$
     from notifications
     where user_id = auth.uid()
     order by created_at desc
-    limit 50
+    limit least(greatest(coalesce(p_limit, 20), 1), 50)
+    offset greatest(coalesce(p_offset, 0), 0)
   ) n;
 $$;
 
@@ -1887,7 +1890,7 @@ $$;
 
 
 
-grant execute on function my_notifications() to authenticated;
+grant execute on function my_notifications(int, int) to authenticated;
 grant execute on function unread_notification_count() to authenticated;
 grant execute on function mark_notifications_read() to authenticated;
 
@@ -1906,7 +1909,7 @@ $$;
 
 
 
-grant execute on function my_notifications() to authenticated;
+grant execute on function my_notifications(int, int) to authenticated;
 grant execute on function unread_notification_count() to authenticated;
 grant execute on function mark_notifications_read() to authenticated;
 
@@ -1922,7 +1925,7 @@ as $$
   where user_id = auth.uid() and read_at is null;
 $$;
 
-grant execute on function my_notifications() to authenticated;
+grant execute on function my_notifications(int, int) to authenticated;
 grant execute on function unread_notification_count() to authenticated;
 grant execute on function mark_notifications_read() to authenticated;
 
@@ -3155,11 +3158,14 @@ revoke all on function my_listing() from public, anon;
 grant execute on function my_listing() to authenticated;
 $$;
 
+drop function if exists complete_onboarding(text, experience_level, text, uuid[]);
+
 create or replace function complete_onboarding(
   p_display_name text,
   p_experience_level experience_level,
   p_home_area text,
-  p_activity_ids uuid[]
+  p_activity_ids uuid[],
+  p_birthdate date default null
 ) returns void
 language plpgsql security definer set search_path = public as $$
 declare
@@ -3169,11 +3175,21 @@ begin
   if char_length(coalesce(p_display_name, '')) > 80 then raise exception 'display name too long'; end if;
   if char_length(coalesce(p_home_area, '')) > 120 then raise exception 'home area too long'; end if;
   if coalesce(array_length(p_activity_ids, 1), 0) > 32 then raise exception 'too many activities'; end if;
+  if p_birthdate is not null and (p_birthdate > current_date or p_birthdate < date '1900-01-01') then
+    raise exception 'invalid birthdate';
+  end if;
+  if p_birthdate is not null and (
+    date_part('year', age(p_birthdate))::int < 13
+    or date_part('year', age(p_birthdate))::int > 100
+  ) then
+    raise exception 'age out of range';
+  end if;
 
   update users set
     display_name = coalesce(nullif(p_display_name, ''), display_name),
     experience_level = coalesce(p_experience_level, experience_level),
     home_area = p_home_area,
+    birthdate = coalesce(p_birthdate, birthdate),
     onboarding_completed = true
   where id = v_uid;
 
@@ -4740,6 +4756,9 @@ declare
   v_updated_at timestamptz;
   v_gender text := p_about_you ->> 'gender';
   v_experience text := p_training_preferences ->> 'experience';
+  v_birth_text text := nullif(trim(coalesce(p_about_you ->> 'birthdate', '')), '');
+  v_birthdate date;
+  v_age int;
 begin
   if auth.uid() is null then raise exception 'not authenticated'; end if;
   if p_nutrition is not null and jsonb_typeof(p_nutrition) <> 'object' then
@@ -4779,14 +4798,29 @@ begin
       and gender is distinct from v_gender;
   end if;
 
-  -- Plan Beginner is `no_experience` (public `beginner`). Plan Basic is `basic`.
-  -- A leftover plan `beginner` is still Basic and maps to public `basic`.
-  if v_experience in ('no_experience', 'beginner', 'basic', 'intermediate', 'advanced') then
-    update users set
-      experience_level = (case v_experience when 'no_experience' then 'beginner' when 'beginner' then 'basic' else v_experience end)::experience_level
+  -- Plan and public profile share the same experience words.
+  if v_experience in ('beginner', 'basic', 'intermediate', 'advanced') then
+    update users set experience_level = v_experience::experience_level
     where id = auth.uid()
-      and experience_level is distinct from
-        (case v_experience when 'no_experience' then 'beginner' when 'beginner' then 'basic' else v_experience end)::experience_level;
+      and experience_level is distinct from v_experience::experience_level;
+  end if;
+
+  -- Birthdate is the source of truth; age in about_you is derived for plans.
+  if v_birth_text is not null then
+    begin
+      v_birthdate := v_birth_text::date;
+    exception when others then
+      raise exception 'invalid birthdate';
+    end;
+    if v_birthdate > current_date or v_birthdate < date '1900-01-01' then
+      raise exception 'invalid birthdate';
+    end if;
+    v_age := date_part('year', age(v_birthdate))::int;
+    if v_age < 13 or v_age > 100 then
+      raise exception 'age out of range';
+    end if;
+    update users set birthdate = v_birthdate
+    where id = auth.uid() and birthdate is distinct from v_birthdate;
   end if;
 
   return v_updated_at;
@@ -5044,7 +5078,7 @@ grant execute on function submit_review(uuid, int, text) to authenticated;
 
 grant execute on function my_review_for_booking(uuid) to authenticated;
 
-grant execute on function my_notifications() to authenticated;
+grant execute on function my_notifications(int, int) to authenticated;
 
 grant execute on function unread_notification_count() to authenticated;
 
@@ -5207,7 +5241,7 @@ grant execute on function get_my_profile() to authenticated;
 -- (replaces mobile's users UPDATE + raw user_activities INSERT).
 -- ---------------------------------------------------------------------------;
 
-grant execute on function complete_onboarding(text, experience_level, text, uuid[]) to authenticated;
+grant execute on function complete_onboarding(text, experience_level, text, uuid[], date) to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- set_my_availability: replace-all semantics (mobile edits the whole set).
@@ -5235,7 +5269,7 @@ grant execute on function report_user(uuid, text, text, uuid) to authenticated;
 
 grant execute on function get_companion to authenticated;
 
-grant execute on function complete_onboarding(text, experience_level, text, uuid[]) to authenticated;
+grant execute on function complete_onboarding(text, experience_level, text, uuid[], date) to authenticated;
 
 grant execute on function set_my_availability(jsonb) to authenticated;
 
@@ -5264,7 +5298,7 @@ grant execute on function report_user(uuid, text, text, uuid) to authenticated;
 --    once per statement, not per row); missing FK/partial/GIST indexes added;
 --    storage buckets get size + MIME limits.
 -- 6. Bug fixes: review upserts now recompute listing ratings; public-profile
---    reviews (lost in 0022's restatement) are restored, capped at 50.
+--    reviews (lost in 0022's restatement) are restored as the first page.
 
 -- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 -- 1. Table privileges: clients read where policies allow, never write.
@@ -5323,7 +5357,7 @@ grant execute on function set_weekly_target(int) to authenticated;
 
 grant execute on function weekly_progress() to authenticated;
 
-grant execute on function my_notifications() to authenticated;
+grant execute on function my_notifications(int, int) to authenticated;
 
 grant execute on function unread_notification_count() to authenticated;
 
@@ -5341,7 +5375,7 @@ grant execute on function list_pending_verifications() to authenticated;
 
 grant execute on function review_verification(uuid, text, text) to authenticated;
 
-grant execute on function complete_onboarding(text, experience_level, text, uuid[]) to authenticated;
+grant execute on function complete_onboarding(text, experience_level, text, uuid[], date) to authenticated;
 
 grant execute on function report_user(uuid, text, text, uuid) to authenticated;
 
@@ -6020,7 +6054,8 @@ $$;
 
 -- companion_profile: previously `(l.status = 'active' or l.id is null)` leaked
 -- non-companion users' profiles to anon; now active listings only. Also
--- restores the reviews list (dropped by 0022's restatement), capped at 50.;
+-- restores the reviews list (dropped by 0022's restatement). First page only;
+-- companion_reviews pages the rest.
 
 -- create_booking: enforce blocks, bound inputs, reject past times, and stop
 -- duplicate open requests against the same companion (notification spam).;
@@ -6653,7 +6688,9 @@ begin
 end $$;
 
 -- With an active plan: target is that plan's training days, done is this week's
--- finished workouts (Mon–Sun, Asia/Taipei). Otherwise the manual target.
+-- finished workouts (Mon–Sun, Asia/Taipei). The same calendar day and weekday
+-- count once, even if several plan-weeks were opened. Otherwise the manual
+-- target, and completed bookings in that same Taipei week.
 create or replace function weekly_progress()
 returns jsonb
 language sql security definer set search_path = public stable as $$
@@ -6661,6 +6698,9 @@ language sql security definer set search_path = public stable as $$
     select p.id, p.plan
     from user_training_plans p
     where p.id = active_training_plan_id()
+  ),
+  week_start as (
+    select date_trunc('week', app_today())::date as d
   )
   select case
     when exists (select 1 from active) then (
@@ -6674,9 +6714,14 @@ language sql security definer set search_path = public stable as $$
         ),
         'done', (
           select count(*)
-          from workout_sessions s
-          where s.user_id = auth.uid() and s.plan_id = a.id
-            and s.performed_on >= date_trunc('week', app_today())::date
+          from (
+            select distinct s.performed_on, s.day_index
+            from workout_sessions s
+            cross join week_start w
+            where s.user_id = auth.uid() and s.plan_id = a.id
+              and s.performed_on >= w.d
+              and s.performed_on < w.d + 7
+          ) finished
         )
       )
       from active a
@@ -6687,9 +6732,11 @@ language sql security definer set search_path = public stable as $$
       'done', (
         select count(*)
         from bookings
+        cross join week_start w
         where (seeker_id = auth.uid() or companion_id = auth.uid())
           and status = 'completed'
-          and completed_at >= date_trunc('week', now())
+          and (completed_at at time zone 'Asia/Taipei')::date >= w.d
+          and (completed_at at time zone 'Asia/Taipei')::date < w.d + 7
       )
     )
   end;
@@ -7137,22 +7184,100 @@ on conflict (slug) do update set
 delete from exercises where slug <> all (array['bench-press', 'incline-bench-press', 'incline-dumbbell-press', 'dumbbell-bench-press', 'decline-bench-press', 'machine-chest-press', 'pec-deck', 'cable-fly', 'push-up', 'weighted-push-up', 'overhead-press', 'seated-dumbbell-press', 'arnold-press', 'lateral-raise', 'cable-lateral-raise', 'front-raise', 'rear-delt-fly', 'reverse-pec-deck', 'face-pull', 'upright-row', 'deadlift', 'romanian-deadlift', 'barbell-row', 't-bar-row', 'dumbbell-bent-over-row', 'one-arm-dumbbell-row', 'chest-supported-row', 'seated-row', 'machine-row', 'lat-pulldown', 'close-grip-lat-pulldown', 'straight-arm-pulldown', 'pull-up', 'assisted-pull-up', 'weighted-pull-up', 'chin-up', 'shrug', 'squat', 'front-squat', 'hack-squat', 'leg-press', 'bulgarian-split-squat', 'walking-lunge', 'step-up', 'leg-extension', 'leg-curl', 'seated-leg-curl', 'hip-thrust', 'glute-bridge', 'good-morning', 'standing-calf-raise', 'seated-calf-raise', 'bicep-curl', 'hammer-curl', 'preacher-curl', 'cable-curl', 'reverse-curl', 'wrist-curl', 'tricep-pushdown', 'overhead-tricep-extension', 'skull-crusher', 'close-grip-bench-press', 'dip', 'assisted-dip', 'plank', 'side-plank', 'hanging-leg-raise', 'cable-crunch', 'ab-wheel', 'running', 'walking', 'cycling', 'rowing', 'stair-climber', 'dumbbell-fly', 'incline-cable-fly', 'decline-dumbbell-press', 'smith-machine-bench-press', 'landmine-press', 'weighted-dip', 'machine-shoulder-press', 'standing-dumbbell-press', 'push-press', 'machine-lateral-raise', 'cable-front-raise', 'plate-front-raise', 'bent-over-rear-delt-raise', 'cable-rear-delt-fly', 'pendlay-row', 'inverted-row', 'meadows-row', 'single-arm-cable-row', 'wide-grip-lat-pulldown', 'neutral-grip-pull-up', 'assisted-chin-up', 'weighted-chin-up', 'rack-pull', 'back-extension', 'dumbbell-shrug', 'goblet-squat', 'smith-machine-squat', 'belt-squat', 'sumo-deadlift', 'trap-bar-deadlift', 'lying-leg-curl', 'nordic-hamstring-curl', 'single-leg-romanian-deadlift', 'reverse-lunge', 'split-squat', 'cable-kickback', 'hip-abduction-machine', 'single-leg-glute-bridge', 'barbell-glute-bridge', 'dumbbell-glute-bridge', 'dumbbell-hip-thrust', 'smith-machine-hip-thrust', 'smith-machine-romanian-deadlift', 'dumbbell-romanian-deadlift', 'kettlebell-romanian-deadlift', 'cable-pull-through', 'machine-glute-kickback', 'cable-standing-hip-abduction', 'cable-standing-hip-adduction', 'hip-adduction-machine', 'smith-machine-bulgarian-split-squat', 'smith-machine-reverse-lunge', 'smith-machine-split-squat', 'heel-elevated-goblet-squat', 'dumbbell-sumo-squat', 'dumbbell-sumo-deadlift', 'front-foot-elevated-split-squat', 'deficit-reverse-lunge', 'dumbbell-lateral-lunge', 'dumbbell-curtsy-lunge', 'landmine-squat', 'landmine-romanian-deadlift', 'kettlebell-swing', 'glute-focused-back-extension', 'reverse-hyperextension', 'leg-press-calf-raise', 'wall-sit', 'jump-squat', 'incline-dumbbell-curl', 'concentration-curl', 'ez-bar-curl', 'spider-curl', 'rope-hammer-curl', 'drag-curl', 'rope-tricep-pushdown', 'dumbbell-skull-crusher', 'single-dumbbell-skullcrusher', 'dumbbell-overhead-tricep-extension', 'single-arm-dumbbell-tricep-extension', 'bench-dip', 'tricep-kickback', 'wrist-extension', 'farmer-carry', 'crunch', 'reverse-crunch', 'russian-twist', 'bicycle-crunch', 'mountain-climber', 'dead-bug', 'bird-dog', 'pallof-press', 'cable-woodchop', 'half-kneeling-pallof-press', 'cable-pallof-hold', 'hanging-knee-raise', 'captains-chair-knee-raise', 'decline-sit-up', 'weighted-crunch', 'weighted-russian-twist', 'dumbbell-side-bend', 'elliptical', 'jump-rope', 'assault-bike', 'skierg', 'treadmill-incline-walk', 'battle-ropes', 'incline-push-up', 'knee-push-up', 'wide-push-up', 'diamond-push-up', 'decline-push-up', 'pike-push-up', 'feet-elevated-pike-push-up', 'archer-push-up', 'typewriter-push-up', 'explosive-push-up', 'hindu-push-up', 'scapular-push-up', 'push-up-shoulder-tap', 'wall-push-up', 'wall-walk', 'wall-handstand-push-up', 'handstand-push-up', 'chair-dip', 'doorway-row', 'towel-row', 'prone-y-raise', 'prone-t-raise', 'superman', 'superman-hold', 'reverse-snow-angel', 'dead-hang', 'active-hang', 'scapular-pull-up', 'negative-pull-up', 'commando-pull-up', 'l-sit-pull-up', 'towel-pull-up', 'bodyweight-squat', 'pistol-squat', 'assisted-pistol-squat', 'shrimp-squat', 'cossack-squat', 'sissy-squat', 'forward-lunge', 'lateral-lunge', 'curtsy-lunge', 'skater-squat', 'single-leg-box-squat', 'step-down', 'calf-raise', 'single-leg-calf-raise', 'glute-bridge-march', 'frog-pump', 'donkey-kick', 'fire-hydrant', 'clamshell', 'hip-airplane', 'side-lying-hip-abduction', 'side-lying-leg-raise', 'lying-hamstring-walkout', 'towel-hamstring-curl', 'stability-ball-hamstring-curl', 'banded-glute-bridge', 'banded-hip-thrust', 'banded-clamshell', 'banded-lateral-walk', 'banded-monster-walk', 'banded-squat', 'banded-donkey-kick', 'banded-fire-hydrant', 'banded-kickback', 'banded-standing-hip-abduction', 'banded-seated-hip-abduction', 'band-pull-apart', 'banded-face-pull', 'banded-row', 'banded-lat-pulldown', 'banded-pallof-press', 'banded-woodchop', 'banded-dead-bug', 'hollow-body-hold', 'hollow-rock', 'v-up', 'flutter-kick', 'lying-leg-raise', 'toe-touch', 'heel-tap', 'plank-shoulder-tap', 'plank-jack', 'bear-plank', 'bear-crawl', 'crab-walk', 'inchworm', 'l-sit-hold', 'seated-knee-tuck', 'side-plank-hip-dip', 'copenhagen-plank', 'dragon-flag', 'burpee', 'half-burpee', 'squat-thrust', 'high-knees', 'jumping-jack', 'skater-hop', 'lateral-shuffle', 'sprawl', 'cat-cow-stretch', 'arm-circles', 'worlds-greatest-stretch', 'leg-swings-stretch', 'torso-twist-stretch', 'doorway-chest-stretch', 'childs-pose', 'kneeling-hip-flexor-stretch', 'hamstring-stretch', 'standing-quad-stretch', 'seated-forward-fold-stretch', 'cross-body-shoulder-stretch', 'wall-calf-stretch', 'butterfly-stretch']);
 -- END ai_plan_exercises
 
--- Basic plan answers were stored as `beginner`. Rewrite those copies to `basic`.
--- Beginner stays `no_experience`. `users.experience_level` is already correct
--- and is not touched. Idempotent: a second run matches no rows.
--- Run this after the web that writes `basic` is deployed. That web still reads
--- a leftover `beginner` as Basic.
-update user_onboarding
-set training_preferences = jsonb_set(training_preferences, '{experience}', '"basic"'::jsonb)
-where jsonb_typeof(training_preferences) = 'object'
-  and training_preferences ->> 'experience' = 'beginner';
+-- The obstacle a client named in onboarding. Only the trainer on that booking
+-- can read it. It is not part of the public companion profile.
+create or replace function booking_client_obstacle(p_booking_id uuid)
+returns text
+language plpgsql
+security definer
+set search_path = public
+stable
+as $$
+declare
+  v_seeker uuid;
+  v_obstacle text;
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
 
-update user_training_plans
-set onboarding_snapshot = jsonb_set(
-  onboarding_snapshot,
-  '{trainingPreferences,experience}',
-  '"basic"'::jsonb
+  select seeker_id into v_seeker
+  from bookings
+  where id = p_booking_id and companion_id = auth.uid();
+  if not found then return null; end if;
+
+  select about_you ->> 'obstacle' into v_obstacle
+  from user_onboarding
+  where user_id = v_seeker;
+
+  if v_obstacle in (
+    'lack_of_time', 'lack_of_knowledge', 'low_motivation',
+    'injuries', 'lack_of_equipment', 'never_tried'
+  ) then
+    return v_obstacle;
+  end if;
+  return null;
+end $$;
+
+revoke all on function booking_client_obstacle(uuid) from public, anon;
+grant execute on function booking_client_obstacle(uuid) to authenticated;
+
+-- Replacing my_notifications() (no args) with a paged signature. A call with
+-- no arguments still returns the first page.
+drop function if exists my_notifications();
+
+create or replace function my_notifications(
+  p_limit int default 20,
+  p_offset int default 0
 )
-where jsonb_typeof(onboarding_snapshot) = 'object'
-  and jsonb_typeof(onboarding_snapshot -> 'trainingPreferences') = 'object'
-  and onboarding_snapshot -> 'trainingPreferences' ->> 'experience' = 'beginner';
+returns jsonb
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select coalesce(jsonb_agg(to_jsonb(n) order by n.created_at desc), '[]'::jsonb)
+  from (
+    select id, type, payload, read_at, created_at
+    from notifications
+    where user_id = auth.uid()
+    order by created_at desc
+    limit least(greatest(coalesce(p_limit, 20), 1), 50)
+    offset greatest(coalesce(p_offset, 0), 0)
+  ) n;
+$$;
+
+revoke all on function my_notifications(int, int) from public, anon;
+grant execute on function my_notifications(int, int) to authenticated;
+
+-- Public review pages for an active trainer. The profile embeds page one.
+create or replace function companion_reviews(
+  p_id uuid,
+  p_limit int default 10,
+  p_offset int default 0
+)
+returns jsonb
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', r.id,
+    'author_name', coalesce(ru.display_name, '—'),
+    'rating', r.rating,
+    'comment', r.comment,
+    'created_at', r.created_at
+  ) order by r.created_at desc), '[]'::jsonb)
+  from (
+    select r0.id, r0.reviewer_id, r0.rating, r0.comment, r0.created_at
+    from reviews r0
+    join companion_listings l on l.user_id = r0.reviewee_id and l.status = 'active'
+    where r0.reviewee_id = p_id
+    order by r0.created_at desc
+    limit least(greatest(coalesce(p_limit, 10), 1), 50)
+    offset greatest(coalesce(p_offset, 0), 0)
+  ) r
+  join users ru on ru.id = r.reviewer_id;
+$$;
+
+revoke all on function companion_reviews(uuid, int, int) from public;
+grant execute on function companion_reviews(uuid, int, int) to anon, authenticated;

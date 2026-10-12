@@ -4,6 +4,8 @@ import * as React from "react";
 import type { GeneratedSession } from "@pacergo/shared";
 import type { PlanRestTimer } from "@/lib/plan-view.server";
 import { completeWorkout } from "@/lib/workout-logs";
+import { useToast } from "@/shared/components/ui/toast";
+import { useTranslation } from "react-i18next";
 import {
   EMPTY_PROGRESS,
   isSetDone,
@@ -50,6 +52,8 @@ export function useWorkoutProgress({
   /** End time of the countdown whose alert already went off (or was already over
    *  when the page opened), so it never fires twice. */
   const alerted = React.useRef<number | null>(null);
+  const toast = useToast();
+  const { t } = useTranslation("plan");
 
   // Load this workout's saved sets (after mount — storage isn't there on the server).
   React.useEffect(() => {
@@ -140,8 +144,9 @@ export function useWorkoutProgress({
     recorded.current = true;
     completeWorkout({ planId, week, dayIndex }).catch(() => {
       recorded.current = false; // try again on the next change
+      toast.show(t("toast.workoutSaveFailed"), "destructive");
     });
-  }, [finished, planId, week, dayIndex]);
+  }, [finished, planId, week, dayIndex, t, toast]);
 
   const stop = React.useCallback(() => setProgress((p) => stopRest(p)), []);
   const reset = React.useCallback(() => setProgress(EMPTY_PROGRESS), []);

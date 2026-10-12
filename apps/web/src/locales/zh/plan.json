@@ -7,18 +7,15 @@
     "planRulesUpdated": "計畫已更新至最新版本",
     "planRulesUpdateFailed": "無法更新計畫，請再試一次。",
     "workoutReset": "已清除訓練進度",
+    "workoutSaveFailed": "無法記錄這次訓練，請再試一次。",
     "nutritionBuilt": "營養計畫已準備好",
     "nutritionBuildFailed": "無法建立營養計畫，請再試一次。",
-    "nutritionSkipFailed": "無法略過營養計畫，請再試一次。"
+    "nutritionSkipFailed": "無法略過營養計畫，請再試一次。",
+    "goalAligned": "健身檔案與營養目標已對齊此計畫",
+    "goalAlignFailed": "無法更新健身檔案，請再試一次。"
   },
   "overview": {
     "week": "第 {{number}} 週",
-    "weekPhase": {
-      "1": "較輕鬆的開始 — 每個動作先用較簡單的版本。",
-      "2": "同樣的動作模式，換成較難的版本。",
-      "3": "這個週期裡要求最高的版本。",
-      "4": "維持較難的動作；如果前面已經很累，份量會稍微收回。"
-    },
     "restDay": "休息日",
     "viewDay": "查看",
     "focus": {
@@ -32,11 +29,17 @@
     "minutes": "{{count}} 分鐘",
     "outdated": {
       "title": "這份計畫有更好的版本",
-      "body": "你的計畫是在我們改進之前建立的——現在每次訓練都會以針對當天訓練肌群的真正伸展作結。更新後所有設定都會保留。",
+      "body": "你的計畫是用較舊的課表規則建立的。更新後會保留你的設定，並以目前的動作挑選規則重建訓練內容。",
       "cta": "更新這份計畫",
       "updating": "更新中…",
       "error": "無法更新計畫，請再試一次。",
-      "dayHint": "這份訓練可能仍使用舊的收操動作。點此更新計畫。"
+      "dayHint": "這份訓練可能仍使用較舊的課表編排。點此更新計畫。"
+    },
+    "goalAlign": {
+      "title": "目標尚未對齊",
+      "body": "這份計畫是「{{plan}}」，但你的健身檔案（與營養）仍是「{{profile}}」。可以維持兩邊不同，或把檔案對齊這份計畫。",
+      "cta": "用「{{goal}}」更新我的檔案",
+      "updating": "更新中…"
     }
   },
   "daily": {
@@ -104,7 +107,6 @@
       }
     }
   },
-  "weekProgress": "每一週會把主要動作換成較難的版本。組數通常保持穩定，只有部分程度會在中段多加一點。",
   "detail": {
     "targetMuscles": "目標肌群",
     "steps": "動作步驟",
@@ -274,7 +276,8 @@
     "goalNote": {
       "lose_weight": "設定略低於維持熱量，幫助穩定減脂。",
       "build_muscle": "設定略高於維持熱量，幫助增肌。",
-      "stay_healthy": "設定在維持熱量，保持目前體重。"
+      "stay_healthy": "設定在維持熱量，保持目前體重。",
+      "functional": "設定接近維持熱量，以支持混合訓練與恢復。"
     },
     "disclaimer": "這些數值是依據你目前的資料與目標所做的估算，並非醫療建議。實際需求可能不同，請依身體反應調整。",
     "missing": "完成你的健身檔案，即可查看每日熱量與蛋白質目標。",
@@ -282,10 +285,9 @@
     "viewCta": "查看營養目標",
     "cardTitle": "你的每日營養",
     "profileTitle": "你的健身檔案",
-    "profileHint": "修改任何一項都會重新計算你的目標。",
     "fields": {
       "goal": "健身目標",
-      "age": "年齡",
+      "age": "生日",
       "heightCm": "身高",
       "weightKg": "體重",
       "body": "身高與體重",
@@ -319,7 +321,7 @@
       "hydration": "每天喝約 {{liters}} 公升的水，天氣熱或訓練日再多喝一些。"
     },
     "continueToPlan": "前往我的計畫",
-    "editInProfile": "熱量會跟著健身檔案更新。建立新的訓練計畫時會保留你的蛋白質目標——在這裡修改，或在目標改變時改用建議值。"
+    "editInProfile": "熱量與蛋白質皆依健身檔案計算。修改檔案後，這些目標會一併更新。"
   },
   "openCurrentPlan": "開啟目前的計畫",
   "fitnessProfile": {
@@ -333,7 +335,7 @@
     },
     "fields": {
       "gender": "性別",
-      "age": "年齡",
+      "age": "生日",
       "body": "身高與體重",
       "goal": "健身目標",
       "activityLevel": "日常活動量",

@@ -121,7 +121,10 @@ export function PlanReadyView() {
           {t("gymEquipment.planReady.aboutYou")}
         </h2>
         <div className="grid grid-cols-3 gap-x-4 gap-y-4 rounded-2xl bg-muted p-4">
-          <Stat label={t("gymEquipment.planReady.age")} value={String(answers.age ?? "—")} />
+          <Stat
+            label={t("gymEquipment.planReady.age")}
+            value={answers.age != null ? `${answers.age}` : "—"}
+          />
           <Stat label={t("gymEquipment.planReady.height")} value={heightLabel} />
           <Stat label={t("gymEquipment.planReady.weight")} value={weightLabel} />
           <div className="col-span-3 space-y-2">

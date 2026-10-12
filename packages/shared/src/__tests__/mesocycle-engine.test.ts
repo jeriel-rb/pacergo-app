@@ -111,13 +111,13 @@ const mainSlugs = (p: GeneratedPlan, week = 0) =>
 
 describe("mesocycle experience tables", () => {
   it("gives Beginner and Basic different base sets", () => {
-    expect(baseSchemeForExperience("no_experience").sets).toBe(2);
+    expect(baseSchemeForExperience("beginner").sets).toBe(2);
     expect(baseSchemeForExperience("basic").sets).toBe(3);
-    expect(baseSchemeForExperience("no_experience").reps).not.toBe(baseSchemeForExperience("basic").reps);
+    expect(baseSchemeForExperience("beginner").reps).not.toBe(baseSchemeForExperience("basic").reps);
   });
 
   it("generates different prescriptions for Beginner vs Basic", () => {
-    const beginner = plan({ prefs: { experience: "no_experience" } });
+    const beginner = plan({ prefs: { experience: "beginner" } });
     const basic = plan({ prefs: { experience: "basic" } });
     const b0 = beginner.weeks[0]!.days.find((d) => d.session)!.session!.main[0]!;
     const a0 = basic.weeks[0]!.days.find((d) => d.session)!.session!.main[0]!;
@@ -126,22 +126,17 @@ describe("mesocycle experience tables", () => {
     expect(b0.reps).not.toEqual(a0.reps);
   });
 
-  it("reads a stored beginner as Basic", () => {
-    const main = plan({ prefs: { experience: "beginner" as never } }).weeks[0]!.days.find((d) => d.session)!.session!.main[0]!;
-    expect(main.sets).toBe(3);
-    expect(main.reps).toBe("10-12");
-  });
 });
 
 describe("mesocycle volume / week progression", () => {
   it("defaults novices to FLAT (no automatic weekly set ramp)", () => {
-    expect(volumeCurveFor({ experience: "no_experience", goal: "build_muscle", obstacle: null })).toBe("FLAT");
+    expect(volumeCurveFor({ experience: "beginner", goal: "build_muscle", obstacle: null })).toBe("FLAT");
     expect(weekSetDelta(0, "FLAT")).toBe(0);
     expect(weekSetDelta(3, "FLAT")).toBe(0);
   });
 
   it("does not add a set every week for Beginner build-muscle plans", () => {
-    const p = plan({ prefs: { experience: "no_experience" } });
+    const p = plan({ prefs: { experience: "beginner" } });
     const sets = (w: number) =>
       p.weeks[w]!.days.find((d) => d.session)!.session!.main.map((e) => e.sets);
     expect(sets(0)).toEqual(sets(1));
@@ -237,7 +232,7 @@ describe("warm-up Raise chain", () => {
 
   it("puts an easy machine Raise first in generated beginner warm-ups when bike exists", () => {
     const p = plan({
-      prefs: { experience: "no_experience" },
+      prefs: { experience: "beginner" },
       gym: { equipment: ["dumbbells", "bench"], cardioTypes: ["cycling_stationary"] },
     });
     const warmup = p.weeks[0]!.days.find((d) => d.session)!.session!.warmup.map((e) => e.slug);

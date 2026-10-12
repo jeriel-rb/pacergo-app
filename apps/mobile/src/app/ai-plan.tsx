@@ -3,27 +3,26 @@ import { View, Pressable, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   TRAINING_GOALS,
-  EXPERIENCE_LEVELS,
+  ONBOARDING_EXPERIENCES,
   PLAN_GENDERS,
-  WEIGHT_CLASSES,
   TRAINING_FREQUENCIES,
   TRAINING_LOCATIONS,
-  DIET_MODES,
-  composeTrainingPlan,
-  renderPlanMarkdown,
+  generateTrainingPlan,
+  generatorInputFromMobileSelection,
   type TrainingGoal,
-  type ExperienceLevel,
+  type OnboardingExperience,
   type PlanGender,
-  type WeightClass,
   type TrainingFrequency,
   type TrainingLocation,
-  type DietMode,
+  type ExerciseRecord,
+  type GeneratedPlan,
 } from '@pacergo/shared';
 import { ScreenContainer } from '@/components/ui/ScreenContainer';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { PlanMarkdown } from '@/components/plan/PlanMarkdown';
-import { useProfile } from '@/features/profile/useProfile';
+import { supabase } from '@/lib/supabase/client';
+
+type Locale = 'zh' | 'en';
 
 function ChipGroup<T extends string>({
   label,
@@ -57,41 +56,67 @@ function ChipGroup<T extends string>({
   );
 }
 
+async function fetchExercises(): Promise<ExerciseRecord[]> {
+  const { data, error } = await supabase.from('exercises').select('*');
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map((row) => {
+    const instructionsEn = Array.isArray(row.instructions_en) ? row.instructions_en : [];
+    const instructionsZh = Array.isArray(row.instructions_zh) ? row.instructions_zh : [];
+    const en = instructionsEn.slice(0, 2).join(' ');
+    const zh = instructionsZh.slice(0, 2).join('');
+    return {
+      slug: String(row.slug),
+      nameEn: String(row.name_en ?? ''),
+      nameZh: String(row.name_zh ?? ''),
+      muscleGroups: Array.isArray(row.muscle_groups) ? (row.muscle_groups as string[]) : [],
+      equipmentSettings: Array.isArray(row.equipment_settings) ? (row.equipment_settings as string[]) : [],
+      equipment: Array.isArray(row.equipment) ? (row.equipment as string[]) : undefined,
+      hasInstructions: instructionsEn.length > 0,
+      shortCue: en ? { en, zh: zh || en } : undefined,
+    };
+  });
+}
+
 export default function AiPlanScreen() {
   const { t, i18n } = useTranslation();
-  const { data: profile } = useProfile();
+  const locale: Locale = i18n.language === 'en' ? 'en' : 'zh';
 
   const [goal, setGoal] = useState<TrainingGoal | null>(null);
-  const [level, setLevel] = useState<ExperienceLevel | null>(null);
-  const [gender, setGender] = useState<PlanGender>(
-    profile?.gender === 'female' ? 'female' : 'male',
-  );
-  const [weightClass, setWeightClass] = useState<WeightClass>('medium');
+  const [level, setLevel] = useState<OnboardingExperience | null>(null);
+  const [gender, setGender] = useState<PlanGender>('male');
   const [frequency, setFrequency] = useState<TrainingFrequency>('3x');
   const [location, setLocation] = useState<TrainingLocation>('gym');
-  const [dietMode, setDietMode] = useState<DietMode>('none');
-  const [plan, setPlan] = useState<string | null>(null);
+  const [plan, setPlan] = useState<GeneratedPlan | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
 
-  const ready = goal !== null && level !== null;
+  const ready = goal !== null && level !== null && !busy;
 
-  function generate() {
+  async function generate() {
     if (!goal || !level) return;
-    const locale = i18n.language === 'en' ? 'en' : 'zh';
-    setPlan(
-      renderPlanMarkdown(
-        composeTrainingPlan({
-          goal,
-          gender,
-          level,
-          weightClass,
-          frequency,
-          location,
-          dietMode,
-          locale,
+    setBusy(true);
+    setError(false);
+    try {
+      const exercises = await fetchExercises();
+      setPlan(
+        generateTrainingPlan({
+          ...generatorInputFromMobileSelection({
+            goal,
+            gender,
+            level,
+            frequency,
+            location,
+            locale,
+          }),
+          exercises,
         }),
-        locale,
-      ),
-    );
+      );
+    } catch {
+      setPlan(null);
+      setError(true);
+    } finally {
+      setBusy(false);
+    }
   }
 
   const pick = <T,>(set: (v: T) => void) => (v: T) => {
@@ -113,7 +138,7 @@ export default function AiPlanScreen() {
         />
         <ChipGroup
           label={t('aiPlan.levelLabel')}
-          options={EXPERIENCE_LEVELS.map((l) => ({ value: l, label: t(`aiPlan.level.${l}`) }))}
+          options={ONBOARDING_EXPERIENCES.map((l) => ({ value: l, label: t(`aiPlan.level.${l}`) }))}
           value={level}
           onChange={pick(setLevel)}
         />
@@ -122,12 +147,6 @@ export default function AiPlanScreen() {
           options={PLAN_GENDERS.map((g) => ({ value: g, label: t(`aiPlan.gender.${g}`) }))}
           value={gender}
           onChange={pick(setGender)}
-        />
-        <ChipGroup
-          label={t('aiPlan.weightLabel')}
-          options={WEIGHT_CLASSES.map((w) => ({ value: w, label: t(`aiPlan.weight.${w}`) }))}
-          value={weightClass}
-          onChange={pick(setWeightClass)}
         />
         <ChipGroup
           label={t('aiPlan.freqLabel')}
@@ -141,18 +160,36 @@ export default function AiPlanScreen() {
           value={location}
           onChange={pick(setLocation)}
         />
-        <ChipGroup
-          label={t('aiPlan.dietLabel')}
-          options={DIET_MODES.map((d) => ({ value: d, label: t(`aiPlan.diet.${d}`) }))}
-          value={dietMode}
-          onChange={pick(setDietMode)}
-        />
 
-        <Button label={t('aiPlan.generate')} onPress={generate} disabled={!ready} />
+        <Button label={busy ? t('aiPlan.generating') : t('aiPlan.generate')} onPress={generate} disabled={!ready} />
+
+        {error ? (
+          <AppText variant="caption" className="text-center">
+            {t('aiPlan.error')}
+          </AppText>
+        ) : null}
 
         {plan ? (
-          <View className="rounded-lg bg-dark-surface p-4">
-            <PlanMarkdown markdown={plan} />
+          <View className="gap-4 rounded-lg bg-dark-surface p-4">
+            {plan.weeks.map((week) => (
+              <View key={week.weekIndex} className="gap-2">
+                <AppText variant="h3">{t('aiPlan.week', { number: week.weekIndex })}</AppText>
+                {week.days
+                  .filter((day) => !day.isRestDay && day.session)
+                  .map((day) => (
+                    <View key={day.dayIndex} className="gap-1">
+                      <AppText variant="body" className="font-sans-semibold">
+                        {day.dayLabel[locale]}
+                      </AppText>
+                      {day.session!.main.map((exercise) => (
+                        <AppText key={exercise.slug} variant="caption">
+                          {exercise.name[locale]} · {exercise.sets}×{exercise.reps}
+                        </AppText>
+                      ))}
+                    </View>
+                  ))}
+              </View>
+            ))}
           </View>
         ) : (
           <AppText variant="caption" className="text-center">

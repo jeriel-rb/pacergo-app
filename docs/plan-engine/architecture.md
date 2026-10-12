@@ -33,7 +33,7 @@ The plan reads `training_preferences.experience`. The same save also writes `use
 
 | Pick | Plan answer | Public column |
 | --- | --- | --- |
-| Beginner | `no_experience` | `beginner` |
+| Beginner | `beginner` | `beginner` |
 | Basic | `basic` | `basic` |
 | Intermediate | `intermediate` | `intermediate` |
 | Advanced | `advanced` | `advanced` |
@@ -63,7 +63,7 @@ flowchart TD
 | QA filter | Only exercises with art + instructions + muscles that passed QA |
 | Split | Which days are push / pull / legs / upper / lower / full body |
 | Pool | What the user can actually do with their kit and level (including the difficulty ceiling below) |
-| Pick | Which exercises fill the session. `fixed` variety repeats week 1 all month; `balanced` (default) and `dynamic` step each muscle's lead lift up the equipment ladder (machine → free weight → barbell) week by week, and rotate emphasis when the same focus repeats in a week |
+| Pick | Which exercises fill the session. `fixed` variety repeats week 1 all month and trims against week-1 set counts so a heavier week does not drop accessories; `balanced` (default) and `dynamic` rotate each muscle's lead lift week by week. A novice climbs machine → free weight → barbell. Intermediate and advanced start on the staple lift (the barbell bench, the squat) and rotate the other variations later. One exercise per pattern: one flat press, one incline press, one vertical pull (a hang counts), one row, one bilateral squat, one lunge, one hip hinge, one dip. A second copy of a pattern is used only so a day is not a single exercise |
 | Dose | Sets, reps, and rest for that week |
 | Warm-up | Raise (easy machine when cardio types exist, else short impact or none) plus one drill matched to the day's focus — exactly 2 moves (client rule) |
 | Cool-down | Real stretches matched to muscles trained |
@@ -76,9 +76,9 @@ These exist because each one was a real, wrong plan. They are covered by `packag
 
 | Rule | Behaviour |
 | --- | --- |
-| **Difficulty ceiling** (`difficultyCeiling`, tiers in `exercise-meta.ts`) | Beginner (`no_experience`) gets tier 1 only, tier 2 for a muscle with nothing at tier 1. Basic (`basic`) gets tier 1–2, tier 3 only if nothing easier trains that muscle. Anyone whose obstacle is *lack of knowledge* or *never tried* is held to the Beginner ceiling (Basic) or tier 2 (Intermediate / Advanced). Otherwise uncapped |
+| **Difficulty ceiling** (`difficultyCeiling`, tiers in `exercise-meta.ts`) | Beginner (`beginner`) gets tier 1 only, tier 2 for a muscle with nothing at tier 1. Basic (`basic`) gets tier 1–2, tier 3 only if nothing easier trains that muscle. Anyone whose obstacle is *lack of knowledge* or *never tried* is held to the Beginner ceiling (Basic) or tier 2 (Intermediate / Advanced). Otherwise uncapped |
 | **Exclusions** | Only an exercise's **main** muscle removes it. Excluding shoulders must not delete the bench press, excluding glutes must not delete squats; helpers just rank lower. Front and middle deltoid are separate catalog tags: presses are `shoulders` (front delt), lateral raises / upright rows are `middle_delts` |
-| **Priorities** | Every muscle the picker offers is reachable on every split (`FOCUS_PRIORITY_EXTRAS`: abs on leg days, forearms on pull days, arms on full-body days…). The prioritised lift stays the lead under every variety setting. Sessions that train a priority get one extra exercise |
+| **Priorities** | Every muscle the picker offers is reachable on every split (`FOCUS_PRIORITY_EXTRAS`: abs on leg days, forearms on pull days, arms on full-body days…). About one third of a session’s muscle slots may be led by priorities (`priorityLeadCap`); the rest follow the split. Priorities rotate across sessions. The prioritised lift stays the lead for those capped slots under every variety setting. Sessions that train a priority get one extra exercise |
 | **Picker options** | Only muscles with at least one eligible catalog exercise are offered (`PLAN_SELECTABLE_MUSCLE_GROUPS`) — neck, shins and hip flexors have none. Saved lists are cleaned on load (`keepSelectableMuscles`) |
 | **Movement families** | One pull-up/chin-up, one glute bridge/hip thrust, one Romanian deadlift, one calf raise, one shrug, one overhead press, one flat bench/chest press, one horizontal push-up, one plank per session — unless nothing else fits |
 | **Assisted lifts** | Intermediate and advanced lifters are not given an assisted pull-up / chin-up / dip once the plain or weighted version is on offer |
@@ -98,7 +98,7 @@ flowchart LR
 
 What actually changes across the four weeks:
 
-1. `fixed` variety keeps the same exercises. `balanced` and `dynamic` step the lead lift up the equipment ladder.
+1. `fixed` variety keeps the same exercises. `balanced` and `dynamic` rotate the lead lift: a novice climbs the equipment ladder, a trained lifter starts on the staple and rotates the other variations.
 2. Reps stay on the experience and goal table. They do not tighten by week.
 3. Logged workouts change the next suggested weight through `recommendSessionProgression`.
 4. Sets stay flat, except Basic and above on build muscle or functional fitness, who get one extra set in weeks 3–4. Intermediate and advanced drop that extra set again in week 4.
@@ -157,7 +157,7 @@ classDiagram
 | `split-recommendation.ts` | Suggested split from answers |
 | `progression.ts` | Live load recommendation |
 | `plan-inputs.ts` | Signature / refresh when profile changes |
-| `plan-composer.ts` + `plan-data.ts` | **Legacy mobile** authored plans |
+| `from-mobile-selection.ts` | Maps the mobile chip form onto the same generator inputs |
 | `apps/web/src/lib/plans.ts` | Save / refresh / activate plans against Supabase |
 
 ## Versioning & refresh

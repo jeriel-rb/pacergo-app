@@ -227,7 +227,7 @@ describe("cardio matches the person", () => {
   });
 
   it("walks novices and underweight people instead of running", () => {
-    expect(cardioSlugs(withCardio(answers(), prefs({ experience: "no_experience" })))).not.toContain("running");
+    expect(cardioSlugs(withCardio(answers(), prefs({ experience: "beginner" })))).not.toContain("running");
     expect(cardioSlugs(withCardio(answers(), prefs({ experience: "basic" })))).not.toContain("running");
     expect(cardioSlugs(withCardio(answers(BODIES.underweight), prefs({ experience: "advanced" })))).not.toContain(
       "running",
@@ -256,7 +256,7 @@ describe("difficulty fits the person", () => {
   it("gives people with no experience no tier-3 or advanced-skill moves", () => {
     for (const gym of [FULL_GYM, HOME]) {
       for (const goal of ONBOARDING_GOALS) {
-        const plan = build(answers({ goal }), prefs({ experience: "no_experience", daysPerWeek: "4" }), gym);
+        const plan = build(answers({ goal }), prefs({ experience: "beginner", daysPerWeek: "4" }), gym);
         for (const s of mainSlugs(plan)) {
           expect(exerciseDifficulty(s), `${s} (${goal}, ${gym.gymType})`).toBeLessThan(3);
           expect(ADVANCED_SKILL_SLUGS.has(s), s).toBe(false);
@@ -333,7 +333,7 @@ describe("warm-up", () => {
   });
 
   it("keeps plank-position shoulder drills away from someone who has never trained", () => {
-    const plan = build(answers(), prefs({ experience: "no_experience", daysPerWeek: "4", durationMin: 60 }), FULL_GYM);
+    const plan = build(answers(), prefs({ experience: "beginner", daysPerWeek: "4", durationMin: 60 }), FULL_GYM);
     for (const w of warmups(plan)) expect(w.slugs).not.toContain("scapular-push-up");
   });
 
@@ -393,33 +393,114 @@ describe("session order", () => {
   });
 });
 
+describe("priorities do not eat a full-body day", () => {
+  it("keeps a squat or hinge when arms and back are prioritized on a short full-body plan", () => {
+    const plan = build(
+      answers({ goal: "lose_weight" }),
+      prefs({
+        experience: "intermediate",
+        workoutSplit: "full_body",
+        daysPerWeek: "2",
+        durationMin: 45,
+        variety: "balanced",
+        prioritizeMuscles: true,
+        prioritizedMuscles: ["forearms", "biceps", "lats"],
+        excludeMuscles: true,
+        excludedMuscles: ["glutes"],
+      }),
+      FULL_GYM,
+    );
+    const mains = plan.weeks[0]!.days.flatMap((d) => d.session?.main.map((e) => e.slug) ?? []);
+    expect(mains.some((s) => /(squat|deadlift|leg-press|lunge|hinge)/.test(s) || /bench-press|push-up|chest-press|row|overhead-press|shoulder-press/.test(s))).toBe(
+      true,
+    );
+    // Priorities still show up somewhere in the week.
+    expect(mains.some((s) => /pulldown|pull-up|chin-up|curl|hang|farmer|forearm/.test(s))).toBe(true);
+  });
+});
+
+describe("an intermediate upper day", () => {
+  const HORIZONTAL_PRESS = /^(close-grip-|decline-|smith-machine-|dumbbell-)?bench-press$|^machine-chest-press$|push-up$/;
+  const VERTICAL_PULL = /(pull-up|chin-up|pulldown)$/;
+
+  it("leads with the barbell bench and does not stack presses or pulldowns", () => {
+    const plan = build(
+      answers({ goal: "build_muscle" }),
+      prefs({
+        experience: "intermediate",
+        daysPerWeek: "4",
+        durationMin: 60,
+        variety: "balanced",
+        prioritizeMuscles: true,
+        prioritizedMuscles: ["middle_chest", "upper_chest"],
+      }),
+      FULL_GYM,
+    );
+    const upper = plan.weeks[0]!.days.find((d) => d.session?.focus === "upper")!.session!;
+    const slugs = upper.main.map((e) => e.slug);
+    expect(slugs[0]).toBe("bench-press");
+    expect(slugs.filter((s) => HORIZONTAL_PRESS.test(s))).toHaveLength(1);
+    expect(slugs.filter((s) => VERTICAL_PULL.test(s)).length).toBeLessThanOrEqual(1);
+    expect(slugs.some((s) => s.startsWith("incline-"))).toBe(true);
+  });
+});
+
 describe("a session is not the same move five times", () => {
   const FAMILIES: [string, RegExp][] = [
-    ["vertical pull", /(^|-)(pull|chin)-up$/],
-    ["glute bridge", /hip-thrust|glute-bridge|frog-pump/],
-    ["romanian deadlift", /romanian-deadlift/],
-    ["calf raise", /calf-raise/],
-    ["shrug", /shrug/],
+    ["vertical pull", /(pull-up|chin-up|pulldown|hang)$/],
+    ["hinge", /deadlift|good-morning/],
     ["overhead press", /overhead-press|shoulder-press|(seated|standing)-dumbbell-press|arnold-press|push-press|landmine-press|pike-push-up|handstand-push-up/],
+    ["incline press", /^incline-.*(?:press|push-up)$/],
+    ["upright row", /^upright-row$/],
+    ["row", /row$/],
+    ["bilateral squat", /(^|-)(front-squat|hack-squat|goblet-squat|belt-squat|sissy-squat|leg-press)$|(?<!split-)squat$/],
+    ["lunge", /lunge|split-squat|step-up/],
+    ["dip", /(^|-)dip$/],
+    ["flat press", /^(close-grip-|decline-|smith-machine-|dumbbell-)?bench-press$|^machine-chest-press$|push-up$|decline-.*press$|floor-press$/],
+    ["glute bridge", /hip-thrust|glute-bridge|frog-pump/],
+    ["calf raise", /calf-raise/],
   ];
 
-  it("takes at most one of each movement family per session (full gym)", () => {
+  function offendersFor(plan: GeneratedPlan, label: string): string[] {
+    const found: string[] = [];
+    for (const s of sessions(plan)) {
+      const claimed = new Set<string>();
+      for (const [name, re] of FAMILIES) {
+        const matched = s.main.filter((e) => !claimed.has(e.slug) && re.test(e.slug));
+        for (const e of matched) claimed.add(e.slug);
+        if (matched.length > 1 && s.main.length > 2) found.push(`${label}/${s.focus}: ${matched.map((e) => e.slug).join(" + ")} (${name})`);
+      }
+    }
+    return found;
+  }
+
+  it("takes at most one of each movement family per session", () => {
     const offenders: string[] = [];
     for (const experience of ONBOARDING_EXPERIENCES) {
       for (const split of ["push_pull_legs", "upper_lower", "full_body"] as const) {
-        const plan = build(
-          answers(),
-          prefs({ experience, workoutSplit: split, daysPerWeek: split === "push_pull_legs" ? "6" : "4", durationMin: 60 }),
-          FULL_GYM,
-        );
-        for (const s of sessions(plan)) {
-          for (const [name, re] of FAMILIES) {
-            const n = s.main.filter((e) => re.test(e.slug)).length;
-            if (n > 1) offenders.push(`${experience}/${split}/${s.focus}: ${n}× ${name}`);
-          }
+        for (const [gymName, gym] of [["gym", FULL_GYM], ["home", HOME]] as const) {
+          const plan = build(
+            answers(),
+            prefs({ experience, workoutSplit: split, daysPerWeek: split === "push_pull_legs" ? "6" : "4", durationMin: 60 }),
+            gym,
+          );
+          offenders.push(...offendersFor(plan, `${experience}/${split}/${gymName}`));
         }
       }
     }
+    const quadsOut = build(
+      answers(),
+      prefs({
+        experience: "basic",
+        workoutSplit: "upper_lower",
+        daysPerWeek: "4",
+        durationMin: 60,
+        excludeMuscles: true,
+        excludedMuscles: ["quadriceps"],
+      }),
+      FULL_GYM,
+    );
+    offenders.push(...offendersFor(quadsOut, "basic/quads-excluded"));
     expect([...new Set(offenders)]).toEqual([]);
   });
 });
@@ -508,7 +589,7 @@ describe("whole-matrix sweep", () => {
     for (const { a, p, g, label } of cases) {
       const careful =
         needsLowImpact(a) ||
-        p.experience === "no_experience" ||
+        p.experience === "beginner" ||
         p.experience === "basic" ||
         bmi(a) < 18.5;
       if (careful && cardioSlugs(build(a, p, g)).includes("running")) problems.push(label);

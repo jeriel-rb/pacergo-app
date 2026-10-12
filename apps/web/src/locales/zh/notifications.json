@@ -1,6 +1,8 @@
 {
   "title": "通知",
   "empty": "目前沒有通知。",
+  "loadMore": "顯示更早的通知",
+  "loadingMore": "載入中…",
   "type": {
     "booking_requested": "你有一個新的預約請求",
     "booking_accepted": "你的預約已被接受",

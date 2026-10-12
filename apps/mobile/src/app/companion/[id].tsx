@@ -39,8 +39,14 @@ export default function CompanionDetailScreen() {
         ) : null}
         <View className={`items-center gap-2 ${detail?.banner_url ? '-mt-14' : ''}`}>
           <Avatar name={detail?.display_name ?? ''} photoUrl={detail?.photo_url} size={88} />
-          <AppText variant="h1">{detail?.display_name ?? ''}</AppText>
-          {detail?.home_area ? <AppText variant="caption">{detail.home_area}</AppText> : null}
+          <AppText variant="h1" numberOfLines={2} className="px-4 text-center">
+            {detail?.display_name ?? ''}
+          </AppText>
+          {detail?.home_area ? (
+            <AppText variant="caption" numberOfLines={1}>
+              {detail.home_area}
+            </AppText>
+          ) : null}
           <AppText variant="caption">
             {t('companion.reviews', { count: detail?.rating_count ?? 0 })}
           </AppText>

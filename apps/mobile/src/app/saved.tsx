@@ -27,9 +27,15 @@ export default function SavedScreen() {
             className="mb-3 flex-row items-center gap-3 rounded-lg bg-dark-surface p-4"
           >
             <Avatar name={item.display_name ?? ''} photoUrl={item.photo_url} size={48} />
-            <View className="flex-1 gap-0.5">
-              <AppText variant="h3">{item.display_name ?? ''}</AppText>
-              {item.home_area ? <AppText variant="caption">{item.home_area}</AppText> : null}
+            <View className="min-w-0 flex-1 gap-0.5">
+              <AppText variant="h3" numberOfLines={1}>
+                {item.display_name ?? ''}
+              </AppText>
+              {item.home_area ? (
+                <AppText variant="caption" numberOfLines={1}>
+                  {item.home_area}
+                </AppText>
+              ) : null}
             </View>
             {item.tier ? <TierBadge tier={item.tier} /> : null}
             <PriceTag amount={item.is_free ? 0 : item.price_ntd} />

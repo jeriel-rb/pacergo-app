@@ -116,8 +116,8 @@ export async function refreshActivePlanFromProfile(profile: {
 
 /** Regenerates a saved plan in place from its own saved answers, under the
  *  current plan rules (same id, so it stays active and keeps its history).
- *  Offered when the plan was built under older rules — e.g. before cooldowns
- *  became real stretching. Nothing about the plan's settings changes. */
+ *  Offered when the plan was built under an older PLAN_RULES_VERSION.
+ *  Nothing about the plan's settings changes. */
 export async function regeneratePlanUnderCurrentRules(planId: string): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase

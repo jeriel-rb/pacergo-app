@@ -14,11 +14,12 @@ import { notificationLabelKey } from '@/features/notifications/notificationLabel
 export default function NotificationsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { data } = useNotifications();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useNotifications();
   const markRead = useMarkNotificationsRead();
+  const items = data?.pages.flat() ?? [];
 
   useEffect(() => {
-    if ((data ?? []).some((n) => !n.read_at)) markRead.mutate();
+    if (items.some((n) => !n.read_at)) markRead.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
@@ -28,8 +29,18 @@ export default function NotificationsScreen() {
         {t('notif.title')}
       </AppText>
       <FlatList
-        data={data ?? []}
+        data={items}
         keyExtractor={(n) => n.id}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
+        }}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <AppText variant="caption" className="py-3 text-center">
+              {t('notif.loadingMore')}
+            </AppText>
+          ) : null
+        }
         renderItem={({ item }) => (
           <Pressable
             onPress={() =>

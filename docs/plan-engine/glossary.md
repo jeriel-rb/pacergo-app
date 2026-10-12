@@ -4,16 +4,16 @@ Use this when talking to clients or writing tickets. Code names are in backticks
 
 ## People & levels
 
-The same pick is stored under two different words. The plan answer is what generation reads. The public column is `users.experience_level`.
+Plan answers and `users.experience_level` use the same words. Generation reads the plan answer.
 
-| Pick | Plan answer | Public column | Base dose |
-| --- | --- | --- | --- |
-| **Beginner** | `no_experience` | `beginner` | 2×12–15 |
-| **Basic** | `basic` | `basic` | 3×10–12 |
-| **Intermediate** | `intermediate` | `intermediate` | 3×8–12 |
-| **Advanced** | `advanced` | `advanced` | 4×6–10 |
+| Pick | Stored value | Base dose |
+| --- | --- | --- |
+| **Beginner** | `beginner` | 2×12–15 |
+| **Basic** | `basic` | 3×10–12 |
+| **Intermediate** | `intermediate` | 3×8–12 |
+| **Advanced** | `advanced` | 4×6–10 |
 
-`save_profile_setup` and `save_onboarding_answers` copy a plan answer onto the public column: `no_experience` becomes `beginner`, and `basic` stays `basic`. A stored plan `beginner` is still read as Basic until it is rewritten. A blank plan answer does not write a public level. Generation still fills a missing experience with the Basic scheme.
+`save_profile_setup` and `save_onboarding_answers` copy the plan answer onto the public column. A blank plan answer does not write a public level. Generation fills a missing experience with the Basic scheme.
 
 ## Goals (live web onboarding)
 
@@ -24,11 +24,11 @@ The same pick is stored under two different words. The plan answer is what gener
 | Stay healthy | `stay_healthy` | Mixed strength + cardio + variety |
 | Functional fitness | `functional` | Same set ramp as build muscle, with a machine preferred in the warm-up |
 
-### Naming trap (legacy)
+### Goal id surfaces
 
-Older mobile / A-1 enums use different ids:
+Mobile plan chips and the web onboarding form use different goal ids for the same picks:
 
-| Legacy `TrainingGoal` | Live `OnboardingGoal` |
+| Mobile `TrainingGoal` | Web `OnboardingGoal` |
 | --- | --- |
 | `muscle_gain` | `build_muscle` |
 | `fat_loss` | `lose_weight` |
@@ -41,11 +41,11 @@ Do not mix these in one sentence without saying which surface.
 
 | Term | Meaning |
 | --- | --- |
-| **Mesocycle** | Our 4-week block |
-| **Week-to-week exercises** | Same movement pattern, harder version later in the month (for example machine press → dumbbell press). `fixed` variety is the only setting that keeps week 1’s exact list. If the user prioritised a muscle, the climb stays among that muscle’s prioritised lifts |
+| **Mesocycle** | Our 4-week block. The overview opens on the week since `created_at`, counted at Taipei midnight and wrapped onto weeks 1–4. Editing the plan does not move that date. A new plan starts at week 1. A `?week=` link keeps the week you opened a day from |
+| **Week-to-week exercises** | Same movement pattern, harder version later in the month (for example machine press → dumbbell press). `fixed` variety keeps week 1’s exact list and sizes the time-budget trim with week-1 sets so later weeks do not drop accessories. If the user prioritised a muscle, the climb stays among that muscle’s prioritised lifts |
 | **Dose** | Sets, reps, and rest. Sets are the only number the generator changes by week, and only on a mild ramp |
 | **Double progression** | Hit top of rep range → add load next time; otherwise chase reps at the same load. This happens in the set logger from what was logged, not as a number stored on the plan |
-| **Variety** | `fixed` = same lifts all four weeks; `balanced` (default) = lead lift climbs the equipment ladder each week, split and day structure stay put; `dynamic` = the same climb, plus a bigger rotation of accessories when a focus repeats in a week |
+| **Variety** | `fixed` = same lifts all four weeks; `balanced` (default) = the lead lift rotates each week (a novice climbs machine → free weight → barbell; intermediate and advanced start on the staple lift), split and day structure stay put; `dynamic` = the same rotation, plus a bigger rotation of accessories when a focus repeats in a week |
 
 ## Volume curves (“the ramp”)
 
@@ -108,6 +108,17 @@ Related code: `volumeCurveFor`, `weekSetDelta`, `setsForWeek`, `shouldConsolidat
 | **PLAN_RULES_VERSION** | Integer stamped on every generated plan; bump when rules change output |
 | **Plan refresh** | Regenerate under new rules; keep plan id when refreshing the active plan from profile |
 
-## Nutrition (related, not the workout engine)
+## Nutrition and companion ranking
 
-Onboarding body + goal also drive `calculateNutrition`. Goals must stay in sync with onboarding goal ids (including `functional`).
+These answers are used. They do not change which exercises a plan contains.
+
+| Answer | Used for |
+| --- | --- |
+| Gender | Calorie estimate. Mifflin–St Jeor uses `+5` for male and `−161` for female. `other` produces no calorie target. |
+| Day-to-day activity (`low` / `moderate` / `high`) | The same calorie estimate, as the multiplier on that base. |
+| Main sport (`primaryActivity`) | Companion ranking. The sport scores above city and experience. `other` adds no sport score. |
+| Goal, age, height, weight | Calories and protein, and also the plan (goal, and body size for low-impact and walking). |
+
+`calculateNutrition` is the calorie and protein step. Goal ids there match the plan, including `functional`.
+
+`low_motivation` and `lack_of_equipment` do not change the plan or the calories. The equipment list is what limits the exercises. The obstacle the client picked, including low motivation, is shown to the trainer on that client's session. It is not on the trainer's public profile.

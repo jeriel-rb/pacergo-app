@@ -37,6 +37,9 @@
   },
   "bookingStatus": {
     "requested": "已送出",
+    "pending_payment": "待付款",
+    "payment_processing": "付款確認中",
+    "payment_failed": "付款未完成",
     "accepted": "已接受",
     "declined": "已婉拒",
     "cancelled": "已取消",
@@ -64,7 +67,16 @@
     "message": "傳訊息",
     "when": "時間",
     "where": "地點",
-    "price": "價格"
+    "price": "價格",
+    "obstacle": "學員說目前的阻礙是",
+    "obstacles": {
+      "lack_of_time": "沒有時間",
+      "lack_of_knowledge": "缺乏知識",
+      "low_motivation": "動力不足",
+      "injuries": "傷痛或身體不適",
+      "lack_of_equipment": "缺乏器材",
+      "never_tried": "從未嘗試過"
+    }
   },
   "review": {
     "title": "留下評價",
@@ -95,6 +107,7 @@
     "ageError": "你必須年滿 18 歲才能使用 PacerGo。",
     "experienceLabel": "你的經驗程度",
     "beginner": "初學者",
+    "basic": "基礎",
     "intermediate": "中級",
     "advanced": "進階",
     "activitiesLabel": "你想訓練什麼？",
@@ -231,11 +244,13 @@
     "booking_accepted": "你的課程已被接受",
     "booking_declined": "你的邀請被婉拒",
     "booking_cancelled": "有一堂課程被取消",
-    "booking_completed": "有一堂課程已完成"
+    "booking_completed": "有一堂課程已完成",
+    "loadMore": "顯示更早的通知",
+    "loadingMore": "載入中…"
   },
   "aiPlan": {
     "title": "AI 訓練菜單",
-    "subtitle": "為你量身打造 60 分鐘菜單：暖身 10 分鐘＋主訓練 40 分鐘＋收操 10 分鐘",
+    "subtitle": "與網頁版相同的產生器做出的四週計畫，每次約 45 分鐘。",
     "goalLabel": "訓練目標",
     "goal": {
       "muscle_gain": "增肌訓練",
@@ -246,19 +261,14 @@
     "levelLabel": "訓練程度",
     "level": {
       "beginner": "初學者",
-      "intermediate": "中級",
+      "basic": "基礎",
+      "intermediate": "中階",
       "advanced": "進階"
     },
     "genderLabel": "性別",
     "gender": {
       "male": "男性",
       "female": "女性"
-    },
-    "weightLabel": "體型",
-    "weight": {
-      "slim": "纖細",
-      "medium": "中等",
-      "heavy": "肥胖"
     },
     "freqLabel": "訓練頻率",
     "freq": {
@@ -275,14 +285,10 @@
       "bodyweight": "純徒手",
       "outdoor": "戶外"
     },
-    "dietLabel": "飲食模式",
-    "diet": {
-      "none": "均衡飲食",
-      "muscle_gain": "增肌飲食",
-      "fat_loss": "減脂飲食",
-      "intermittent_fasting": "間歇性斷食"
-    },
     "generate": "生成訓練菜單",
+    "generating": "產生中…",
+    "error": "無法產生計畫，請再試一次。",
+    "week": "第 {{number}} 週",
     "empty": "選擇目標與程度後即可生成菜單"
   },
   "home": {

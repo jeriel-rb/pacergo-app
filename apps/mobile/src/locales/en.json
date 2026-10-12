@@ -37,6 +37,9 @@
   },
   "bookingStatus": {
     "requested": "Requested",
+    "pending_payment": "Pending payment",
+    "payment_processing": "Payment processing",
+    "payment_failed": "Payment failed",
     "accepted": "Accepted",
     "declined": "Declined",
     "cancelled": "Cancelled",
@@ -64,7 +67,16 @@
     "message": "Message",
     "when": "When",
     "where": "Where",
-    "price": "Price"
+    "price": "Price",
+    "obstacle": "What they said is in the way",
+    "obstacles": {
+      "lack_of_time": "Lack of time",
+      "lack_of_knowledge": "Lack of knowledge",
+      "low_motivation": "Low motivation",
+      "injuries": "Injuries or physical discomfort",
+      "lack_of_equipment": "Lack of equipment",
+      "never_tried": "I've never tried"
+    }
   },
   "review": {
     "title": "Leave a review",
@@ -95,6 +107,7 @@
     "ageError": "You must be 18 or older to use PacerGo.",
     "experienceLabel": "Your experience level",
     "beginner": "Beginner",
+    "basic": "Basic",
     "intermediate": "Intermediate",
     "advanced": "Advanced",
     "activitiesLabel": "What do you want to train?",
@@ -231,11 +244,13 @@
     "booking_accepted": "Your session was accepted",
     "booking_declined": "Your request was declined",
     "booking_cancelled": "A session was cancelled",
-    "booking_completed": "A session was completed"
+    "booking_completed": "A session was completed",
+    "loadMore": "Show earlier notifications",
+    "loadingMore": "Loading…"
   },
   "aiPlan": {
     "title": "AI Training Menu",
-    "subtitle": "A 60-minute menu built for you: 10 min warm-up + 40 min training + 10 min cool-down",
+    "subtitle": "A 4-week plan from the same generator as the web app. Each session is about 45 minutes.",
     "goalLabel": "Goal",
     "goal": {
       "muscle_gain": "Build Muscle",
@@ -246,6 +261,7 @@
     "levelLabel": "Level",
     "level": {
       "beginner": "Beginner",
+      "basic": "Basic",
       "intermediate": "Intermediate",
       "advanced": "Advanced"
     },
@@ -253,12 +269,6 @@
     "gender": {
       "male": "Male",
       "female": "Female"
-    },
-    "weightLabel": "Body type",
-    "weight": {
-      "slim": "Slim",
-      "medium": "Medium",
-      "heavy": "Heavier"
     },
     "freqLabel": "Training frequency",
     "freq": {
@@ -275,14 +285,10 @@
       "bodyweight": "Bodyweight Only",
       "outdoor": "Outdoor"
     },
-    "dietLabel": "Diet mode",
-    "diet": {
-      "none": "Balanced",
-      "muscle_gain": "Muscle gain",
-      "fat_loss": "Fat loss",
-      "intermittent_fasting": "Fasting (IF)"
-    },
     "generate": "Generate menu",
+    "generating": "Generating…",
+    "error": "Couldn't build the plan. Please try again.",
+    "week": "Week {{number}}",
     "empty": "Pick a goal and level to generate your menu"
   },
   "home": {

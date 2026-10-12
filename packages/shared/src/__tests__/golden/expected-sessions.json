@@ -1,0 +1,128 @@
+{
+  "trained-chest": [
+    [
+      "0 upper: bench-press, barbell-row, landmine-press, chin-up, bench-dip, incline-bench-press, rack-pull",
+      "1 lower: squat, hip-thrust, romanian-deadlift, smith-machine-bulgarian-split-squat, leg-press-calf-raise, captains-chair-knee-raise",
+      "3 upper: dumbbell-bench-press, seated-row, overhead-press, chair-dip, pull-up, incline-bench-press, hammer-curl",
+      "4 lower: hack-squat, barbell-glute-bridge, smith-machine-romanian-deadlift, smith-machine-bulgarian-split-squat, seated-calf-raise, hanging-leg-raise"
+    ],
+    [
+      "0 upper: dumbbell-bench-press, seated-row, feet-elevated-pike-push-up, chin-up, bench-dip, incline-bench-press, rack-pull",
+      "1 lower: hack-squat, barbell-glute-bridge, smith-machine-romanian-deadlift, smith-machine-bulgarian-split-squat, leg-press-calf-raise, hanging-knee-raise",
+      "3 upper: bench-press, barbell-row, overhead-press, chair-dip, lat-pulldown, incline-bench-press, hammer-curl",
+      "4 lower: squat, hip-thrust, romanian-deadlift, smith-machine-bulgarian-split-squat, seated-calf-raise, hanging-leg-raise"
+    ],
+    [
+      "0 upper: machine-chest-press, dumbbell-bent-over-row, pike-push-up, chin-up, chair-dip, incline-bench-press",
+      "1 lower: leg-press, smith-machine-hip-thrust, dumbbell-romanian-deadlift, smith-machine-bulgarian-split-squat, leg-press-calf-raise",
+      "3 upper: bench-press, barbell-row, overhead-press, bench-dip, pull-up",
+      "4 lower: squat, hip-thrust, romanian-deadlift, smith-machine-bulgarian-split-squat, seated-calf-raise"
+    ],
+    [
+      "0 upper: incline-bench-press, one-arm-dumbbell-row, wall-walk, chin-up, diamond-push-up, rack-pull, dumbbell-fly",
+      "1 lower: goblet-squat, deficit-reverse-lunge, dumbbell-sumo-deadlift, step-down, leg-press-calf-raise, flutter-kick",
+      "3 upper: bench-press, barbell-row, overhead-press, bench-dip, pull-up, incline-dumbbell-press, hammer-curl",
+      "4 lower: hack-squat, barbell-glute-bridge, romanian-deadlift, smith-machine-bulgarian-split-squat, seated-calf-raise, captains-chair-knee-raise"
+    ]
+  ],
+  "novice-home": [
+    [
+      "0 full_body: wall-push-up, doorway-row, wall-sit",
+      "2 full_body: incline-push-up, towel-row, forward-lunge",
+      "4 full_body: knee-push-up, doorway-row, bodyweight-squat"
+    ],
+    [
+      "0 full_body: incline-push-up, towel-row, bodyweight-squat",
+      "2 full_body: wall-push-up, doorway-row, forward-lunge",
+      "4 full_body: knee-push-up, towel-row, wall-sit"
+    ],
+    [
+      "0 full_body: knee-push-up, towel-row, forward-lunge",
+      "2 full_body: incline-push-up, doorway-row, wall-sit",
+      "4 full_body: push-up, towel-row, bodyweight-squat"
+    ],
+    [
+      "0 full_body: push-up, towel-row, forward-lunge",
+      "2 full_body: incline-push-up, doorway-row, wall-sit",
+      "4 full_body: knee-push-up, towel-row, bodyweight-squat"
+    ]
+  ],
+  "basic-gym": [
+    [
+      "0 upper: machine-chest-press, chest-supported-row, machine-shoulder-press, assisted-chin-up, assisted-dip, incline-dumbbell-press",
+      "1 lower: leg-press, glute-focused-back-extension, dumbbell-romanian-deadlift, reverse-lunge, standing-calf-raise, captains-chair-knee-raise",
+      "3 upper: weighted-push-up, t-bar-row, arnold-press, bench-dip, assisted-pull-up, cable-curl",
+      "4 lower: goblet-squat, cable-pull-through, smith-machine-romanian-deadlift, reverse-lunge, seated-calf-raise, flutter-kick"
+    ],
+    [
+      "0 upper: weighted-push-up, machine-row, arnold-press, assisted-chin-up, assisted-dip, incline-dumbbell-press",
+      "1 lower: goblet-squat, reverse-hyperextension, dumbbell-sumo-deadlift, reverse-lunge, standing-calf-raise, hanging-knee-raise",
+      "3 upper: machine-chest-press, t-bar-row, machine-shoulder-press, bench-dip, assisted-pull-up, cable-curl",
+      "4 lower: leg-press, cable-pull-through, smith-machine-romanian-deadlift, reverse-lunge, seated-calf-raise, flutter-kick"
+    ],
+    [
+      "0 upper: dumbbell-bench-press, t-bar-row, seated-dumbbell-press, assisted-chin-up, bench-dip",
+      "1 lower: reverse-lunge, cable-pull-through, kettlebell-romanian-deadlift, leg-press, standing-calf-raise",
+      "3 upper: machine-chest-press, chest-supported-row, machine-shoulder-press, assisted-dip, assisted-pull-up",
+      "4 lower: dumbbell-lateral-lunge, glute-focused-back-extension, smith-machine-romanian-deadlift, leg-press, seated-calf-raise"
+    ],
+    [
+      "0 upper: incline-dumbbell-press, seated-row, standing-dumbbell-press, assisted-chin-up, chair-dip",
+      "1 lower: split-squat, dumbbell-glute-bridge, smith-machine-romanian-deadlift, leg-press, standing-calf-raise",
+      "3 upper: machine-chest-press, chest-supported-row, machine-shoulder-press, assisted-dip, close-grip-lat-pulldown",
+      "4 lower: dumbbell-lateral-lunge, glute-focused-back-extension, dumbbell-romanian-deadlift, leg-press, seated-calf-raise"
+    ]
+  ],
+  "advanced-fixed": [
+    [
+      "0 push: bench-press, overhead-press, bench-dip, incline-bench-press, upright-row",
+      "1 pull: barbell-row, chin-up, prone-t-raise, rack-pull, bent-over-rear-delt-raise, drag-curl",
+      "3 legs: squat, hip-thrust, romanian-deadlift, bulgarian-split-squat, kettlebell-swing",
+      "4 upper: bench-press, barbell-row, overhead-press, chin-up, bench-dip"
+    ],
+    [
+      "0 push: bench-press, overhead-press, bench-dip, incline-bench-press, upright-row",
+      "1 pull: barbell-row, chin-up, prone-t-raise, rack-pull, bent-over-rear-delt-raise, drag-curl",
+      "3 legs: squat, hip-thrust, romanian-deadlift, bulgarian-split-squat, kettlebell-swing",
+      "4 upper: bench-press, barbell-row, overhead-press, chin-up, bench-dip"
+    ],
+    [
+      "0 push: bench-press, overhead-press, bench-dip, incline-bench-press, upright-row",
+      "1 pull: barbell-row, chin-up, prone-t-raise, rack-pull, bent-over-rear-delt-raise, drag-curl",
+      "3 legs: squat, hip-thrust, romanian-deadlift, bulgarian-split-squat, kettlebell-swing",
+      "4 upper: bench-press, barbell-row, overhead-press, chin-up, bench-dip"
+    ],
+    [
+      "0 push: bench-press, overhead-press, bench-dip, incline-bench-press, upright-row",
+      "1 pull: barbell-row, chin-up, prone-t-raise, rack-pull, bent-over-rear-delt-raise, drag-curl",
+      "3 legs: squat, hip-thrust, romanian-deadlift, bulgarian-split-squat, kettlebell-swing",
+      "4 upper: bench-press, barbell-row, overhead-press, chin-up, bench-dip"
+    ]
+  ],
+  "quads-excluded": [
+    [
+      "0 upper: machine-chest-press, chest-supported-row, machine-shoulder-press, assisted-chin-up, assisted-dip, incline-dumbbell-press",
+      "1 lower: glute-focused-back-extension, dumbbell-romanian-deadlift, reverse-hyperextension, stability-ball-hamstring-curl, standing-calf-raise, captains-chair-knee-raise",
+      "3 upper: weighted-push-up, t-bar-row, arnold-press, bench-dip, assisted-pull-up, cable-curl",
+      "4 lower: cable-pull-through, smith-machine-romanian-deadlift, reverse-hyperextension, stability-ball-hamstring-curl, seated-calf-raise, flutter-kick"
+    ],
+    [
+      "0 upper: weighted-push-up, machine-row, arnold-press, assisted-chin-up, assisted-dip, incline-dumbbell-press",
+      "1 lower: reverse-hyperextension, dumbbell-sumo-deadlift, glute-focused-back-extension, stability-ball-hamstring-curl, standing-calf-raise, hanging-knee-raise",
+      "3 upper: machine-chest-press, t-bar-row, machine-shoulder-press, bench-dip, assisted-pull-up, cable-curl",
+      "4 lower: cable-pull-through, smith-machine-romanian-deadlift, glute-focused-back-extension, stability-ball-hamstring-curl, seated-calf-raise, flutter-kick"
+    ],
+    [
+      "0 upper: dumbbell-bench-press, t-bar-row, seated-dumbbell-press, assisted-chin-up, bench-dip",
+      "1 lower: cable-pull-through, kettlebell-romanian-deadlift, glute-focused-back-extension, stability-ball-hamstring-curl, standing-calf-raise, flutter-kick",
+      "3 upper: machine-chest-press, chest-supported-row, machine-shoulder-press, assisted-dip, assisted-pull-up",
+      "4 lower: reverse-hyperextension, smith-machine-romanian-deadlift, glute-focused-back-extension, stability-ball-hamstring-curl, seated-calf-raise, captains-chair-knee-raise"
+    ],
+    [
+      "0 upper: incline-dumbbell-press, seated-row, standing-dumbbell-press, assisted-chin-up, chair-dip",
+      "1 lower: dumbbell-glute-bridge, smith-machine-romanian-deadlift, glute-focused-back-extension, stability-ball-hamstring-curl, standing-calf-raise, hollow-body-hold",
+      "3 upper: machine-chest-press, chest-supported-row, machine-shoulder-press, assisted-dip, close-grip-lat-pulldown",
+      "4 lower: reverse-hyperextension, dumbbell-romanian-deadlift, glute-focused-back-extension, stability-ball-hamstring-curl, seated-calf-raise, captains-chair-knee-raise"
+    ]
+  ]
+}

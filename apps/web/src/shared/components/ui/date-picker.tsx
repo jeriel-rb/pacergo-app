@@ -25,6 +25,8 @@ type DatePickerProps = {
   placeholder?: string;
   /** Disallow picking dates before this day (inclusive min). */
   minDate?: Date;
+  /** Disallow picking dates after this day (inclusive max). */
+  maxDate?: Date;
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -41,6 +43,7 @@ export function DatePicker({
   onChange,
   placeholder,
   minDate,
+  maxDate,
   disabled = false,
   className,
   id,
@@ -52,6 +55,7 @@ export function DatePicker({
   const [open, setOpen] = React.useState(false);
 
   const minKey = minDate ? calendarDateKeyInAppTz(minDate) : null;
+  const maxKey = maxDate ? calendarDateKeyInAppTz(maxDate) : null;
   const display = date
     ? format(date, locale === "zh" ? "yyyy/MM/dd" : "MM/dd/yyyy", {
         locale: dfLocale,
@@ -92,10 +96,15 @@ export function DatePicker({
             if (next) setOpen(false);
           }}
           locale={dfLocale}
-          defaultMonth={date ?? minDate ?? new Date()}
+          defaultMonth={date ?? maxDate ?? minDate ?? new Date()}
           disabled={
-            minKey
-              ? (d) => calendarDayKeyFromLocalDate(d) < minKey
+            minKey || maxKey
+              ? (d) => {
+                  const key = calendarDayKeyFromLocalDate(d);
+                  if (minKey && key < minKey) return true;
+                  if (maxKey && key > maxKey) return true;
+                  return false;
+                }
               : undefined
           }
           autoFocus

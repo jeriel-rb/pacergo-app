@@ -9,7 +9,7 @@ import { cityKey } from './city';
 export const MATCH_WEIGHTS = { activity: 3, city: 2, level: 1 } as const;
 
 const ACTIVITY_RANK: Record<OnboardingExperience, number> = {
-  no_experience: 0,
+  beginner: 0,
   basic: 1,
   intermediate: 2,
   advanced: 3,

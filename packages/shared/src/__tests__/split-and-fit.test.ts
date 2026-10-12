@@ -108,8 +108,8 @@ describe("experience-aware exercise selection", () => {
   });
 
   it("gives beginners and advanced lifters different exercises, not just more sets", () => {
-    expect(mainSlugs("no_experience")).not.toEqual(mainSlugs("advanced"));
-    expect(mainSlugs("no_experience")).not.toContain("bench-press");
+    expect(mainSlugs("beginner")).not.toEqual(mainSlugs("advanced"));
+    expect(mainSlugs("beginner")).not.toContain("bench-press");
   });
 
   it("still uses band/bodyweight work when nothing loaded is available", () => {

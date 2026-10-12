@@ -4,6 +4,9 @@ import type { BookingStatus } from '@/features/booking/stateMachine';
 
 const color: Record<BookingStatus, string> = {
   requested: '#FFB020',
+  pending_payment: '#FFB020',
+  payment_processing: '#3B82F6',
+  payment_failed: '#FF5C5C',
   accepted: '#3DDC97',
   declined: '#FF5C5C',
   cancelled: '#6B6B74',

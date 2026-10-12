@@ -7,7 +7,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { PriceTag } from '@/components/ui/PriceTag';
 import { StatusPill } from '@/components/booking/StatusPill';
-import { useBooking } from '@/features/booking/useBooking';
+import { useBooking, useClientObstacle } from '@/features/booking/useBooking';
 import { useTransitionBooking } from '@/features/booking/useTransitionBooking';
 import { availableActions, type BookingAction } from '@/features/booking/stateMachine';
 import { useSession } from '@/features/auth/useSession';
@@ -26,6 +26,8 @@ export default function BookingDetailScreen() {
   const router = useRouter();
   const { session } = useSession();
   const { data: booking } = useBooking(id);
+  const amSeeker = booking?.seeker_id === session?.user.id;
+  const { data: clientObstacle } = useClientObstacle(id, Boolean(booking) && !amSeeker);
   const transition = useTransitionBooking(id);
   const ensure = useEnsureConversation();
 
@@ -39,7 +41,6 @@ export default function BookingDetailScreen() {
     );
   }
 
-  const amSeeker = booking.seeker_id === session?.user.id;
   const role = amSeeker ? 'seeker' : 'companion';
   const name = amSeeker ? booking.companion_name : booking.seeker_name;
   const photo = amSeeker ? booking.companion_photo : booking.seeker_photo;
@@ -66,7 +67,9 @@ export default function BookingDetailScreen() {
       <ScrollView contentContainerStyle={{ paddingTop: 16, gap: 16 }}>
         <View className="items-center gap-2">
           <Avatar name={name ?? ''} photoUrl={photo} size={80} />
-          <AppText variant="h2">{name ?? ''}</AppText>
+          <AppText variant="h2" numberOfLines={2} className="px-4 text-center">
+            {name ?? ''}
+          </AppText>
           <StatusPill status={booking.status} />
         </View>
 
@@ -81,6 +84,14 @@ export default function BookingDetailScreen() {
             {t('bookingDetail.price')}
           </AppText>
           <PriceTag amount={booking.is_free ? 0 : booking.agreed_price} />
+          {clientObstacle && !amSeeker ? (
+            <>
+              <AppText variant="caption" className="mt-2">
+                {t('bookingDetail.obstacle')}
+              </AppText>
+              <AppText variant="body">{t(`bookingDetail.obstacles.${clientObstacle}`)}</AppText>
+            </>
+          ) : null}
         </View>
 
         <View className="gap-3">

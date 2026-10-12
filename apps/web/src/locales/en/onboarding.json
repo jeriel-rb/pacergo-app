@@ -76,11 +76,12 @@
       "female": "Female",
       "other": "Other"
     },
-    "subtitle": "Used for your training plan and to estimate your daily calories and protein."
+    "subtitle": "Used to estimate your daily calories and protein. It does not change which exercises appear in your plan."
   },
   "age": {
-    "title": "What's your age?",
+    "title": "When were you born?",
     "hint": "We use your age and BMI to set the right intensity, for example gentler, low-impact moves from age 50.",
+    "placeholder": "Select your birthdate",
     "suffix": "years old"
   },
   "heightWeight": {
@@ -100,7 +101,7 @@
       "title": "What's your training experience?",
       "subtitle": "This helps us recommend the right exercises and weights for you.",
       "options": {
-        "no_experience": {
+        "beginner": {
           "title": "Beginner",
           "description": "New to training. Not familiar with common exercises or training equipment. Focus on building a solid foundation."
         },

@@ -5,24 +5,8 @@
     "sub": "From personalized training plans and partner matching to real workout execution, PacerGo helps every session feel clearer and easier to sustain.",
     "cta_primary": "Start Free",
     "cta_secondary": "See How It Works",
-    "trust": "Free to join. Explore first. Upgrade AI when you need it."
+    "trust": "Free to join. Explore first. Book a partner when you want one."
   },
-  "activities_label": "Supported activities",
-  "activities_more": "& more",
-  "activities": [
-    "Gym",
-    "Running",
-    "Climbing",
-    "Yoga",
-    "Boxing",
-    "Hiking",
-    "Swimming",
-    "Cycling",
-    "Pilates",
-    "Tennis",
-    "Basketball",
-    "CrossFit"
-  ],
   "steps": {
     "eyebrow": "How It Works",
     "title_1": "Plan, support, train, ",

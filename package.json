@@ -15,7 +15,8 @@
     "web:build": "yarn workspace @pacergo/web build",
     "web:test": "yarn workspace @pacergo/web test",
     "test": "yarn workspace pacergo test",
-    "typecheck": "yarn workspace pacergo typecheck"
+    "typecheck": "yarn workspace pacergo typecheck",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "packageManager": "yarn@4.17.0"
 }

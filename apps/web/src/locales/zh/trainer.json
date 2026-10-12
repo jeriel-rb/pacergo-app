@@ -19,6 +19,8 @@
   "availabilityTz": "時段以台北時間（GMT+8）為準",
   "reviews": "用戶評價",
   "noReviews": "尚無評價",
+  "loadMoreReviews": "顯示更多評價",
+  "loadingReviews": "載入中…",
   "manager": "平台特約經理人",
   "managerRegion": "負責區域",
   "bookNow": "立即預約",

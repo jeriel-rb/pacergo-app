@@ -6,7 +6,6 @@ This folder is the **source of truth for how AI Plan works** — for product own
 | --- | --- | --- |
 | [Architecture](./architecture.md) | Everyone | How a plan is born, stored, and progressed (Mermaid) |
 | [Glossary](./glossary.md) | Product + eng | What every major concept means |
-| [Debt & cleanup](./debt-and-cleanup.md) | Product + eng | Empty maps, dual systems, unused fields — what to fix next |
 | [Design spec](../superpowers/specs/2026-10-08-progressive-mesocycle-engine-design.md) | Eng | Acceptance rules for the mesocycle upgrade |
 | [Research](../../reports/Deterministic%20workout%20plan%20progression.md) | Product | Why we chose frozen skeleton + dose progression |
 
@@ -43,9 +42,13 @@ flowchart LR
 | Surface | Plan generator | Notes |
 | --- | --- | --- |
 | **Web** (`apps/web`) | `generateTrainingPlan` | Live product path |
-| **Mobile** (`apps/mobile`) | `composeTrainingPlan` + authored `plan-data.ts` | **Legacy** markdown plans — different goal ids and inputs |
+| **Mobile** (`apps/mobile`) | `generateTrainingPlan` via `generatorInputFromMobileSelection` | Same generator. Phone goal chips use the shorter names and are mapped first. |
 
-Keeping both is the biggest architectural smell; see [Debt & cleanup](./debt-and-cleanup.md).
+## Where the other answers go
+
+Gender and day-to-day activity do not change the exercises. They feed the calorie estimate: gender is the Mifflin–St Jeor offset, and activity is the multiplier on that. The main sport does not change the exercises either. It ranks training companions, with the sport weighted above city and experience.
+
+`low_motivation` and `lack_of_equipment` are saved with the other obstacle answers and do not change a plan. The equipment list is what limits the exercises. Lack of time, an injury, lack of knowledge, and never having tried do change the plan. The obstacle the client picked is shown on the trainer's view of that session, and nowhere on the public trainer profile.
 
 ## Quick commands
 

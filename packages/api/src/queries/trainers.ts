@@ -39,7 +39,7 @@ export async function getRecommendedTrainers(opts?: {
   });
   if (error) {
     console.warn(safeTrainerQueryLog("recommended_companions", error));
-    return fallbackRecommendedTrainers(opts?.activity);
+    return [];
   }
   return (data ?? []) as TrainerSummary[];
 }
@@ -57,16 +57,9 @@ export async function getTrainerById(
   });
   if (error) {
     console.warn(safeTrainerQueryLog("companion_profile", error));
-    return MOCK_TRAINERS.find((t) => t.id === id) ?? null;
+    return null;
   }
   return (data ?? null) as TrainerProfile | null;
-}
-
-function fallbackRecommendedTrainers(activity?: ActivitySlug): TrainerSummary[] {
-  const feed = RECOMMENDED_IDS.map(
-    (id) => MOCK_TRAINERS.find((t) => t.id === id)!,
-  ).map(toSummary);
-  return activity ? feed.filter((t) => t.activities.includes(activity)) : feed;
 }
 
 function safeTrainerQueryLog(

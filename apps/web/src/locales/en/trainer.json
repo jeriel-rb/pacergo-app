@@ -19,6 +19,8 @@
   "availabilityTz": "Times shown in Taipei (GMT+8)",
   "reviews": "Reviews",
   "noReviews": "No reviews yet",
+  "loadMoreReviews": "Show more reviews",
+  "loadingReviews": "Loading…",
   "manager": "Platform manager",
   "managerRegion": "Region",
   "bookNow": "Book now",

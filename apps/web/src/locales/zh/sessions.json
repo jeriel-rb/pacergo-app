@@ -30,7 +30,16 @@
     "duration": "時長",
     "location": "地點",
     "price": "費用",
-    "note": "備註"
+    "note": "備註",
+    "obstacle": "學員說目前的阻礙是",
+    "obstacles": {
+      "lack_of_time": "沒有時間",
+      "lack_of_knowledge": "缺乏知識",
+      "low_motivation": "動力不足",
+      "injuries": "傷痛或身體不適",
+      "lack_of_equipment": "缺乏器材",
+      "never_tried": "從未嘗試過"
+    }
   },
   "actions": {
     "accept": "接受",

@@ -1,3 +1,4 @@
+import { NOTIFICATION_PAGE_SIZE } from "@pacergo/shared";
 import { createSupabaseServerClient } from "./supabase/server";
 import { SUPABASE_CONFIGURED } from "./supabase/env";
 
@@ -16,11 +17,14 @@ export interface AppNotification {
   created_at: string;
 }
 
-/** The signed-in user's recent notifications. */
-export async function getMyNotifications(): Promise<AppNotification[]> {
+/** One page of the signed-in user's notifications, newest first. */
+export async function getMyNotifications(offset = 0): Promise<AppNotification[]> {
   if (!SUPABASE_CONFIGURED) return [];
   const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.rpc("my_notifications");
+  const { data } = await supabase.rpc("my_notifications", {
+    p_limit: NOTIFICATION_PAGE_SIZE,
+    p_offset: offset,
+  });
   return (data ?? []) as AppNotification[];
 }
 

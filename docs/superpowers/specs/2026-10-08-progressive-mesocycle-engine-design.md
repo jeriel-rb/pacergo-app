@@ -21,7 +21,7 @@ Upgrade PacerGo’s **existing deterministic 4-week plan generator** so plans fe
 | --- | --- |
 | Weeks look identical / no real progression | Stable exercise skeleton; weeks differ by reps / load guidance / effort / conditional volume |
 | Week 1 should feel lighter; later weeks harder (same experience level) | Explicit week storyboard + progression hierarchy (not “+1 set every week”) |
-| Beginner vs Basic prescriptions look the same | Distinct experience tables (`no_experience` ≠ `beginner`) |
+| Beginner vs Basic prescriptions look the same | Distinct experience tables (`beginner` ≠ `basic`) |
 | Goals don’t feel different enough | Shared engine + goal profiles (Fat Loss ≠ “hypertrophy + short rests”) |
 | Session length ignored until “too long” | Duration is a generation constraint |
 | Beginner warm-up too aggressive | Easy machine Raise when equipment exists; no new onboarding question |
@@ -46,7 +46,7 @@ Research and the implementation brief use names such as `ProgressiveMesocycle`, 
 | Training Progression (Engine B) | `recommendLoad` in `progression.ts` (+ effort feedback) | Expand: full stall/failure/fatigue rules; stay separate from composer |
 | Volume curves `FLAT` / `MILD_RAMP` | `volumeCurveFor` returns one of those two. Week 4 easing is `shouldConsolidateWeek4`, not a third curve | `FLAT` is the default. `MILD_RAMP` is Basic+ on build muscle or functional, except injuries and lack of time |
 | Goal profiles | `GoalProfile`: `preferHigherReps`, `conditioningBias` | Those two fields are what generation reads |
-| Experience profiles | `EXPERIENCE_SCHEME` | Beginner (`no_experience`) and Basic (`basic`) use different sets and reps |
+| Experience profiles | `EXPERIENCE_SCHEME` | Beginner (`beginner`) and Basic (`basic`) use different sets and reps |
 | Exercise roles `PRIMARY`… | `exerciseRole` is `pattern` \| `isolation` \| `skill` | Formal PRIMARY/ACCESSORY roles were not built |
 | Effort target on each exercise | Removed. It was written into the plan and no screen showed it | Do not add it back unless a screen asks the user to stop short of failure |
 | Fractional volume accounting | Not built. One exercise is one set | Do not add fractional muscle-set fields unless a product decision asks for volume caps |
@@ -149,9 +149,9 @@ Beginners: no automatic week-4 deload.
 
 ## 5. Experience profiles (Beginner ≠ Basic)
 
-Onboarding labels (en): **Beginner** = plan answer `no_experience`, **Basic** = plan answer `basic`. The public column stores those picks as `beginner` and `basic`. A stored plan `beginner` is still read as Basic.
+Onboarding labels (en): **Beginner** = `beginner`, **Basic** = `basic`. The same words are stored on the plan answer and on `users.experience_level`.
 
-| Field | Beginner (`no_experience`) | Basic (`basic`) | Intermediate | Advanced |
+| Field | Beginner (`beginner`) | Basic (`basic`) | Intermediate | Advanced |
 | --- | --- | --- | --- | --- |
 | Sets / main exercise (base) | 2 | 3 | 3 | 4 |
 | Compound rep range (default) | 12–15 | 10–12 | 8–12 | 6–10 |
@@ -317,7 +317,7 @@ Same inputs + same exercise catalog snapshot + same `PLAN_RULES_VERSION` (+ any 
 
 ## 16. Status
 
-P0 (progression hierarchy, goal profiles, Functional goal, conditional week-4 consolidation, duration-aware generation, Beginner ≠ Basic tables, warm-up Raise chain) and the invariant tests are shipped. `recommendSessionProgression` runs in the set logger. Still open — tracked in [`docs/plan-engine/debt-and-cleanup.md`](../../plan-engine/debt-and-cleanup.md): formal exercise roles, and week labels on the plan overview. An effort target on each exercise was removed; no screen showed it.
+P0 (progression hierarchy, goal profiles, Functional goal, conditional week-4 consolidation, duration-aware generation, Beginner ≠ Basic tables, warm-up Raise chain) and the invariant tests are shipped. `recommendSessionProgression` runs in the set logger. Week labels are on the plan overview. Formal exercise roles are not built: a shorter session drops the tail of the list. An effort target on each exercise was removed; no screen showed it.
 
 ---
 

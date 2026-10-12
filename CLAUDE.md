@@ -62,20 +62,20 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   (with art + instructions) rather than reusing strength/core moves. Bump
   `PLAN_RULES_VERSION` when generation output changes; the plan overview then offers to
   update older plans.
-- **Experience is stored twice, under different words.** The plan answer
-  (`user_onboarding.training_preferences.experience`, and the same field on a saved
-  plan snapshot) is Beginner = `no_experience` (2×12–15) and Basic = `basic`
-  (3×10–12). A stored plan `beginner` is still read as Basic. The public column
-  `users.experience_level` is Beginner = `beginner` and Basic = `basic`.
-  `save_profile_setup` / `save_onboarding_answers` copy `no_experience` → `beginner`
-  and leave `basic` as `basic`; a leftover plan `beginner` still maps to public
-  `basic`. A blank plan answer does not write a public level. Generation still
-  fills a missing experience with the Basic scheme.
-  The mobile composer does not offer Basic.
+- **Experience** uses the same four words on the plan answer
+  (`user_onboarding.training_preferences.experience`, and the saved plan snapshot)
+  and on `users.experience_level`: Beginner = `beginner` (2×12–15), Basic = `basic`
+  (3×10–12), Intermediate, Advanced. `save_profile_setup` /
+  `save_onboarding_answers` copy the answer onto the public column as-is. A blank
+  plan answer does not write a public level. Generation fills a missing
+  experience with the Basic scheme. Mobile plan chips and profile onboarding use
+  the same four words.
 - **Plan quality:** the guard rails (difficulty ceiling for novices, exclusions by main
-  muscle only, reachable priorities, walking instead of running for novice / low-impact /
-  low-BMI users, high-impact moves kept out of low-impact plans by whole slug words
-  so a woodchop is not a hop, one move per movement family, compounds before accessories) live in
+  muscle only, reachable priorities with about one third of session slots as priority
+  leads, fixed variety sized with week-1 sets so heavier weeks keep the same lifts,
+  walking instead of running for novice / low-impact / low-BMI users, high-impact
+  moves kept out of low-impact plans by whole slug words so a woodchop is not a hop,
+  one move per movement family, compounds before accessories) live in
   `generateTrainingPlan` and are described in `docs/plan-engine/architecture.md`.
   `packages/shared/src/__tests__/plan-invariants.test.ts` runs the generator over the real
   catalog, read from the generated block in `0001_init.sql` by `__tests__/helpers/

@@ -30,7 +30,16 @@
     "duration": "Duration",
     "location": "Location",
     "price": "Price",
-    "note": "Note"
+    "note": "Note",
+    "obstacle": "What they said is in the way",
+    "obstacles": {
+      "lack_of_time": "Lack of time",
+      "lack_of_knowledge": "Lack of knowledge",
+      "low_motivation": "Low motivation",
+      "injuries": "Injuries or physical discomfort",
+      "lack_of_equipment": "Lack of equipment",
+      "never_tried": "I've never tried"
+    }
   },
   "actions": {
     "accept": "Accept",

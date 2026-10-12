@@ -195,7 +195,7 @@ describe("goal, obstacle and the options that shape volume", () => {
     expect(repsOf(make({ goal: "lose_weight" }))).toBe("12-15");
     expect(repsOf(make({ goal: "build_muscle" }, { experience: "advanced" }))).toBe("6-10");
     expect(repsOf(make({ goal: "build_muscle" }, { experience: "basic" }))).toBe("10-12");
-    expect(repsOf(make({ goal: "build_muscle" }, { experience: "no_experience" }))).toBe("12-15");
+    expect(repsOf(make({ goal: "build_muscle" }, { experience: "beginner" }))).toBe("12-15");
     expect(repsOf(make({ goal: "stay_healthy" }, { experience: "intermediate" }))).toBe("8-12");
   });
 

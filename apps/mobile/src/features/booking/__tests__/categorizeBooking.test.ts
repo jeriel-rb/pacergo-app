@@ -9,6 +9,11 @@ describe('categorizeBooking', () => {
     expect(categorizeBooking({ ...base, status: 'requested' })).toBe('requests');
   });
 
+  it('keeps a booking that is still being paid with the open requests', () => {
+    expect(categorizeBooking({ ...base, status: 'pending_payment' })).toBe('requests');
+    expect(categorizeBooking({ ...base, status: 'payment_processing' })).toBe('requests');
+    expect(categorizeBooking({ ...base, status: 'payment_failed' })).toBe('requests');
+  });
   it('puts accepted bookings in upcoming', () => {
     expect(categorizeBooking({ ...base, status: 'accepted' })).toBe('upcoming');
   });

@@ -16,11 +16,17 @@ export interface PlanRestTimer {
 
 export async function getTrainingPlanServer(
   id: string,
-): Promise<{ label: string; goal: string | null; plan: GeneratedPlan; restTimer: PlanRestTimer } | null> {
+): Promise<{
+  label: string;
+  goal: string | null;
+  plan: GeneratedPlan;
+  createdAt: string;
+  restTimer: PlanRestTimer;
+} | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("user_training_plans")
-    .select("label, goal, plan, onboarding_snapshot")
+    .select("label, goal, plan, created_at, onboarding_snapshot")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -29,6 +35,7 @@ export async function getTrainingPlanServer(
     label: string;
     goal: string | null;
     plan: GeneratedPlan;
+    created_at: string;
     onboarding_snapshot: PlanOnboardingSnapshot | null;
   };
   const prefs = row.onboarding_snapshot?.trainingPreferences;
@@ -39,6 +46,7 @@ export async function getTrainingPlanServer(
     // string, which was frozen in whatever locale was active at save time.
     goal: row.goal,
     plan: row.plan,
+    createdAt: row.created_at,
     // Plans saved before the timer existed have no choice stored: on, with sound.
     restTimer: { enabled: prefs?.restTimerEnabled ?? true, sound: prefs?.restTimerSound ?? true },
   };

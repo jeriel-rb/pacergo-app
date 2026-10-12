@@ -47,8 +47,10 @@ function isAnswered(field: BodyField, answers: OnboardingAnswers): boolean {
       return isPlanGender(answers.gender);
     case "activityLevel":
       return answers.activityLevel !== null;
+    case "age":
+      return answers.birthdate !== null || answers.age !== null;
     default:
-      return true; // wheels always hold a value (defaults applied on Continue)
+      return true; // body wheels always hold a value (defaults applied on Continue)
   }
 }
 

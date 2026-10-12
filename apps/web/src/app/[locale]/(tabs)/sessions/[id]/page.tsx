@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getBookingDetail } from "@/lib/bookings";
+import { getBookingClientObstacle, getBookingDetail } from "@/lib/bookings";
 import { getMyReviewForBooking } from "@/lib/reviews";
 import { getSessionUser } from "@/lib/auth";
 import { BookingDetailView } from "@/features/booking/booking-detail-view";
@@ -10,10 +10,11 @@ type Params = { params: Promise<{ id: string }> };
 
 export default async function BookingDetailPage({ params }: Params) {
   const { id } = await params;
-  const [booking, user, myReview] = await Promise.all([
+  const [booking, user, myReview, clientObstacle] = await Promise.all([
     getBookingDetail(id),
     getSessionUser(),
     getMyReviewForBooking(id),
+    getBookingClientObstacle(id),
   ]);
   if (!booking) notFound();
   return (
@@ -21,6 +22,7 @@ export default async function BookingDetailPage({ params }: Params) {
       booking={booking}
       currentUserId={user?.id ?? null}
       myReview={myReview}
+      clientObstacle={clientObstacle}
     />
   );
 }

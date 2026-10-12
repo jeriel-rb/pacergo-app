@@ -191,7 +191,7 @@ describe("goal, experience and obstacle drive the prescription", () => {
 
   it("sets scale with experience (Beginner ≠ Basic)", () => {
     const sets = (experience: OnboardingExperience) => firstMain(plan({ prefs: { experience } }))[0]!.sets;
-    expect(sets("no_experience")).toBe(2);
+    expect(sets("beginner")).toBe(2);
     expect(sets("basic")).toBe(3);
     expect(sets("intermediate")).toBe(3);
     expect(sets("advanced")).toBe(4);
@@ -206,7 +206,7 @@ describe("goal, experience and obstacle drive the prescription", () => {
 
   it("mild set ramp only when eligible; novices and obstacles stay flat", () => {
     const mainSets = (p: GeneratedPlan, w: number) => p.weeks[w]!.days.flatMap((d) => d.session?.main.map((e) => e.sets) ?? []);
-    const novice = plan({ prefs: { experience: "no_experience" } });
+    const novice = plan({ prefs: { experience: "beginner" } });
     expect(mainSets(novice, 3)).toEqual(mainSets(novice, 0));
     const intermediate = plan({ prefs: { experience: "intermediate" }, answers: { goal: "build_muscle" } });
     // Week 3 (index 2) may add a set; week 4 consolidates back for intermediate+.
@@ -300,7 +300,7 @@ describe("hard filters: equipment, experience, QA, excluded muscles", () => {
   });
 
   it("beginners never get advanced-skill moves; advanced lifters may", () => {
-    for (const experience of ["no_experience", "basic"] as const)
+    for (const experience of ["beginner", "basic"] as const)
       expect(mainSlugs(plan({ prefs: { experience } })).filter((s) => ADVANCED_SKILL_SLUGS.has(s))).toEqual([]);
   });
 
@@ -355,8 +355,11 @@ describe("priorities and variety", () => {
     const fixed = pick("fixed");
     for (const w of fixed) expect(w).toEqual(fixed[0]);
     const balanced = pick("balanced");
-    expect(balanced[0]).toEqual(fixed[0]);
     expect(JSON.stringify(balanced)).not.toEqual(JSON.stringify(fixed));
+    // A trained lifter's first week leads with the staple press, ahead of the easier raise.
+    expect(balanced[0]!.indexOf("overhead-press")).toBeGreaterThanOrEqual(0);
+    expect(balanced[0]!.indexOf("overhead-press")).toBeLessThan(balanced[0]!.indexOf("dumbbell-lateral-raise"));
+    expect(balanced[1]).not.toEqual(balanced[0]);
   });
 
   it("no session repeats an exercise within itself", () => {

@@ -41,8 +41,10 @@ export default function CompanionDashboard() {
               className="flex-row items-center gap-3 rounded-lg bg-dark-surface p-4"
             >
               <Avatar name={b.seeker_name ?? ''} photoUrl={b.seeker_photo} size={44} />
-              <View className="flex-1">
-                <AppText variant="body">{b.seeker_name ?? ''}</AppText>
+              <View className="min-w-0 flex-1">
+                <AppText variant="body" numberOfLines={1}>
+                  {b.seeker_name ?? ''}
+                </AppText>
               </View>
               <StatusPill status={b.status} />
             </Pressable>
@@ -60,7 +62,7 @@ export default function CompanionDashboard() {
               className="flex-row items-center gap-3 rounded-lg bg-dark-surface p-4"
             >
               <Avatar name={b.seeker_name ?? ''} photoUrl={b.seeker_photo} size={44} />
-              <AppText variant="body" className="flex-1">
+              <AppText variant="body" numberOfLines={1} className="min-w-0 flex-1">
                 {b.seeker_name ?? ''}
               </AppText>
               <StatusPill status={b.status} />

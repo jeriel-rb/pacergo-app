@@ -1,13 +1,5 @@
-/** Personalized Workout Plan Generator (Beta) dimensions — see
- *  ../plan/plan-types.ts (structured plan) and ../plan/plan-composer.ts.
- *  The plan *level* reuses the composer levels (beginner/intermediate/advanced)
- *  — see ../enums/experience.
- *
- *  Exactly 6 onboarding inputs (spec A-1), no others: goal, experience,
- *  training frequency, location & equipment, gender + weight class, diet
- *  mode. No age, no height/weight numbers, no injury flags, no session
- *  duration, no target areas, no free text.
- */
+/** Personalized workout chips on the mobile plan screen. Web uses the richer
+ *  onboarding answers in ../onboarding/onboarding-types.ts. */
 
 /** What the user is training for. */
 export type TrainingGoal =
@@ -21,20 +13,6 @@ export const TRAINING_GOALS: readonly TrainingGoal[] = [
   "fat_loss",
   "functional",
   "general_fitness",
-] as const;
-
-/** Body-type / weight class — tunes intensity, impact and calorie guidance.
- *  Interpreted per gender (the same class maps to different guidance for
- *  male vs female plans). */
-export type WeightClass =
-  | "slim" // 纖細
-  | "medium" // 中等
-  | "heavy"; // 肥胖
-
-export const WEIGHT_CLASSES: readonly WeightClass[] = [
-  "slim",
-  "medium",
-  "heavy",
 ] as const;
 
 /** How often the user can train. */
@@ -66,20 +44,4 @@ export const TRAINING_LOCATIONS: readonly TrainingLocation[] = [
   "home",
   "bodyweight",
   "outdoor",
-] as const;
-
-/** Diet mode — picks the nutrition/supplement logic paired with the menu.
- *  `none` gives generic balanced-diet guidance (the nutrition section is
- *  always shown — there is no separate on/off toggle). */
-export type DietMode =
-  | "none" // 均衡飲食
-  | "muscle_gain" // 增肌飲食
-  | "fat_loss" // 減脂飲食
-  | "intermittent_fasting"; // 間歇性斷食
-
-export const DIET_MODES: readonly DietMode[] = [
-  "none",
-  "muscle_gain",
-  "fat_loss",
-  "intermittent_fasting",
 ] as const;

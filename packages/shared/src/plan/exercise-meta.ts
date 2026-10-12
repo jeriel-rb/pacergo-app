@@ -172,13 +172,13 @@ export function exerciseDifficulty(slug: string): ExerciseDifficulty {
  *  up to tier 2 and only get a tier-3 move when nothing easier trains that
  *  muscle. Intermediate and advanced lifters are not capped. */
 export const DIFFICULTY_LIMITS: Record<OnboardingExperience, { start: ExerciseDifficulty; max: ExerciseDifficulty }> = {
-  no_experience: { start: 1, max: 2 },
+  beginner: { start: 1, max: 2 },
   basic: { start: 2, max: 3 },
   intermediate: { start: 3, max: 3 },
   advanced: { start: 3, max: 3 },
 };
 
-const NOVICE: ReadonlySet<OnboardingExperience> = new Set(["no_experience", "basic"]);
+const NOVICE: ReadonlySet<OnboardingExperience> = new Set(["beginner", "basic"]);
 
 export function isAdvancedSkill(slug: string): boolean {
   return ADVANCED_SKILL_SLUGS.has(slug);

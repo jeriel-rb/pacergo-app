@@ -460,15 +460,13 @@
         "zh": "中文"
       },
       "experience": {
-        "no_experience": "No experience",
         "beginner": "Beginner",
         "basic": "Basic",
         "intermediate": "Intermediate",
         "advanced": "Advanced"
       },
       "planExperience": {
-        "no_experience": "Beginner",
-        "beginner": "Basic",
+        "beginner": "Beginner",
         "basic": "Basic",
         "intermediate": "Intermediate",
         "advanced": "Advanced"

@@ -20,6 +20,7 @@ import type { SavedFitnessProfile } from "@/lib/fitness-profile-row";
 import { cn } from "@/lib/utils";
 import { aiPlanHref } from "@/lib/ai-plan-path";
 import { NutritionMissingNotice, NutritionTargetsCard } from "./nutrition-targets-card";
+import { GoalAlignBanner } from "@/features/ai-plan/plan/goal-align-banner";
 
 /** The saved AI Nutrition result: daily calories, protein and food guidance.
  *  It only *reads* the Shared Fitness Profile — the inputs behind it are
@@ -31,13 +32,16 @@ export function NutritionView({
   saved,
   answers,
   nextHref,
+  activePlanGoal,
 }: {
   userId: string;
   saved: SavedFitnessProfile;
-  /** Saved answers merged with the account profile's gender. */
+  /** Shared Fitness Profile answers used for the calorie/protein estimate. */
   answers: OnboardingAnswers;
   /** Where "Continue" goes when the user arrived from building a plan. */
   nextHref: string | null;
+  /** Goal on the user's active training plan, when they have one. */
+  activePlanGoal?: string | null;
 }) {
   const { t } = useTranslation(["plan", "onboarding"]);
   const locale = useLocale();
@@ -80,6 +84,17 @@ export function NutritionView({
         </div>
         <p className="text-sm text-muted-foreground">{t("nutrition.subtitle")}</p>
       </div>
+
+      {activePlanGoal != null && (
+        <GoalAlignBanner
+          userId={userId}
+          planGoal={activePlanGoal}
+          profileGoal={answers.goal}
+          answers={answers}
+          trainingPreferences={saved.trainingPreferences}
+          gymEquipment={saved.gymEquipment}
+        />
+      )}
 
       <section className="space-y-3">
         {targets ? (

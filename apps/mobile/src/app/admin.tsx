@@ -57,9 +57,11 @@ export default function AdminScreen() {
           <View className="mb-3 gap-3 rounded-lg bg-dark-surface p-4">
             <View className="flex-row items-center gap-3">
               <Avatar name={item.display_name ?? ''} photoUrl={item.photo_url} size={40} />
-              <View className="flex-1">
-                <AppText variant="h3">{item.display_name ?? ''}</AppText>
-                <AppText variant="caption">
+              <View className="min-w-0 flex-1">
+                <AppText variant="h3" numberOfLines={1}>
+                  {item.display_name ?? ''}
+                </AppText>
+                <AppText variant="caption" numberOfLines={1}>
                   {t(`admin.doc.${item.doc_type}`)}
                   {item.activity ? ` · ${item.activity}` : ''}
                   {item.label ? ` · ${item.label}` : ''}

@@ -76,11 +76,12 @@
       "female": "女性",
       "other": "其他"
     },
-    "subtitle": "用於你的訓練計畫，以及估算每日熱量與蛋白質需求。"
+    "subtitle": "用於估算每日熱量與蛋白質需求，不會改變訓練計畫裡的動作。"
   },
   "age": {
-    "title": "你的年齡是？",
+    "title": "你的生日是？",
     "hint": "我們會用你的年齡與 BMI 來調整訓練強度，例如 50 歲以上會改採低衝擊動作。",
+    "placeholder": "選擇你的生日",
     "suffix": "歲"
   },
   "heightWeight": {
@@ -100,7 +101,7 @@
       "title": "你的訓練經驗是？",
       "subtitle": "這能幫助我們為你推薦合適的動作與重量。",
       "options": {
-        "no_experience": {
+        "beginner": {
           "title": "初學者",
           "description": "剛接觸訓練，不熟悉常見動作或訓練器材。著重打好基礎。"
         },

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EXPERIENCE_LEVELS, type ExperienceLevel } from '@pacergo/shared';
 
 export function isAdult(birthdate: Date, now: Date = new Date()): boolean {
   const eighteenth = new Date(birthdate);
@@ -6,8 +7,9 @@ export function isAdult(birthdate: Date, now: Date = new Date()): boolean {
   return eighteenth.getTime() <= now.getTime();
 }
 
-export const experienceLevels = ['beginner', 'intermediate', 'advanced'] as const;
-export type ExperienceLevel = (typeof experienceLevels)[number];
+/** Public profile and plan chips share beginner / basic / intermediate / advanced. */
+export const experienceLevels = EXPERIENCE_LEVELS;
+export type { ExperienceLevel };
 
 export const onboardingSchema = z.object({
   displayName: z.string().trim().min(1).max(40),

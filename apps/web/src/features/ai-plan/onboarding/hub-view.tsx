@@ -29,7 +29,7 @@ function firstUnansweredAboutYouStep(answers: OnboardingAnswers): AboutYouStep {
   if (!answers.goal) return "goal";
   if (!answers.obstacle) return "obstacle";
   if (!isPlanGender(answers.gender)) return "gender";
-  if (!answers.age) return "age";
+  if (!answers.birthdate && answers.age == null) return "age";
   if (!answers.heightCm || !answers.weightKg) return "height-weight";
   if (!answers.activityLevel) return "activity-level";
   return ABOUT_YOU_STEPS[0];

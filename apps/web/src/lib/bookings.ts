@@ -1,4 +1,9 @@
-import type { BookingRecord, CompanionOffering } from "@pacergo/shared";
+import {
+  ONBOARDING_OBSTACLES,
+  type BookingRecord,
+  type CompanionOffering,
+  type OnboardingObstacle,
+} from "@pacergo/shared";
 import { createSupabaseServerClient } from "./supabase/server";
 import { SUPABASE_CONFIGURED } from "./supabase/env";
 
@@ -16,6 +21,16 @@ export async function getBookingDetail(id: string): Promise<BookingRecord | null
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.rpc("booking_detail", { p_id: id });
   return (data ?? null) as BookingRecord | null;
+}
+
+/** Obstacle the client named in onboarding. Null unless the caller is the trainer on this booking. */
+export async function getBookingClientObstacle(id: string): Promise<OnboardingObstacle | null> {
+  if (!SUPABASE_CONFIGURED) return null;
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("booking_client_obstacle", { p_booking_id: id });
+  return ONBOARDING_OBSTACLES.includes(data as OnboardingObstacle)
+    ? (data as OnboardingObstacle)
+    : null;
 }
 
 /** Bookable offerings (with ids) for a companion's active listing. */

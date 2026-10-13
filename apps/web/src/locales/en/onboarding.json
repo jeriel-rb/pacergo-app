@@ -81,7 +81,6 @@
   "age": {
     "title": "When were you born?",
     "hint": "We use your age and BMI to set the right intensity, for example gentler, low-impact moves from age 50.",
-    "placeholder": "Select your birthdate",
     "suffix": "years old"
   },
   "heightWeight": {

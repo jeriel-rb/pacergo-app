@@ -3,14 +3,15 @@
 import { useTranslation } from "react-i18next";
 import {
   ageFromBirthdate,
-  earliestBirthdateForAge,
-  latestBirthdateForAge,
   ONBOARDING_GOALS,
   PLAN_GENDERS,
   type OnboardingAnswers,
 } from "@pacergo/shared";
 import { OptionCard } from "@/shared/components/atoms/option-card";
-import { DatePicker } from "@/shared/components/ui/date-picker";
+import {
+  BirthdateWheel,
+  defaultBirthdate,
+} from "@/shared/components/atoms/birthdate-wheel";
 import { ActivityLevelOptions } from "@/features/ai-plan/onboarding/activity-level-options";
 import { BodyMeasurementsPicker } from "@/features/ai-plan/onboarding/height-weight-view";
 
@@ -24,23 +25,17 @@ export const WHEEL_FIELDS: readonly BodyField[] = ["age", "body"];
 
 export const BODY_DEFAULTS = { age: 30, heightCm: 175, weightKg: 80 } as const;
 
-function parseIso(iso: string | null | undefined): Date | undefined {
-  if (!iso) return undefined;
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-  if (!m) return undefined;
-  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+/** Default the birthdate wheel shows: a legacy saved age if any, else 30. */
+function wheelDefaultAge(answers: OnboardingAnswers): number {
+  return Math.min(100, Math.max(13, answers.age ?? BODY_DEFAULTS.age));
 }
 
-function toIso(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-/** Fill body defaults the user accepted without scrolling. Birthdate is
- *  required from the picker — we don't invent one from a default age. */
+/** Fill wheel defaults the user accepted without scrolling. */
 export function withBodyDefaults(answers: OnboardingAnswers, field: BodyField): OnboardingAnswers {
+  if (field === "age" && !answers.birthdate) {
+    const birthdate = defaultBirthdate(wheelDefaultAge(answers));
+    return { ...answers, birthdate, age: ageFromBirthdate(birthdate) };
+  }
   if (field === "body") {
     return {
       ...answers,
@@ -103,20 +98,15 @@ export function BodyFieldEditor({
         : answers.age;
       return (
         <div className="space-y-3 py-2">
-          <DatePicker
-            date={parseIso(answers.birthdate)}
-            onChange={(d) => {
-              if (!d) {
-                onChange({ birthdate: null, age: null });
-                return;
-              }
-              const birthdate = toIso(d);
-              onChange({ birthdate, age: ageFromBirthdate(birthdate) });
-            }}
-            minDate={parseIso(earliestBirthdateForAge(100))}
-            maxDate={parseIso(latestBirthdateForAge(13))}
-            placeholder={t("age.placeholder")}
-            aria-label={t("age.title")}
+          <BirthdateWheel
+            value={answers.birthdate ?? null}
+            onChange={(birthdate) =>
+              onChange({ birthdate, age: ageFromBirthdate(birthdate) })
+            }
+            minAge={13}
+            maxAge={100}
+            defaultAge={wheelDefaultAge(answers)}
+            ariaLabel={t("age.title")}
           />
           {age != null && (
             <p className="text-center text-sm text-muted-foreground">

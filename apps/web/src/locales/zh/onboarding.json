@@ -81,7 +81,6 @@
   "age": {
     "title": "你的生日是？",
     "hint": "我們會用你的年齡與 BMI 來調整訓練強度，例如 50 歲以上會改採低衝擊動作。",
-    "placeholder": "選擇你的生日",
     "suffix": "歲"
   },
   "heightWeight": {

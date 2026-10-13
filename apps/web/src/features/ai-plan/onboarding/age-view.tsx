@@ -1,32 +1,18 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { ageFromBirthdate } from "@pacergo/shared";
 import {
-  ageFromBirthdate,
-  earliestBirthdateForAge,
-  latestBirthdateForAge,
-} from "@pacergo/shared";
-import { DatePicker } from "@/shared/components/ui/date-picker";
+  BirthdateWheel,
+  defaultBirthdate,
+} from "@/shared/components/atoms/birthdate-wheel";
 import { useOnboarding } from "@/features/ai-plan/onboarding-store";
 import { useAboutYouNav } from "./about-you-steps";
 import { StepScreen } from "./step-screen";
 
 const MIN_AGE = 13;
 const MAX_AGE = 100;
-
-function parseIso(iso: string | null): Date | undefined {
-  if (!iso) return undefined;
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-  if (!m) return undefined;
-  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-}
-
-function toIso(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+const DEFAULT_AGE = 21;
 
 /** Asks for a birthdate; age for the plan and nutrition is derived from it. */
 export function AgeView() {
@@ -34,29 +20,31 @@ export function AgeView() {
   const { answers, setBirthdate } = useOnboarding();
   const { goNext, goBack } = useAboutYouNav();
 
-  const age = answers.birthdate ? ageFromBirthdate(answers.birthdate) : answers.age;
-  const minDate = parseIso(earliestBirthdateForAge(MAX_AGE));
-  const maxDate = parseIso(latestBirthdateForAge(MIN_AGE));
+  const birthdate = answers.birthdate ?? defaultBirthdate(DEFAULT_AGE);
+  const age = ageFromBirthdate(birthdate);
 
   return (
     <StepScreen
       title={t("age.title")}
       continueLabel={t("continue")}
       continueDisabled={age === null || age < MIN_AGE || age > MAX_AGE}
-      onContinue={goNext}
+      onContinue={() => {
+        if (answers.birthdate === null) setBirthdate(birthdate);
+        goNext();
+      }}
       onBack={goBack}
     >
       <div className="rounded-2xl bg-muted p-4">
         <p className="text-sm text-muted-foreground">{t("age.hint")}</p>
       </div>
 
-      <DatePicker
-        date={parseIso(answers.birthdate)}
-        onChange={(d) => setBirthdate(d ? toIso(d) : null)}
-        minDate={minDate}
-        maxDate={maxDate}
-        placeholder={t("age.placeholder")}
-        aria-label={t("age.title")}
+      <BirthdateWheel
+        value={answers.birthdate}
+        onChange={setBirthdate}
+        minAge={MIN_AGE}
+        maxAge={MAX_AGE}
+        defaultAge={DEFAULT_AGE}
+        ariaLabel={t("age.title")}
       />
 
       {age !== null && (

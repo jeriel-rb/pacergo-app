@@ -16,7 +16,7 @@ export default async function AdminPage() {
     getAdminDashboardStats(),
     getVerificationQueue(),
     getAllUsers(0),
-    getPayoutList(),
+    getPayoutList(undefined, { limit: 50 }),
   ]);
   return (
     <AdminDashboardView stats={stats} queue={queue} usersPage={usersPage} payouts={payouts} />

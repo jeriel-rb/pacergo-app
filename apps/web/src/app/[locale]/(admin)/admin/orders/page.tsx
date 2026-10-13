@@ -19,6 +19,9 @@ export default async function AdminOrdersPage({
 }) {
   const { status } = await searchParams;
   const filter = status && VALID.includes(status as OrderFilter) ? (status as OrderFilter) : "all";
-  const rows = await getAdminOrders(filter === "all" ? undefined : filter);
-  return <AdminOrdersView rows={rows} filter={filter} />;
+  const page = await getAdminOrders(filter === "all" ? undefined : filter, {
+    limit: 10,
+    offset: 0,
+  });
+  return <AdminOrdersView initial={page} filter={filter} />;
 }

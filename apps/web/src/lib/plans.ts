@@ -58,6 +58,10 @@ export async function saveOnboardingAnswers(input: {
   const profile = toFitnessProfile(input.answers, input.trainingPreferences, input.gymEquipment);
   // Protein (like calories) is always our formula — users can't set their own.
   const nutrition = calculateNutrition(profile);
+  // Never claim "built" without targets — that used to wipe a saved plan to null.
+  if (input.nutritionStatus === "built" && !nutrition) {
+    throw new Error("nutrition_incomplete");
+  }
   const { data, error } = await supabase.rpc("save_onboarding_answers", {
     p_about_you: input.answers,
     p_training_preferences: input.trainingPreferences,

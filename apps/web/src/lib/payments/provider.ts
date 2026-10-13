@@ -11,14 +11,17 @@ export type ProviderType = "newebpay" | "simulated";
 /**
  * Which provider handles NEW checkout attempts. Defaults to "newebpay" —
  * the existing, already-live integration — so this abstraction lands with
- * zero behavior change for real users. The spec (§5.1) wants "simulated"
- * to be the active default for Phase 1 (M2/M3), but flipping that default
- * stops the platform from collecting real payments — a real business/ops
- * decision, not something to assume in code. Set PAYMENT_PROVIDER=simulated
- * to switch (see docs/phase2-work-tracker.md Decisions log).
+ * zero behavior change for real users. Set PAYMENT_PROVIDER=simulated for
+ * local/preview fake checkout. Production (VERCEL_ENV=production) always
+ * uses NewebPay even if the env is mis-set — fail closed.
  */
 export function getActiveProviderType(): ProviderType {
-  return process.env.PAYMENT_PROVIDER === "simulated" ? "simulated" : "newebpay";
+  if (process.env.PAYMENT_PROVIDER !== "simulated") return "newebpay";
+  if (process.env.VERCEL_ENV === "production") {
+    console.error("payment_provider_simulated_blocked_in_production");
+    return "newebpay";
+  }
+  return "simulated";
 }
 
 interface CreateAttemptInput {

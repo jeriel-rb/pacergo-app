@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Ban, CircleCheck, Clock, FileText, ListFilter, Undo2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatInAppTimeZone } from "@pacergo/shared";
@@ -22,7 +22,7 @@ import {
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { MessageRow, TableFrame, ntd } from "./dashboard/dashboard-parts";
-import { fetchPayoutDetail } from "./admin-actions";
+import { fetchPayoutDetail, fetchPayoutsPage } from "./admin-actions";
 import { PayoutActionDialog, type PendingPayoutAction } from "./payout-action-dialog";
 import { PayoutSheet } from "./payout-sheet";
 import { PAYOUT_TRANSITIONS } from "./payout-actions";
@@ -64,8 +64,8 @@ function formatStamp(iso: string, locale: "zh" | "en"): string {
 }
 
 /** B-7: admin payout list as a table (same toolbar, table and pagination as the
- *  other admin lists), with the requested / processing totals above it. The
- *  status filter is server-side (`?status=`); search and paging are client-side.
+ *  other admin lists), with the requested / processing totals above it. Status
+ *  filter is URL-driven (`?status=`); search and paging hit the RPC (capped).
  *  Bank account is masked here — full details only render in the B-8 detail view. */
 export function AdminPayoutsView({
   initial,
@@ -78,10 +78,13 @@ export function AdminPayoutsView({
   const router = useRouter();
   const routeLocale = getCurrentLocale(usePathname());
   const locale = useLocale();
+  const [list, setList] = useState(initial);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [pending, setPending] = useState<PendingPayoutAction | null>(null);
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestId = useRef(0);
 
   // Payout details are fetched when a row is opened and kept, so reopening is
   // instant; a status change reloads the one that is open.
@@ -116,17 +119,44 @@ export function AdminPayoutsView({
     void loadDetail(id);
   }
 
-  const { totals } = initial;
+  const load = useCallback(
+    async (nextPage: number, nextSearch: string, size: number) => {
+      const id = ++requestId.current;
+      try {
+        const result = await fetchPayoutsPage(
+          nextPage,
+          nextSearch,
+          initialFilter === "all" ? undefined : initialFilter,
+          size,
+        );
+        if (id !== requestId.current) return;
+        setList(result);
+        setPage(nextPage);
+      } catch {
+        /* keep prior page; toast optional */
+      }
+    },
+    [initialFilter],
+  );
 
-  const matching = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return initial.rows;
-    return initial.rows.filter((r) => r.trainer_name.toLowerCase().includes(q));
-  }, [initial.rows, search]);
+  // Status filter comes from the server via `initial`; sync when the URL changes.
+  useEffect(() => {
+    setList(initial);
+    setPage(0);
+    setSearch("");
+  }, [initial]);
 
-  const pageCount = Math.max(1, Math.ceil(matching.length / pageSize));
+  useEffect(
+    () => () => {
+      if (debounce.current) clearTimeout(debounce.current);
+    },
+    [],
+  );
+
+  const { totals } = list;
+  const pageCount = Math.max(1, Math.ceil(list.total / pageSize));
   const current = Math.min(page, pageCount - 1);
-  const visible = matching.slice(current * pageSize, (current + 1) * pageSize);
+  const visible = list.rows;
 
   /** The "⋯" menu for one payout: every status change valid from its current
    *  status (forward steps first, then corrections). A paid transfer is finished,
@@ -191,7 +221,10 @@ export function AdminPayoutsView({
           value={search}
           onChange={(v) => {
             setSearch(v);
-            setPage(0);
+            if (debounce.current) clearTimeout(debounce.current);
+            debounce.current = setTimeout(() => {
+              void load(0, v, pageSize);
+            }, 250);
           }}
           placeholder={t("payouts.searchPlaceholder")}
           clearLabel={t("clearSearch")}
@@ -264,19 +297,19 @@ export function AdminPayoutsView({
       <TablePagination
         page={current}
         pageCount={pageCount}
-        total={matching.length}
+        total={list.total}
         pageSize={pageSize}
-        onPageChange={setPage}
+        onPageChange={(p) => void load(p, search, pageSize)}
         onPageSizeChange={(s) => {
           setPageSize(s);
-          setPage(0);
+          void load(0, search, s);
         }}
       />
 
       <PayoutSheet
         open={openId !== null}
         onOpenChange={(open) => !open && setOpenId(null)}
-        row={initial.rows.find((r) => r.id === openId) ?? null}
+        row={list.rows.find((r) => r.id === openId) ?? null}
         detail={openId ? (details[openId] ?? null) : null}
         loading={loadingId === openId}
         error={failedId === openId}

@@ -1,27 +1,14 @@
--- PacerGo RLS policies — centralized row-level security.
+-- Row-level security and storage policies (runs after the init migration).
 --
--- Runs after 0001_init (schema + functions). Seeds load after migrations.
--- Idempotent: ENABLE is safe to re-run; each policy is DROP IF EXISTS then CREATE.
---
--- Design rules (remember these):
---   * App tables are authenticated-read via SELECT policies only.
---     Writes go through SECURITY DEFINER RPCs (service_role / elevated),
---     not through INSERT/UPDATE/DELETE policies on the base tables.
---   * auth.uid() is wrapped in (select auth.uid()) so Postgres can treat it
---     as an initplan (evaluated once per statement, not per row).
---   * Tables with ENABLE RLS but NO policy below intentionally deny all
---     client access (service_role / definer RPCs only):
---       payment_status_events, reports,
---       withdrawal_settlements, withdrawal_status_events
---   * Storage is the exception: avatars/banners/verification-docs have
---     owner write policies so the client can upload under their own folder.
+-- * App tables: authenticated SELECT only; writes go through SECURITY DEFINER RPCs.
+-- * auth.uid() is wrapped in (select auth.uid()) for a once-per-statement initplan.
+-- * ENABLE RLS with no policy = deny all client access (definer RPCs / service_role only):
+--     payment_status_events, reports, withdrawal_settlements, withdrawal_status_events,
+--     workout_exercise_logs, workout_sessions
+-- * Storage: owner write under their own folder (avatars, banners, verification-docs).
 
--- ============================================================================
--- PostGIS system table lock (local resets; no-ops on hosted)
--- ============================================================================
--- spatial_ref_sys is owned by supabase_admin on hosted projects;
--- revoke/enable may no-op there. Keep the attempt for local resets.
-
+-- If PostGIS was ever installed in public, lock down spatial_ref_sys when we can.
+-- (Absent or not owned by us → no-op. Prefer install into `extensions` in init.)
 do $$
 begin
   begin
@@ -66,6 +53,8 @@ alter table verifications enable row level security;
 alter table withdrawal_requests enable row level security;
 alter table withdrawal_settlements enable row level security;
 alter table withdrawal_status_events enable row level security;
+alter table workout_exercise_logs enable row level security;
+alter table workout_sessions enable row level security;
 
 -- ============================================================================
 -- Catalog / reference (any authenticated user may read)

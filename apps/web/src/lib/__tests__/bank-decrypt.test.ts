@@ -90,35 +90,22 @@ describe("getMyEarnings — the trainer's own bank account", () => {
 });
 
 describe("getPayoutDetail — the admin payout page", () => {
-  const detail = (number: string | null) => ({
-    id: "w1",
-    trainer_id: TRAINER,
-    trainer_name: "Tom",
-    amount: 1000,
-    status: "requested",
-    bank_account_number: number,
-    history: [],
-  });
-
-  it("decrypts the trainer's number for the admin", async () => {
-    rpc.mockResolvedValue({ data: detail(await encryptField("123456780912", TRAINER)), error: null });
-    expect((await getPayoutDetail("w1"))?.bank_account_number).toBe("123456780912");
-  });
-
-  it("reads legacy plaintext as it is", async () => {
-    rpc.mockResolvedValue({ data: detail("123456780912"), error: null });
-    expect((await getPayoutDetail("w1"))?.bank_account_number).toBe("123456780912");
-  });
-
-  it("shows it as missing — never as ciphertext — when it can't be decrypted", async () => {
-    rpc.mockResolvedValue({ data: detail(await encryptField("123456780912", OTHER)), error: null });
+  it("returns the mask only — never decrypts the account number here", async () => {
+    rpc.mockResolvedValue({
+      data: {
+        id: "w1",
+        trainer_id: TRAINER,
+        trainer_name: "Tom",
+        amount: 1000,
+        status: "requested",
+        bank_account_mask: "********0912",
+        history: [],
+      },
+      error: null,
+    });
     const result = await getPayoutDetail("w1");
-    expect(result?.bank_account_number).toBeNull();
+    expect(result?.bank_account_mask).toBe("********0912");
+    expect(result).not.toHaveProperty("bank_account_number");
     expect(JSON.stringify(result)).not.toContain("enc:v1:");
-  });
-
-  it("passes a missing number through", async () => {
-    rpc.mockResolvedValue({ data: detail(null), error: null });
-    expect((await getPayoutDetail("w1"))?.bank_account_number).toBeNull();
   });
 });

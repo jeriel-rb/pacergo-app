@@ -1,5 +1,5 @@
 /**
- * Builds the exercise catalog block inside backend/migrations/0001_init.sql
+ * Builds one exercise row for backend/seeds/03_ai_plan_exercises.sql
  * (see generate-exercises-seed.mjs, which bundles and runs this).
  *
  * One `exercises` row per catalog exercise:
@@ -148,7 +148,7 @@ export function renderSeedSql(): string {
 
   return `-- AI Plan exercise library — GENERATED, do not edit by hand.
 -- Regenerate with:  node apps/web/scripts/generate-exercises-seed.mjs
--- This block is the catalog load. It lives at the end of 0001_init.sql.
+-- This block is the catalog load. It lives in backend/seeds/03_ai_plan_exercises.sql.
 --
 -- One row per illustrated exercise (${EXERCISE_CATALOG.length}), keyed by the catalog slug (kebab-case),
 -- built from:

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createMerchantOrderNo } from "@/lib/payments/newebpay";
+import { forbidCrossSiteOrigin } from "@/lib/request-origin";
 import {
   getPaymentProvider,
   NewebPayConfigurationError,
@@ -16,6 +17,9 @@ type CreateBody = {
 };
 
 export async function POST(request: Request) {
+  const originBlock = forbidCrossSiteOrigin(request);
+  if (originBlock) return originBlock;
+
   try {
     const body = (await request.json()) as CreateBody;
     if (!body.bookingId) {

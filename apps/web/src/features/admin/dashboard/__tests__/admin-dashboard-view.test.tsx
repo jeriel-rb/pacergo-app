@@ -79,6 +79,7 @@ const emptyTotals = { requested_count: 0, requested_sum: 0, processing_count: 0,
 
 const payouts: PayoutList = {
   totals: { requested_count: 1, requested_sum: 3000, processing_count: 1, processing_sum: 1500 },
+  total: 4,
   rows: [
     { id: "p1", trainer_id: "t", trainer_name: "Trainer Tom", amount: 3000, bank_account_mask: "1234", status: "requested", requested_at: "2026-10-04T00:00:00Z", updated_at: "2026-10-04T00:00:00Z" },
     { id: "p2", trainer_id: "t", trainer_name: "Trainer Tom", amount: 1500, bank_account_mask: "1234", status: "processing", requested_at: "2026-10-03T00:00:00Z", updated_at: "2026-10-03T00:00:00Z" },
@@ -457,7 +458,13 @@ describe("AdminDashboardView — payouts card", () => {
   });
 
   it("shows an empty message when nothing is pending", () => {
-    renderView("en", { payouts: { rows: payouts.rows.filter((r) => r.status === "paid"), totals: emptyTotals } });
+    renderView("en", {
+      payouts: {
+        rows: payouts.rows.filter((r) => r.status === "paid"),
+        totals: emptyTotals,
+        total: 1,
+      },
+    });
     expect(within(panel("Payouts")).getByText("No payout requests pending")).toBeInTheDocument();
   });
 });
@@ -468,7 +475,7 @@ describe("AdminDashboardView — empty and localized", () => {
       stats: null,
       queue: [],
       usersPage: { users: [], total: 0 },
-      payouts: { rows: [], totals: emptyTotals },
+      payouts: { rows: [], totals: emptyTotals, total: 0 },
     });
     expect(screen.getByText("No trainer requests pending review")).toBeInTheDocument();
     expect(screen.getByText("No members yet.")).toBeInTheDocument();

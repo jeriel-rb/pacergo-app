@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { forbidCrossSiteOrigin } from "@/lib/request-origin";
 import { getActiveProviderType } from "@/lib/payments/provider";
 
 export const runtime = "nodejs";
@@ -17,6 +18,9 @@ type ConfirmBody = { paymentId?: string; approve?: boolean };
  * still requires that user to own a pending provider='simulated' payment.
  */
 export async function POST(request: Request) {
+  const originBlock = forbidCrossSiteOrigin(request);
+  if (originBlock) return originBlock;
+
   try {
     if (getActiveProviderType() !== "simulated") return error("payment_simulated_disabled", 403);
 

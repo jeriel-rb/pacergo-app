@@ -1,6 +1,5 @@
 import { createSupabaseServerClient } from "./supabase/server";
 import { SUPABASE_CONFIGURED } from "./supabase/env";
-import { readAccountNumber } from "./crypto/bank-account";
 
 /** Listing, plans, and weekly slots saved with a trainer request. */
 export interface TrainerApplication {
@@ -99,11 +98,14 @@ export interface PayoutTotals {
 export interface PayoutList {
   rows: PayoutListRow[];
   totals: PayoutTotals;
+  /** Matching rows for the current status/search filter (server-side). */
+  total: number;
 }
 
-/** B-7: admin payout list, optionally filtered by status. Admin-only RPC. */
+/** B-7: admin payout list, optionally filtered by status. Server-paginated. */
 export async function getPayoutList(
   status?: PayoutStatus,
+  opts?: { limit?: number; offset?: number; search?: string },
 ): Promise<PayoutList> {
   const empty: PayoutList = {
     rows: [],
@@ -115,14 +117,19 @@ export async function getPayoutList(
       paid_count: 0,
       paid_sum: 0,
     },
+    total: 0,
   };
   if (!SUPABASE_CONFIGURED) return empty;
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("admin_list_withdrawal_requests", {
     p_status: status ?? null,
+    p_limit: opts?.limit ?? 20,
+    p_offset: opts?.offset ?? 0,
+    p_search: opts?.search?.trim() || null,
   });
   if (error || !data) return empty;
-  return data as PayoutList;
+  const body = data as PayoutList;
+  return { ...body, total: body.total ?? body.rows.length };
 }
 
 export interface PayoutStatusEvent {
@@ -147,12 +154,14 @@ export interface PayoutDetail {
   bank_code: string | null;
   bank_name: string | null;
   branch_name: string | null;
-  bank_account_number: string | null;
+  /** Mask only — full number via GET /api/admin/users/[id]/bank-account. */
+  bank_account_mask: string | null;
   bank_account_holder: string | null;
   history: PayoutStatusEvent[];
 }
 
-/** B-8: full detail incl. unmasked bank details + status history. Admin-only RPC. */
+/** B-8: payout detail + status history. Bank number is mask-only; reveal uses
+ *  the audited admin bank-account API (same as the user sheet). */
 export async function getPayoutDetail(id: string): Promise<PayoutDetail | null> {
   if (!SUPABASE_CONFIGURED) return null;
   const supabase = await createSupabaseServerClient();
@@ -160,21 +169,7 @@ export async function getPayoutDetail(id: string): Promise<PayoutDetail | null> 
     p_id: id,
   });
   if (error || !data) return null;
-  const detail = data as PayoutDetail;
-  // The stored number is ciphertext bound to the trainer; decrypt it here, on the
-  // server, for this admin-only page. Unreadable → shown as missing, not a crash.
-  if (detail.bank_account_number) {
-    try {
-      detail.bank_account_number = await readAccountNumber(
-        detail.trainer_id,
-        detail.bank_account_number,
-      );
-    } catch {
-      console.warn("bank_account_decrypt_failed");
-      detail.bank_account_number = null;
-    }
-  }
-  return detail;
+  return data as PayoutDetail;
 }
 
 export const MEMBERS_PAGE_SIZE = 12;
@@ -366,17 +361,32 @@ export interface AdminOrderDetail {
   history: AdminOrderEvent[];
 }
 
-/** Admin order list. Filter is a payment status, a refund, or an open hold. */
+export interface AdminOrdersPage {
+  rows: AdminOrderRow[];
+  total: number;
+}
+
+/** Admin order list. Filter is a payment status, a refund, or an open hold.
+ *  Server-paginated (limit capped at 50 in the RPC). */
 export async function getAdminOrders(
   filter?: OrderFilter,
-): Promise<AdminOrderRow[]> {
-  if (!SUPABASE_CONFIGURED) return [];
+  opts?: { limit?: number; offset?: number; search?: string },
+): Promise<AdminOrdersPage> {
+  if (!SUPABASE_CONFIGURED) return { rows: [], total: 0 };
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("admin_list_payments", {
     p_filter: filter ?? null,
+    p_limit: opts?.limit ?? 20,
+    p_offset: opts?.offset ?? 0,
+    p_search: opts?.search?.trim() || null,
   });
-  if (error || !data) return [];
-  return data as AdminOrderRow[];
+  if (error || !data) return { rows: [], total: 0 };
+  // Legacy bare-array responses are ignored after the pagination fold.
+  if (Array.isArray(data)) {
+    return { rows: data as AdminOrderRow[], total: data.length };
+  }
+  const body = data as AdminOrdersPage;
+  return { rows: body.rows ?? [], total: body.total ?? 0 };
 }
 
 /** One order plus its ledger history. Admin-only RPC. */

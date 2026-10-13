@@ -8,14 +8,14 @@ import zh from "@/locales/zh/plan.json";
 import { libraryKey } from "../library-filter";
 
 const ART_DIR = path.resolve(__dirname, "../../../../../public/exercise-art");
-const INIT_SQL = path.resolve(__dirname, "../../../../../../../backend/migrations/0001_init.sql");
+const SEED_SQL = path.resolve(__dirname, "../../../../../../../backend/seeds/03_ai_plan_exercises.sql");
 
 function catalogSql(): string {
-  const init = fs.readFileSync(INIT_SQL, "utf8");
-  const start = init.indexOf("-- BEGIN ai_plan_exercises");
-  const end = init.indexOf("-- END ai_plan_exercises");
-  if (start < 0 || end < 0) throw new Error("exercise catalog block missing from 0001_init.sql");
-  return init.slice(start, end);
+  const seed = fs.readFileSync(SEED_SQL, "utf8");
+  const start = seed.indexOf("-- BEGIN ai_plan_exercises");
+  const end = seed.indexOf("-- END ai_plan_exercises");
+  if (start < 0 || end < 0) throw new Error("exercise catalog block missing from 03_ai_plan_exercises.sql");
+  return seed.slice(start, end);
 }
 
 describe("exercise library content", () => {

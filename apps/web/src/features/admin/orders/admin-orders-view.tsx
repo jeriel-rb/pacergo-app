@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Ban,
@@ -14,7 +14,12 @@ import {
   Undo,
 } from "lucide-react";
 import { formatInAppTimeZone } from "@pacergo/shared";
-import type { AdminOrderDetail, AdminOrderRow, OrderFilter } from "@/lib/admin";
+import type {
+  AdminOrderDetail,
+  AdminOrderRow,
+  AdminOrdersPage,
+  OrderFilter,
+} from "@/lib/admin";
 import { FilterSelect, TableSearch, TableToolbar } from "@/shared/components/atoms/table-toolbar";
 import {
   Table,
@@ -29,7 +34,7 @@ import { StatusBadge } from "@/shared/components/atoms/status-badge";
 import { TablePagination } from "@/shared/components/atoms/table-pagination";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
-import { fetchOrderDetail } from "../admin-actions";
+import { fetchOrderDetail, fetchOrdersPage } from "../admin-actions";
 import { MessageRow, TableFrame, ntd } from "../dashboard/dashboard-parts";
 import { OrderActionDialog, type PendingOrderAction } from "./order-action-dialog";
 import {
@@ -62,23 +67,26 @@ const ACTION_ICON: Record<OrderAction, React.ReactNode> = {
 
 /** Orders as a table. Clicking a row opens its details (with the ledger history)
  *  in a side sheet; the "⋯" menu on each row records refunds, holds and service
- *  completion on the ledger. */
+ *  completion on the ledger. Search and paging are server-side. */
 export function AdminOrdersView({
-  rows,
+  initial,
   filter,
 }: {
-  rows: AdminOrderRow[];
+  initial: AdminOrdersPage;
   filter: OrderFilter | "all";
 }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
   const router = useRouter();
   const routeLocale = getCurrentLocale(usePathname());
+  const [list, setList] = useState(initial);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingOrderAction | null>(null);
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestId = useRef(0);
 
   // Order details (and their history) are fetched on demand and kept, so the
   // sheet and the row menus share them.
@@ -104,26 +112,42 @@ export function AdminOrdersView({
     }
   }, [details]);
 
-  // A new filter means a new list: start from the first page.
-  useEffect(() => setPage(0), [filter]);
-
-  // Search matches either person on the order (member or trainer), ignoring case.
-  const matching = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter(
-      (r) =>
-        (r.seeker_name ?? "").toLowerCase().includes(q) ||
-        (r.companion_name ?? "").toLowerCase().includes(q),
-    );
-  }, [rows, search]);
-
-  const pageCount = Math.max(1, Math.ceil(matching.length / pageSize));
-  const current = Math.min(page, pageCount - 1);
-  const visible = useMemo(
-    () => matching.slice(current * pageSize, (current + 1) * pageSize),
-    [matching, current, pageSize],
+  const load = useCallback(
+    async (nextPage: number, nextSearch: string, size: number) => {
+      const id = ++requestId.current;
+      try {
+        const result = await fetchOrdersPage(
+          nextPage,
+          nextSearch,
+          filter === "all" ? undefined : filter,
+          size,
+        );
+        if (id !== requestId.current) return;
+        setList(result);
+        setPage(nextPage);
+      } catch {
+        /* keep prior page */
+      }
+    },
+    [filter],
   );
+
+  useEffect(() => {
+    setList(initial);
+    setPage(0);
+    setSearch("");
+  }, [initial]);
+
+  useEffect(
+    () => () => {
+      if (debounce.current) clearTimeout(debounce.current);
+    },
+    [],
+  );
+
+  const pageCount = Math.max(1, Math.ceil(list.total / pageSize));
+  const current = Math.min(page, pageCount - 1);
+  const visible = list.rows;
 
   const stamp = (iso: string) =>
     formatInAppTimeZone(iso, locale, {
@@ -185,7 +209,10 @@ export function AdminOrdersView({
           value={search}
           onChange={(v) => {
             setSearch(v);
-            setPage(0);
+            if (debounce.current) clearTimeout(debounce.current);
+            debounce.current = setTimeout(() => {
+              void load(0, v, pageSize);
+            }, 250);
           }}
           placeholder={t("orders.searchPlaceholder")}
           clearLabel={t("clearSearch")}
@@ -258,12 +285,12 @@ export function AdminOrdersView({
       <TablePagination
         page={current}
         pageCount={pageCount}
-        total={matching.length}
+        total={list.total}
         pageSize={pageSize}
-        onPageChange={setPage}
+        onPageChange={(p) => void load(p, search, pageSize)}
         onPageSizeChange={(s) => {
           setPageSize(s);
-          setPage(0);
+          void load(0, search, s);
         }}
       />
 

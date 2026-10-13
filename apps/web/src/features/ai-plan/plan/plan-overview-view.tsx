@@ -86,15 +86,22 @@ export function PlanOverviewView({
       ? t(`goal.options.${goal}.title`, { ns: "onboarding" })
       : label;
   const pathname = usePathname();
-  // ?week= is the week they opened a day from. Otherwise the Taipei week of
-  // the block since created_at, wrapped onto the stored weeks.
-  const weekParam = Number(useSearchParams().get("week"));
+  const searchParams = useSearchParams();
+  // ?week= is the selected tab (and the week they opened a day from). Without
+  // it, open on the Taipei week of the block since created_at. Keep the week
+  // in the URL so back from a day (or a tab change) does not fall to week 1.
+  const weekParam = Number(searchParams.get("week"));
   const blockWeek = planBlockWeek(createdAt);
-  const [week, setWeek] = React.useState(
+  const week =
     Number.isInteger(weekParam) && weekParam >= 1 && weekParam <= plan.weeks.length
       ? weekParam
-      : blockWeek,
-  );
+      : blockWeek;
+
+  function selectWeek(next: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("week", String(next));
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }
 
   const days = plan.weeks[week - 1]?.days ?? [];
 
@@ -148,7 +155,7 @@ export function PlanOverviewView({
           <button
             key={w.weekIndex}
             type="button"
-            onClick={() => setWeek(w.weekIndex)}
+            onClick={() => selectWeek(w.weekIndex)}
             className={cn(
               "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors",
               week === w.weekIndex

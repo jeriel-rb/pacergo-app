@@ -36,21 +36,21 @@ Yarn 4 workspaces monorepo. Find an in-person workout companion in Taiwan
 - The Supabase CLI hard-requires a folder named `supabase`. On Windows, create a
   junction once: `cmd /c mklink /J supabase backend` (gitignored). On macOS/Linux:
   `ln -s backend supabase`.
-- **Core migrations:** `0001_init.sql` (schema/types/functions/RPCs only) then
-  `0002_policies.sql` (all RLS + storage policies). Fold further schema changes
-  into `0001_init.sql` and further policies into `0002_policies.sql`. Live
-  history on the linked project is `0001` then `0002`; after folding a file
-  in, `supabase migration repair --status reverted <version>` drops the old
-  history row. Do not `db reset` the linked project. Changing `0001` does not
-  re-run it on a remote where `0001` is already applied.
-- **Exercises:** the catalog upsert is GENERATED into `backend/migrations/0001_init.sql`
-  between `-- BEGIN ai_plan_exercises` and `-- END ai_plan_exercises` (one row per
-  catalog exercise, kebab-case slugs). Regenerate with
+- **Core migrations** (Supabase timestamp versions): `20261008000001_init.sql`
+  (schema/types/functions/RPCs) then `20261008000002_policies.sql` (RLS +
+  storage). Fold further schema into the init file and policies into the
+  policies file. Do not `db reset` the linked project. After a history rewrite,
+  mark versions with `supabase migration repair` (never delete from
+  `schema_migrations` by hand). PostGIS ops SQL (not a migration) lives under
+  `backend/extensions/`.
+- **Exercises:** the catalog upsert is GENERATED into
+  `backend/seeds/03_ai_plan_exercises.sql` between `-- BEGIN ai_plan_exercises` and
+  `-- END ai_plan_exercises` (one row per catalog exercise, kebab-case slugs). Loaded
+  after migrations on `supabase db reset` via `config.toml` `[db.seed]`. Regenerate with
   `node apps/web/scripts/generate-exercises-seed.mjs`; hand-written steps/tips live in
-  `apps/web/src/shared/assets/exercise-content.json`. Changing `0001` does not reload
-  the live catalog — apply that block with a one-off push, then
-  `supabase migration repair --status reverted <version>` so history stays `0001`/`0002`.
-  The one-time saved-plan slug rewrite already ran and is not a migration file.
+  `apps/web/src/shared/assets/exercise-content.json`. Changing the seed does not reload
+  the live catalog — apply that SQL with a one-off push when needed. The one-time
+  saved-plan slug rewrite already ran and is not a migration file.
 - **Exercise QA:** the AI only generates exercises that have instructions, a muscle
   mapping, an illustration and a QA pass. Exercises that failed QA are listed with
   reasons in `QA_EXCLUDED_EXERCISES` (`packages/shared/src/plan/exercise-qa.ts`) and
@@ -78,12 +78,12 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   one move per movement family, compounds before accessories) live in
   `generateTrainingPlan` and are described in `docs/plan-engine/architecture.md`.
   `packages/shared/src/__tests__/plan-invariants.test.ts` runs the generator over the real
-  catalog, read from the generated block in `0001_init.sql` by `__tests__/helpers/
-  migration-catalog.ts` — nothing to keep in sync. Use that helper for new plan tests.
+  catalog, read from the generated seed by `__tests__/helpers/migration-catalog.ts`
+  — nothing to keep in sync. Use that helper for new plan tests.
 - **Muscle tags:** the catalog uses the picker's vocabulary where exercises exist
   (`middle_delts`, `traps`, `abductors` besides the older tags) — set in
   `refineMainMuscle` (`apps/web/scripts/exercise-seed-entry.ts`) and regenerated into
-  `0001_init.sql`. Deploy the app code **before** loading the new tags into the live
+  the exercise seed. Deploy the app code **before** loading the new tags into the
   `exercises` table: old code does not know those tags and would drop lateral raises,
   shrugs and hip-abduction moves from plans. New code works on old tags.
 

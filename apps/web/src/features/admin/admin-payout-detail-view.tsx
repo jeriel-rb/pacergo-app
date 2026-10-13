@@ -12,6 +12,7 @@ import { useLocale } from "@/shared/hooks/use-locale";
 import { useToast } from "@/shared/components/ui/toast";
 import { setWithdrawalStatus } from "./admin-actions";
 import { PayoutStatusBadge } from "./admin-payouts-view";
+import { BankAccountRow } from "./dashboard/user-sheet";
 import { PAYOUT_TRANSITIONS } from "./payout-actions";
 
 function ntd(amount: number): string {
@@ -29,8 +30,7 @@ function formatStamp(iso: string, locale: "zh" | "en"): string {
   });
 }
 
-/** B-8: full bank reveal (admin-only), status workflow + corrections, full
- *  history. Full bank details render ONLY here — masked everywhere else. */
+/** B-8: bank mask + on-demand Show reveal (audited API), status workflow, history. */
 export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
@@ -88,11 +88,17 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
           <dd>{detail.bank_code ?? "—"}</dd>
           <dt className="text-muted-foreground">{t("payouts.branchName")}</dt>
           <dd>{detail.branch_name ?? "—"}</dd>
-          <dt className="text-muted-foreground">{t("payouts.accountNumber")}</dt>
-          <dd className="font-mono">{detail.bank_account_number ?? "—"}</dd>
           <dt className="text-muted-foreground">{t("payouts.accountHolder")}</dt>
           <dd>{detail.bank_account_holder ?? "—"}</dd>
         </dl>
+        <div className="pt-2">
+          <BankAccountRow
+            userId={detail.trainer_id}
+            mask={detail.bank_account_mask}
+            hasAccount={Boolean(detail.bank_account_mask)}
+            label={t("payouts.accountNumber")}
+          />
+        </div>
       </Card>
 
       {(forward.length > 0 || corrections.length > 0) && (

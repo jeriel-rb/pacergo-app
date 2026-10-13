@@ -21,6 +21,9 @@ export default async function AdminPayoutsPage({
     status && VALID_STATUSES.includes(status as PayoutStatus)
       ? (status as PayoutStatus)
       : "all";
-  const list = await getPayoutList(filter === "all" ? undefined : filter);
+  const list = await getPayoutList(filter === "all" ? undefined : filter, {
+    limit: 10,
+    offset: 0,
+  });
   return <AdminPayoutsView initial={list} initialFilter={filter} />;
 }

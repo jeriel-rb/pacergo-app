@@ -3,10 +3,14 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type {
   AdminOrderDetail,
+  AdminOrdersPage,
   AdminUserDetail,
   AdminUserRole,
   AdminUsersPage,
+  OrderFilter,
   PayoutDetail,
+  PayoutList,
+  PayoutStatus,
   TrainerApplication,
 } from "@/lib/admin";
 
@@ -75,14 +79,32 @@ export async function fetchBankAccountNumber(userId: string): Promise<string> {
   return body.accountNumber;
 }
 
-/** One payout's detail for the sheet (admin-only RPC). The stored bank account
- *  number is ciphertext, so it is dropped here: the sheet shows the mask and only
- *  reveals the real number through `fetchBankAccountNumber` on "Show". */
+/** One page of the admin payout list (admin-only RPC). */
+export async function fetchPayoutsPage(
+  page: number,
+  search = "",
+  status?: PayoutStatus,
+  pageSize = 10,
+): Promise<PayoutList> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("admin_list_withdrawal_requests", {
+    p_status: status ?? null,
+    p_limit: pageSize,
+    p_offset: page * pageSize,
+    p_search: search.trim() || null,
+  });
+  if (error || !data) throw new Error(error?.message ?? "payouts");
+  const body = data as PayoutList;
+  return { ...body, total: body.total ?? body.rows.length };
+}
+
+/** One payout's detail for the sheet (admin-only RPC). Mask only — reveal via
+ *  `fetchBankAccountNumber` on "Show". */
 export async function fetchPayoutDetail(id: string): Promise<PayoutDetail> {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase.rpc("admin_withdrawal_detail", { p_id: id });
   if (error || !data) throw new Error(error?.message ?? "payout");
-  return { ...(data as PayoutDetail), bank_account_number: null };
+  return data as PayoutDetail;
 }
 
 /** Listing, plans, and availability saved with a trainer request (admin-only RPC). */
@@ -128,6 +150,28 @@ export async function setWithdrawalStatus(
     p_reason: reason || null,
   });
   if (error) throw new Error(error.message);
+}
+
+/** One page of the admin orders list (admin-only RPC). */
+export async function fetchOrdersPage(
+  page: number,
+  search = "",
+  filter?: OrderFilter,
+  pageSize = 10,
+): Promise<AdminOrdersPage> {
+  const supabase = createSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("admin_list_payments", {
+    p_filter: filter ?? null,
+    p_limit: pageSize,
+    p_offset: page * pageSize,
+    p_search: search.trim() || null,
+  });
+  if (error || !data) throw new Error(error?.message ?? "orders");
+  if (Array.isArray(data)) {
+    return { rows: data as AdminOrdersPage["rows"], total: data.length };
+  }
+  const body = data as AdminOrdersPage;
+  return { rows: body.rows ?? [], total: body.total ?? 0 };
 }
 
 /** One order plus its ledger history, fetched from the browser (admin-only RPC). */

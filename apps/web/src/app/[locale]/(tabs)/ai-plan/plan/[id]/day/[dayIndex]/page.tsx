@@ -1,4 +1,4 @@
-import { PLAN_RULES_VERSION } from "@pacergo/shared";
+import { PLAN_RULES_VERSION, planBlockWeek } from "@pacergo/shared";
 import { getTrainingPlanServer } from "@/lib/plan-view.server";
 import { DailyWorkoutView } from "@/features/ai-plan/plan/daily-workout-view";
 import { PlanNotFound } from "@/features/ai-plan/plan/plan-not-found";
@@ -18,9 +18,13 @@ export default async function DailyWorkoutPage({
   if (!result) return <PlanNotFound />;
 
   // The week tab the user came from (1–4); the exercises can differ by week
-  // depending on their Variety setting. Anything unusable falls back to week 1.
+  // depending on their Variety setting. Missing/invalid → current block week
+  // (same default as the plan overview), not a hard reset to week 1.
   const parsed = Number(weekParam);
-  const week = Number.isInteger(parsed) && parsed >= 1 && parsed <= result.plan.weeks.length ? parsed : 1;
+  const week =
+    Number.isInteger(parsed) && parsed >= 1 && parsed <= result.plan.weeks.length
+      ? parsed
+      : planBlockWeek(result.createdAt);
 
   const index = Number(dayIndex);
   const day = result.plan.weeks[week - 1]?.days.find((d) => d.dayIndex === index);

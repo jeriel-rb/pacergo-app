@@ -26,7 +26,7 @@ import { loadMigrationCatalog } from "./helpers/migration-catalog";
 
 /**
  * Invariants checked against the real exercise catalog, read straight from the
- * generated block in backend/migrations/0001_init.sql (a hand-made catalog is
+ * generated seed in backend/seeds/03_ai_plan_exercises.sql (a hand-made catalog is
  * what let these slip through before). Every defect found in the
  * audit of saved plans has a check here: unreachable priorities, exclusions that
  * emptied a session, running prescribed to low-impact users, technical lifts

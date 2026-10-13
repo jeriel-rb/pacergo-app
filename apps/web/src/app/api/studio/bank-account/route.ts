@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
+import { forbidCrossSiteOrigin } from "@/lib/request-origin";
 import {
   ACCOUNT_NUMBER_PATTERN,
   encryptAccountNumber,
@@ -16,6 +17,9 @@ export const runtime = "nodejs";
  *  never sees the plaintext. Errors are short codes; no field values are echoed
  *  or logged. */
 export async function POST(request: Request) {
+  const originBlock = forbidCrossSiteOrigin(request);
+  if (originBlock) return originBlock;
+
   if (!SUPABASE_CONFIGURED) {
     return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
   }

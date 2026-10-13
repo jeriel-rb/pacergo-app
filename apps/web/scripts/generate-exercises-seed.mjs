@@ -1,5 +1,5 @@
 /**
- * Regenerate the exercise catalog inside backend/migrations/0001_init.sql.
+ * Regenerate the exercise catalog seed at backend/seeds/03_ai_plan_exercises.sql.
  *
  *   node apps/web/scripts/generate-exercises-seed.mjs
  *
@@ -13,7 +13,7 @@ import { build } from "esbuild";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const WEB = path.resolve(HERE, "..");
-const INIT = path.resolve(WEB, "../../backend/migrations/0001_init.sql");
+const SEED = path.resolve(WEB, "../../backend/seeds/03_ai_plan_exercises.sql");
 const BEGIN = "-- BEGIN ai_plan_exercises\n";
 const END = "-- END ai_plan_exercises";
 
@@ -31,14 +31,27 @@ const code = result.outputFiles[0].text;
 const mod = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
 const sql = mod.renderSeedSql().trimEnd();
 const block = `${BEGIN}${sql}\n${END}\n`;
-let init = await fs.readFile(INIT, "utf8");
-const start = init.indexOf(BEGIN);
-const end = init.indexOf(END);
-if (start >= 0 && end > start) {
-  init = init.slice(0, start) + block + init.slice(end + END.length).replace(/^\n/, "");
-} else {
-  if (!init.endsWith("\n")) init += "\n";
-  init += `\n-- AI plan exercise catalog. Regenerated in place by generate-exercises-seed.mjs.\n${block}`;
+
+const header = `-- AI Plan exercise catalog (equipment + gym-type settings).
+-- GENERATED — do not edit by hand.
+-- Regenerate: node apps/web/scripts/generate-exercises-seed.mjs
+-- Loaded after migrations via config.toml [db.seed] (supabase db reset).
+
+`;
+
+let seed = "";
+try {
+  seed = await fs.readFile(SEED, "utf8");
+} catch {
+  seed = header;
 }
-await fs.writeFile(INIT, init);
-console.log(`Updated ${path.relative(process.cwd(), INIT)} (${sql.split("\n").length} catalog lines)`);
+
+const start = seed.indexOf(BEGIN);
+const end = seed.indexOf(END);
+if (start >= 0 && end > start) {
+  seed = seed.slice(0, start) + block + seed.slice(end + END.length).replace(/^\n/, "");
+} else {
+  seed = header + block;
+}
+await fs.writeFile(SEED, seed);
+console.log(`Updated ${path.relative(process.cwd(), SEED)} (${sql.split("\n").length} catalog lines)`);

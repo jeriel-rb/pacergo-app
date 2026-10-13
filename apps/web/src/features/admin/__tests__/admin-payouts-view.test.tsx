@@ -16,10 +16,12 @@ vi.mock("next/navigation", () => ({
 
 const setWithdrawalStatus = vi.fn().mockResolvedValue(undefined);
 const fetchPayoutDetail = vi.fn();
+const fetchPayoutsPage = vi.fn();
 const fetchBankAccountNumber = vi.fn().mockResolvedValue("123456780912");
 vi.mock("../admin-actions", () => ({
   setWithdrawalStatus: (...a: unknown[]) => setWithdrawalStatus(...a),
   fetchPayoutDetail: (...a: unknown[]) => fetchPayoutDetail(...a),
+  fetchPayoutsPage: (...a: unknown[]) => fetchPayoutsPage(...a),
   fetchBankAccountNumber: (...a: unknown[]) => fetchBankAccountNumber(...a),
 }));
 vi.mock("@/shared/components/ui/toast", () => ({ useToast: () => ({ show: vi.fn() }) }));
@@ -63,6 +65,7 @@ const LIST: PayoutList = {
     paid_count: 4,
     paid_sum: 9800,
   },
+  total: 3,
 };
 
 const detailOf = (r: PayoutListRow): PayoutDetail => ({
@@ -72,7 +75,7 @@ const detailOf = (r: PayoutListRow): PayoutDetail => ({
   bank_code: "822",
   bank_name: "CTBC",
   branch_name: "Da'an",
-  bank_account_number: null,
+  bank_account_mask: r.bank_account_mask ?? null,
   bank_account_holder: "Alice Chen",
   history: [
     { actor_id: null, from_status: null, to_status: "requested", reason_note: null, actor_name: null, created_at: "2026-10-01T00:00:00Z" },
@@ -93,6 +96,13 @@ beforeEach(() => {
   fetchPayoutDetail.mockImplementation(async (id: string) =>
     detailOf(LIST.rows.find((r) => r.id === id)!),
   );
+  fetchPayoutsPage.mockImplementation(async (_page: number, search: string) => {
+    const q = search.trim().toLowerCase();
+    const rows = q
+      ? LIST.rows.filter((r) => r.trainer_name.toLowerCase().includes(q))
+      : LIST.rows;
+    return { ...LIST, rows, total: rows.length };
+  });
   fetchBankAccountNumber.mockResolvedValue("123456780912");
 });
 
@@ -125,6 +135,7 @@ describe("AdminPayoutsView", () => {
     renderView("en", {
       ...LIST,
       totals: { requested_count: 1, requested_sum: 1200, processing_count: 1, processing_sum: 500 },
+      total: 3,
     });
     const table = screen.getByRole("table");
     expect(screen.getAllByText("Paid").filter((el) => !table.contains(el) && el.tagName === "P")).toHaveLength(0);
@@ -149,13 +160,14 @@ describe("AdminPayoutsView", () => {
     expect(within(aliceRow).getByText("Requested")).toBeInTheDocument();
   });
 
-  it("searches by trainer name", () => {
+  it("searches by trainer name", async () => {
     renderView();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "bob" } });
-    expect(screen.getByText("Bob Lin")).toBeInTheDocument();
+    await waitFor(() => expect(fetchPayoutsPage).toHaveBeenCalled());
+    expect(await screen.findByText("Bob Lin")).toBeInTheDocument();
     expect(screen.queryByText("Alice Chen")).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "nobody" } });
-    expect(screen.getByText("No payouts match your search.")).toBeInTheDocument();
+    expect(await screen.findByText("No payouts match your search.")).toBeInTheDocument();
   });
 
   it("changing the status filter reloads the list through the URL", () => {

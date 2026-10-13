@@ -15,11 +15,13 @@ vi.mock("next/navigation", () => ({
 }));
 
 const fetchOrderDetail = vi.fn();
+const fetchOrdersPage = vi.fn();
 const setPaymentStatus = vi.fn().mockResolvedValue(undefined);
 const setPaymentHold = vi.fn().mockResolvedValue(undefined);
 const correctServiceCompleted = vi.fn().mockResolvedValue(undefined);
 vi.mock("../../admin-actions", () => ({
   fetchOrderDetail: (...a: unknown[]) => fetchOrderDetail(...a),
+  fetchOrdersPage: (...a: unknown[]) => fetchOrdersPage(...a),
   setPaymentStatus: (...a: unknown[]) => setPaymentStatus(...a),
   setPaymentHold: (...a: unknown[]) => setPaymentHold(...a),
   correctServiceCompleted: (...a: unknown[]) => correctServiceCompleted(...a),
@@ -93,10 +95,29 @@ const ROWS: AdminOrderRow[] = [
   row({ id: "o4", seeker_name: "Gus", companion_name: "Hal", amount: 300, status: "paid", refund_status: "refund_requested", admin_hold: true }),
 ];
 
+/** SSR-shaped first page (10 rows) + total; further pages come from fetchOrdersPage. */
 function renderView(lng: "en" | "zh" = "en", rows = ROWS, filter: "all" | "paid" = "all") {
+  const pageSize = 10;
+  fetchOrdersPage.mockImplementation(async (page: number, search: string, _f?: unknown, size = pageSize) => {
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? rows.filter(
+          (r) =>
+            (r.seeker_name ?? "").toLowerCase().includes(q) ||
+            (r.companion_name ?? "").toLowerCase().includes(q),
+        )
+      : rows;
+    return {
+      rows: filtered.slice(page * size, page * size + size),
+      total: filtered.length,
+    };
+  });
   return render(
     <I18nextProvider i18n={i18n(lng)}>
-      <AdminOrdersView rows={rows} filter={filter} />
+      <AdminOrdersView
+        initial={{ rows: rows.slice(0, pageSize), total: rows.length }}
+        filter={filter}
+      />
     </I18nextProvider>,
   );
 }
@@ -168,30 +189,35 @@ describe("AdminOrdersView — table", () => {
     expect(push).toHaveBeenCalledWith("/en/admin/orders");
   });
 
-  it("searches by member or trainer name", () => {
+  it("searches by member or trainer name", async () => {
     renderView();
     const search = screen.getByRole("searchbox");
     fireEvent.change(search, { target: { value: "dan" } });
-    expect(screen.getByText("Cara → Dan")).toBeInTheDocument();
-    expect(screen.queryByText("Alice → Bob")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Cara → Dan")).toBeInTheDocument();
+      expect(screen.queryByText("Alice → Bob")).not.toBeInTheDocument();
+    });
     // either side of the order matches, ignoring case
     fireEvent.change(search, { target: { value: "ALICE" } });
-    expect(screen.getByText("Alice → Bob")).toBeInTheDocument();
-    expect(screen.queryByText("Cara → Dan")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Alice → Bob")).toBeInTheDocument();
+      expect(screen.queryByText("Cara → Dan")).not.toBeInTheDocument();
+    });
     fireEvent.change(search, { target: { value: "nobody" } });
-    expect(screen.getByText("No orders match your search.")).toBeInTheDocument();
+    expect(await screen.findByText("No orders match your search.")).toBeInTheDocument();
     fireEvent.change(search, { target: { value: "" } });
-    expect(screen.getAllByRole("row")).toHaveLength(1 + ROWS.length);
+    await waitFor(() => expect(screen.getAllByRole("row")).toHaveLength(1 + ROWS.length));
   });
 
-  it("goes back to the first page and recounts when searching", () => {
+  it("goes back to the first page and recounts when searching", async () => {
     const many = Array.from({ length: 23 }, (_, i) =>
       row({ id: `m${i}`, seeker_name: i === 21 ? "Techno Spark" : `S${i}`, companion_name: `T${i}` }),
     );
     renderView("en", many);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() => expect(screen.getByText("S10 → T10")).toBeInTheDocument());
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "techno" } });
-    expect(screen.getByText("Techno Spark → T21")).toBeInTheDocument();
+    expect(await screen.findByText("Techno Spark → T21")).toBeInTheDocument();
     expect(screen.getByText("1 total")).toBeInTheDocument();
   });
 
@@ -220,7 +246,7 @@ describe("AdminOrdersView — table", () => {
     expect(screen.getByText("No orders match this filter.")).toBeInTheDocument();
   });
 
-  it("pages through long lists", () => {
+  it("pages through long lists", async () => {
     const many = Array.from({ length: 23 }, (_, i) =>
       row({ id: `m${i}`, seeker_name: `S${i}`, companion_name: `T${i}` }),
     );
@@ -228,7 +254,7 @@ describe("AdminOrdersView — table", () => {
     const table = screen.getAllByRole("table")[0]!;
     expect(within(table).getAllByRole("row")).toHaveLength(11); // header + 10
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByText("S10 → T10")).toBeInTheDocument();
+    expect(await screen.findByText("S10 → T10")).toBeInTheDocument();
     expect(screen.getByText("23 total")).toBeInTheDocument();
   });
 });

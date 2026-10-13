@@ -1,3 +1,4 @@
+import { planBlockWeek } from "@pacergo/shared";
 import { getExerciseDetailServer, getTrainingPlanServer } from "@/lib/plan-view.server";
 import { ExerciseDetailView } from "@/features/ai-plan/plan/exercise-detail-view";
 import { PlanNotFound } from "@/features/ai-plan/plan/plan-not-found";
@@ -25,7 +26,10 @@ export default async function ExerciseDetailPage({
   const result = await getTrainingPlanServer(id);
   if (result) {
     const parsed = Number(weekParam);
-    const week = Number.isInteger(parsed) && parsed >= 1 && parsed <= result.plan.weeks.length ? parsed : 1;
+    const week =
+      Number.isInteger(parsed) && parsed >= 1 && parsed <= result.plan.weeks.length
+        ? parsed
+        : planBlockWeek(result.createdAt);
     const index = Number(dayIndex);
     const session = result.plan.weeks[week - 1]?.days.find((d) => d.dayIndex === index)?.session;
     const slot = session ? findExerciseSlot(session, slug, group) : null;

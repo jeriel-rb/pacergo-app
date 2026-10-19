@@ -1162,13 +1162,6 @@ create trigger bookings_notify
   after insert or update on bookings
   for each row execute function notify_booking_event();
 
-
-
-drop trigger if exists reviews_recompute_rating on reviews;
-create trigger reviews_recompute_rating
-  after insert on reviews
-  for each row execute function recompute_listing_rating();
-
 -- Refuses deletion while this user still has money in flight (open withdrawal,
 -- in-progress payment, pending refund, or a paid order not yet settled).
 -- Bookings are locked first so a payment attempt cannot start in between.

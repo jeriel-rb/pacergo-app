@@ -1,3 +1,4 @@
+import "server-only";
 import crypto from "node:crypto";
 
 export const NEWEBPAY_VERSION = "2.3";

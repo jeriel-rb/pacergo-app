@@ -13,6 +13,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // Next.js supplies `server-only` (it fails client bundles); tests import
+      // the server modules directly, so it is an empty module here.
+      "server-only": fileURLToPath(new URL("./vitest.server-only.ts", import.meta.url)),
     },
   },
 });

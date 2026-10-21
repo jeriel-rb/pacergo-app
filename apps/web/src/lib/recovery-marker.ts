@@ -1,3 +1,4 @@
+import "server-only";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { RECOVERY_SESSION_MAX_AGE_SECONDS } from "./password-reset";
 

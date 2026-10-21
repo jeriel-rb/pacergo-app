@@ -16,7 +16,11 @@ import { Input } from "@/shared/components/ui/input";
 import { useToast } from "@/shared/components/ui/toast";
 import { SaveButton } from "@/shared/components/atoms/save-button";
 import { useFormDirty } from "@/shared/hooks/use-form-dirty";
-import { changePassword } from "./profile-actions";
+import { changePassword, sendPasswordChangeCode } from "./profile-actions";
+
+/** "password" = choose the new password; "code" = confirm it with the emailed
+ *  code (Supabase asks for one when the session is older than 24 hours). */
+type Step = "password" | "code";
 
 export function ChangePasswordDialog({
   open,
@@ -27,15 +31,19 @@ export function ChangePasswordDialog({
 }) {
   const { t } = useTranslation("profile");
   const toast = useToast();
+  const [step, setStep] = useState<Step>("password");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { dirty } = useFormDirty({ password, confirm });
 
   function reset() {
+    setStep("password");
     setPassword("");
     setConfirm("");
+    setCode("");
     setError(null);
   }
 
@@ -45,26 +53,58 @@ export function ChangePasswordDialog({
     onOpenChange(next);
   }
 
+  function fail(err: unknown) {
+    setLoading(false);
+    const message = err instanceof Error ? err.message : t("genericError");
+    setError(message);
+    toast.show(message, "destructive");
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!dirty || loading) return;
-    if (password !== confirm) {
-      setError(t("changePasswordDialog.mismatch"));
+    if (loading) return;
+    if (step === "password") {
+      if (!dirty) return;
+      if (password !== confirm) {
+        setError(t("changePasswordDialog.mismatch"));
+        return;
+      }
+    } else if (!code.trim()) {
       return;
     }
     setError(null);
     setLoading(true);
     try {
-      await changePassword(password);
-      setLoading(false);
-      reset();
-      onOpenChange(false);
-      toast.show(t("changePasswordDialog.done"), "success");
+      const result = await changePassword(password, step === "code" ? code.trim() : undefined);
+      if (result === "updated") {
+        setLoading(false);
+        reset();
+        onOpenChange(false);
+        toast.show(t("changePasswordDialog.done"), "success");
+      } else if (result === "code_required") {
+        await sendPasswordChangeCode();
+        setLoading(false);
+        setCode("");
+        setStep("code");
+      } else {
+        setLoading(false);
+        setError(t("changePasswordDialog.codeInvalid"));
+      }
     } catch (err) {
+      fail(err);
+    }
+  }
+
+  async function onResendCode() {
+    if (loading) return;
+    setError(null);
+    setLoading(true);
+    try {
+      await sendPasswordChangeCode();
       setLoading(false);
-      const message = err instanceof Error ? err.message : t("genericError");
-      setError(message);
-      toast.show(message, "destructive");
+      toast.show(t("changePasswordDialog.codeResent"), "success");
+    } catch (err) {
+      fail(err);
     }
   }
 
@@ -75,39 +115,69 @@ export function ChangePasswordDialog({
           <DialogHeader>
             <DialogTitle>{t("changePasswordDialog.title")}</DialogTitle>
             <DialogDescription>
-              {t("changePasswordDialog.desc")}
+              {step === "password"
+                ? t("changePasswordDialog.desc")
+                : t("changePasswordDialog.codeDesc")}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-1.5">
-            <label htmlFor="new-password" className="text-sm font-medium">
-              {t("changePasswordDialog.newPassword")}
-            </label>
-            <Input
-              id="new-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          {step === "password" ? (
+            <>
+              <div className="space-y-1.5">
+                <label htmlFor="new-password" className="text-sm font-medium">
+                  {t("changePasswordDialog.newPassword")}
+                </label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="confirm-password" className="text-sm font-medium">
-              {t("changePasswordDialog.confirmPassword")}
-            </label>
-            <Input
-              id="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={6}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </div>
+              <div className="space-y-1.5">
+                <label htmlFor="confirm-password" className="text-sm font-medium">
+                  {t("changePasswordDialog.confirmPassword")}
+                </label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-1.5">
+              <label htmlFor="password-change-code" className="text-sm font-medium">
+                {t("changePasswordDialog.code")}
+              </label>
+              <Input
+                id="password-change-code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                required
+                autoFocus
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto px-0"
+                disabled={loading}
+                onClick={onResendCode}
+              >
+                {t("changePasswordDialog.resendCode")}
+              </Button>
+            </div>
+          )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -119,7 +189,7 @@ export function ChangePasswordDialog({
             </DialogClose>
             <SaveButton
               type="submit"
-              dirty={dirty}
+              dirty={step === "password" ? dirty : code.trim().length > 0}
               saving={loading}
               label={t("changePasswordDialog.submit")}
             />

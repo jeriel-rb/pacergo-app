@@ -73,7 +73,12 @@
     "confirmPassword": "確認新密碼",
     "mismatch": "兩次輸入的密碼不一致。",
     "submit": "更新密碼",
-    "done": "密碼已更新。"
+    "done": "密碼已更新。",
+    "codeDesc": "為了保護你的帳號，我們已寄出驗證碼到你的電子郵件，輸入後即可完成變更密碼。",
+    "code": "驗證碼",
+    "codeInvalid": "驗證碼錯誤或已過期。",
+    "resendCode": "重新寄送驗證碼",
+    "codeResent": "已重新寄出驗證碼。"
   },
   "deleteDialog": {
     "title": "刪除帳號",

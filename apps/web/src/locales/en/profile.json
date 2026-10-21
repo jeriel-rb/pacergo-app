@@ -73,7 +73,12 @@
     "confirmPassword": "Confirm new password",
     "mismatch": "Passwords do not match.",
     "submit": "Update password",
-    "done": "Password updated."
+    "done": "Password updated.",
+    "codeDesc": "For your security, we emailed you a verification code. Enter it to finish changing your password.",
+    "code": "Verification code",
+    "codeInvalid": "That code is wrong or has expired.",
+    "resendCode": "Send a new code",
+    "codeResent": "We sent you a new code."
   },
   "deleteDialog": {
     "title": "Delete account",

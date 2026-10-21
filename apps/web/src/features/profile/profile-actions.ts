@@ -93,10 +93,33 @@ export async function removeBanner(): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-/** Set a new password for the signed-in user. */
-export async function changePassword(newPassword: string): Promise<void> {
+/**
+ * What a password change needs next. With Supabase "secure password change" on,
+ * a session older than 24 hours must confirm an emailed code first:
+ * "code_required" → call `sendPasswordChangeCode`, then retry with the code;
+ * "code_invalid" → the code given is wrong or expired.
+ */
+export type ChangePasswordResult = "updated" | "code_required" | "code_invalid";
+
+/** Set a new password for the signed-in user (`nonce` = the emailed code, if asked). */
+export async function changePassword(
+  newPassword: string,
+  nonce?: string,
+): Promise<ChangePasswordResult> {
   const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  const { error } = await supabase.auth.updateUser(
+    nonce ? { password: newPassword, nonce } : { password: newPassword },
+  );
+  if (!error) return "updated";
+  if (error.code === "reauthentication_needed") return "code_required";
+  if (error.code === "reauthentication_not_valid") return nonce ? "code_invalid" : "code_required";
+  throw new Error(error.message);
+}
+
+/** Email the signed-in user a one-time code that authorizes a password change. */
+export async function sendPasswordChangeCode(): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.auth.reauthenticate();
   if (error) throw new Error(error.message);
 }
 

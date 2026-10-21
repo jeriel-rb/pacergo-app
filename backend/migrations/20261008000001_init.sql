@@ -4589,6 +4589,29 @@ begin
 end $$;
 grant execute on function admin_set_withdrawal_status(uuid, text, text) to authenticated;
 
+-- Server-side switches that must not rest on app env vars alone: production,
+-- preview and local deployments can all point at the same database. Only
+-- definer functions read it; RLS with no policy keeps clients out.
+create table if not exists app_settings (
+  key text primary key,
+  value jsonb not null,
+  updated_at timestamptz not null default now()
+);
+revoke all on table app_settings from anon, authenticated;
+
+-- Simulated checkout fakes a "paid" payment, so it stays off unless this
+-- database opts in. Never enable it on a database that takes real bookings:
+--   insert into app_settings (key, value) values ('simulated_payments', 'true')
+--   on conflict (key) do update set value = excluded.value, updated_at = now();
+create or replace function simulated_payments_enabled() returns boolean
+language sql stable set search_path = public as $$
+  select coalesce(
+    (select value = 'true'::jsonb from app_settings where key = 'simulated_payments'),
+    false
+  );
+$$;
+revoke all on function simulated_payments_enabled() from public, anon, authenticated;
+
 create or replace function create_simulated_payment_attempt(
   p_booking_id uuid,
   p_merchant_order_no text,
@@ -4606,6 +4629,7 @@ declare
   inserted payments%rowtype;
   fee record;
 begin
+  if not simulated_payments_enabled() then raise exception 'payment_simulated_disabled'; end if;
   if v_uid is null then raise exception 'payment_unauthenticated'; end if;
 
   select * into b from bookings where id = p_booking_id for update;
@@ -4668,6 +4692,7 @@ declare
   v_uid uuid := p_user_id; -- the server passes the verified caller; only service_role may call this
   pay payments%rowtype;
 begin
+  if not simulated_payments_enabled() then raise exception 'payment_simulated_disabled'; end if;
   if v_uid is null then raise exception 'payment_unauthenticated'; end if;
 
   select * into pay from payments where id = p_payment_id for update;

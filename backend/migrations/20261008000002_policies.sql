@@ -3,32 +3,17 @@
 -- * App tables: authenticated SELECT only; writes go through SECURITY DEFINER RPCs.
 -- * auth.uid() is wrapped in (select auth.uid()) for a once-per-statement initplan.
 -- * ENABLE RLS with no policy = deny all client access (definer RPCs / service_role only):
---     payment_status_events, reports, withdrawal_settlements, withdrawal_status_events,
---     workout_exercise_logs, workout_sessions
+--     app_settings, payment_status_events, reports, withdrawal_settlements,
+--     withdrawal_status_events, workout_exercise_logs, workout_sessions
 -- * Storage: owner write under their own folder (avatars, banners, verification-docs).
-
--- If PostGIS was ever installed in public, lock down spatial_ref_sys when we can.
--- (Absent or not owned by us → no-op. Prefer install into `extensions` in init.)
-do $$
-begin
-  begin
-    revoke insert, update, delete, truncate, references, trigger
-      on table public.spatial_ref_sys from anon, authenticated;
-  exception when insufficient_privilege or undefined_table then
-    null;
-  end;
-  begin
-    alter table public.spatial_ref_sys enable row level security;
-  exception when insufficient_privilege or undefined_table then
-    null;
-  end;
-end $$;
+-- * PostGIS lives in `extensions` (see init), so spatial_ref_sys is not on the Data API.
 
 -- ============================================================================
 -- Enable RLS on every public app table
 -- ============================================================================
 
 alter table activities enable row level security;
+alter table app_settings enable row level security;
 alter table availability enable row level security;
 alter table availability_blocks enable row level security;
 alter table blocks enable row level security;

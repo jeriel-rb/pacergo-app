@@ -15,7 +15,8 @@ type ConfirmBody = { paymentId?: string; approve?: boolean };
  * the server (service_role) call it. This route is that server: it verifies
  * the signed-in user, refuses unless the deployment is set to
  * PAYMENT_PROVIDER=simulated, and passes the verified user id. The database
- * still requires that user to own a pending provider='simulated' payment.
+ * still requires that user to own a pending provider='simulated' payment, and
+ * refuses outright unless that database opted in (`simulated_payments_enabled`).
  */
 export async function POST(request: Request) {
   const originBlock = forbidCrossSiteOrigin(request);
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
 
 function mapDatabaseError(message: string) {
   const known = [
+    "payment_simulated_disabled",
     "payment_order_not_found",
     "payment_booking_not_owned",
     "payment_not_simulated",

@@ -1,21 +1,36 @@
--- Relocate PostGIS from `public` into `extensions`.
--- Requires a role that can update pg_extension (Supabase Support on hosted).
--- Docs: https://supabase.com/docs/guides/database/extensions/postgis
+-- Move PostGIS from `public` into `extensions` on a hosted project.
 --
--- Adjust the UPDATE TO version to match `select extversion from pg_extension
--- where extname = 'postgis'` on the target database.
+-- Why: PostGIS created in `public` puts `public.spatial_ref_sys` on the Data API
+-- without RLS, owned by supabase_admin, with full anon/authenticated DML (advisor
+-- `rls_disabled_in_public`). `postgres` cannot enable RLS on it, revoke those grants,
+-- or `ALTER EXTENSION ... SET SCHEMA` (postgis is not relocatable). It can drop and
+-- recreate the extension, because postgis is a supautils privileged extension.
+--
+-- DROP ... CASCADE also drops `public.users.location` and `users_location_gix`, so
+-- this only runs while that column is empty; otherwise it aborts and changes nothing.
+-- No-op once PostGIS is already in `extensions`.
+--
+-- Run: supabase db query --linked -f backend/extensions/relocate-postgis-to-extensions.sql
+-- Applied to kezkrcyfnjlugkrcbwmy on 2026-10-21.
 
-BEGIN;
-  UPDATE pg_extension
-    SET extrelocatable = true
-  WHERE extname = 'postgis';
+do $$
+begin
+  if not exists (
+    select 1 from pg_extension
+    where extname = 'postgis' and extnamespace = 'public'::regnamespace
+  ) then
+    raise notice 'PostGIS is not in public; nothing to do';
+    return;
+  end if;
 
-  ALTER EXTENSION postgis SET SCHEMA extensions;
+  if exists (select 1 from public.users where location is not null) then
+    raise exception 'public.users.location has data; copy it out before moving PostGIS';
+  end if;
 
-  ALTER EXTENSION postgis UPDATE TO '3.3.7next';
-  ALTER EXTENSION postgis UPDATE;
+  drop extension postgis cascade;
+  create extension postgis with schema extensions;
 
-  UPDATE pg_extension
-    SET extrelocatable = false
-  WHERE extname = 'postgis';
-COMMIT;
+  alter table public.users add column location extensions.geography(Point, 4326);
+  create index users_location_gix on public.users using gist (location)
+    where location is not null;
+end $$;

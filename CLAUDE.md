@@ -115,7 +115,11 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
 - MPG 2.3 hosted checkout: `apps/web/src/lib/payments/newebpay.ts` (AES-256-CBC
   `TradeInfo` + SHA-256 `TradeSha`), routes under `apps/web/src/app/api/payments/newebpay/`
   (`create`, `return`, `notify` — notify answers `1|OK`). `PAYMENT_PROVIDER=simulated`
-  switches checkout to the built-in fake provider instead.
+  switches checkout to the built-in fake provider instead — but only on a database that
+  opted in (`app_settings` key `simulated_payments` = `true`, read by
+  `simulated_payments_enabled()`). It is off on the live project: every deployment and
+  local `.env.local` share that one database, and a simulated "paid" confirms a real
+  booking with no money. Never turn it on there.
 - **Sandbox store:** merchant `MS159835515` (PacerGo 陪練動), portal
   `https://cwww.newebpay.com` (the `c` prefix = test site; live is `www.newebpay.com`),
   gateway `https://ccore.newebpay.com/MPG/mpg_gateway`. Keys: 會員中心 → 商店管理 →

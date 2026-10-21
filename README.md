@@ -36,16 +36,9 @@ Apply them to the Supabase project one of these ways:
 - **Dashboard:** paste the migration SQL into the project's SQL Editor and run it.
 - **CLI:** `supabase link --project-ref <ref>` then `supabase db push`.
 
-Then create the storage buckets (run in the SQL Editor):
-
-```sql
-insert into storage.buckets (id, name, public)
-values
-  ('avatars', 'avatars', true),
-  ('listing-photos', 'listing-photos', true),
-  ('verification-docs', 'verification-docs', false)
-on conflict (id) do nothing;
-```
+Then create the storage buckets (`avatars`, `banners`, private `verification-docs`, each
+with size and MIME limits) by running
+[`backend/seeds/02_storage_buckets.sql`](backend/seeds/02_storage_buckets.sql) in the SQL Editor.
 
 ## Auth (M1)
 

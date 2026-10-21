@@ -163,6 +163,7 @@ function mapDatabaseError(message: string) {
     "payment_redirect_not_allowed",
     "payment_invalid_amount",
     "payment_amount_mismatch",
+    "payment_simulated_disabled",
   ];
   const matched = known.find((code) => message.includes(code));
   if (matched) return matched;

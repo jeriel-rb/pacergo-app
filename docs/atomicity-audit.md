@@ -159,7 +159,7 @@ for the same booking is already `paid` with `refund_status = 'none'`, the new ro
 | Finding | Status |
 |---|---|
 | No range validation on profile / nutrition data | **Fixed** — `PROFILE_LIMITS` + sanitizers in `@pacergo/shared`, enforced in the DB by `validate_fitness_profile()` in `0001_init.sql` |
-| PostGIS `st_estimatedextent()` executable by `anon`; `spatial_ref_sys` without RLS | **Blocked** — still owned by `supabase_admin` in `public`. The migration role cannot revoke execute or move the extension. Moving it would also retarget `users.location`. Needs a Supabase support / dashboard change, not a migration |
+| PostGIS `st_estimatedextent()` executable by `anon`; `spatial_ref_sys` without RLS | **Fixed** (2026-10-21) — PostGIS dropped and recreated in `extensions` (not exposed by the Data API) with `backend/extensions/relocate-postgis-to-extensions.sql`; `users.location` was empty and was re-added as `extensions.geography` with its index |
 | Leaked-password protection disabled | **Blocked** — Auth API `PATCH .../config/auth` with `password_hibp_enabled` returned 403. Supabase documents this as a Pro-plan setting |
 | `admin_*` functions gated by `is_platform_admin()` | **Verified** — all 12 |
 | Service-role client reachable from the browser | **Fixed** — runtime guard in `lib/supabase/admin.ts` |

@@ -25,6 +25,7 @@ import { DatePicker } from "@/shared/components/ui/date-picker";
 import { TimePicker } from "@/shared/components/ui/time-picker";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
+import { RatingButton } from "@/features/trainer/rating-dialog";
 import { useLocale } from "@/shared/hooks/use-locale";
 import {
   getCurrentLocale,
@@ -39,11 +40,14 @@ export function BookingSheet({
   companionId,
   companionName,
   offerings,
+  rating,
   trigger,
 }: {
   companionId: string;
   companionName: string;
   offerings: CompanionOffering[];
+  /** Trainer rating shown in the header; click opens the reviews dialog. */
+  rating?: { avg: number; count: number };
   trigger: React.ReactNode;
 }) {
   const router = useRouter();
@@ -101,6 +105,14 @@ export function BookingSheet({
           <DialogDescription>
             {t("book.subtitle", { name: companionName })}
           </DialogDescription>
+          {rating && (
+            <RatingButton
+              trainerId={companionId}
+              trainerName={companionName}
+              ratingAvg={rating.avg}
+              ratingCount={rating.count}
+            />
+          )}
         </DialogHeader>
 
         <form onSubmit={onSubmit} className="space-y-4">

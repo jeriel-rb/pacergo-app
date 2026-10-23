@@ -5,7 +5,7 @@ import { ChevronLeft, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { TIER_LABELS, type TrainerProfile } from "@pacergo/shared";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
-import { RatingStars } from "@/shared/components/atoms/rating-stars";
+import { RatingButton } from "./rating-dialog";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { TierBadge } from "@/shared/components/atoms/tier-badge";
 import { MessageButton } from "@/features/chat/message-button";
@@ -92,7 +92,12 @@ export function TrainerDetailHeader({
           </div>
           <p className="text-sm text-muted-foreground">{subtitle}</p>
 
-          <RatingStars value={trainer.rating_avg} count={trainer.rating_count} />
+          <RatingButton
+            trainerId={trainer.id}
+            trainerName={trainer.display_name}
+            ratingAvg={trainer.rating_avg}
+            ratingCount={trainer.rating_count}
+          />
 
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin size={14} className="shrink-0" />

@@ -8,7 +8,6 @@ import {
   BioSection,
   GymMemberships,
   AvailabilityList,
-  ReviewsSection,
 } from "./trainer-sections";
 import { PlatformManagerCard } from "./platform-manager-card";
 import { BookingCTA } from "./booking-cta";
@@ -41,7 +40,6 @@ export function TrainerDetailView({
       <BioSection trainer={trainer} />
       <GymMemberships trainer={trainer} />
       <AvailabilityList trainer={trainer} />
-      <ReviewsSection trainer={trainer} />
       {trainer.manager && <PlatformManagerCard manager={trainer.manager} />}
       <BookingCTA
         companionId={trainer.id}
@@ -49,6 +47,8 @@ export function TrainerDetailView({
         offerings={offerings}
         price={trainer.price_ntd}
         isFree={trainer.is_free}
+        ratingAvg={trainer.rating_avg}
+        ratingCount={trainer.rating_count}
         isSelf={currentUserId === trainer.id}
       />
     </div>

@@ -1,19 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import {
   Medal,
   UserRound,
   Building2,
   CalendarDays,
-  Star,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { REVIEW_PAGE_SIZE, type TrainerProfile } from "@pacergo/shared";
+import type { TrainerProfile } from "@pacergo/shared";
 import { SectionCard } from "@/shared/components/atoms/section-card";
 import { ActivityChip } from "@/shared/components/atoms/activity";
 import { useLocale } from "@/shared/hooks/use-locale";
-import { fetchCompanionReviewPage } from "./review-actions";
 
 const fmtTime = (minutes: number) => {
   const h = Math.floor(minutes / 60);
@@ -107,63 +104,6 @@ export function AvailabilityList({ trainer }: { trainer: TrainerProfile }) {
         ))}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">{t("availabilityTz")}</p>
-    </SectionCard>
-  );
-}
-
-export function ReviewsSection({ trainer }: { trainer: TrainerProfile }) {
-  const { t } = useTranslation("trainer");
-  const [reviews, setReviews] = useState(trainer.reviews);
-  const [loading, setLoading] = useState(false);
-  const [exhausted, setExhausted] = useState(false);
-  const total = Math.max(trainer.rating_count, reviews.length);
-  const hasMore = !exhausted && reviews.length < trainer.rating_count;
-
-  async function loadMore() {
-    setLoading(true);
-    try {
-      const next = await fetchCompanionReviewPage(trainer.id, reviews.length);
-      setReviews((current) => [...current, ...next]);
-      if (next.length < REVIEW_PAGE_SIZE) setExhausted(true);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <SectionCard
-      icon={<Star size={18} className="text-primary" />}
-      title={`${t("reviews")} (${total})`}
-    >
-      {reviews.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("noReviews")}</p>
-      ) : (
-        <ul className="space-y-4">
-          {reviews.map((review) => (
-            <li key={review.id} className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{review.author_name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {review.rating.toFixed(1)} ★
-                </span>
-              </div>
-              {review.comment && (
-                <p className="text-sm text-foreground/80">{review.comment}</p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-      {hasMore && (
-        <button
-          type="button"
-          onClick={loadMore}
-          disabled={loading}
-          className="mt-4 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-accent disabled:opacity-60"
-        >
-          {loading ? t("loadingReviews") : t("loadMoreReviews")}
-        </button>
-      )}
     </SectionCard>
   );
 }

@@ -28,6 +28,26 @@
   "cannotBookSelf": "You can't book yourself.",
   "bookingRequested": "Booking request sent — the trainer will confirm shortly.",
   "bidding": "Bidding",
+  "ratingDialog": {
+    "title": "Reviews for {{name}}",
+    "description": "Ratings and comments from trainees who trained with {{name}}",
+    "stars": "{{count}} out of 5 stars",
+    "open": "See reviews",
+    "error": "Couldn't load reviews. Tap to retry.",
+    "basedOn_one": "Based on {{count}} review",
+    "basedOn_other": "Based on {{count}} reviews",
+    "filter": "Filter by rating",
+    "all": "All",
+    "noneForFilter": "No reviews with this rating yet."
+  },
   "ratingCount": "({{count}})",
-  "weekdaysShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  "weekdaysShort": [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat"
+  ]
 }

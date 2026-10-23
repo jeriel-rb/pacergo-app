@@ -28,6 +28,25 @@
   "cannotBookSelf": "你不能預約自己。",
   "bookingRequested": "已送出預約邀請，陪練將盡快與你確認。",
   "bidding": "競標制",
+  "ratingDialog": {
+    "title": "{{name}} 的評價",
+    "description": "與 {{name}} 訓練過的學員所留下的評分與留言",
+    "stars": "{{count}} 顆星（滿分 5 顆）",
+    "open": "查看評價",
+    "error": "無法載入評價，點擊重試。",
+    "basedOn_other": "共 {{count}} 則評價",
+    "filter": "依星等篩選",
+    "all": "全部",
+    "noneForFilter": "目前沒有此星等的評價。"
+  },
   "ratingCount": "({{count}})",
-  "weekdaysShort": ["週日", "週一", "週二", "週三", "週四", "週五", "週六"]
+  "weekdaysShort": [
+    "週日",
+    "週一",
+    "週二",
+    "週三",
+    "週四",
+    "週五",
+    "週六"
+  ]
 }

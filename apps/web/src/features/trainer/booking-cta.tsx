@@ -16,6 +16,8 @@ export function BookingCTA({
   offerings,
   price,
   isFree,
+  ratingAvg,
+  ratingCount,
   isSelf = false,
 }: {
   companionId: string;
@@ -23,6 +25,8 @@ export function BookingCTA({
   offerings: CompanionOffering[];
   price: number;
   isFree: boolean;
+  ratingAvg: number;
+  ratingCount: number;
   /** True when the viewer is looking at their own listing — the button only toasts. */
   isSelf?: boolean;
 }) {
@@ -70,6 +74,7 @@ export function BookingCTA({
           companionId={companionId}
           companionName={companionName}
           offerings={offerings}
+          rating={{ avg: ratingAvg, count: ratingCount }}
           trigger={button}
         />
       )}

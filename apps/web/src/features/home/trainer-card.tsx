@@ -14,6 +14,7 @@ import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { RatingStars } from "@/shared/components/atoms/rating-stars";
 import { ActivityIcon, ActivityIconCircle } from "@/shared/components/atoms/activity";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { RatingDialog } from "@/features/trainer/rating-dialog";
 import { toggleSaved } from "@/features/saved/saved-actions";
 import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,7 @@ export function TrainerCard({
     : trainer.activities;
   const hiddenActivities = overflow ? trainer.activities.slice(ACTIVITY_SLOTS - 1) : [];
   const [saved, setSaved] = useState(initialSaved);
+  const [ratingOpen, setRatingOpen] = useState(false);
   const toast = useToast();
 
   async function onToggleSave(e: React.MouseEvent) {
@@ -67,6 +69,7 @@ export function TrainerCard({
   }
 
   return (
+    <>
     <Link href={href} className="group block">
       <Card className="overflow-hidden transition-shadow hover:shadow-md">
         {/* Banner cover (or brand gradient) */}
@@ -119,11 +122,22 @@ export function TrainerCard({
               <MapPin size={12} className="shrink-0" />
               <span className="truncate">{trainer.home_area}</span>
             </div>
-            <RatingStars
-              value={trainer.rating_avg}
-              count={trainer.rating_count}
-              size={12}
-            />
+            <button
+              type="button"
+              aria-label={t("ratingDialog.open", { ns: "trainer" })}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setRatingOpen(true);
+              }}
+              className="block rounded-md text-left transition-opacity hover:opacity-80"
+            >
+              <RatingStars
+                value={trainer.rating_avg}
+                count={trainer.rating_count}
+                size={12}
+              />
+            </button>
             <div className="flex h-8 flex-nowrap items-center gap-1.5 pt-1">
               {visibleActivities.map((slug) => (
                 <ActivityIconCircle key={slug} slug={slug} className="h-7 w-7 shrink-0" />
@@ -162,5 +176,14 @@ export function TrainerCard({
         </div>
       </Card>
     </Link>
+    <RatingDialog
+      open={ratingOpen}
+      onOpenChange={setRatingOpen}
+      trainerId={trainer.id}
+      trainerName={trainer.display_name}
+      ratingAvg={trainer.rating_avg}
+      ratingCount={trainer.rating_count}
+    />
+    </>
   );
 }

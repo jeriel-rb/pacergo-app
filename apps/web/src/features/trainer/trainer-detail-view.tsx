@@ -45,6 +45,7 @@ export function TrainerDetailView({
         companionId={trainer.id}
         companionName={trainer.display_name}
         offerings={offerings}
+        availability={trainer.availability}
         price={trainer.price_ntd}
         isFree={trainer.is_free}
         ratingAvg={trainer.rating_avg}

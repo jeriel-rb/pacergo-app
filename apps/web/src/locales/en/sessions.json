@@ -56,14 +56,16 @@
     "subtitle": "Send a booking request to {{name}}",
     "offering": "Choose a plan",
     "when": "Preferred time",
-    "whenHint": "Optional — times are Taipei (GMT+8). You can also agree later with the trainer.",
+    "whenHint": "Only the trainer's open days and times can be picked (Taipei time, GMT+8). Optional — you can also agree on a time later.",
     "location": "Location",
     "locationPlaceholder": "e.g. World Gym, Xinyi, Taipei",
     "note": "Note",
     "notePlaceholder": "Your goals, anything to be aware of…",
     "submit": "Send booking request",
     "whenDate": "Date",
-    "whenTime": "Time"
+    "pickDayFirst": "Pick a day to see open start times.",
+    "startTime": "Start time",
+    "noAvailability": "This trainer hasn't set available times yet. Send your request and agree on a time in chat."
   },
   "review": {
     "title": "Leave a review",

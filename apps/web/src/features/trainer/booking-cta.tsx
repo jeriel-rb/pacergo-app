@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import type { CompanionOffering } from "@pacergo/shared";
+import type { AvailabilitySlot, CompanionOffering } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { useToast } from "@/shared/components/ui/toast";
@@ -14,6 +14,7 @@ export function BookingCTA({
   companionId,
   companionName,
   offerings,
+  availability,
   price,
   isFree: _isFree,
   ratingAvg,
@@ -23,6 +24,8 @@ export function BookingCTA({
   companionId: string;
   companionName: string;
   offerings: CompanionOffering[];
+  /** The trainer's weekly windows; the booking form only offers these. */
+  availability: AvailabilitySlot[];
   price: number;
   isFree: boolean;
   ratingAvg: number;
@@ -70,6 +73,7 @@ export function BookingCTA({
           companionId={companionId}
           companionName={companionName}
           offerings={offerings}
+          availability={availability}
           rating={{ avg: ratingAvg, count: ratingCount }}
           trigger={button}
         />

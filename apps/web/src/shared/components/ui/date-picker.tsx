@@ -27,6 +27,8 @@ type DatePickerProps = {
   minDate?: Date;
   /** Disallow picking dates after this day (inclusive max). */
   maxDate?: Date;
+  /** Extra per-day rule on top of min/max, given the day as `YYYY-MM-DD`. */
+  isDateDisabled?: (dateKey: string) => boolean;
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -44,6 +46,7 @@ export function DatePicker({
   placeholder,
   minDate,
   maxDate,
+  isDateDisabled,
   disabled = false,
   className,
   id,
@@ -98,12 +101,12 @@ export function DatePicker({
           locale={dfLocale}
           defaultMonth={date ?? maxDate ?? minDate ?? new Date()}
           disabled={
-            minKey || maxKey
+            minKey || maxKey || isDateDisabled
               ? (d) => {
                   const key = calendarDayKeyFromLocalDate(d);
                   if (minKey && key < minKey) return true;
                   if (maxKey && key > maxKey) return true;
-                  return false;
+                  return isDateDisabled?.(key) ?? false;
                 }
               : undefined
           }

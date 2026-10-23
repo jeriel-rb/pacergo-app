@@ -12,7 +12,8 @@ import { SectionCard } from "@/shared/components/atoms/section-card";
 import { ActivityChip } from "@/shared/components/atoms/activity";
 import { useLocale } from "@/shared/hooks/use-locale";
 
-const fmtTime = (minutes: number) => {
+/** Minutes since midnight → `18:00` / `9:30` (how availability windows are shown). */
+export const fmtTime = (minutes: number) => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}:${String(m).padStart(2, "0")}`;

@@ -37,6 +37,7 @@ export * from './nutrition/calculate-nutrition';
 export * from './nutrition/profile-limits';
 
 export * from './booking/state-machine';
+export * from './booking/bookable-times';
 
 export * from './time/app-timezone';
 export * from './time/plan-block-week';

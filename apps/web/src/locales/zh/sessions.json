@@ -56,14 +56,16 @@
     "subtitle": "向 {{name}} 送出預約請求",
     "offering": "選擇方案",
     "when": "希望時間",
-    "whenHint": "可留空；時間以台北時間（GMT+8）為準，也可與陪練再約定",
+    "whenHint": "只能選擇陪練開放的日期與時段，以台北時間（GMT+8）為準；也可留空，之後再與陪練約定。",
     "location": "地點",
     "locationPlaceholder": "例如：台北市信義區 World Gym",
     "note": "備註",
     "notePlaceholder": "想達成的目標、需要注意的事項…",
     "submit": "送出預約請求",
     "whenDate": "日期",
-    "whenTime": "時間"
+    "pickDayFirst": "先選日期，就會顯示可預約的開始時間。",
+    "startTime": "開始時間",
+    "noAvailability": "這位陪練尚未設定可預約時段。送出預約後，可在聊天中約定時間。"
   },
   "review": {
     "title": "留下評價",

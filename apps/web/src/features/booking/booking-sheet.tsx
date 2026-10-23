@@ -7,8 +7,10 @@ import { Loader2 } from "lucide-react";
 import {
   ACTIVITY_META,
   TIER_LABELS,
+  bookableStartTimes,
   calendarDayKeyFromLocalDate,
   wallTimeToUtcIso,
+  type AvailabilitySlot,
   type CompanionOffering,
 } from "@pacergo/shared";
 import {
@@ -21,8 +23,6 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { DatePicker } from "@/shared/components/ui/date-picker";
-import { TimePicker } from "@/shared/components/ui/time-picker";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { RatingButton } from "@/features/trainer/rating-dialog";
@@ -34,18 +34,22 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/shared/components/ui/toast";
 import { createBooking } from "./booking-actions";
+import { BookingWhenField } from "./booking-when-field";
 
 /** Booking request form (modal). Triggered from the trainer detail CTA. */
 export function BookingSheet({
   companionId,
   companionName,
   offerings,
+  availability,
   rating,
   trigger,
 }: {
   companionId: string;
   companionName: string;
   offerings: CompanionOffering[];
+  /** The trainer's weekly windows (Taipei); only these days/times can be picked. */
+  availability: AvailabilitySlot[];
   /** Trainer rating shown in the header; click opens the reviews dialog. */
   rating?: { avg: number; count: number };
   trigger: React.ReactNode;
@@ -67,6 +71,20 @@ export function BookingSheet({
   const [error, setError] = useState<string | null>(null);
 
   const selected = offerings.find((o) => o.id === offeringId);
+  const sessionMinutes = selected?.session_minutes ?? 60;
+
+  // A longer plan may no longer fit the picked day / start time: drop what doesn't.
+  function selectOffering(o: CompanionOffering) {
+    setOfferingId(o.id);
+    if (!date) return;
+    const times = bookableStartTimes({
+      availability,
+      dateKey: calendarDayKeyFromLocalDate(date),
+      sessionMinutes: o.session_minutes ?? 60,
+    });
+    if (times.length === 0) setDate(undefined);
+    if (!times.includes(time)) setTime("");
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,7 +98,7 @@ export function BookingSheet({
         offeringId,
         scheduledStart:
           dateKey && time ? wallTimeToUtcIso(dateKey, time) : null,
-        durationMin: selected?.session_minutes ?? null,
+        durationMin: sessionMinutes,
         locationName: location.trim() || null,
         seekerNote: note.trim() || null,
       });
@@ -123,7 +141,7 @@ export function BookingSheet({
                 <button
                   key={o.id}
                   type="button"
-                  onClick={() => setOfferingId(o.id)}
+                  onClick={() => selectOffering(o)}
                   className={cn(
                     "flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
                     offeringId === o.id
@@ -153,29 +171,14 @@ export function BookingSheet({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium">{t("book.when")}</span>
-            <div className="grid grid-cols-2 gap-2">
-              <DatePicker
-                date={date}
-                onChange={(next) => {
-                  setDate(next);
-                  if (!next) setTime("");
-                }}
-                minDate={new Date()}
-                placeholder={t("book.whenDate")}
-                aria-label={t("book.whenDate")}
-              />
-              <TimePicker
-                value={time || undefined}
-                onChange={setTime}
-                disabled={!date}
-                placeholder={t("book.whenTime")}
-                aria-label={t("book.whenTime")}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">{t("book.whenHint")}</p>
-          </div>
+          <BookingWhenField
+            availability={availability}
+            sessionMinutes={sessionMinutes}
+            date={date}
+            time={time}
+            onDateChange={setDate}
+            onTimeChange={setTime}
+          />
 
           <Input
             label={t("book.location")}

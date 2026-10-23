@@ -168,7 +168,8 @@ export function BookingDetailView({
       {booking.status === "pending_payment" && <p className="text-sm text-muted-foreground">{t("detail.acceptedAwaitingPayment")}</p>}
 
       {booking.status !== "cancelled" && (
-        <div className="flex items-stretch gap-2">
+        // Wraps so the actions bar's full-width notes (basis-full) get their own line.
+        <div className="flex flex-wrap items-stretch gap-2">
           <BookingActionsBar booking={booking} currentUserId={currentUserId} />
 
           {currentUserId === booking.seeker_id &&

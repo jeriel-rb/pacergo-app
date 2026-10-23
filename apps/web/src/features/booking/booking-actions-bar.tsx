@@ -91,16 +91,21 @@ export function BookingActionsBar({
   }
 
   // Members can't cancel (only the trainer can), so say where to go instead.
+  // Notes take a full line under the buttons (the parent row wraps) — never
+  // a slot in the row, which squeezed Pay / Message beside it.
   const cancelNote =
     !iAmCompanion && OPEN_STATUSES.includes(booking.status) ? (
-      <p className="basis-full text-xs text-muted-foreground">{t("cancelTrainerOnly")}</p>
+      <p className="order-last basis-full text-xs text-muted-foreground">{t("cancelTrainerOnly")}</p>
     ) : null;
+  const errorNote = error ? (
+    <p className="order-last basis-full text-sm text-destructive">{error}</p>
+  ) : null;
 
   if (actions.length === 0) {
     return (
       <>
         {cancelNote}
-        {error && <p className="basis-full text-sm text-destructive">{error}</p>}
+        {errorNote}
       </>
     );
   }
@@ -123,7 +128,7 @@ export function BookingActionsBar({
           {t(`actions.${a.key}`)}
         </Button>
       ))}
-      {error && <p className="basis-full text-sm text-destructive">{error}</p>}
+      {errorNote}
     </>
   );
 }

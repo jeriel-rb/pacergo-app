@@ -19,7 +19,9 @@ const fetchOrdersPage = vi.fn();
 const setPaymentStatus = vi.fn().mockResolvedValue(undefined);
 const setPaymentHold = vi.fn().mockResolvedValue(undefined);
 const correctServiceCompleted = vi.fn().mockResolvedValue(undefined);
+const issueRefund = vi.fn().mockResolvedValue({ refund: "automatic" });
 vi.mock("../../admin-actions", () => ({
+  issueRefund: (...a: unknown[]) => issueRefund(...a),
   fetchOrderDetail: (...a: unknown[]) => fetchOrderDetail(...a),
   fetchOrdersPage: (...a: unknown[]) => fetchOrdersPage(...a),
   setPaymentStatus: (...a: unknown[]) => setPaymentStatus(...a),
@@ -328,7 +330,7 @@ describe("AdminOrdersView — ⋯ action menu", () => {
     renderView();
     await openMenu("Alice → Bob");
     await waitFor(async () =>
-      expect(await labels()).toEqual(["Request refund", "Place hold", "Mark service completed"]),
+      expect(await labels()).toEqual(["Issue refund", "Place hold", "Mark service completed"]),
     );
   });
 
@@ -346,12 +348,17 @@ describe("AdminOrdersView — ⋯ action menu", () => {
     expect(await labels()).toEqual(["Place hold", "Cancel attempt"]);
   });
 
-  it("offers 'mark refunded' and 'clear hold' when a refund is requested and the order is held", async () => {
+  it("offers a retry, 'mark refunded' and 'clear hold' when a refund is requested and the order is held", async () => {
     renderView();
     await openMenu("Gus → Hal");
     // the service action joins once the order's details have loaded
     await waitFor(async () =>
-      expect(await labels()).toEqual(["Mark refunded", "Clear hold", "Mark service completed"]),
+      expect(await labels()).toEqual([
+        "Issue refund",
+        "Mark refunded",
+        "Clear hold",
+        "Mark service completed",
+      ]),
     );
   });
 
@@ -371,24 +378,31 @@ describe("AdminOrdersView — recording ledger actions", () => {
 
   it("asks for a reason first and won't record without one", async () => {
     renderView();
-    const dialog = await choose("Alice → Bob", "Request refund");
-    expect(within(dialog).getByText("Request refund?")).toBeInTheDocument();
+    const dialog = await choose("Alice → Bob", "Issue refund");
+    expect(within(dialog).getByText("Issue refund?")).toBeInTheDocument();
     expect(within(dialog).getByText("Alice → Bob · NT$1,200")).toBeInTheDocument();
-    fireEvent.click(within(dialog).getByRole("button", { name: "Request refund" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Issue refund" }));
     expect(await within(dialog).findByText("This action requires a reason note.")).toBeInTheDocument();
-    expect(setPaymentStatus).not.toHaveBeenCalled();
+    expect(issueRefund).not.toHaveBeenCalled();
   });
 
-  it("records a refund request with the reason, then refreshes", async () => {
+  it("issues the refund through NewebPay with the reason, then refreshes", async () => {
     renderView();
-    const dialog = await choose("Alice → Bob", "Request refund");
+    const dialog = await choose("Alice → Bob", "Issue refund");
     fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: " duplicate charge " } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Request refund" }));
-    await waitFor(() =>
-      expect(setPaymentStatus).toHaveBeenCalledWith("o1", "refund_requested", "duplicate charge"),
-    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Issue refund" }));
+    await waitFor(() => expect(issueRefund).toHaveBeenCalledWith("o1", "duplicate charge"));
     await waitFor(() => expect(refresh).toHaveBeenCalled());
-    expect(toastShow).toHaveBeenCalledWith("Order updated", "success");
+    expect(toastShow).toHaveBeenCalledWith(en.toast.refundSent, "success");
+  });
+
+  it("says when the refund has to be done in NewebPay's portal", async () => {
+    issueRefund.mockResolvedValueOnce({ refund: "manual_required" });
+    renderView();
+    const dialog = await choose("Alice → Bob", "Issue refund");
+    fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: "ATM payment" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Issue refund" }));
+    await waitFor(() => expect(toastShow).toHaveBeenCalledWith(en.toast.refundManual, "default"));
   });
 
   it("places and clears a hold", async () => {

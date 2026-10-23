@@ -1058,10 +1058,11 @@ declare
 begin
   if v_uid is null then raise exception 'not authenticated'; end if;
 
+  -- Only the trainer cancels (2026-10-23); a member messages the trainer.
   update bookings
   set status = 'cancelled', cancelled_by = v_uid
   where id = p_id
-    and (seeker_id = v_uid or companion_id = v_uid)
+    and companion_id = v_uid
     and status in (
       'requested', 'pending_payment', 'payment_processing', 'payment_failed', 'accepted'
     );
@@ -3410,6 +3411,45 @@ as $$
   where p.id = p_payment_id and p.user_id = auth.uid();
 $$;
 
+-- When an open payment attempt stops blocking a new one and is expired
+-- (B-1: "30 minutes, or gateway-defined window"):
+--   created / redirected -> 20 min. NewebPay closes its page after 15
+--                           (TradeLimit 900 s, buildPaymentForm); 5 more for
+--                           its result to land.
+--   processing           -> 30 min. The browser said paid; the notify is due.
+--   awaiting_payment     -> NewebPay's deadline for the ATM / store / barcode
+--                           code (ExpireDate + ExpireTime, Taipei), else 7 days
+--                           (NewebPay's default).
+create or replace function payment_attempt_deadline(p payments)
+returns timestamptz
+language sql
+stable
+set search_path = public
+as $$
+  select case p.status
+    when 'created' then p.created_at + interval '20 minutes'
+    when 'redirected' then p.created_at + interval '20 minutes'
+    when 'processing' then p.created_at + interval '30 minutes'
+    when 'awaiting_payment' then coalesce(
+      case
+        when p.payment_instructions->>'ExpireDate' ~ '^\d{4}-\d{2}-\d{2}$'
+        then (
+          (p.payment_instructions->>'ExpireDate') || ' ' ||
+          case
+            when p.payment_instructions->>'ExpireTime' ~ '^\d{2}:\d{2}(:\d{2})?$'
+            then p.payment_instructions->>'ExpireTime'
+            else '23:59:59'
+          end
+        )::timestamp at time zone 'Asia/Taipei'
+      end,
+      p.created_at + interval '7 days'
+    )
+  end
+$$;
+
+-- Internal helper (not an RPC): only the payment functions call it.
+revoke all on function payment_attempt_deadline(payments) from public, anon, authenticated;
+
 create or replace function create_newebpay_payment_attempt(
   p_booking_id uuid,
   p_merchant_order_no text,
@@ -3447,16 +3487,31 @@ begin
     raise exception 'payment_already_paid';
   end if;
 
+  -- An attempt past its deadline can't be paid any more: close it here, so
+  -- one abandoned checkout doesn't lock the booking until the cron runs.
+  update payments p
+  set status = 'expired',
+      expired_at = coalesce(p.expired_at, now())
+  where p.booking_id = p_booking_id
+    and p.status in ('created', 'redirected', 'processing', 'awaiting_payment')
+    and payment_attempt_deadline(p) <= now();
+
   select * into existing
   from payments
   where booking_id = p_booking_id
     and status in ('created', 'redirected', 'processing', 'awaiting_payment')
-    and created_at > now() - interval '30 minutes'
   order by created_at desc
   limit 1
   for update;
 
   if found then raise exception 'payment_attempt_in_progress'; end if;
+
+  -- A closed attempt leaves the booking mid-payment; the new payment row needs
+  -- it back in pending_payment (require_accepted_booking_for_payment).
+  update bookings
+  set status = 'pending_payment'
+  where id = p_booking_id
+    and status in ('payment_processing', 'payment_failed');
 
   select * into fee from compute_order_fee_split(p_amount); -- CHANGED
 
@@ -3517,10 +3572,14 @@ end $$;
 --    owner) can call it.
 --
 --    What "release the slot" means here: there is no separate time-slot
---    table in this schema (see docs/phase2-work-tracker.md Decisions log).
---    `create_booking` blocks a new booking only if an existing booking with
---    that companion is still in an "open" status. Moving the stale booking to
---    'expired' removes it from that check, which is the entire "release."
+--    table in this schema (see docs/phase2-work-tracker.md Decisions log), so
+--    an unpaid booking holds nobody else's time. An expired ATTEMPT therefore
+--    returns its booking to pending_payment (the trainer already accepted; the
+--    member just pays again) instead of expiring it. The booking itself
+--    expires once it can no longer be used: its session time has passed, or,
+--    with no time set, 7 days after it was made. (2026-10-23: one abandoned
+--    checkout used to kill an accepted booking 30 minutes later, and ATM codes
+--    valid for days were expired after 30 minutes.)
 -- ---------------------------------------------------------------------------;
 
 create or replace function mark_newebpay_payment_redirected(p_payment_id uuid)
@@ -3663,8 +3722,10 @@ begin
   order by id
   for update;
 
+  -- A booking only expires once it can't be used any more (see
+  -- expire_stale_payment_attempts), so money landing on one is refunded too.
   v_needs_refund := p_next_status = 'paid' and (
-    b.status in ('cancelled', 'declined')
+    b.status in ('cancelled', 'declined', 'expired')
     or exists (
       select 1 from payments other
       where other.booking_id = b.id
@@ -3699,7 +3760,7 @@ begin
     values (
       p.id,
       case
-        when b.status in ('cancelled', 'declined') then 'late_payment_on_closed_booking'
+        when b.status in ('cancelled', 'declined', 'expired') then 'late_payment_on_closed_booking'
         else 'duplicate_paid_attempt'
       end,
       'none',
@@ -3710,7 +3771,7 @@ begin
 
   update bookings
   set status = case
-    when status in ('cancelled', 'completed', 'declined') then status
+    when status in ('cancelled', 'completed', 'declined', 'expired') then status
     when v_needs_refund then status
     when p_next_status = 'paid' then 'accepted'
     when p_next_status in ('failed', 'cancelled', 'expired') then 'pending_payment'
@@ -3948,26 +4009,43 @@ security definer
 set search_path = public
 as $$
 begin
-  -- Payments left in a non-terminal state past the 30-minute window
-  -- (`create_newebpay_payment_attempt` already uses the same 30-minute
-  -- constant for its in-progress lockout check, so this reuses that number
-  -- rather than inventing a second one).
-  update payments
+  -- 1. An unpaid booking that can no longer be used (session time passed, or
+  --    no time and 7 days old) expires, closing any attempt still open on it.
+  update payments p
   set status = 'expired',
-      expired_at = coalesce(expired_at, now())
-  where status in ('created', 'redirected', 'processing', 'awaiting_payment')
-    and created_at <= now() - interval '30 minutes';
+      expired_at = coalesce(p.expired_at, now())
+  from bookings b
+  where b.id = p.booking_id
+    and p.status in ('created', 'redirected', 'processing', 'awaiting_payment')
+    and b.status in ('pending_payment', 'payment_processing', 'payment_failed')
+    and (b.scheduled_start <= now()
+         or (b.scheduled_start is null and b.created_at <= now() - interval '7 days'));
 
-  -- Release the paired booking (see comment block above) â€” only bookings
-  -- still sitting in a pre-payment/processing state; never touch a booking
-  -- that already succeeded, was cancelled, or completed through another path.
   update bookings b
   set status = 'expired'
-  from payments p
-  where p.booking_id = b.id
-    and p.status = 'expired'
-    and p.expired_at >= now() - interval '1 minute' -- only rows this run just touched
-    and b.status in ('pending_payment', 'payment_processing');
+  where b.status in ('pending_payment', 'payment_processing', 'payment_failed')
+    and (b.scheduled_start <= now()
+         or (b.scheduled_start is null and b.created_at <= now() - interval '7 days'))
+    and not exists (select 1 from payments p where p.booking_id = b.id and p.status = 'paid');
+
+  -- 2. Attempts past their deadline expire (payment_attempt_deadline: B-1's
+  --    30 minutes, or the gateway's window for ATM / store / barcode codes)...
+  update payments p
+  set status = 'expired',
+      expired_at = coalesce(p.expired_at, now())
+  where p.status in ('created', 'redirected', 'processing', 'awaiting_payment')
+    and payment_attempt_deadline(p) <= now();
+
+  -- 3. ...and their booking goes back to awaiting payment so the member can
+  --    pay again (see comment block above). Only once nothing is open or paid.
+  update bookings b
+  set status = 'pending_payment'
+  where b.status in ('payment_processing', 'payment_failed')
+    and not exists (
+      select 1 from payments p
+      where p.booking_id = b.id
+        and p.status in ('created', 'redirected', 'processing', 'awaiting_payment', 'paid')
+    );
 end $$;
 
 comment on function expire_stale_payment_attempts() is
@@ -4015,6 +4093,17 @@ begin
     insert into payment_status_events (payment_id, event_type, to_value, actor_id)
     values (r.id, 'service_completed_auto', now()::text, null);
   end loop;
+
+  -- The session is over, so the booking is complete too (2026-10-23: it used
+  -- to wait for someone to tap "Mark complete", leaving it cancellable and
+  -- refundable by the trainer after the session). Payments first, above, so
+  -- their 24-hour payout hold starts as the booking completes.
+  update bookings b
+  set status = 'completed',
+      completed_at = coalesce(b.completed_at, now())
+  where b.status = 'accepted'
+    and b.scheduled_start is not null
+    and b.scheduled_start + make_interval(mins => b.duration_min) <= now();
 end $$;
 
 create or replace function admin_correct_service_completed(
@@ -7222,7 +7311,7 @@ begin
   if not found then raise exception 'payment_order_not_found'; end if;
   if p.provider <> 'newebpay' or p.status <> 'paid' or p.refund_status <> 'refund_requested' or nullif(p.provider_trade_no, '') is distinct from nullif(p_provider_trade_no, '') then raise exception 'payment_refund_not_recordable'; end if;
   update payments set refund_status = 'refunded', settlement_eligibility_status = 'ineligible' where id = p.id;
-  insert into payment_status_events (payment_id, event_type, from_value, to_value, reason_note, actor_id) values (p.id, 'newebpay_refund_completed', 'refund_requested', 'refunded', 'Automatic refund after companion cancellation', null);
+  insert into payment_status_events (payment_id, event_type, from_value, to_value, reason_note, actor_id) values (p.id, 'newebpay_refund_completed', 'refund_requested', 'refunded', 'Returned through NewebPay (void or refund)', null);
 end $$;
 
 revoke all on function require_accepted_booking_for_payment() from public, anon, authenticated;

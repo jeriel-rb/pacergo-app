@@ -1,11 +1,17 @@
 import type { StatusTone } from "@/shared/components/atoms/status-badge";
 import type { AdminOrderRow } from "@/lib/admin";
-import { correctServiceCompleted, setPaymentHold, setPaymentStatus } from "../admin-actions";
+import {
+  correctServiceCompleted,
+  issueRefund,
+  setPaymentHold,
+  setPaymentStatus,
+} from "../admin-actions";
 
-/** What an admin can record on an order's ledger. None of these call a payment
- *  provider — they only update the order record. */
+/** What an admin can do to an order. "refund" gives the money back through
+ *  NewebPay where it can (card payments); the rest only update the order
+ *  record ("refunded" records a refund staff made in NewebPay's portal). */
 export type OrderAction =
-  | "refund_requested"
+  | "refund"
   | "refunded"
   | "hold"
   | "release"
@@ -25,8 +31,9 @@ export type OrderState = Pick<
 export function availableActions(order: OrderState, serviceDone: boolean | null): OrderAction[] {
   const settled = order.settlement_status === "paid";
   const actions: OrderAction[] = [];
-  if (order.status === "paid" && order.refund_status === "none" && !settled) {
-    actions.push("refund_requested");
+  // Also the retry while a refund is still pending.
+  if (order.status === "paid" && order.refund_status !== "refunded" && !settled) {
+    actions.push("refund");
   }
   if (order.refund_status === "refund_requested") actions.push("refunded");
   if (!settled) actions.push(order.admin_hold ? "release" : "hold");
@@ -37,14 +44,29 @@ export function availableActions(order: OrderState, serviceDone: boolean | null)
   return actions;
 }
 
-/** Record `action` on order `id` with the admin's reason (the server requires one). */
+/** The toast to show once an action is done (a key under `toast`). */
+export type OrderActionNotice = "orderUpdated" | "refundSent" | "refundManual";
+
+/** Apply `action` to order `id` with the admin's reason (the server requires one). */
 export async function performOrderAction(
   id: string,
   action: OrderAction,
   reason: string,
+): Promise<OrderActionNotice> {
+  if (action === "refund") {
+    const { refund } = await issueRefund(id, reason);
+    return refund === "automatic" ? "refundSent" : "refundManual";
+  }
+  await recordOrderAction(id, action, reason);
+  return "orderUpdated";
+}
+
+async function recordOrderAction(
+  id: string,
+  action: Exclude<OrderAction, "refund">,
+  reason: string,
 ): Promise<void> {
   switch (action) {
-    case "refund_requested":
     case "refunded":
     case "cancel":
       return setPaymentStatus(id, action, reason);

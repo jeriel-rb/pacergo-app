@@ -9,6 +9,9 @@ export const NEWEBPAY_SPEC = {
   documentDate: "2026-07-14",
 };
 
+/** Seconds NewebPay keeps its payment page open (NewebPay's maximum). */
+export const NEWEBPAY_TRADE_LIMIT_SECONDS = 900;
+
 export type NewebPayEnv = "sandbox" | "production";
 
 export interface NewebPayConfig {
@@ -44,6 +47,16 @@ export interface NewebPayDecoded {
 const GATEWAYS: Record<NewebPayEnv, string> = {
   sandbox: "https://ccore.newebpay.com/MPG/mpg_gateway",
   production: "https://core.newebpay.com/MPG/mpg_gateway",
+};
+
+const CREDIT_CARD_CANCEL_ENDPOINTS: Record<NewebPayEnv, string> = {
+  sandbox: "https://ccore.newebpay.com/API/CreditCard/Cancel",
+  production: "https://core.newebpay.com/API/CreditCard/Cancel",
+};
+
+const QUERY_TRADE_INFO_ENDPOINTS: Record<NewebPayEnv, string> = {
+  sandbox: "https://ccore.newebpay.com/API/QueryTradeInfo",
+  production: "https://core.newebpay.com/API/QueryTradeInfo",
 };
 
 const CREDIT_CARD_CLOSE_ENDPOINTS: Record<NewebPayEnv, string> = {
@@ -197,6 +210,78 @@ export function buildCreditCardRefundRequest(input: {
   };
 }
 
+/** Build the encrypted NPA-B01 cancel-authorization (void) request: returns a
+ *  card charge NewebPay hasn't captured yet, which a refund can't touch.
+ *  Same `MerchantID_` / `PostData_` envelope as the refund. */
+export function buildCreditCardCancelAuthRequest(input: {
+  config: NewebPayConfig;
+  merchantOrderNo: string;
+  tradeNo: string | null;
+  amount: number;
+  now?: Date;
+}): NewebPayForm {
+  if (!Number.isInteger(input.amount) || input.amount <= 0) {
+    throw new Error("payment_invalid_amount");
+  }
+  if (!input.merchantOrderNo) {
+    throw new Error("payment_refund_missing_reference");
+  }
+
+  const postData = encryptTradeInfo(
+    serializeTradeInfo({
+      RespondType: "JSON",
+      Version: "1.0",
+      Amt: input.amount,
+      MerchantOrderNo: input.merchantOrderNo,
+      TradeNo: input.tradeNo ?? "",
+      IndexType: 1,
+      TimeStamp: Math.floor((input.now ?? new Date()).getTime() / 1000),
+    }),
+    input.config.hashKey,
+    input.config.hashIv,
+  );
+
+  return {
+    action: CREDIT_CARD_CANCEL_ENDPOINTS[input.config.env],
+    fields: {
+      MerchantID_: input.config.merchantId,
+      PostData_: postData,
+    },
+  };
+}
+
+/** Build a read-only QueryTradeInfo lookup (capture / refund state of an
+ *  order). Signed with CheckValue = SHA-256 of IV, the sorted fields and Key. */
+export function buildTradeInfoQuery(input: {
+  config: NewebPayConfig;
+  merchantOrderNo: string;
+  amount: number;
+  now?: Date;
+}): NewebPayForm {
+  const { merchantId, hashKey, hashIv } = input.config;
+  const checkValue = crypto
+    .createHash("sha256")
+    .update(
+      `IV=${hashIv}&Amt=${input.amount}&MerchantID=${merchantId}&MerchantOrderNo=${input.merchantOrderNo}&Key=${hashKey}`,
+      "utf8",
+    )
+    .digest("hex")
+    .toUpperCase();
+
+  return {
+    action: QUERY_TRADE_INFO_ENDPOINTS[input.config.env],
+    fields: {
+      MerchantID: merchantId,
+      Version: "1.3",
+      RespondType: "JSON",
+      CheckValue: checkValue,
+      TimeStamp: String(Math.floor((input.now ?? new Date()).getTime() / 1000)),
+      MerchantOrderNo: input.merchantOrderNo,
+      Amt: String(input.amount),
+    },
+  };
+}
+
 export function verifyTradeSha(
   tradeInfo: string,
   tradeSha: string,
@@ -237,6 +322,10 @@ export function buildPaymentForm(input: {
     ReturnURL: `${input.config.appUrl}/api/payments/newebpay/return`,
     NotifyURL: `${input.config.appUrl}/api/payments/newebpay/notify`,
     ClientBackURL: `${input.config.appUrl}/payments/newebpay/result`,
+    // NewebPay closes its payment page after this many seconds (max 900). The
+    // database lets the member start a new attempt 20 minutes after this one
+    // began (payment_attempt_deadline), once the old page can no longer pay.
+    TradeLimit: NEWEBPAY_TRADE_LIMIT_SECONDS,
     LoginType: "0",
     LangType: input.locale === "zh" ? "zh-tw" : "en",
   };

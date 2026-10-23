@@ -197,6 +197,25 @@ export async function setPaymentStatus(
   if (error) throw new Error(error.message);
 }
 
+/** Admin "Issue refund": flags the refund (with the reason) and returns the
+ *  money through NewebPay where it can (card payments). `manual_required` =
+ *  refund it in NewebPay's portal, then "Mark refunded". */
+export async function issueRefund(
+  paymentId: string,
+  reason: string,
+): Promise<{ refund: "automatic" | "manual_required" }> {
+  const response = await fetch(`/api/admin/payments/${encodeURIComponent(paymentId)}/refund`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ reason }),
+  });
+  const body = (await response.json().catch(() => null)) as
+    | { refund?: "automatic" | "manual_required"; error?: string }
+    | null;
+  if (!response.ok || !body?.refund) throw new Error(body?.error ?? "refund_failed");
+  return { refund: body.refund };
+}
+
 /** Dispute flag. A hold drops an unsettled order out of the trainer balance. */
 export async function setPaymentHold(
   paymentId: string,

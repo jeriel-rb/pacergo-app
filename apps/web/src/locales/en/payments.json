@@ -84,7 +84,7 @@
     "payment_booking_not_owned": "You can only pay for your own booking.",
     "payment_booking_not_payable": "This booking is not payable.",
     "payment_already_paid": "This booking has already been paid.",
-    "payment_attempt_in_progress": "A payment attempt is already in progress.",
+    "payment_attempt_in_progress": "This booking already has a payment in progress. If you got an ATM or convenience-store code, pay with that; otherwise you can start a new payment about 20 minutes after the last one.",
     "payment_redirect_not_allowed": "This payment attempt cannot be redirected again yet.",
     "payment_migrations_missing": "Payment setup is incomplete. Please apply the latest database migrations.",
     "payment_simulated_disabled": "Test payments are turned off.",
@@ -93,6 +93,7 @@
     "payment_invalid_amount": "The payment amount is unavailable.",
     "payment_request_failed": "Unable to start payment. Please try again.",
     "payment_gateway_unavailable": "The payment gateway is unavailable.",
-    "payment_invalid_response": "The payment response could not be verified."
+    "payment_invalid_response": "The payment response could not be verified.",
+    "payment_gateway_unreachable_locally": "NewebPay can't send results back to this computer (localhost), so payments can't be completed here. Test payments on app.pacergo.app."
   }
 }

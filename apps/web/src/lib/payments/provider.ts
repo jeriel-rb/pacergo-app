@@ -59,6 +59,12 @@ export const newebpayProvider: PaymentProvider = {
   type: "newebpay",
   async createAttempt({ supabase, bookingId, merchantOrderNo, amount, email, locale }) {
     const config = getNewebPayConfig();
+    // NewebPay's server notify can't reach this machine, so a payment started
+    // here never confirms, and the open attempt would block the (shared, live)
+    // booking. Refuse before creating it; test on a public https URL instead.
+    if (/^(localhost|127\.0\.0\.1)$/.test(new URL(config.appUrl).hostname)) {
+      throw new NewebPayConfigurationError("payment_gateway_unreachable_locally");
+    }
     const { data, error } = await supabase.rpc("create_newebpay_payment_attempt", {
       p_booking_id: bookingId,
       p_merchant_order_no: merchantOrderNo,

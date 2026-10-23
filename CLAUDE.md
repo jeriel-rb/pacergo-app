@@ -144,6 +144,30 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   booking left mid-payment. ATM / 超商代碼 / 條碼 returns ALWAYS arrive before any notify
   (the notify only comes once the customer actually pays), so test the return-first
   path with one of those, not with a card.
+- **Attempt timeouts** (`payment_attempt_deadline`, B-1 "30 min or gateway window"):
+  created/redirected 20 min (NewebPay page closes at 15 via `TradeLimit=900`),
+  processing 30 min, awaiting_payment = NewebPay's ATM/store/barcode `ExpireDate`
+  (else 7 days). A new checkout closes a past-deadline attempt itself. An expired
+  attempt puts the booking back to `pending_payment` (pay again); the booking only
+  expires once its session time passes (no time: 7 days), and money landing on an
+  expired booking is flagged for refund.
+- **Cancelling is trainer-only** (`cancel_booking`, the cancel route and the shared
+  `availableActions`); members message the trainer. A trainer cancel on a paid card
+  booking returns the money via `returnCardPayment` (`lib/payments/refunds.ts`): it
+  looks the order up first (QueryTradeInfo), **voids** a charge not yet captured
+  (`CloseStatus` 0, NPA-B01 `/API/CreditCard/Cancel`; a refund is rejected before
+  NewebPay's nightly capture), **refunds** a captured one (`CloseStatus` 3), and
+  leaves mid-capture / non-card / failed ones `refund_requested` for staff. Never
+  retry a mutating call. Admin → Orders "Issue refund" (`/api/admin/payments/[id]/refund`)
+  flags it with the admin's reason and uses the same `completeNewebPayRefund`; it is
+  also the retry for a pending refund. "Mark refunded" records a portal refund.
+- **Auto-complete:** `mark_service_completed` (settlement cron, every 15 min) marks a
+  paid payment service-delivered when the session ends (start + duration), starting
+  the 24 h payout hold, and completes the `accepted` booking at the same moment.
+  After that only an admin can refund.
+- **NewebPay can't complete on localhost** (its server notify can't reach your
+  machine, and dev shares the live DB), so checkout refuses there with
+  `payment_gateway_unreachable_locally`. Test payments on app.pacergo.app.
 - Quick key check: POST a signed checkout to the sandbox gateway — a page containing
   `錯誤代碼：MPG…` means rejected; the Vue payment page (our order no. + amount) means OK.
 

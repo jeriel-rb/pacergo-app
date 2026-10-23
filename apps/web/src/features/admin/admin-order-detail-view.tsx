@@ -15,6 +15,7 @@ import {
   setPaymentHold,
   setPaymentStatus,
 } from "./admin-actions";
+import { performOrderAction, type OrderActionNotice } from "./orders/order-actions";
 
 function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
@@ -33,7 +34,7 @@ function formatStamp(iso: string, locale: "zh" | "en"): string {
 
 type Busy =
   | "cancel"
-  | "refund_requested"
+  | "refund"
   | "refunded"
   | "hold"
   | "release"
@@ -41,7 +42,8 @@ type Busy =
   | "revert"
   | null;
 
-/** Records refund, hold, and service-completed on the ledger. No gateway call. */
+/** Order actions: "Issue refund" returns card payments through NewebPay; hold,
+ *  service-completed and the rest only update the ledger. */
 export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
@@ -54,7 +56,10 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
   const settled = detail.settlement_status === "paid";
   const serviceDone = detail.service_completed_at !== null;
 
-  async function run(key: Exclude<Busy, null>, action: () => Promise<void>) {
+  async function run(
+    key: Exclude<Busy, null>,
+    action: () => Promise<OrderActionNotice | void>,
+  ) {
     if (reason.trim() === "") {
       setError(t("orders.reasonRequired"));
       return;
@@ -62,9 +67,9 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
     setBusy(key);
     setError(null);
     try {
-      await action();
+      const notice = (await action()) ?? "orderUpdated";
       setReason("");
-      toast.show(t("toast.orderUpdated"), "success");
+      toast.show(t(`toast.${notice}`), notice === "refundManual" ? "default" : "success");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("error"));
@@ -145,19 +150,17 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
           </p>
         )}
         <div className="flex flex-wrap gap-2">
-          {detail.status === "paid" && detail.refund_status === "none" && !settled && (
+          {detail.status === "paid" && detail.refund_status !== "refunded" && !settled && (
             <Button
               type="button"
               variant="outline"
               disabled={busy !== null}
               onClick={() =>
-                void run("refund_requested", () =>
-                  setPaymentStatus(detail.id, "refund_requested", reason.trim()),
-                )
+                void run("refund", () => performOrderAction(detail.id, "refund", reason.trim()))
               }
             >
-              {busy === "refund_requested" && <Loader2 className="animate-spin" />}
-              {t("orders.action.refund_requested")}
+              {busy === "refund" && <Loader2 className="animate-spin" />}
+              {t("orders.action.refund")}
             </Button>
           )}
           {detail.refund_status === "refund_requested" && (

@@ -34,7 +34,9 @@
     "orderUpdateFailed": "Couldn't update that order. Please try again.",
     "payoutUpdated": "Payout status updated",
     "payoutUpdateFailed": "Couldn't update that payout. Please try again.",
-    "exportDownloaded": "Export downloaded"
+    "exportDownloaded": "Export downloaded",
+    "refundSent": "Refund sent through NewebPay.",
+    "refundManual": "Flagged for refund. This payment can't be refunded automatically: refund it in NewebPay's portal, then use Mark refunded."
   },
   "prevPage": "Previous",
   "nextPage": "Next",
@@ -170,7 +172,7 @@
     "amount": "Amount",
     "withTrainer": "With {{name}}",
     "actions": "Ledger actions",
-    "actionsNotice": "This only updates the order record in PacerGo. Any refund or payout is sent by manual transfer, outside the platform.",
+    "actionsNotice": "Issue refund returns card payments through NewebPay right away. Other payments, and every other action here, only update the order record in PacerGo: refund those in NewebPay's portal (or by transfer), then use Mark refunded. Payouts are sent by manual transfer.",
     "reasonPlaceholder": "Reason note (required)…",
     "reasonRequired": "This action requires a reason note.",
     "history": "History",
@@ -229,7 +231,7 @@
     },
     "action": {
       "cancel": "Cancel attempt",
-      "refund_requested": "Request refund",
+      "refund": "Issue refund",
       "refunded": "Mark refunded",
       "hold": "Place hold",
       "release": "Clear hold",
@@ -246,7 +248,8 @@
       "admin_cancelled": "Payment cancelled",
       "admin_refund_status_changed": "Refund status changed",
       "booking_cancelled_open_attempt": "Open attempt cancelled with booking",
-      "booking_cancelled_refund_requested": "Refund requested because the booking was cancelled"
+      "booking_cancelled_refund_requested": "Refund requested because the booking was cancelled",
+      "newebpay_refund_completed": "Refunded through NewebPay"
     },
     "columns": {
       "order": "Order",

@@ -84,7 +84,7 @@
     "payment_booking_not_owned": "你只能為自己的預約付款。",
     "payment_booking_not_payable": "這筆預約目前不能付款。",
     "payment_already_paid": "這筆預約已付款。",
-    "payment_attempt_in_progress": "已有一筆付款正在處理中。",
+    "payment_attempt_in_progress": "這筆預約已有付款進行中。若已取得 ATM 或超商繳費代碼，請以該代碼繳費；否則約 20 分鐘後可重新付款。",
     "payment_configuration_missing": "付款設定暫時不可用。",
     "payment_configuration_invalid": "付款設定暫時不可用。",
     "payment_invalid_amount": "無法確認付款金額。",
@@ -93,6 +93,7 @@
     "payment_invalid_response": "無法驗證付款回應。",
     "payment_redirect_not_allowed": "這筆付款嘗試目前無法再次前往付款頁。",
     "payment_migrations_missing": "付款設定尚未完成，請套用最新資料庫 migration。",
-    "payment_simulated_disabled": "測試付款已停用。"
+    "payment_simulated_disabled": "測試付款已停用。",
+    "payment_gateway_unreachable_locally": "藍新金流無法將結果傳回這台電腦（localhost），因此無法在此完成付款。請在 app.pacergo.app 測試付款。"
   }
 }

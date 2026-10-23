@@ -58,8 +58,8 @@ export function OrderActionDialog({
     setBusy(true);
     setError(null);
     try {
-      await performOrderAction(state.orderId, state.action, reason.trim());
-      toast.show(t("toast.orderUpdated"), "success");
+      const notice = await performOrderAction(state.orderId, state.action, reason.trim());
+      toast.show(t(`toast.${notice}`), notice === "refundManual" ? "default" : "success");
       const id = state.orderId;
       setReason("");
       onClose();

@@ -34,7 +34,9 @@
     "orderUpdateFailed": "無法更新該訂單，請再試一次。",
     "payoutUpdated": "已更新提款狀態",
     "payoutUpdateFailed": "無法更新該筆提款，請再試一次。",
-    "exportDownloaded": "已下載匯出檔"
+    "exportDownloaded": "已下載匯出檔",
+    "refundSent": "已透過藍新金流退款。",
+    "refundManual": "已標記待退款。此筆無法自動退款，請至藍新金流後台退款後，再按「標記已退款」。"
   },
   "prevPage": "上一頁",
   "nextPage": "下一頁",
@@ -170,7 +172,7 @@
     "amount": "金額",
     "withTrainer": "陪練：{{name}}",
     "actions": "帳本操作",
-    "actionsNotice": "此操作只會更新 PacerGo 內的訂單紀錄。退款與撥款皆以手動轉帳於平台外處理。",
+    "actionsNotice": "「退款」會立即透過藍新金流退回信用卡付款。其他付款方式及此處其他操作只會更新 PacerGo 內的訂單紀錄：請至藍新金流後台（或以轉帳）退款，再按「標記已退款」。撥款以手動轉帳處理。",
     "reasonPlaceholder": "原因說明（必填）…",
     "reasonRequired": "此操作需要填寫原因。",
     "history": "歷程",
@@ -229,7 +231,7 @@
     },
     "action": {
       "cancel": "取消付款嘗試",
-      "refund_requested": "申請退款",
+      "refund": "退款",
       "refunded": "標記已退款",
       "hold": "暫停結算",
       "release": "解除暫停",
@@ -246,7 +248,8 @@
       "admin_cancelled": "付款已取消",
       "admin_refund_status_changed": "退款狀態已變更",
       "booking_cancelled_open_attempt": "預約取消，未完成的付款一併取消",
-      "booking_cancelled_refund_requested": "預約取消，已申請退款"
+      "booking_cancelled_refund_requested": "預約取消，已申請退款",
+      "newebpay_refund_completed": "已透過藍新金流退款"
     },
     "columns": {
       "order": "訂單",

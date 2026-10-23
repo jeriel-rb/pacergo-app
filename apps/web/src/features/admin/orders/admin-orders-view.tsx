@@ -56,7 +56,7 @@ const FILTERS: (OrderFilter | "all")[] = [
 ];
 
 const ACTION_ICON: Record<OrderAction, React.ReactNode> = {
-  refund_requested: <Undo2 />,
+  refund: <Undo2 />,
   refunded: <CircleDollarSign />,
   hold: <Lock />,
   release: <LockOpen />,

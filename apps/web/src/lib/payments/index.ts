@@ -79,7 +79,6 @@ export async function getPaymentDetail(paymentId: string): Promise<PaymentDetail
 
 export function isBookingPayable(booking: Pick<BookingRecord, "status" | "is_free" | "agreed_price">) {
   return (
-    !booking.is_free &&
     booking.agreed_price > 0 &&
     [
       "requested",

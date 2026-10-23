@@ -15,7 +15,7 @@ export function BookingCTA({
   companionName,
   offerings,
   price,
-  isFree,
+  isFree: _isFree,
   ratingAvg,
   ratingCount,
   isSelf = false,
@@ -34,11 +34,7 @@ export function BookingCTA({
   const locale = useLocale();
   const toast = useToast();
 
-  const priceLabel = isFree
-    ? locale === "zh"
-      ? "免費"
-      : "Free"
-    : `NT$${price.toLocaleString()} ${PER_HOUR[locale]}`;
+  const priceLabel = `NT$${price.toLocaleString()} ${PER_HOUR[locale]}`;
 
   const button = (
     <Button size="lg" className="w-full rounded-2xl text-base">

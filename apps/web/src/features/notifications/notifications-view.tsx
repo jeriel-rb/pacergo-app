@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
@@ -10,6 +11,7 @@ import type { AppNotification } from "@/lib/notifications";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +40,35 @@ export function NotificationsView({
   const items = [...notifications, ...more];
 
   const hasUnread = items.some((n) => !n.read_at);
+
+  // A booking request is inserted by the database trigger. Subscribe only to
+  // this signed-in user's rows so the page updates immediately without a
+  // browser reload and never receives another user's notifications.
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    let channel: RealtimeChannel | null = null;
+    let disposed = false;
+
+    async function subscribe() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || disposed) return;
+      channel = supabase
+        .channel(`notifications:${user.id}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+          () => router.refresh(),
+        )
+        .subscribe();
+    }
+
+    void subscribe();
+    return () => {
+      disposed = true;
+      if (channel) void supabase.removeChannel(channel);
+    };
+  }, [router]);
+
   useEffect(() => {
     if (hasUnread) {
       markNotificationsRead().then(() => router.refresh());

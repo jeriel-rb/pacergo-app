@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronLeft,
   CalendarClock,
@@ -23,6 +25,7 @@ import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { MyReview } from "@/lib/reviews";
 import { MessageButton } from "@/features/chat/message-button";
 import { StatusBadge, counterparty, formatWhen } from "./booking-ui";
@@ -45,6 +48,7 @@ export function BookingDetailView({
   const { t } = useTranslation("sessions");
   const locale = useLocale();
   const pathname = usePathname();
+  const router = useRouter();
   const routeLocale = getCurrentLocale(pathname);
   const backHref = getLocalizedPath("/sessions", routeLocale);
 
@@ -58,6 +62,34 @@ export function BookingDetailView({
     ? ACTIVITY_META[booking.activity_slug][locale]
     : "—";
   const tierLabel = booking.tier ? TIER_LABELS[booking.tier][locale] : "";
+
+  // The trainer's accept/decline is an UPDATE on this exact row.  Refreshing
+  // the server-rendered detail on that event gives the trainee Pay/Message or
+  // the declined state immediately, without polling or a hard reload.
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    let channel: RealtimeChannel | null = null;
+    let disposed = false;
+
+    async function subscribe() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || disposed) return;
+      channel = supabase
+        .channel(`booking:${booking.id}`)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "bookings", filter: `id=eq.${booking.id}` },
+          () => router.refresh(),
+        )
+        .subscribe();
+    }
+
+    void subscribe();
+    return () => {
+      disposed = true;
+      if (channel) void supabase.removeChannel(channel);
+    };
+  }, [booking.id, router]);
 
   return (
     <div className="space-y-4">
@@ -140,7 +172,6 @@ export function BookingDetailView({
           <BookingActionsBar booking={booking} currentUserId={currentUserId} />
 
           {currentUserId === booking.seeker_id &&
-            !booking.is_free &&
             booking.agreed_price > 0 &&
             [
               "pending_payment",

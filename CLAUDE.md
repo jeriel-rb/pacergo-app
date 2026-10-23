@@ -130,14 +130,20 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   "paid" notify to our endpoint. Copy them from the portal, not from chat — the HashKey
   contains a lowercase `l` that looks like a capital `I`, and that one-letter swap is what
   made every early attempt fail with **MPG03009 (交易資料 SHA 256 檢查不符合)**.
-- Sandbox payment methods enabled: WebATM, ATM 轉帳, 超商代碼, 條碼. 信用卡一次付清 is
-  **not enabled** yet (enable it in the portal before testing with a card).
+- Sandbox payment methods: WebATM, ATM 轉帳, 超商代碼, 條碼, and credit card (a sandbox
+  CREDIT payment succeeded 2026-10-09). If the card option is missing, enable 信用卡一次付清
+  in the portal.
+- **Sandbox test cards** (the test site accepts no other numbers; expiry = any future
+  month/year, CVC = any 3 digits): `4000-2211-1111-1111` for 一次付清 / 分期,
+  `4003-5511-1111-1111` for 紅利折抵.
 - **Callback order is not guaranteed.** NewebPay's server `notify` and the customer's
   browser `return` can land in either order (notify usually first, return a few seconds
   later). The DB functions `apply_newebpay_notification` / `observe_newebpay_return` must
   stay order-independent: a return must never move a paid payment's booking backwards
   (it once reset `accepted` to `payment_processing`), and a repeated notify repairs a
-  booking left mid-payment.
+  booking left mid-payment. ATM / 超商代碼 / 條碼 returns ALWAYS arrive before any notify
+  (the notify only comes once the customer actually pays), so test the return-first
+  path with one of those, not with a card.
 - Quick key check: POST a signed checkout to the sandbox gateway — a page containing
   `錯誤代碼：MPG…` means rejected; the Vue payment page (our order no. + amount) means OK.
 

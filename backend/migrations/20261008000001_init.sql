@@ -3586,11 +3586,14 @@ begin
   -- accepted, so a return must never move either backwards: only touch a
   -- booking that is still waiting on payment, and never one whose payment this
   -- return is merely reporting on after it was already paid.
+  -- The casts matter: a CASE of bare literals is text, which can't be assigned
+  -- to the enum. This branch runs whenever the return beats the notify — every
+  -- ATM / CVS / barcode return — so without them those returns fail.
   if p.status <> 'paid' then
     update bookings
     set status = case
-      when p_observed_status in ('failed', 'cancelled', 'expired') then 'pending_payment'
-      else 'payment_processing'
+      when p_observed_status in ('failed', 'cancelled', 'expired') then 'pending_payment'::booking_status
+      else 'payment_processing'::booking_status
     end
     where id = p.booking_id
       and status in ('pending_payment', 'payment_processing', 'payment_failed');

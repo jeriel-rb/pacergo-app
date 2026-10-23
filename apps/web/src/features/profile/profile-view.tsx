@@ -7,7 +7,6 @@ import { AvatarUploader } from "./avatar-uploader";
 import { BannerUploader } from "./banner-uploader";
 import { ProfileForm } from "./profile-form";
 import { AccountSection } from "./account-section";
-import { MeLinks } from "./me-links";
 
 /** Profile page body: identity + editable fields + the account/security section. */
 export function ProfileView({
@@ -55,11 +54,6 @@ export function ProfileView({
           <ProfileForm profile={profile} disabled={disabled} />
         </div>
       </Card>
-
-      <MeLinks
-        isCompanion={profile.is_companion ?? false}
-        isAdmin={profile.is_admin ?? false}
-      />
 
       <AccountSection profile={profile} disabled={disabled} />
     </div>

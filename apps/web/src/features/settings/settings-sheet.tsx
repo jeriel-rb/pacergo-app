@@ -25,13 +25,14 @@ import {
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { LanguageSwitcher } from "@/shared/components/shell/language-switcher";
 import { ThemeSettingRow } from "./theme-setting-row";
+import { MeLinks } from "@/features/profile/me-links";
 import { Button } from "@/shared/components/ui/button";
 import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { clearOnboardingStorage } from "@/features/ai-plan/onboarding-store";
 import { cn } from "@/lib/utils";
 
-/** Gear button → slide-in settings sheet (profile + settings list). */
+/** Gear button → slide-in settings sheet (profile, account links, settings list). */
 export function SettingsSheet({
   user,
   trigger,
@@ -104,6 +105,16 @@ export function SettingsSheet({
         )}
 
         <div className="flex-1 overflow-y-auto p-3">
+          {user && (
+            <>
+              <MeLinks
+                isCompanion={user.is_companion ?? false}
+                isAdmin={user.is_admin ?? false}
+                onNavigate={() => setOpen(false)}
+              />
+              <div className="mx-3 my-2 border-t border-border" />
+            </>
+          )}
           <ul className="space-y-1">
             <ThemeSettingRow />
             <li className="flex h-12 items-center justify-between rounded-lg px-3">

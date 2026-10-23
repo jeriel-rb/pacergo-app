@@ -1,3 +1,9 @@
+/**
+ * Space between a page's sections: the same as main's side padding (px-4 /
+ * lg:px-10 below), so gaps and gutters line up. Change both together.
+ */
+export const PAGE_GAP = "gap-4 lg:gap-10";
+
 /** Shared responsive shell: sidebar + optional header + main + optional bottom nav. */
 export function AppShell({
   sideNav,
@@ -13,7 +19,7 @@ export function AppShell({
   mainClassName?: string;
 }) {
   return (
-    <div className="min-h-screen lg:pl-64">
+    <div className="min-h-screen lg:pl-80">
       {sideNav}
       {header}
       <main className={mainClassName}>{children}</main>

@@ -12,6 +12,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { LanguageSwitcher } from "./language-switcher";
 import { SettingsSheet } from "@/features/settings/settings-sheet";
 import { NotificationBell } from "@/features/notifications/notification-bell";
+import { RoleBadges } from "./role-badges";
 import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
@@ -52,7 +53,9 @@ export function SideNav(props: SideNavProps) {
   const labelFor = (key: string) => (isAdmin ? t(`nav.${key}`) : t(key));
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-card/60 backdrop-blur lg:flex">
+    // w-80: room for the logo, both role tags in a row and the bell. The page
+    // offset (AppShell lg:pl-80) and the inbox (lg:left-80) follow this width.
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-80 flex-col border-r border-border bg-card/60 backdrop-blur lg:flex">
       <div className="flex h-16 items-center justify-between gap-2 pl-6 pr-3">
         <Link
           href={brandHref}
@@ -71,10 +74,13 @@ export function SideNav(props: SideNavProps) {
           <span className="truncate text-lg">{brandLabel}</span>
         </Link>
         {!isAdmin && (
-          <NotificationBell
-            count={props.unreadCount ?? 0}
-            className="h-7 w-7"
-          />
+          <div className="flex shrink-0 items-center gap-1.5">
+            <RoleBadges user={props.user} />
+            <NotificationBell
+              count={props.unreadCount ?? 0}
+              className="h-7 w-7"
+            />
+          </div>
         )}
       </div>
 

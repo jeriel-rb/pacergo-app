@@ -23,7 +23,7 @@ export default async function TabsLayout({
         sideNav={<SideNav user={user} unreadCount={unreadCount} />}
         header={
           <div className="lg:hidden">
-            <AppHeader unreadCount={unreadCount} />
+            <AppHeader unreadCount={unreadCount} user={user} />
           </div>
         }
         bottomNav={<BottomNav user={user} />}

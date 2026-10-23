@@ -47,7 +47,7 @@ export function MessagesInboxShell({
           // Phone: no AppHeader on this route — flush under status area, above tabs.
           // Tablet: still under AppHeader (top-14). Desktop: full pane beside sidebar.
           "inset-x-0 top-0 bottom-16 md:top-14",
-          "lg:inset-y-0 lg:left-64 lg:right-0 lg:top-0 lg:bottom-0",
+          "lg:inset-y-0 lg:left-80 lg:right-0 lg:top-0 lg:bottom-0",
         )}
       >
         <aside

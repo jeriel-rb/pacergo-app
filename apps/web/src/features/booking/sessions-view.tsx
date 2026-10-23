@@ -1,18 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { CalendarClock, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  ACTIVITY_META,
-  type BookingRecord,
-  type BookingStatus,
-} from "@pacergo/shared";
-import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
-import { useLocale } from "@/shared/hooks/use-locale";
-import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
-import { StatusBadge, counterparty, formatWhen } from "./booking-ui";
+import type { BookingRecord, BookingStatus } from "@pacergo/shared";
+import { BookingRow, BookingsEmpty } from "./booking-row";
 
 const PAST: BookingStatus[] = ["completed", "declined", "cancelled", "expired"];
 
@@ -47,10 +37,7 @@ export function SessionsView({
       </header>
 
       {bookings.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-6 py-16 text-center">
-          <CalendarClock size={28} className="text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">{t("empty")}</p>
-        </div>
+        <BookingsEmpty title={t("empty")} />
       ) : (
         groups.map((g) => (
           <section key={g.key} className="space-y-3">
@@ -68,52 +55,5 @@ export function SessionsView({
         ))
       )}
     </div>
-  );
-}
-
-function BookingRow({
-  booking,
-  currentUserId,
-}: {
-  booking: BookingRecord;
-  currentUserId: string | null;
-}) {
-  const { t } = useTranslation("sessions");
-  const locale = useLocale();
-  const pathname = usePathname();
-  const href = getLocalizedPath(
-    `/sessions/${booking.id}`,
-    getCurrentLocale(pathname),
-  );
-  const other = counterparty(booking, currentUserId);
-  const activity = booking.activity_slug
-    ? ACTIVITY_META[booking.activity_slug][locale]
-    : "";
-
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 transition-colors hover:bg-accent"
-    >
-      <InitialAvatar name={other.name} src={other.photo} size={44} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate font-semibold">{other.name}</span>
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {other.iAmSeeker ? t("roles.asSeeker") : t("roles.asCompanion")}
-          </span>
-        </div>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          {activity}
-          {activity && " · "}
-          {formatWhen(booking.scheduled_start, locale, t("flexible"))}
-        </p>
-      </div>
-      <StatusBadge
-        status={booking.status}
-        label={t(`status.${booking.status}`)}
-      />
-      <ChevronRight size={16} className="shrink-0 text-muted-foreground" />
-    </Link>
   );
 }

@@ -2,7 +2,6 @@
   "greeting": "Hi, {{name}} 👋",
   "guest": "there",
   "prompt": "Ready to train together today?",
-  "switchTrainer": "Switch trainer",
   "hero": {
     "title": "Find your training partner",
     "subtitle_one": "{{count}} pro trainer waiting for you",
@@ -22,6 +21,12 @@
     "body": "Body data",
     "aiPhoto": "AI photo",
     "diet": "Diet log"
+  },
+  "recentBookings": {
+    "title": "Recent bookings",
+    "emptyTitle": "No bookings yet",
+    "emptyBody": "Book a session with a trainer and it'll show up here.",
+    "findTrainer": "Find a trainer"
   },
   "weeklyProgress": "This week's progress",
   "weeklyCount": "{{done}}/{{total}} workouts done",

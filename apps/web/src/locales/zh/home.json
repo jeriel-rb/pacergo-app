@@ -2,7 +2,6 @@
   "greeting": "Hi, {{name}} 👋",
   "guest": "夥伴",
   "prompt": "今天想一起訓練嗎？",
-  "switchTrainer": "切換陪練員",
   "hero": {
     "title": "找到你的訓練夥伴",
     "subtitle_one": "{{count}} 位專業陪練等你",
@@ -22,6 +21,12 @@
     "body": "身體數據",
     "aiPhoto": "AI 修圖",
     "diet": "飲食日誌"
+  },
+  "recentBookings": {
+    "title": "最近預約",
+    "emptyTitle": "還沒有預約",
+    "emptyBody": "向陪練預約一堂課後，就會顯示在這裡。",
+    "findTrainer": "尋找陪練"
   },
   "weeklyProgress": "本週訓練進度",
   "weeklyCount": "{{done}}/{{total}} 完成訓練",

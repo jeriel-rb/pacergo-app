@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
+import type { UserProfile } from "@pacergo/shared";
 import { NotificationBell } from "@/features/notifications/notification-bell";
+import { RoleBadges } from "./role-badges";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import {
   getCurrentLocale,
@@ -18,10 +20,12 @@ type AppHeaderProps =
   | {
       variant?: "app";
       unreadCount?: number;
+      user?: UserProfile | null;
     }
   | {
       variant: "admin";
       unreadCount?: never;
+      user?: never;
     };
 
 /** Sticky top bar: wordmark and notifications (settings lives in the bottom bar). */
@@ -76,15 +80,17 @@ export function AppHeader(props: AppHeaderProps) {
         (onMessages || onAiPlanFlow) && "hidden md:block",
       )}
     >
-      <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between gap-4 px-4 lg:max-w-5xl lg:px-6">
+      <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between gap-3 px-4 lg:max-w-5xl lg:px-6">
         <Link
           href={getLocalizedPath("/", locale)}
-          className="flex items-center gap-2 font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
+          className="flex min-w-0 items-center gap-2 font-bold tracking-tight text-foreground transition-opacity hover:opacity-80"
         >
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
+          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-sm text-primary-foreground">
             P
           </span>
-          <span className="text-lg">PacerGo — 陪練動</span>
+          {/* text-base leaves room for both role tags on one line; on very
+              narrow phones the title shortens, never the tags. */}
+          <span className="truncate text-base">PacerGo — 陪練動</span>
         </Link>
 
         <nav className="hidden lg:flex lg:items-center lg:gap-1">
@@ -120,7 +126,10 @@ export function AppHeader(props: AppHeaderProps) {
           })}
         </nav>
 
-        <NotificationBell count={props.unreadCount ?? 0} />
+        <div className="flex shrink-0 items-center gap-1.5">
+          <RoleBadges user={props.user ?? null} />
+          <NotificationBell count={props.unreadCount ?? 0} />
+        </div>
       </div>
     </header>
   );

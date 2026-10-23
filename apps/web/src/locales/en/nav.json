@@ -8,5 +8,10 @@
   "admin": "Admin",
   "menu": "Main menu",
   "fitnessProfile": "Fitness Profile",
-  "nutrition": "Nutrition"
+  "nutrition": "Nutrition",
+  "role": {
+    "member": "Member",
+    "trainer": "Trainer",
+    "admin": "Admin"
+  }
 }

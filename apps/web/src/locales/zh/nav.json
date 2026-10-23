@@ -8,5 +8,10 @@
   "admin": "管理後台",
   "menu": "主選單",
   "fitnessProfile": "健身檔案",
-  "nutrition": "營養"
+  "nutrition": "營養",
+  "role": {
+    "member": "會員",
+    "trainer": "陪練",
+    "admin": "管理員"
+  }
 }

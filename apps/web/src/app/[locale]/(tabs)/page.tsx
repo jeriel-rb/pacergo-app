@@ -1,7 +1,9 @@
 import { getRecommendedTrainers } from "@pacergo/api";
 import { rankCompanions } from "@pacergo/shared";
 import { HomeView } from "@/features/home/home-view";
+import { RECENT_BOOKINGS_LIMIT } from "@/features/home/recent-bookings-limit";
 import { getSessionUser } from "@/lib/auth";
+import { getMyBookings } from "@/lib/bookings";
 import { getSavedCompanionIds } from "@/lib/saved";
 import { getWeeklyProgress } from "@/lib/goals";
 import { getProfileSetupServer } from "@/lib/profile-setup.server";
@@ -11,14 +13,16 @@ import { getActivePlanIdServer } from "@/lib/plan-view.server";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [trainers, user, savedIds, weeklyProgress, profileSetup, activePlanId] = await Promise.all([
-    getRecommendedTrainers(),
-    getSessionUser(),
-    getSavedCompanionIds(),
-    getWeeklyProgress(),
-    getProfileSetupServer().catch(() => null),
-    getActivePlanIdServer().catch(() => null),
-  ]);
+  const [trainers, user, savedIds, weeklyProgress, profileSetup, activePlanId, bookings] =
+    await Promise.all([
+      getRecommendedTrainers(),
+      getSessionUser(),
+      getSavedCompanionIds(),
+      getWeeklyProgress(),
+      getProfileSetupServer().catch(() => null),
+      getActivePlanIdServer().catch(() => null),
+      getMyBookings().catch(() => []),
+    ]);
   return (
     <HomeView
       trainers={rankCompanions(trainers, profileSetup)}
@@ -27,6 +31,7 @@ export default async function HomePage() {
       weeklyProgress={weeklyProgress}
       profileSetup={profileSetup}
       hasActivePlan={Boolean(activePlanId)}
+      recentBookings={bookings.slice(0, RECENT_BOOKINGS_LIMIT)}
     />
   );
 }

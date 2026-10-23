@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Sparkles,
@@ -12,12 +11,15 @@ import {
   HeartPulse,
   Wand2,
   Utensils,
-  Zap,
 } from "lucide-react";
-import type { ProfileSetupState, TrainerSummary, UserProfile } from "@pacergo/shared";
+import type {
+  BookingRecord,
+  ProfileSetupState,
+  TrainerSummary,
+  UserProfile,
+} from "@pacergo/shared";
 import type { WeeklyProgress } from "@/lib/goals";
 import { Card } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
 import { SoonBadge } from "@/shared/components/atoms/soon-badge";
 import { HeroBanner } from "./hero-banner";
 import { QuickActionsGrid, type QuickAction } from "./quick-actions-grid";
@@ -25,23 +27,11 @@ import { ToolsList, type ToolItem } from "./tools-list";
 import { WeeklyProgressCard } from "./weekly-progress-card";
 import { ProfileSetupDialog } from "./profile-setup-dialog";
 import { RecommendedTrainers } from "./recommended-trainers";
+import { RecentBookings } from "./recent-bookings";
 import { getLocalizedPath } from "@/lib/locale-path";
+import { cn } from "@/lib/utils";
+import { PAGE_GAP } from "@/shared/components/shell/app-shell";
 import { useLocale } from "@/shared/hooks/use-locale";
-
-function formatHeaderDate(
-  date: Date,
-  locale: "zh" | "en",
-  weekdays: string[],
-): string {
-  if (locale === "zh") {
-    return `${date.getMonth() + 1}月${date.getDate()}日${weekdays[date.getDay()] ?? ""}`;
-  }
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(date);
-}
 
 function SectionLabel({ title }: { title: string }) {
   return (
@@ -58,30 +48,24 @@ export function HomeView({
   weeklyProgress,
   profileSetup,
   hasActivePlan = false,
+  recentBookings = [],
 }: {
   trainers: TrainerSummary[];
   user: UserProfile | null;
   savedIds?: string[];
+  /** The signed-in user's latest bookings (either side), newest first. */
+  recentBookings?: BookingRecord[];
   weeklyProgress: WeeklyProgress;
   /** First-run Profile Setup state; the dialog shows only when never answered. */
   profileSetup?: ProfileSetupState | null;
   /** Signed-in user already has an AI training plan. */
   hasActivePlan?: boolean;
 }) {
-  const { t } = useTranslation(["home", "trainer", "common"]);
+  const { t } = useTranslation(["home", "common"]);
   const locale = useLocale();
-  const weekdays = t("trainer:weekdaysShort", {
-    returnObjects: true,
-  }) as string[];
 
   const name = user?.display_name?.split(" ")[0] || t("guest");
   const trainersHref = getLocalizedPath("/trainers", locale);
-
-  // Render the date only after mount so SSR (build time) and client agree.
-  const [today, setToday] = useState("");
-  useEffect(() => {
-    setToday(formatHeaderDate(new Date(), locale, weekdays));
-  }, [locale, weekdays]);
 
   const primaryActions: QuickAction[] = [
     {
@@ -120,7 +104,7 @@ export function HomeView({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className={cn("flex flex-col", PAGE_GAP)}>
       {/* Only while something is still unknown: anything the fitness profile or
           the account already holds is never asked again. */}
       {user &&
@@ -131,26 +115,11 @@ export function HomeView({
         )}
 
       {/* Greeting */}
-      <header className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-muted-foreground">
-            {today || " "}
-          </p>
-          <h1 className="mt-0.5 text-2xl font-bold lg:text-3xl">
-            {t("greeting", { name })}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("prompt")}</p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled
-          className="relative shrink-0 gap-1.5 rounded-full"
-        >
-          <Zap size={14} />
-          {t("switchTrainer")}
-          <SoonBadge className="absolute -right-2 -top-2" />
-        </Button>
+      <header className="min-w-0">
+        <h1 className="text-2xl font-bold lg:text-3xl">
+          {t("greeting", { name })}
+        </h1>
+        <p className="text-sm text-muted-foreground">{t("prompt")}</p>
       </header>
 
       {/* Next step for a signed-in user with no AI plan yet. Setup answers
@@ -171,8 +140,8 @@ export function HomeView({
       {/* Dashboard. Desktop: hero + actions (left), sticky personal rail (right),
           recommended trainers below-left. Mobile: a single stacked column in
           DOM order — hero, actions, rail, recommended. */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2 lg:col-start-1 lg:row-start-1">
+      <div className={cn("grid grid-cols-1 lg:grid-cols-3", PAGE_GAP)}>
+        <div className={cn("flex flex-col lg:col-span-2 lg:col-start-1 lg:row-start-1", PAGE_GAP)}>
           <HeroBanner
             href={trainersHref}
             title={t("hero.title")}
@@ -184,9 +153,19 @@ export function HomeView({
             <SectionLabel title={t("quickActions")} />
             <QuickActionsGrid items={primaryActions} className="mt-4" />
           </Card>
+
+          {user && (
+            <RecentBookings bookings={recentBookings} currentUserId={user.id} />
+          )}
         </div>
 
-        <aside className="space-y-6 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:self-start lg:sticky lg:top-8">
+        {/* Sticks at the page's top padding (lg:pt-10), so it lines up with the gutters. */}
+        <aside
+          className={cn(
+            "flex flex-col lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:self-start lg:sticky lg:top-10",
+            PAGE_GAP,
+          )}
+        >
           <WeeklyProgressCard
             title={t("weeklyProgress")}
             target={weeklyProgress.target}

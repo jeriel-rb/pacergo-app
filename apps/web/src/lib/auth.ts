@@ -19,6 +19,7 @@ export async function getSessionUser(): Promise<UserProfile | null> {
   const row = (profile ?? null) as {
     display_name: string | null;
     photo_url: string | null;
+    is_companion?: boolean | null;
   } | null;
 
   // Prefer the nickname the user set on their profile (`users.display_name`);
@@ -35,6 +36,7 @@ export async function getSessionUser(): Promise<UserProfile | null> {
     email: user.email ?? "",
     photo_url: row?.photo_url ?? (meta.avatar_url as string) ?? null,
     experience_level: null,
+    is_companion: row?.is_companion === true,
     is_admin: isAdmin === true,
   };
 }

@@ -51,6 +51,7 @@
     "pay": "Pay securely",
     "viewPayment": "View payment"
   },
+  "cancelTrainerOnly": "Need to cancel or change the time? Message your trainer — only trainers can cancel a booking.",
   "book": {
     "title": "Book a session",
     "subtitle": "Send a booking request to {{name}}",

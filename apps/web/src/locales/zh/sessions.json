@@ -51,6 +51,7 @@
     "pay": "安全付款",
     "viewPayment": "查看付款"
   },
+  "cancelTrainerOnly": "需要取消或改時間嗎？請傳訊息給陪練，只有陪練可以取消預約。",
   "book": {
     "title": "預約訓練",
     "subtitle": "向 {{name}} 送出預約請求",

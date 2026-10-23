@@ -8,6 +8,7 @@ import {
   availableActions,
   type BookingAction,
   type BookingRecord,
+  type BookingStatus,
 } from "@pacergo/shared";
 import { Button } from "@/shared/components/ui/button";
 import { useToast } from "@/shared/components/ui/toast";
@@ -40,6 +41,15 @@ const ACTION_META: Record<BookingAction, Omit<Action, "key">> = {
     className: "bg-emerald-600 text-white hover:bg-emerald-700",
   },
 };
+
+/** Bookings still in play, where a member might want out. */
+const OPEN_STATUSES: BookingStatus[] = [
+  "requested",
+  "pending_payment",
+  "payment_processing",
+  "payment_failed",
+  "accepted",
+];
 
 /** Role + status aware booking actions (accept/decline/cancel/complete). */
 export function BookingActionsBar({
@@ -80,14 +90,24 @@ export function BookingActionsBar({
     }
   }
 
-  if (actions.length === 0) {
-    return error ? (
-      <p className="basis-full text-sm text-destructive">{error}</p>
+  // Members can't cancel (only the trainer can), so say where to go instead.
+  const cancelNote =
+    !iAmCompanion && OPEN_STATUSES.includes(booking.status) ? (
+      <p className="basis-full text-xs text-muted-foreground">{t("cancelTrainerOnly")}</p>
     ) : null;
+
+  if (actions.length === 0) {
+    return (
+      <>
+        {cancelNote}
+        {error && <p className="basis-full text-sm text-destructive">{error}</p>}
+      </>
+    );
   }
 
   return (
     <>
+      {cancelNote}
       {actions.map((a) => (
         <Button
           key={a.key}

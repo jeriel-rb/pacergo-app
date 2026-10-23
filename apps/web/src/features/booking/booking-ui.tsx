@@ -12,7 +12,7 @@ const STATUS_STYLE: Record<BookingStatus, string> = {
   accepted: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
   completed: "bg-primary/15 text-primary",
   declined: "bg-muted text-muted-foreground",
-  cancelled: "bg-muted text-muted-foreground",
+  cancelled: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
   expired: "bg-muted text-muted-foreground",
 };
 

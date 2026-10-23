@@ -4,20 +4,22 @@ export type BookingRole = 'seeker' | 'companion';
 export type BookingAction = 'accept' | 'decline' | 'cancel' | 'complete';
 
 /** Role + status aware booking actions, primary action first. Mirrors the
- *  accept/decline/cancel/complete RPC state machine enforced server-side. */
+ *  accept/decline/cancel/complete RPC state machine enforced server-side.
+ *  Only the trainer (companion) cancels — cancel_booking enforces it too; a
+ *  member who needs to change plans messages the trainer. */
 export function availableActions(status: BookingStatus, role: BookingRole): BookingAction[] {
   if (status === 'requested') {
-    return role === 'companion' ? ['accept', 'decline'] : ['cancel'];
+    return role === 'companion' ? ['accept', 'decline'] : [];
   }
   if (
     status === 'pending_payment' ||
     status === 'payment_processing' ||
     status === 'payment_failed'
   ) {
-    return role === 'seeker' ? ['cancel'] : [];
+    return role === 'companion' ? ['cancel'] : [];
   }
   if (status === 'accepted') {
-    return ['complete', 'cancel'];
+    return role === 'companion' ? ['complete', 'cancel'] : ['complete'];
   }
   return [];
 }

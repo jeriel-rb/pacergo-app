@@ -9,7 +9,7 @@ const color: Record<BookingStatus, string> = {
   payment_failed: '#FF5C5C',
   accepted: '#3DDC97',
   declined: '#FF5C5C',
-  cancelled: '#6B6B74',
+  cancelled: '#FF5C5C',
   completed: '#7C5CFF',
   expired: '#6B6B74',
 };

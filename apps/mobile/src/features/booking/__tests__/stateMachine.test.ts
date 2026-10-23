@@ -5,17 +5,22 @@ describe('availableActions', () => {
     expect(availableActions('requested', 'companion')).toEqual(['accept', 'decline']);
   });
 
-  it('lets a seeker cancel their own pending request', () => {
-    expect(availableActions('requested', 'seeker')).toEqual(['cancel']);
+  it('never lets a member cancel; only the trainer can', () => {
+    for (const status of ['requested', 'pending_payment', 'payment_processing', 'payment_failed', 'accepted'] as const) {
+      expect(availableActions(status, 'seeker')).not.toContain('cancel');
+    }
+    expect(availableActions('requested', 'seeker')).toEqual([]);
   });
 
-  it('lets a seeker cancel while payment is still processing', () => {
-    expect(availableActions('payment_processing', 'seeker')).toEqual(['cancel']);
-    expect(availableActions('payment_processing', 'companion')).toEqual([]);
+  it('lets the trainer cancel while the booking waits for payment', () => {
+    expect(availableActions('pending_payment', 'companion')).toEqual(['cancel']);
+    expect(availableActions('payment_processing', 'companion')).toEqual(['cancel']);
+    expect(availableActions('payment_failed', 'companion')).toEqual(['cancel']);
+    expect(availableActions('payment_processing', 'seeker')).toEqual([]);
   });
 
-  it('lets either party cancel or complete an accepted booking', () => {
-    expect(availableActions('accepted', 'seeker')).toEqual(['complete', 'cancel']);
+  it('lets either party complete an accepted booking, but only the trainer cancel it', () => {
+    expect(availableActions('accepted', 'seeker')).toEqual(['complete']);
     expect(availableActions('accepted', 'companion')).toEqual(['complete', 'cancel']);
   });
 

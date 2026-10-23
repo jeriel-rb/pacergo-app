@@ -46,6 +46,11 @@ const GATEWAYS: Record<NewebPayEnv, string> = {
   production: "https://core.newebpay.com/MPG/mpg_gateway",
 };
 
+const CREDIT_CARD_CLOSE_ENDPOINTS: Record<NewebPayEnv, string> = {
+  sandbox: "https://ccore.newebpay.com/API/CreditCard/Close",
+  production: "https://core.newebpay.com/API/CreditCard/Close",
+};
+
 const SAFE_KEYS = new Set([
   "Amt",
   "BankCode",
@@ -150,6 +155,46 @@ export function createTradeSha(tradeInfo: string, hashKey: string, hashIv: strin
     .update(`HashKey=${hashKey}&${tradeInfo}&HashIV=${hashIv}`, "utf8")
     .digest("hex")
     .toUpperCase();
+}
+
+/** Build the encrypted NPA-B032 (credit-card refund) request.  This is a
+ * separate API from MPG: its outer field names intentionally end in `_`. */
+export function buildCreditCardRefundRequest(input: {
+  config: NewebPayConfig;
+  merchantOrderNo: string;
+  amount: number;
+  now?: Date;
+}): NewebPayForm {
+  if (!Number.isInteger(input.amount) || input.amount <= 0) {
+    throw new Error("payment_invalid_amount");
+  }
+  if (!input.merchantOrderNo) {
+    throw new Error("payment_refund_missing_reference");
+  }
+
+  const timeStamp = Math.floor((input.now ?? new Date()).getTime() / 1000);
+  const version = "1.1";
+  const postData = encryptTradeInfo(
+    serializeTradeInfo({
+      RespondType: "JSON",
+      Version: version,
+      Amt: input.amount,
+      MerchantOrderNo: input.merchantOrderNo,
+      TimeStamp: timeStamp,
+      IndexType: 1,
+      CloseType: 2,
+    }),
+    input.config.hashKey,
+    input.config.hashIv,
+  );
+
+  return {
+    action: CREDIT_CARD_CLOSE_ENDPOINTS[input.config.env],
+    fields: {
+      MerchantID_: input.config.merchantId,
+      PostData_: postData,
+    },
+  };
 }
 
 export function verifyTradeSha(

@@ -23,7 +23,9 @@ export function availableActions(status: BookingStatus, role: BookingRole): Book
 }
 
 const ACTION_STATUS: Record<BookingAction, BookingStatus> = {
-  accept: 'accepted',
+  // Paid sessions become accepted only when payment succeeds. A coach's
+  // acceptance opens the payment window instead.
+  accept: 'pending_payment',
   decline: 'declined',
   cancel: 'cancelled',
   complete: 'completed',

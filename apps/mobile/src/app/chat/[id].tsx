@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, TextInput, FlatList, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { Alert, View, TextInput, FlatList, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,10 +17,14 @@ export default function ChatThreadScreen() {
   const send = useSendMessage(id);
   const [text, setText] = useState('');
 
-  function onSend() {
+  async function onSend() {
     if (!text.trim()) return;
-    send.mutate(text);
-    setText('');
+    try {
+      await send.mutateAsync(text);
+      setText('');
+    } catch {
+      Alert.alert(t('chatScreen.title'), t('chatScreen.unavailable'));
+    }
   }
 
   return (
@@ -56,7 +60,7 @@ export default function ChatThreadScreen() {
             onChangeText={setText}
             className="flex-1 rounded-full bg-dark-surface px-4 py-3 text-dark-text"
           />
-          <Pressable onPress={onSend} className="rounded-full bg-brand-deep px-5 py-3">
+          <Pressable onPress={() => void onSend()} disabled={send.isPending} className="rounded-full bg-brand-deep px-5 py-3">
             <AppText className="text-white">{t('chatScreen.send')}</AppText>
           </Pressable>
         </View>

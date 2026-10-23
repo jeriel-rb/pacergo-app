@@ -65,6 +65,8 @@
     "complete": "Mark complete",
     "review": "Leave a review",
     "message": "Message",
+    "awaitingAcceptance": "Waiting for the trainer to accept. This request expires automatically after 24 hours.",
+    "acceptedAwaitingPayment": "Your trainer accepted. Complete payment to confirm the session.",
     "when": "When",
     "where": "Where",
     "price": "Price",
@@ -89,6 +91,7 @@
   "chatScreen": {
     "title": "Messages",
     "empty": "No conversations yet.",
+    "unavailable": "Messaging is unavailable because this booking is no longer active.",
     "placeholder": "Message…",
     "send": "Send"
   },

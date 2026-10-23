@@ -45,6 +45,7 @@ export default function BookingDetailScreen() {
   const name = amSeeker ? booking.companion_name : booking.seeker_name;
   const photo = amSeeker ? booking.companion_photo : booking.seeker_photo;
   const actions = availableActions(booking.status, role);
+  const canMessage = ['pending_payment', 'payment_processing', 'payment_failed', 'accepted'].includes(booking.status);
 
   async function openChat() {
     if (!booking) return;
@@ -92,6 +93,12 @@ export default function BookingDetailScreen() {
               <AppText variant="body">{t(`bookingDetail.obstacles.${clientObstacle}`)}</AppText>
             </>
           ) : null}
+          {booking.status === 'requested' ? (
+            <AppText variant="caption" className="mt-2">{t('bookingDetail.awaitingAcceptance')}</AppText>
+          ) : null}
+          {booking.status === 'pending_payment' ? (
+            <AppText variant="caption" className="mt-2">{t('bookingDetail.acceptedAwaitingPayment')}</AppText>
+          ) : null}
         </View>
 
         <View className="gap-3">
@@ -104,7 +111,7 @@ export default function BookingDetailScreen() {
               disabled={transition.isPending}
             />
           ))}
-          <Button label={t('bookingDetail.message')} variant="secondary" onPress={openChat} />
+          {canMessage ? <Button label={t('bookingDetail.message')} variant="secondary" onPress={openChat} /> : null}
           <Button label={t('safety.sharePlans')} variant="ghost" onPress={shareDetails} />
           {booking.status === 'completed' ? (
             <Button

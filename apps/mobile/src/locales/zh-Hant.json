@@ -65,6 +65,8 @@
     "complete": "標記完成",
     "review": "留下評價",
     "message": "傳訊息",
+    "awaitingAcceptance": "等待陪練接受；此預約請求將在 24 小時後自動到期。",
+    "acceptedAwaitingPayment": "陪練已接受，請完成付款以確認這堂課。",
     "when": "時間",
     "where": "地點",
     "price": "價格",
@@ -89,6 +91,7 @@
   "chatScreen": {
     "title": "訊息",
     "empty": "目前沒有對話。",
+    "unavailable": "這筆預約已不在進行中，因此無法傳送訊息。",
     "placeholder": "輸入訊息…",
     "send": "送出"
   },

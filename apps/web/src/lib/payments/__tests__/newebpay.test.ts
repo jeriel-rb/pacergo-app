@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  buildCreditCardRefundRequest,
   createMerchantOrderNo,
   createTradeSha,
   decryptTradeInfo,
@@ -110,6 +111,32 @@ describe("NewebPay cryptography", () => {
         Result: { MerchantOrderNo: "PG1", Amt: 1200, PaymentMethod: "WEBATM", PayTime: "2026-07-23 10:00:00" },
       }),
     ).toBe("paid");
+  });
+
+  it("builds an encrypted NPA-B032 credit-card refund request", () => {
+    setPaymentEnv();
+    const request = buildCreditCardRefundRequest({
+      config: getNewebPayConfig(),
+      merchantOrderNo: "PG2610081441426D98E2B63D",
+      amount: 400,
+      now: new Date("2026-10-08T14:42:05Z"),
+    });
+
+    expect(request.action).toBe("https://ccore.newebpay.com/API/CreditCard/Close");
+    expect(request.fields.MerchantID_).toBe("MS123456789");
+    const decoded = parseTradeInfo(
+      decryptTradeInfo(request.fields.PostData_, "1234567890ABCDEF1234567890ABCDEF", "ABCDEF1234567890"),
+    );
+    expect(decoded).toMatchObject({
+      RespondType: "JSON",
+      Version: "1.1",
+      Amt: "400",
+      MerchantOrderNo: "PG2610081441426D98E2B63D",
+      IndexType: "1",
+      CloseType: "2",
+    });
+    expect(decoded.TradeNo).toBeUndefined();
+    expect(decoded.CheckValue).toBeUndefined();
   });
 });
 

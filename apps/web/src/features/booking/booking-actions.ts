@@ -36,5 +36,14 @@ async function transition(fn: string, id: string): Promise<void> {
 /** Booking FSM transitions (existing SECURITY DEFINER RPCs from migration 0004). */
 export const acceptBooking = (id: string) => transition("accept_booking", id);
 export const declineBooking = (id: string) => transition("decline_booking", id);
-export const cancelBooking = (id: string) => transition("cancel_booking", id);
+export async function cancelBooking(id: string): Promise<void> {
+  const response = await fetch(`/api/bookings/${encodeURIComponent(id)}/cancel`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(body?.error ?? "booking_cancel_not_allowed");
+  }
+}
 export const completeBooking = (id: string) => transition("complete_booking", id);

@@ -15,6 +15,7 @@ export interface ConversationHeader {
   other_id: string;
   other_name: string | null;
   other_photo: string | null;
+  can_message?: boolean;
 }
 
 /** A single chat message. */

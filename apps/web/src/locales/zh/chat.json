@@ -11,6 +11,7 @@
     "placeholder": "輸入訊息…"
   },
   "sendFailed": "訊息傳送失敗。",
+  "closed": "這筆預約已不在進行中，因此無法傳送訊息。",
   "retry": "重新傳送",
   "dock": {
     "maximize": "全螢幕開啟",

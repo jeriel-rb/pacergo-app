@@ -27,6 +27,7 @@ export function ChatThread({
 
   const [messages, setMessages] = useState<PendingMessage[]>(initialMessages);
   const [draft, setDraft] = useState("");
+  const canMessage = header.can_message !== false;
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -151,20 +152,18 @@ export function ChatThread({
         <div ref={endRef} />
       </div>
 
-      <form
-        onSubmit={onSend}
-        className="flex items-center gap-2 px-3 py-3"
-      >
+      {!canMessage && <p className="px-3 pb-1 text-center text-xs text-muted-foreground">{t("closed")}</p>}
+      <form onSubmit={onSend} className="flex items-center gap-2 px-3 py-3">
         <input
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => setDraft(e.target.value)} disabled={!canMessage}
           placeholder={t("composer.placeholder")}
           maxLength={4000}
           className="h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
         <button
           type="submit"
-          disabled={!draft.trim()}
+          disabled={!draft.trim() || !canMessage}
           aria-label={t("send")}
           className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-50"
         >

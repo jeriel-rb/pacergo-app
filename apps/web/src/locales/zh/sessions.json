@@ -32,6 +32,8 @@
     "price": "費用",
     "note": "備註",
     "obstacle": "學員說目前的阻礙是",
+    "awaitingAcceptance": "等待陪練接受；此預約請求將在 24 小時後自動到期。",
+    "acceptedAwaitingPayment": "陪練已接受，請完成付款以確認這堂課。",
     "obstacles": {
       "lack_of_time": "沒有時間",
       "lack_of_knowledge": "缺乏知識",

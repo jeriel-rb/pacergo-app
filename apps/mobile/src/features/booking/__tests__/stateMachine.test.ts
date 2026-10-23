@@ -27,7 +27,7 @@ describe('availableActions', () => {
 
 describe('actionToStatus', () => {
   it('maps actions to their resulting status', () => {
-    expect(actionToStatus('accept')).toBe('accepted');
+    expect(actionToStatus('accept')).toBe('pending_payment');
     expect(actionToStatus('decline')).toBe('declined');
     expect(actionToStatus('cancel')).toBe('cancelled');
     expect(actionToStatus('complete')).toBe('completed');

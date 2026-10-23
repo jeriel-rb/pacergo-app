@@ -11,6 +11,7 @@
     "placeholder": "Type a message…"
   },
   "sendFailed": "Your message failed to send.",
+  "closed": "Messaging is unavailable because this booking is no longer active.",
   "retry": "Retry",
   "dock": {
     "maximize": "Open full screen",

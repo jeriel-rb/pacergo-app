@@ -32,6 +32,8 @@
     "price": "Price",
     "note": "Note",
     "obstacle": "What they said is in the way",
+    "awaitingAcceptance": "Waiting for the trainer to accept. This request expires automatically after 24 hours.",
+    "acceptedAwaitingPayment": "Your trainer accepted. Complete payment to confirm the session.",
     "obstacles": {
       "lack_of_time": "Lack of time",
       "lack_of_knowledge": "Lack of knowledge",

@@ -53,6 +53,7 @@ export function BookingDetailView({
     currentUserId === booking.seeker_id
       ? booking.companion_id
       : booking.seeker_id;
+  const canMessage = ["pending_payment", "payment_processing", "payment_failed", "accepted"].includes(booking.status);
   const activityLabel = booking.activity_slug
     ? ACTIVITY_META[booking.activity_slug][locale]
     : "—";
@@ -131,6 +132,9 @@ export function BookingDetailView({
         </div>
       </Card>
 
+      {booking.status === "requested" && <p className="text-sm text-muted-foreground">{t("detail.awaitingAcceptance")}</p>}
+      {booking.status === "pending_payment" && <p className="text-sm text-muted-foreground">{t("detail.acceptedAwaitingPayment")}</p>}
+
       {booking.status !== "cancelled" && (
         <div className="flex items-stretch gap-2">
           <BookingActionsBar booking={booking} currentUserId={currentUserId} />
@@ -139,7 +143,6 @@ export function BookingDetailView({
             !booking.is_free &&
             booking.agreed_price > 0 &&
             [
-              "requested",
               "pending_payment",
               "payment_processing",
               "payment_failed",
@@ -158,10 +161,7 @@ export function BookingDetailView({
               </Link>
             )}
 
-          <MessageButton
-            otherId={otherId}
-            className="min-h-10 min-w-0 flex-1 whitespace-normal px-2 text-center text-xs sm:px-4 sm:text-sm"
-          />
+          {canMessage && <MessageButton otherId={otherId} className="min-h-10 min-w-0 flex-1 whitespace-normal px-2 text-center text-xs sm:px-4 sm:text-sm" />}
           {booking.status === "completed" &&
             currentUserId === booking.seeker_id &&
             !myReview && (

@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildCreditCardRefundRequest,
@@ -86,6 +87,36 @@ describe("NewebPay cryptography", () => {
     expect(sha).toMatch(/^[0-9A-F]{64}$/);
     expect(verifyTradeSha(encrypted, sha, key, iv)).toBe(true);
     expect(verifyTradeSha(`${encrypted}00`, sha, key, iv)).toBe(false);
+  });
+
+  /** Encrypts the way NewebPay's sample code does: PKCS#7 padded to a 32-byte block. */
+  function encryptLikeNewebPay(plain: Buffer, key: string, iv: string) {
+    const pad = 32 - (plain.length % 32);
+    const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(key, "utf8"), Buffer.from(iv, "utf8"));
+    cipher.setAutoPadding(false);
+    return Buffer.concat([
+      cipher.update(Buffer.concat([plain, Buffer.alloc(pad, pad)])),
+      cipher.final(),
+    ]).toString("hex");
+  }
+
+  it("decrypts NewebPay's 32-byte padding whatever the message length", () => {
+    const key = "1234567890ABCDEF1234567890ABCDEF";
+    const iv = "ABCDEF1234567890";
+    for (let length = 1; length <= 64; length += 1) {
+      const plain = "a".repeat(length);
+      expect(decryptTradeInfo(encryptLikeNewebPay(Buffer.from(plain), key, iv), key, iv)).toBe(plain);
+    }
+  });
+
+  it("rejects decrypted data whose padding is malformed", () => {
+    const key = "1234567890ABCDEF1234567890ABCDEF";
+    const iv = "ABCDEF1234567890";
+    const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(key, "utf8"), Buffer.from(iv, "utf8"));
+    cipher.setAutoPadding(false);
+    const unpadded = Buffer.concat([cipher.update(Buffer.alloc(32, "a")), cipher.final()]).toString("hex");
+
+    expect(() => decryptTradeInfo(unpadded, key, iv)).toThrow("payment_callback_invalid");
   });
 
   it("generates compatible unique merchant order numbers", () => {

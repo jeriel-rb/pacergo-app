@@ -155,11 +155,29 @@ export function decryptTradeInfo(encryptedHex: string, hashKey: string, hashIv: 
     Buffer.from(hashKey, "utf8"),
     Buffer.from(hashIv, "utf8"),
   );
-  decipher.setAutoPadding(true);
-  return Buffer.concat([
-    decipher.update(Buffer.from(encryptedHex, "hex")),
-    decipher.final(),
-  ]).toString("utf8");
+  decipher.setAutoPadding(false);
+  let padded: Buffer;
+  try {
+    padded = Buffer.concat([decipher.update(Buffer.from(encryptedHex, "hex")), decipher.final()]);
+  } catch {
+    throw new Error("payment_callback_invalid");
+  }
+  return stripPadding(padded).toString("utf8");
+}
+
+/**
+ * NewebPay pads to a 32-byte block (its sample code's `addpadding`), so the pad
+ * can be 17–32 bytes, which Node's 16-byte PKCS#7 check rejects as "bad
+ * decrypt". Strip up to 32 bytes the way its `strippadding` does; our own
+ * 16-byte padding passes too.
+ */
+function stripPadding(data: Buffer): Buffer {
+  const pad = data[data.length - 1] ?? 0;
+  if (pad < 1 || pad > 32 || pad > data.length) throw new Error("payment_callback_invalid");
+  for (let i = data.length - pad; i < data.length; i += 1) {
+    if (data[i] !== pad) throw new Error("payment_callback_invalid");
+  }
+  return data.subarray(0, data.length - pad);
 }
 
 export function createTradeSha(tradeInfo: string, hashKey: string, hashIv: string): string {

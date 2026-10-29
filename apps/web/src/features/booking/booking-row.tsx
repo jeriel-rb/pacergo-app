@@ -8,7 +8,7 @@ import { InitialAvatar } from "@/shared/components/atoms/initial-avatar";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getLocalizedPath } from "@/lib/locale-path";
 import { cn } from "@/lib/utils";
-import { StatusBadge, counterparty, formatWhen } from "./booking-ui";
+import { RefundBadge, StatusBadge, counterparty, formatWhen, visibleRefund } from "./booking-ui";
 
 /** One booking in a list (My Sessions, Home's recent bookings): links to its detail page. */
 export function BookingRow({
@@ -22,6 +22,7 @@ export function BookingRow({
   const locale = useLocale();
   const href = getLocalizedPath(`/sessions/${booking.id}`, locale);
   const other = counterparty(booking, currentUserId);
+  const refund = visibleRefund(booking);
   const activity = booking.activity_slug
     ? ACTIVITY_META[booking.activity_slug][locale]
     : "";
@@ -45,10 +46,13 @@ export function BookingRow({
           {formatWhen(booking.scheduled_start, locale, t("flexible"))}
         </p>
       </div>
-      <StatusBadge
-        status={booking.status}
-        label={t(`status.${booking.status}`)}
-      />
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <StatusBadge
+          status={booking.status}
+          label={t(`status.${booking.status}`)}
+        />
+        {refund && <RefundBadge status={refund} label={t(`refund.${refund}`)} />}
+      </div>
       <ChevronRight size={16} className="shrink-0 text-muted-foreground" />
     </Link>
   );

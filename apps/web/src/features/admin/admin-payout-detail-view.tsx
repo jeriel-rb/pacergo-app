@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,8 @@ import { useToast } from "@/shared/components/ui/toast";
 import { setWithdrawalStatus } from "./admin-actions";
 import { PayoutStatusBadge } from "./admin-payouts-view";
 import { BankAccountRow } from "./dashboard/user-sheet";
-import { PAYOUT_TRANSITIONS } from "./payout-actions";
+import { getLocalizedPath } from "@/lib/locale-path";
+import { PAYOUT_TRANSITIONS, payoutActionLabelKey } from "./payout-actions";
 
 function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
@@ -70,6 +72,12 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
           <p className="text-sm text-muted-foreground">
             {formatStamp(detail.requested_at, locale)}
           </p>
+          <Link
+            href={getLocalizedPath(`/trainers/${detail.trainer_id}`, locale)}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            {t("payouts.viewProfile")}
+          </Link>
         </div>
         <PayoutStatusBadge status={detail.status} />
       </header>
@@ -122,7 +130,7 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
                 className="gap-2"
               >
                 {busy === s && <Loader2 size={14} className="animate-spin" />}
-                {t(`payouts.action.${s}`)}
+                {t(payoutActionLabelKey(detail.status, s))}
               </Button>
             ))}
             {corrections.map((s) => (
@@ -135,7 +143,7 @@ export function AdminPayoutDetailView({ detail }: { detail: PayoutDetail }) {
                 className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 {busy === s && <Loader2 size={14} className="animate-spin" />}
-                {t(`payouts.action.${s}`)}
+                {t(payoutActionLabelKey(detail.status, s))}
               </Button>
             ))}
           </div>

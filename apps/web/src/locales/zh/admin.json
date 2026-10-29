@@ -109,7 +109,8 @@
       "paid": "標記為已撥款",
       "rejected": "拒絕",
       "cancelled": "取消",
-      "requested": "回復為已申請"
+      "requested": "回復為已申請",
+      "undoPaid": "回復為處理中（撤銷已撥款）"
     },
     "history": "狀態歷程",
     "noHistory": "尚無狀態變更紀錄。",
@@ -147,7 +148,9 @@
         "settled": "撥款日期",
         "note": "備註"
       }
-    }
+    },
+    "viewProfile": "查看陪練頁面",
+    "rules": "陪練餘額 = 已付款、課程已結束且 24 小時保留期已過之訂單的 95% 應收金額；已取消、已退款或暫停中的訂單不計入。標記「已撥款」會結清該筆涵蓋的訂單，回復狀態則會取消結清。"
   },
   "exports": {
     "title": "資料匯出 (CSV)",
@@ -227,7 +230,8 @@
       "settlement": "結算",
       "service": "服務完成",
       "hold": "管理員暫停",
-      "created": "建立時間"
+      "created": "建立時間",
+      "eligibleFrom": "可撥款時間"
     },
     "action": {
       "cancel": "取消付款嘗試",
@@ -277,7 +281,11 @@
     },
     "statusFilter": "依狀態篩選",
     "searchPlaceholder": "搜尋名稱…",
-    "noMatches": "沒有符合搜尋的訂單。"
+    "noMatches": "沒有符合搜尋的訂單。",
+    "eligibleSince": "自 {{when}} 起可撥款",
+    "eligibleAfterSession": "課程結束登記後 24 小時",
+    "notEligible": "目前狀態下不可撥款",
+    "settlementNotice": "課程結束時間過後系統會自動登記服務完成（每 15 分鐘檢查）。除非訂單被取消、退款或暫停，24 小時後即可撥款。"
   },
   "pagination": {
     "total": "共 {{count}} 筆",
@@ -371,7 +379,15 @@
       "noListing": "此申請人尚未儲存刊登資料。",
       "noPlans": "尚無方案。",
       "noAvailability": "尚無可預約時段。",
-      "weekdays": ["日", "一", "二", "三", "四", "五", "六"],
+      "weekdays": [
+        "日",
+        "一",
+        "二",
+        "三",
+        "四",
+        "五",
+        "六"
+      ],
       "sections": {
         "listing": "刊登",
         "plans": "方案與價格",

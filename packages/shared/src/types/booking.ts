@@ -37,7 +37,13 @@ export interface BookingRecord {
   companion_photo: string | null;
   completed_at: string | null;
   created_at: string;
+  /** Refund state of the payment behind this booking (B-5); absent on rows
+   *  from older servers. `none` when nothing was refunded. */
+  refund_status?: BookingRefundStatus | null;
 }
+
+/** Refund state a member or trainer sees on a booking. */
+export type BookingRefundStatus = 'none' | 'refund_requested' | 'refunded';
 
 /** A bookable offering (with its id) from companion_offerings. */
 export interface CompanionOffering {

@@ -10,10 +10,16 @@ export const PAYOUT_TRANSITIONS: Record<
 > = {
   requested: { forward: ["processing"], corrections: ["rejected", "cancelled"] },
   processing: { forward: ["paid"], corrections: ["rejected", "cancelled", "requested"] },
-  paid: { forward: [], corrections: [] },
+  paid: { forward: [], corrections: ["processing"] },
   rejected: { forward: [], corrections: ["requested"] },
   cancelled: { forward: [], corrections: ["requested"] },
 };
+
+/** i18n key for the button/menu label of a transition. Undoing a Paid marking
+ *  gets its own wording so it is not mistaken for the forward "Mark Processing". */
+export function payoutActionLabelKey(from: PayoutStatus, to: PayoutStatus): string {
+  return from === "paid" ? "payouts.action.undoPaid" : `payouts.action.${to}`;
+}
 
 /** Moving to `to` from `from` is a correction (needs a reason) rather than a forward step. */
 export function isCorrection(from: PayoutStatus, to: PayoutStatus): boolean {

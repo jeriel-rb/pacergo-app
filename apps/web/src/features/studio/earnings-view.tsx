@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatInAppTimeZone } from "@pacergo/shared";
-import type { EarningsData, WithdrawalStatus } from "@/lib/earnings";
+import type { EarningsData, TrainerOrder, WithdrawalStatus } from "@/lib/earnings";
 import { Card } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -37,11 +37,49 @@ function formatStamp(iso: string, locale: "zh" | "en"): string {
   });
 }
 
+const HOLD_MS = 24 * 60 * 60 * 1000;
+const HOW_STEPS = ["1", "2", "3", "4"] as const;
+
+/** When this order is, or is expected to be, eligible for payout (B-6): the
+ *  recorded end of the 24 h hold, else service completion + 24 h, else the
+ *  booked session end + 24 h. Null when the session has no time yet. */
+export function expectedEligibleAt(o: TrainerOrder): Date | null {
+  if (o.settlement_hold_until) return new Date(o.settlement_hold_until);
+  if (o.service_completed_at) {
+    return new Date(new Date(o.service_completed_at).getTime() + HOLD_MS);
+  }
+  if (o.scheduled_start) {
+    const end = new Date(o.scheduled_start).getTime() + (o.duration_min ?? 60) * 60_000;
+    return new Date(end + HOLD_MS);
+  }
+  return null;
+}
+
+/** Paid, not yet eligible, and nothing blocking it: money still inside the hold. */
+function isInHold(o: TrainerOrder): boolean {
+  return (
+    o.payment_status === "paid" &&
+    o.settlement_status === "unsettled" &&
+    o.settlement_eligibility_status === "ineligible" &&
+    o.refund_status === "none" &&
+    !o.admin_hold
+  );
+}
+
 /** B-4: trainer's own orders, available balance, and withdrawal request flow. */
 export function EarningsView({ data }: { data: EarningsData }) {
   const { t } = useTranslation("studio");
   const locale = useLocale();
   const router = useRouter();
+
+  const now = Date.now();
+  const inHold = data.orders.filter(isInHold);
+  const pendingAmount = inHold.reduce((sum, o) => sum + (o.trainer_payable ?? 0), 0);
+  const nextRelease =
+    inHold
+      .map(expectedEligibleAt)
+      .filter((d): d is Date => d !== null && d.getTime() > now)
+      .sort((a, b) => a.getTime() - b.getTime())[0] ?? null;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -58,6 +96,13 @@ export function EarningsView({ data }: { data: EarningsData }) {
           <p className="mt-1 text-3xl font-bold text-primary">
             {ntd(data.balance)}
           </p>
+          {pendingAmount > 0 && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("earnings.pending")}: {ntd(pendingAmount)}
+              {nextRelease &&
+                ` · ${t("earnings.pendingNext", { when: formatStamp(nextRelease.toISOString(), locale) })}`}
+            </p>
+          )}
         </div>
         <WithdrawDialog
           balance={data.balance}
@@ -67,6 +112,15 @@ export function EarningsView({ data }: { data: EarningsData }) {
       </Card>
 
       <BankAccountForm bank={data.bank} />
+
+      <Card className="space-y-2 p-5">
+        <p className="text-sm font-semibold">{t("earnings.howTitle")}</p>
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+          {HOW_STEPS.map((k) => (
+            <li key={k}>{t(`earnings.how.${k}`)}</li>
+          ))}
+        </ol>
+      </Card>
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-muted-foreground">
@@ -101,6 +155,7 @@ export function EarningsView({ data }: { data: EarningsData }) {
                   <Tag tone="warn">{t(`earnings.refundStatus.${o.refund_status}`)}</Tag>
                 )}
               </div>
+              <PayoutTiming order={o} />
             </Card>
           ))
         )}
@@ -217,6 +272,39 @@ function WithdrawDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+/** One line saying when this order's money reaches the balance, and why not yet. */
+function PayoutTiming({ order: o }: { order: TrainerOrder }) {
+  const { t } = useTranslation("studio");
+  const locale = useLocale();
+  if (o.settlement_status === "paid" || o.refund_status !== "none") return null;
+
+  let text: string;
+  if (o.payment_status !== "paid") {
+    text = t("earnings.timing.notPaid");
+  } else if (o.admin_hold) {
+    text = t("earnings.timing.adminHold");
+  } else {
+    const at = expectedEligibleAt(o);
+    const when = at ? formatStamp(at.toISOString(), locale) : "";
+    if (o.settlement_eligibility_status === "eligible") {
+      text = t("earnings.timing.eligibleSince", { when });
+    } else if (o.service_completed_at) {
+      text = t("earnings.timing.holdUntil", { when });
+    } else if (o.scheduled_start && at) {
+      const end = new Date(
+        new Date(o.scheduled_start).getTime() + (o.duration_min ?? 60) * 60_000,
+      );
+      text = t("earnings.timing.expected", {
+        end: formatStamp(end.toISOString(), locale),
+        when,
+      });
+    } else {
+      text = t("earnings.timing.noTime");
+    }
+  }
+  return <p className="text-xs text-muted-foreground">{text}</p>;
 }
 
 function EligibilityBadge({

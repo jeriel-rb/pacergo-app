@@ -14,6 +14,9 @@ export interface TrainerOrder {
   payment_status: string;
   refund_status: string;
   service_completed_at: string | null;
+  /** End of the 24 h hold; set when service completion is recorded. */
+  settlement_hold_until?: string | null;
+  admin_hold?: boolean;
   settlement_eligibility_status: "eligible" | "ineligible";
   settlement_status: "unsettled" | "paid";
   created_at: string;

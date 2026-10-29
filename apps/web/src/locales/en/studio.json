@@ -151,6 +151,23 @@
       "number": "Account number",
       "holder": "Account holder",
       "invalid": "Check the bank code (3–7 digits) and account number (8–16 digits)."
+    },
+    "pending": "In 24 h hold",
+    "pendingNext": "next release {{when}}",
+    "howTitle": "How payouts work",
+    "how": {
+      "1": "When a session's end time passes, its order is marked service completed automatically (checked every 15 minutes).",
+      "2": "A 24-hour settlement hold then runs. Cancelled, refunded or admin-held orders never count.",
+      "3": "After the hold, the order's 95% payable amount is added to your available balance automatically.",
+      "4": "Request a withdrawal up to your balance. PacerGo transfers it to your saved bank account by manual bank transfer and updates the status here."
+    },
+    "timing": {
+      "expected": "Session ends {{end}} · eligible after the 24 h hold, about {{when}}",
+      "holdUntil": "Service completed · eligible for payout from {{when}}",
+      "eligibleSince": "Eligible for payout since {{when}}",
+      "adminHold": "On hold by PacerGo admin · not counted in your balance",
+      "notPaid": "Not paid · not counted in your balance",
+      "noTime": "Eligible 24 h after the session is marked completed"
     }
   },
   "bg": {

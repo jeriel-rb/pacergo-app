@@ -28,7 +28,7 @@ import { getCurrentLocale, getLocalizedPath } from "@/lib/locale-path";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { MyReview } from "@/lib/reviews";
 import { MessageButton } from "@/features/chat/message-button";
-import { StatusBadge, counterparty, formatWhen } from "./booking-ui";
+import { RefundBadge, StatusBadge, counterparty, formatWhen, visibleRefund } from "./booking-ui";
 import { BookingActionsBar } from "./booking-actions-bar";
 import { ReviewSection } from "./review-section";
 
@@ -58,6 +58,7 @@ export function BookingDetailView({
       ? booking.companion_id
       : booking.seeker_id;
   const canMessage = ["pending_payment", "payment_processing", "payment_failed", "accepted"].includes(booking.status);
+  const refund = visibleRefund(booking);
   const activityLabel = booking.activity_slug
     ? ACTIVITY_META[booking.activity_slug][locale]
     : "—";
@@ -110,10 +111,13 @@ export function BookingDetailView({
               {other.iAmSeeker ? t("roles.asSeeker") : t("roles.asCompanion")}
             </p>
           </div>
-          <StatusBadge
-            status={booking.status}
-            label={t(`status.${booking.status}`)}
-          />
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <StatusBadge
+              status={booking.status}
+              label={t(`status.${booking.status}`)}
+            />
+            {refund && <RefundBadge status={refund} label={t(`refund.${refund}`)} />}
+          </div>
         </div>
 
         <div className="space-y-2.5 border-t border-border pt-4 text-sm">
@@ -166,6 +170,11 @@ export function BookingDetailView({
 
       {booking.status === "requested" && <p className="text-sm text-muted-foreground">{t("detail.awaitingAcceptance")}</p>}
       {booking.status === "pending_payment" && <p className="text-sm text-muted-foreground">{t("detail.acceptedAwaitingPayment")}</p>}
+      {refund && (
+        <p className="text-sm text-muted-foreground">
+          {t(refund === "refunded" ? "detail.refunded" : "detail.refundRequested")}
+        </p>
+      )}
 
       {booking.status !== "cancelled" && (
         // Wraps so the actions bar's full-width notes (basis-full) get their own line.

@@ -16,7 +16,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { useToast } from "@/shared/components/ui/toast";
 import { setWithdrawalStatus } from "./admin-actions";
-import { isCorrection } from "./payout-actions";
+import { isCorrection, payoutActionLabelKey } from "./payout-actions";
 
 export interface PendingPayoutAction {
   id: string;
@@ -46,7 +46,7 @@ export function PayoutActionDialog({
   const [error, setError] = useState<string | null>(null);
 
   const correction = state ? isCorrection(state.from, state.to) : false;
-  const label = state ? t(`payouts.action.${state.to}`) : "";
+  const label = state ? t(payoutActionLabelKey(state.from, state.to)) : "";
   const destructive = state?.to === "rejected" || state?.to === "cancelled";
 
   function close() {

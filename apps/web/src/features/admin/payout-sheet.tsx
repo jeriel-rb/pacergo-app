@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Banknote,
   CalendarCheck,
@@ -26,6 +27,7 @@ import {
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Accordion, type AccordionItem } from "@/shared/components/atoms/accordion";
 import { useLocale } from "@/shared/hooks/use-locale";
+import { getLocalizedPath } from "@/lib/locale-path";
 import { PayoutStatusBadge } from "./admin-payouts-view";
 import { ntd } from "./dashboard/dashboard-parts";
 import { BankAccountRow, EmptyRow, InfoRow } from "./dashboard/user-sheet";
@@ -54,6 +56,7 @@ export function PayoutSheet({
 }) {
   const { t } = useTranslation("admin");
   const locale = useLocale();
+  const trainerId = detail?.trainer_id ?? row?.trainer_id ?? null;
 
   const dateTime = (iso: string | null | undefined) =>
     iso
@@ -150,6 +153,14 @@ export function PayoutSheet({
           <SheetDescription className="truncate leading-5">
             {detail ? ntd(detail.amount) : "\u00a0"}
           </SheetDescription>
+          {trainerId && (
+            <Link
+              href={getLocalizedPath(`/trainers/${trainerId}`, locale)}
+              className="mt-1 text-xs font-medium text-primary hover:underline"
+            >
+              {t("payouts.viewProfile")}
+            </Link>
+          )}
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-6">

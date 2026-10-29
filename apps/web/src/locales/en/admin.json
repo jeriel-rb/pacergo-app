@@ -109,7 +109,8 @@
       "paid": "Mark Paid",
       "rejected": "Reject",
       "cancelled": "Cancel",
-      "requested": "Revert to Requested"
+      "requested": "Revert to Requested",
+      "undoPaid": "Revert to Processing (undo Paid)"
     },
     "history": "Status history",
     "noHistory": "No status changes yet.",
@@ -147,7 +148,9 @@
         "settled": "Paid on",
         "note": "Note"
       }
-    }
+    },
+    "viewProfile": "View trainer profile",
+    "rules": "A trainer's balance is the 95% payable of paid orders whose session ended and whose 24-hour hold has passed; cancelled, refunded or held orders are excluded. Marking a request Paid settles the orders it covers; reverting it un-settles them."
   },
   "exports": {
     "title": "Data export (CSV)",
@@ -227,7 +230,8 @@
       "settlement": "Settlement",
       "service": "Service completed",
       "hold": "Admin hold",
-      "created": "Created"
+      "created": "Created",
+      "eligibleFrom": "Payout eligible from"
     },
     "action": {
       "cancel": "Cancel attempt",
@@ -277,7 +281,11 @@
     },
     "statusFilter": "Filter by status",
     "searchPlaceholder": "Search by name…",
-    "noMatches": "No orders match your search."
+    "noMatches": "No orders match your search.",
+    "eligibleSince": "Eligible since {{when}}",
+    "eligibleAfterSession": "24 h after the session end is recorded",
+    "notEligible": "Not eligible while this state stands",
+    "settlementNotice": "Service completion is recorded automatically once the session end time passes (checked every 15 minutes). The order becomes payout-eligible 24 hours later unless it is cancelled, refunded or on hold."
   },
   "pagination": {
     "total": "{{count}} total",
@@ -371,7 +379,15 @@
       "noListing": "This applicant hasn't saved a listing yet.",
       "noPlans": "No plans yet.",
       "noAvailability": "No availability yet.",
-      "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "weekdays": [
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat"
+      ],
       "sections": {
         "listing": "Listing",
         "plans": "Plans & pricing",

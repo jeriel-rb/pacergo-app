@@ -237,9 +237,9 @@ describe("AdminPayoutsView", () => {
     expect(menuOf("Alice Chen")).toEqual(["Mark Processing", "Reject", "Cancel"]);
   });
 
-  it("menu: a paid payout only opens its details", async () => {
+  it("menu: a paid payout opens its details or undoes the Paid marking", async () => {
     renderView();
-    expect(menuOf("Bob Lin")).toEqual(["See details"]);
+    expect(menuOf("Bob Lin")).toEqual(["See details", "Revert to Processing (undo Paid)"]);
     fireEvent.click(screen.getByRole("menuitem", { name: "See details" }));
     const sheet = await screen.findByRole("dialog");
     expect(await within(sheet).findByText("CTBC")).toBeInTheDocument();
@@ -267,6 +267,21 @@ describe("AdminPayoutsView", () => {
       expect(setWithdrawalStatus).toHaveBeenCalledWith("p1", "processing", ""),
     );
     await waitFor(() => expect(refresh).toHaveBeenCalled());
+  });
+
+  it("undoing a Paid marking is a correction: needs a reason, then reverts to processing", async () => {
+    renderView();
+    menuOf("Bob Lin");
+    fireEvent.click(screen.getByRole("menuitem", { name: "Revert to Processing (undo Paid)" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Revert to Processing (undo Paid)" }));
+    expect(await within(dialog).findByText("This action requires a reason note.")).toBeInTheDocument();
+    expect(setWithdrawalStatus).not.toHaveBeenCalled();
+    fireEvent.change(within(dialog).getByRole("textbox"), { target: { value: "Transfer bounced" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Revert to Processing (undo Paid)" }));
+    await waitFor(() =>
+      expect(setWithdrawalStatus).toHaveBeenCalledWith("p2", "processing", "Transfer bounced"),
+    );
   });
 
   it("rejecting needs a reason, then records it", async () => {

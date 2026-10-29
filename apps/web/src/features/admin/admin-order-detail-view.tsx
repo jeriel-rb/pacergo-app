@@ -55,6 +55,17 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
 
   const settled = detail.settlement_status === "paid";
   const serviceDone = detail.service_completed_at !== null;
+  const blocked =
+    detail.status !== "paid" || detail.refund_status !== "none" || detail.admin_hold;
+  const eligibleFrom = settled
+    ? t("orders.settlementState.paid")
+    : blocked
+      ? t("orders.notEligible")
+      : detail.settlement_eligibility_status === "eligible" && detail.settlement_hold_until
+        ? t("orders.eligibleSince", { when: formatStamp(detail.settlement_hold_until, locale) })
+        : detail.settlement_hold_until
+          ? formatStamp(detail.settlement_hold_until, locale)
+          : t("orders.eligibleAfterSession");
 
   async function run(
     key: Exclude<Busy, null>,
@@ -126,9 +137,12 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
               ? formatStamp(detail.service_completed_at!, locale)
               : t("orders.serviceOpen")}
           </dd>
+          <dt className="text-muted-foreground">{t("orders.fields.eligibleFrom")}</dt>
+          <dd>{eligibleFrom}</dd>
           <dt className="text-muted-foreground">{t("orders.fields.hold")}</dt>
           <dd>{detail.admin_hold ? t("orders.holdOn") : t("orders.holdOff")}</dd>
         </dl>
+        <p className="pt-1 text-xs text-muted-foreground">{t("orders.settlementNotice")}</p>
         {detail.admin_hold_reason && (
           <p className="pt-1 text-sm text-muted-foreground">{detail.admin_hold_reason}</p>
         )}

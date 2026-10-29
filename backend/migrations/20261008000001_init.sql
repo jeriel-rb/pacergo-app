@@ -1721,7 +1721,13 @@ as $$
     select id, seeker_id, companion_id, offering_id, activity_slug, tier, status,
            scheduled_start, duration_min, location_name, agreed_price, is_free,
            seeker_note, seeker_name, seeker_photo, companion_name, companion_photo,
-           completed_at, created_at
+           completed_at, created_at,
+           -- B-5: the member sees the refund state of the payment that backs
+           -- this booking (the paid one if there is one, else the latest).
+           (select p.refund_status from payments p
+             where p.booking_id = bookings.id
+             order by (p.status = 'paid') desc, p.created_at desc
+             limit 1) as refund_status
     from bookings
     where seeker_id = auth.uid() or companion_id = auth.uid()
   ) b;
@@ -1747,7 +1753,13 @@ as $$
     select id, seeker_id, companion_id, offering_id, activity_slug, tier, status,
            scheduled_start, duration_min, location_name, agreed_price, is_free,
            seeker_note, seeker_name, seeker_photo, companion_name, companion_photo,
-           completed_at, created_at
+           completed_at, created_at,
+           -- B-5: the member sees the refund state of the payment that backs
+           -- this booking (the paid one if there is one, else the latest).
+           (select p.refund_status from payments p
+             where p.booking_id = bookings.id
+             order by (p.status = 'paid') desc, p.created_at desc
+             limit 1) as refund_status
     from bookings
     where id = p_id and (seeker_id = auth.uid() or companion_id = auth.uid())
   ) b;
@@ -4415,6 +4427,8 @@ begin
       'payment_status', pay.status,
       'refund_status', pay.refund_status,
       'service_completed_at', pay.service_completed_at,
+      'settlement_hold_until', pay.settlement_hold_until,
+      'admin_hold', pay.admin_hold,
       'settlement_eligibility_status', pay.settlement_eligibility_status,
       'settlement_status', pay.settlement_status,
       'created_at', pay.created_at
@@ -5807,7 +5821,7 @@ revoke all on function update_training_plan(uuid, text, jsonb, jsonb) from publi
 grant execute on function update_training_plan(uuid, text, jsonb, jsonb) to authenticated;
 
 comment on function compute_order_fee_split(int, numeric) is
-  'TODO(pending client confirmation): rounding mode (round-half-up via Postgres round()) is a placeholder. Change here only â€” every caller reads the result, none re-implement the formula.';
+  'B-1 fee split rule (documented 2026-10-29): platform_fee_amount = round(gross_amount * 0.05) in whole NTD, rounding half up (Postgres round() on numeric rounds .5 away from zero, e.g. NT$410 -> NT$21); trainer_payable = gross_amount - platform_fee_amount, so the two always sum to the gross. NewebPay processing fees are absorbed from the platform fee and never deducted from the trainer. Change here only - every caller reads this result, none re-implement the formula.';
 
 comment on function expire_stale_payment_attempts() is
   'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated â€” auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
@@ -5825,7 +5839,7 @@ select cron.schedule(
 );
 
 comment on function compute_order_fee_split(int, numeric) is
-  'TODO(pending client confirmation): rounding mode (round-half-up via Postgres round()) is a placeholder. Change here only â€” every caller reads the result, none re-implement the formula.';
+  'B-1 fee split rule (documented 2026-10-29): platform_fee_amount = round(gross_amount * 0.05) in whole NTD, rounding half up (Postgres round() on numeric rounds .5 away from zero, e.g. NT$410 -> NT$21); trainer_payable = gross_amount - platform_fee_amount, so the two always sum to the gross. NewebPay processing fees are absorbed from the platform fee and never deducted from the trainer. Change here only - every caller reads this result, none re-implement the formula.';
 
 comment on function expire_stale_payment_attempts() is
   'Called only by pg_cron (see cron.schedule below). Not granted to anon/authenticated â€” auth.uid() is NULL in a cron context, so this must stay unreachable from a user session.';
@@ -6329,12 +6343,12 @@ end $$;
 -- ---------------------------------------------------------------------------
 -- 1. Fee-split formula, isolated in one function.
 --
---    TODO(pending client confirmation â€” see docs/phase2-work-tracker.md
---    Decisions log, "Fee rounding rule"): the rounding MODE below (round half
---    up) is a placeholder, not a confirmed business rule. It is written as a
---    single small function with one clearly-named constant so changing the
---    rate or the rounding mode later is a one-line edit here, not a hunt
---    through every place that computes a fee.
+--    Rounding rule (B-1, documented 2026-10-29): the platform fee is 5% of
+--    the gross order amount rounded HALF UP to a whole NTD (Postgres round()
+--    on numeric rounds .5 away from zero: NT$410 -> NT$21 fee, NT$389
+--    payable). The trainer payable is the remainder, so fee + payable always
+--    equals the gross. Written as one small function with one named constant
+--    so a future rate or rounding change is a one-line edit here.
 --
 --    Formula: platform_fee_amount = round_half_up(gross_amount * rate)
 --             trainer_payable      = gross_amount - platform_fee_amount

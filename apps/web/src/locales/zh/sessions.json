@@ -41,7 +41,9 @@
       "injuries": "傷痛或身體不適",
       "lack_of_equipment": "缺乏器材",
       "never_tried": "從未嘗試過"
-    }
+    },
+    "refundRequested": "此預約已申請退款，款項將退回原付款方式；陪練不會收到這筆費用。",
+    "refunded": "此預約的款項已退回原付款方式。"
   },
   "actions": {
     "accept": "接受",
@@ -89,5 +91,9 @@
     "reviewFailed": "無法送出評價，請再試一次。",
     "requestSent": "已送出預約請求",
     "requestFailed": "無法送出預約請求，請再試一次。"
+  },
+  "refund": {
+    "refund_requested": "已申請退款",
+    "refunded": "已退款"
   }
 }

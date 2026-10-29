@@ -41,7 +41,9 @@
       "injuries": "Injuries or physical discomfort",
       "lack_of_equipment": "Lack of equipment",
       "never_tried": "I've never tried"
-    }
+    },
+    "refundRequested": "A refund has been requested for this booking. It is returned to the original payment method; the trainer is not paid for it.",
+    "refunded": "This booking's payment has been refunded to the original payment method."
   },
   "actions": {
     "accept": "Accept",
@@ -89,5 +91,9 @@
     "reviewFailed": "Couldn't submit your review. Please try again.",
     "requestSent": "Booking request sent",
     "requestFailed": "Couldn't send the booking request. Please try again."
+  },
+  "refund": {
+    "refund_requested": "Refund requested",
+    "refunded": "Refunded"
   }
 }

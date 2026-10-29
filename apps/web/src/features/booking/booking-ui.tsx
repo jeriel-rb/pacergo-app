@@ -36,6 +36,35 @@ export function StatusBadge({
   );
 }
 
+/** Refund state pill shown beside the booking status (B-5). */
+export function RefundBadge({
+  status,
+  label,
+}: {
+  status: "refund_requested" | "refunded";
+  label: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+        status === "refunded"
+          ? "bg-muted text-muted-foreground"
+          : "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+/** Refund state worth showing, or null when nothing was refunded. */
+export function visibleRefund(b: BookingRecord): "refund_requested" | "refunded" | null {
+  return b.refund_status === "refund_requested" || b.refund_status === "refunded"
+    ? b.refund_status
+    : null;
+}
+
 /** The other party in a booking, from the current user's perspective. */
 export function counterparty(b: BookingRecord, currentUserId: string | null) {
   const iAmSeeker = currentUserId === b.seeker_id;

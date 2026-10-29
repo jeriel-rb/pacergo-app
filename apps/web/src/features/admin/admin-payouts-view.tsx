@@ -25,7 +25,7 @@ import { MessageRow, TableFrame, ntd } from "./dashboard/dashboard-parts";
 import { fetchPayoutDetail, fetchPayoutsPage } from "./admin-actions";
 import { PayoutActionDialog, type PendingPayoutAction } from "./payout-action-dialog";
 import { PayoutSheet } from "./payout-sheet";
-import { PAYOUT_TRANSITIONS } from "./payout-actions";
+import { PAYOUT_TRANSITIONS, payoutActionLabelKey } from "./payout-actions";
 
 const FILTERS: (PayoutStatus | "all")[] = [
   "all",
@@ -162,25 +162,27 @@ export function AdminPayoutsView({
    *  status (forward steps first, then corrections). A paid transfer is finished,
    *  so its menu only opens the detail sheet. */
   function menuItems(r: PayoutListRow): ActionMenuItem[] {
-    if (r.status === "paid") {
-      return [
-        {
-          key: "detail",
-          label: t("payouts.seeDetails"),
-          icon: <FileText />,
-          onSelect: () => openSheet(r.id),
-        },
-      ];
-    }
     const { forward, corrections } = PAYOUT_TRANSITIONS[r.status];
     const summary = `${r.trainer_name} · ${ntd(r.amount)}`;
-    return [...forward, ...corrections].map((to) => ({
+    const changes: ActionMenuItem[] = [...forward, ...corrections].map((to) => ({
       key: to,
-      label: t(`payouts.action.${to}`),
-      icon: ACTION_ICON[to],
+      label: t(payoutActionLabelKey(r.status, to)),
+      icon: r.status === "paid" ? <Undo2 /> : ACTION_ICON[to],
       destructive: to === "rejected" || to === "cancelled",
       onSelect: () => setPending({ id: r.id, from: r.status, to, summary }),
     }));
+    if (r.status !== "paid") return changes;
+    // A paid transfer is finished: open the sheet, or undo a marking made in error
+    // (B-8 correction; the server un-settles the orders it covered).
+    return [
+      {
+        key: "detail",
+        label: t("payouts.seeDetails"),
+        icon: <FileText />,
+        onSelect: () => openSheet(r.id),
+      },
+      ...changes,
+    ];
   }
 
   function changeFilter(next: PayoutStatus | "all") {
@@ -194,6 +196,7 @@ export function AdminPayoutsView({
       <header>
         <h1 className="text-2xl font-bold lg:text-3xl">{t("payouts.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("payouts.subtitle")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("payouts.rules")}</p>
       </header>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

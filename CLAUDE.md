@@ -144,6 +144,10 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   booking left mid-payment. ATM / 超商代碼 / 條碼 returns ALWAYS arrive before any notify
   (the notify only comes once the customer actually pays), so test the return-first
   path with one of those, not with a card.
+- **Fee split (B-1):** `compute_order_fee_split()` is the only place that computes it:
+  platform fee = 5% of gross rounded half-up to a whole NTD (NT$410 → 21), trainer
+  payable = gross − fee. Processing fees come out of the platform fee, never the trainer's
+  95%. Simulated-provider payments never become payout-eligible (nobody is owed for them).
 - **Attempt timeouts** (`payment_attempt_deadline`, B-1 "30 min or gateway window"):
   created/redirected 20 min (NewebPay page closes at 15 via `TradeLimit=900`),
   processing 30 min, awaiting_payment = NewebPay's ATM/store/barcode `ExpireDate`

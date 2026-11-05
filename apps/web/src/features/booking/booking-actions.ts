@@ -1,6 +1,7 @@
 "use client";
 
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { BOOKING_TERMS_VERSION } from "@/lib/booking-terms";
 
 export interface CreateBookingInput {
   companionId: string;
@@ -25,6 +26,19 @@ export async function createBooking(input: CreateBookingInput): Promise<string> 
   });
   if (error) throw new Error(error.message);
   return data as string;
+}
+
+/** Record that the signed-in user agreed to this booking's safety terms (the
+ *  role and activity come from the booking, server-side). Trainers do this
+ *  before accept_booking, members before checkout; both refuse without it. */
+export async function acceptBookingTerms(bookingId: string, locale: "zh" | "en"): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.rpc("accept_booking_terms", {
+    p_booking_id: bookingId,
+    p_terms_version: BOOKING_TERMS_VERSION,
+    p_locale: locale,
+  });
+  if (error) throw new Error(error.message);
 }
 
 async function transition(fn: string, id: string): Promise<void> {

@@ -175,6 +175,27 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
 - Quick key check: POST a signed checkout to the sandbox gateway — a page containing
   `錯誤代碼：MPG…` means rejected; the Vue payment page (our order no. + amount) means OK.
 
+## Booking safety terms
+
+- **Per booking**, not per account: the trainer agrees before Accept, the member
+  before Pay. One popup (`features/legal/booking-terms-dialog.tsx`), one required
+  checkbox. Text = `legal.json` `bookingTerms`: the role's general terms plus the
+  booking's activity section (gym, walking, running, hiking, hyrox; other activities
+  get the general terms only). Bump `BOOKING_TERMS_VERSION`
+  (`apps/web/src/lib/booking-terms.ts`) whenever any of that wording changes.
+- **Records:** `booking_terms_acceptances` (booking, user, role seeker/companion,
+  activity, version, locale, time), written only by `accept_booking_terms`; clients
+  have no table access. Admins see both sides on the order sheet and page
+  (`admin_payment_detail.terms_agreements`).
+- **Enforced server-side:** `accept_booking` raises `booking_terms_not_accepted`, the
+  payments insert trigger raises `payment_terms_not_accepted`. The native app has no
+  popup, so a trainer accepting there is refused.
+- **Rollout order:** the table + `accept_booking_terms` + admin RPC must be live before
+  the web deploy, and the two refusals only after it — otherwise the deployed app's
+  Accept/Pay break.
+- The wording is a draft awaiting the client's legal review (titles say so). Replace
+  it and bump the version when the final text arrives.
+
 ## Profile validation
 
 - Body facts (age 13–100, height 90–275 cm, weight 25–250 kg) are bounded by

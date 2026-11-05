@@ -13,6 +13,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { useToast } from "@/shared/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { BookingTermsDialog } from "@/features/legal/booking-terms-dialog";
 import {
   acceptBooking,
   declineBooking,
@@ -51,7 +52,8 @@ const OPEN_STATUSES: BookingStatus[] = [
   "accepted",
 ];
 
-/** Role + status aware booking actions (accept/decline/cancel/complete). */
+/** Role + status aware booking actions (accept/decline/cancel/complete).
+ *  Accept first opens the booking safety terms; the trainer must agree. */
 export function BookingActionsBar({
   booking,
   currentUserId,
@@ -60,10 +62,12 @@ export function BookingActionsBar({
   currentUserId: string | null;
 }) {
   const { t } = useTranslation("sessions");
+  const { t: tLegal } = useTranslation("legal");
   const router = useRouter();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [termsOpen, setTermsOpen] = useState(false);
 
   const iAmCompanion = currentUserId === booking.companion_id;
 
@@ -83,7 +87,12 @@ export function BookingActionsBar({
       toast.show(t(`toast.${action.key}`), "success");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("error"));
+      const message = e instanceof Error ? e.message : t("error");
+      setError(
+        message.includes("booking_terms_not_accepted")
+          ? tLegal("bookingTerms.notAccepted")
+          : message,
+      );
       toast.show(t("toast.actionFailed"), "destructive");
     } finally {
       setBusy(false);
@@ -118,7 +127,7 @@ export function BookingActionsBar({
           key={a.key}
           variant={a.variant ?? "default"}
           disabled={busy}
-          onClick={() => dispatch(a)}
+          onClick={() => (a.key === "accept" ? setTermsOpen(true) : dispatch(a))}
           className={cn(
             "min-h-10 min-w-0 flex-1 whitespace-normal px-2 text-center text-xs sm:px-4 sm:text-sm",
             a.className,
@@ -129,6 +138,19 @@ export function BookingActionsBar({
         </Button>
       ))}
       {errorNote}
+      {iAmCompanion && actions.some((a) => a.key === "accept") && (
+        <BookingTermsDialog
+          open={termsOpen}
+          onOpenChange={setTermsOpen}
+          bookingId={booking.id}
+          role="companion"
+          activitySlug={booking.activity_slug}
+          onAgreed={() => {
+            const accept = actions.find((a) => a.key === "accept");
+            if (accept) void dispatch(accept);
+          }}
+        />
+      )}
     </>
   );
 }

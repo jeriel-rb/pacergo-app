@@ -17,6 +17,7 @@ import { PriceTag } from "@/shared/components/atoms/price-tag";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { getLocalizedPath } from "@/lib/locale-path";
 import { useToast } from "@/shared/components/ui/toast";
+import { BookingTermsDialog } from "@/features/legal/booking-terms-dialog";
 import { confirmSimulatedPayment } from "./simulated-actions";
 
 interface GatewayForm {
@@ -24,7 +25,15 @@ interface GatewayForm {
   fields: Record<string, string>;
 }
 
-export function NewebPayButton({ bookingId }: { bookingId: string }) {
+/** Pay first opens the booking safety terms; checkout starts once the member
+ *  agrees (the server refuses a checkout without that record). */
+export function NewebPayButton({
+  bookingId,
+  activitySlug,
+}: {
+  bookingId: string;
+  activitySlug: string | null;
+}) {
   const { t } = useTranslation("payments");
   const locale = useLocale();
   const router = useRouter();
@@ -34,6 +43,7 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
   const [gatewayForm, setGatewayForm] = useState<GatewayForm | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const [pending, setPending] = useState<{ id: string; amount: number } | null>(null);
   const [decision, setDecision] = useState<"approve" | "decline" | null>(null);
   const [dialogError, setDialogError] = useState<string | null>(null);
@@ -165,7 +175,11 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
     <div className="space-y-2">
       <Button
         type="button"
-        onClick={startPayment}
+        onClick={() => {
+          // A simulated attempt already open was agreed to; just reopen it.
+          if (pending) void startPayment();
+          else setTermsOpen(true);
+        }}
         disabled={busy || decision !== null}
         className="w-full gap-2"
         aria-busy={busy}
@@ -178,6 +192,15 @@ export function NewebPayButton({ bookingId }: { bookingId: string }) {
           {error}
         </p>
       )}
+
+      <BookingTermsDialog
+        open={termsOpen}
+        onOpenChange={setTermsOpen}
+        bookingId={bookingId}
+        role="seeker"
+        activitySlug={activitySlug}
+        onAgreed={() => void startPayment()}
+      />
 
       <Dialog
         open={confirmOpen}

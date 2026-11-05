@@ -88,7 +88,7 @@ export function PaymentReviewView({
           <CreditCard size={18} className="mt-0.5 shrink-0 text-primary" />
           <p>{t("review.paymentNotice")}</p>
         </div>
-        <NewebPayButton bookingId={booking.id} />
+        <NewebPayButton bookingId={booking.id} activitySlug={booking.activity_slug} />
       </Card>
 
       <Link

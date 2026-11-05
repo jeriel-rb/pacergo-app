@@ -164,6 +164,7 @@ function mapDatabaseError(message: string) {
     "payment_invalid_amount",
     "payment_amount_mismatch",
     "payment_simulated_disabled",
+    "payment_terms_not_accepted",
   ];
   const matched = known.find((code) => message.includes(code));
   if (matched) return matched;

@@ -94,6 +94,7 @@
     "payment_request_failed": "Unable to start payment. Please try again.",
     "payment_gateway_unavailable": "The payment gateway is unavailable.",
     "payment_invalid_response": "The payment response could not be verified.",
-    "payment_gateway_unreachable_locally": "NewebPay can't send results back to this computer (localhost), so payments can't be completed here. Test payments on app.pacergo.app."
+    "payment_gateway_unreachable_locally": "NewebPay can't send results back to this computer (localhost), so payments can't be completed here. Test payments on app.pacergo.app.",
+    "payment_terms_not_accepted": "Please read and agree to the booking terms before paying."
   }
 }

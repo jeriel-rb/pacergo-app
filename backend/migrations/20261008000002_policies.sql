@@ -3,8 +3,9 @@
 -- * App tables: authenticated SELECT only; writes go through SECURITY DEFINER RPCs.
 -- * auth.uid() is wrapped in (select auth.uid()) for a once-per-statement initplan.
 -- * ENABLE RLS with no policy = deny all client access (definer RPCs / service_role only):
---     app_settings, payment_status_events, reports, withdrawal_settlements,
---     withdrawal_status_events, workout_exercise_logs, workout_sessions
+--     app_settings, booking_terms_acceptances, payment_status_events, reports,
+--     withdrawal_settlements, withdrawal_status_events, workout_exercise_logs,
+--     workout_sessions
 -- * Storage: owner write under their own folder (avatars, banners, verification-docs).
 -- * PostGIS lives in `extensions` (see init), so spatial_ref_sys is not on the Data API.
 
@@ -17,6 +18,7 @@ alter table app_settings enable row level security;
 alter table availability enable row level security;
 alter table availability_blocks enable row level security;
 alter table blocks enable row level security;
+alter table booking_terms_acceptances enable row level security;
 alter table bookings enable row level security;
 alter table companion_listings enable row level security;
 alter table consent_records enable row level security;

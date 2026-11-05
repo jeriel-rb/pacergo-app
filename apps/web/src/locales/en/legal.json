@@ -23,5 +23,57 @@
     "title": "Partner Cooperation & Conduct Rules (placeholder — pending final text)",
     "linkLabel": "Partner Conduct Rules",
     "body": "This is placeholder partner conduct rules content. Final wording will be supplied by the client; update this key directly and bump CONSENT_VERSIONS in src/lib/consent.ts when it lands."
+  },
+  "bookingTerms": {
+    "seeker": {
+      "title": "Member booking & safety terms (draft, pending legal review)",
+      "body": "These terms apply to the session you are booking through PacerGo. Please read them before you pay.\n\n### 1. The service and exercise risks\n- PacerGo connects members with trainers. The session is provided by the trainer.\n- Exercise carries risks, including muscle strains, sprains, falls, dehydration, heat illness and, in rare cases, heart problems. You understand and accept the ordinary risks of exercise.\n- You confirm your health allows you to take part, and you will tell the trainer before the session about any illness, past injury, pregnancy, medication or other limits. If you are unsure, ask a doctor first.\n- If you feel pain, dizziness, chest tightness, shortness of breath or anything else wrong, stop at once and tell the trainer.\n\n### 2. Respect, personal boundaries and no harassment\n- Both sides treat each other with respect. No discrimination, insults, threats, stalking or harassment of any kind.\n- Sexual harassment is strictly prohibited. This includes unwelcome sexual remarks or jokes, advances or invitations, pressing for a personal relationship, sending sexual messages or images, and any inappropriate touching.\n- Any physical contact the training needs (for example spotting or adjusting your form) must be explained first and needs your consent. You can refuse or take back your consent at any time.\n- If you feel uncomfortable or a boundary is crossed, you may end the session at once and report it to PacerGo. PacerGo may suspend or remove the account of anyone who breaks these rules, and may cooperate with the authorities.\n\n### 3. Your safety and conduct\n- Meet in a public place or a proper venue you both agreed on, and let a friend or family member know your plans.\n- Wear suitable clothes and shoes, and bring water and anything you personally need, such as your own medication.\n- Do not take part after drinking alcohol, after taking anything that affects your judgment, or when clearly unwell.\n- Follow the venue's rules and the trainer's safety instructions, and keep in touch through PacerGo messages so there is a record.\n\n### 4. Cancellations, refunds and reporting incidents\n- To change or cancel after paying, message the trainer; the trainer cancels the booking. When a trainer cancels a paid booking, PacerGo refunds it to the original payment method.\n- Refund requests after the session has ended are reviewed by PacerGo support.\n- In an emergency, first call 119 (ambulance, fire) or 110 (police).\n- Report any injury, accident, harassment or dispute to PacerGo as soon as you can, at pacergov1@gmail.com or through the in-app support page, with the booking details."
+    },
+    "companion": {
+      "title": "Trainer responsibilities & safety terms (draft, pending legal review)",
+      "body": "These terms apply to the session you are accepting on PacerGo. Please read them before you accept.\n\n### 1. Your responsibilities and safety duties\n- Arrive on time at the agreed place. Before starting, check the member's health, past injuries, experience and how they feel that day.\n- Match the content and intensity to the member's level and build up gradually. Never push a member beyond what they can safely do.\n- Check that the venue, equipment and weather are safe. If in doubt, adjust, postpone or cancel the session.\n- Stop the session at once if the member shows warning signs such as pain, dizziness, chest tightness or shortness of breath.\n\n### 2. Respect, personal boundaries and no harassment\n- Respect the member's boundaries, privacy and decisions. No discrimination, insults, threats, stalking or harassment of any kind.\n- Sexual harassment is strictly prohibited. This includes sexual remarks or jokes, advances or invitations, pressing for a personal relationship, and sending sexual messages or images.\n- Do not take photos or video of the member, or use their personal information outside PacerGo, without their consent.\n\n### 3. No inappropriate physical contact or behavior\n- Physical contact is limited to what the training needs (for example spotting or adjusting form). Explain the purpose and where you will touch first, and get the member's clear consent. Stop at once if they refuse or take back consent.\n- Never touch private areas, and never make contact that is sexual or unrelated to the training.\n- Do not coach after drinking alcohol or taking anything that affects your judgment. Do not invite members to a private home or anywhere unrelated to the session.\n\n### 4. Stay within your qualifications and experience\n- Offer only the activities and tiers PacerGo has approved for you, and describe your certificates and experience truthfully.\n- Do not give medical diagnoses, treatment, rehabilitation or diet prescriptions beyond your qualifications. When needed, suggest the member see a doctor or another professional.\n\n### 5. Emergencies and reporting incidents\n- Know where the venue's exits, the nearest AED and the nearest hospital or clinic are.\n- In a serious injury or emergency, call 119 at once, give first aid within your training, and stay with the member until help arrives.\n- Report any injury, accident, harassment complaint or dispute to PacerGo within 24 hours, at pacergov1@gmail.com or through the in-app support page.\n\n### 6. Breaking these terms\n- PacerGo may pause your bookings, suspend or remove your account, and may cooperate with the authorities."
+    },
+    "activities": {
+      "gym": {
+        "title": "Gym training safety",
+        "body": "- **Equipment:** check equipment before use. Use collars on barbells, and use safety bars or a spotter for squats and bench presses.\n- **Weights:** choose loads you can lift with good form, increase them gradually, and never attempt a weight beyond your ability.\n- **Physical contact:** spotting and form adjustments are explained first and need consent.\n- **Injury prevention:** warm up before, cool down after, and drink water. Stop at once on sharp pain.\n- Follow the gym's rules and opening hours."
+      },
+      "walking": {
+        "title": "Walking safety",
+        "body": "- **Road safety:** use sidewalks and obey traffic signals. Wear reflective or bright clothing at night or early morning.\n- **Weather:** check the forecast before setting out. Avoid the hottest hours, typhoons and heavy rain. Use sun protection and drink water.\n- **Physical limits:** keep a pace at which the member can still talk, and adjust distance and slope to their fitness. Rest at once on dizziness, chest tightness or joint pain.\n- Wear suitable walking shoes."
+      },
+      "running": {
+        "title": "Running safety",
+        "body": "- **Pace:** agree on pace and distance before starting, and adjust to the member's ability. Beginners run at an easy, conversational pace.\n- **Endurance:** do not suddenly add a lot of distance or intensity. Plan enough rest, water and food.\n- **Traffic:** prefer parks, riverside paths or tracks. Where there is no sidewalk, run facing oncoming traffic. With headphones, keep the volume low enough to hear your surroundings.\n- **Heat:** in summer avoid the midday heat and drink plenty. On signs of heat exhaustion or heatstroke (dizziness, nausea, no longer sweating, confusion), stop at once, move to shade, cool down and call 119."
+      },
+      "hiking": {
+        "title": "Hiking safety",
+        "body": "- **Terrain:** pick a route that suits both of you. Check trail conditions and closures before setting out, and watch for falling rocks, slippery ground and steep slopes.\n- **Weather:** mountain weather changes fast. Check the forecast and the chance of afternoon thunderstorms, and turn back if the weather turns bad.\n- **Navigation:** carry an offline map or GPX track, tell someone your route and expected return time, and stay together the whole way.\n- **Equipment:** shoes with good grip, rain gear, warm layers, enough water and food, a headlamp, a first-aid kit and a charged phone. Apply in advance for a mountain permit where the route needs one.\n- **Emergencies:** if lost, injured or getting dangerously cold, stay where you are, call 119 or 112 and share your location."
+      },
+      "hyrox": {
+        "title": "HYROX safety",
+        "body": "- **High intensity:** HYROX combines running with functional workout stations and is very demanding on heart, lungs and muscles. Warm up thoroughly.\n- **Physical limits:** scale weights, distances and reps to your ability and take rests. Stop at once on chest tightness, dizziness or shortness of breath.\n- **Equipment:** learn proper technique for sleds, rowers, ski ergs, kettlebells, sandbags and wall balls before using them, check them first, and keep clear of other people's equipment.\n- **Injury prevention:** technique comes before speed. Lower the intensity when tired, stop at once on sharp pain, and drink water."
+      }
+    },
+    "dialog": {
+      "title": {
+        "seeker": "Before you pay",
+        "companion": "Before you accept"
+      },
+      "description": {
+        "seeker": "Please read the booking and safety terms for this session. You need to agree before paying.",
+        "companion": "Please read your responsibilities and the safety terms for this session. You need to agree before accepting."
+      },
+      "agree": "I have read and agree to the terms above",
+      "confirm": {
+        "seeker": "Agree and pay",
+        "companion": "Agree and accept"
+      },
+      "back": "Back",
+      "version": "Terms version {{version}}",
+      "record": "PacerGo keeps a record of your agreement: the booking, the time and the terms version.",
+      "saveFailed": "Couldn't save your agreement. Please try again."
+    },
+    "notAccepted": "Please read and agree to the booking terms first."
   }
 }

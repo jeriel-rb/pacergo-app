@@ -16,6 +16,7 @@ import {
   setPaymentStatus,
 } from "./admin-actions";
 import { performOrderAction, type OrderActionNotice } from "./orders/order-actions";
+import { OrderTermsAgreements } from "./orders/order-terms-agreements";
 
 function ntd(amount: number): string {
   return `NT$${amount.toLocaleString()}`;
@@ -146,6 +147,10 @@ export function AdminOrderDetailView({ detail }: { detail: AdminOrderDetail }) {
         {detail.admin_hold_reason && (
           <p className="pt-1 text-sm text-muted-foreground">{detail.admin_hold_reason}</p>
         )}
+      </Card>
+
+      <Card className="p-5">
+        <OrderTermsAgreements agreements={detail.terms_agreements} />
       </Card>
 
       <Card className="space-y-3 p-5">

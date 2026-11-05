@@ -285,7 +285,21 @@
     "eligibleSince": "Eligible since {{when}}",
     "eligibleAfterSession": "24 h after the session end is recorded",
     "notEligible": "Not eligible while this state stands",
-    "settlementNotice": "Service completion is recorded automatically once the session end time passes (checked every 15 minutes). The order becomes payout-eligible 24 hours later unless it is cancelled, refunded or on hold."
+    "settlementNotice": "Service completion is recorded automatically once the session end time passes (checked every 15 minutes). The order becomes payout-eligible 24 hours later unless it is cancelled, refunded or on hold.",
+    "terms": {
+      "title": "Safety terms",
+      "role": {
+        "seeker": "Member",
+        "companion": "Trainer"
+      },
+      "missing": "Not recorded",
+      "detail": "{{when}} · version {{version}} · {{language}}",
+      "language": {
+        "zh": "Chinese",
+        "en": "English"
+      },
+      "notice": "Required from 2026-11-05: trainers agree before accepting, members before paying. Older orders have no record."
+    }
   },
   "pagination": {
     "total": "{{count}} total",

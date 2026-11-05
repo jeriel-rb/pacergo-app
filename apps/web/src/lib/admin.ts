@@ -359,6 +359,18 @@ export interface AdminOrderDetail {
   admin_hold_reason: string | null;
   created_at: string;
   history: AdminOrderEvent[];
+  /** Booking safety terms each side agreed to, oldest first. Missing on
+   *  databases from before the terms (2026-11-05). */
+  terms_agreements?: AdminTermsAgreement[];
+}
+
+export interface AdminTermsAgreement {
+  role: "seeker" | "companion";
+  user_name: string | null;
+  activity_slug: string | null;
+  terms_version: string;
+  locale: "zh" | "en";
+  accepted_at: string;
 }
 
 export interface AdminOrdersPage {

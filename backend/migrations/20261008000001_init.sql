@@ -412,6 +412,28 @@ create table if not exists consent_records (
   unique (user_id, document_slug, version_label)
 );
 
+-- Booking safety terms (2026-11-05). Per booking, not per account: the trainer
+-- agrees before accepting, the member before paying. The text is i18n copy in
+-- the web app (legal.json `bookingTerms`): the role's general terms plus the
+-- booking's activity section. `terms_version` is the app's hand-bumped
+-- BOOKING_TERMS_VERSION (apps/web/src/lib/booking-terms.ts); `locale` is the
+-- language the person read. One row per person, booking and version.
+-- Written only by accept_booking_terms(); read only through admin RPCs.
+create table if not exists booking_terms_acceptances (
+  id uuid primary key default gen_random_uuid(),
+  booking_id uuid not null references bookings (id) on delete cascade,
+  user_id uuid not null references users (id) on delete cascade,
+  role text not null check (role in ('seeker', 'companion')),
+  activity_slug text,
+  terms_version text not null,
+  locale text not null check (locale in ('zh', 'en')),
+  accepted_at timestamptz not null default now(),
+  unique (booking_id, user_id, terms_version)
+);
+
+-- Clients never touch it directly, not even to read.
+revoke all on table booking_terms_acceptances from anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- 2. Audit log for admin corrections/actions on a payment (B-6, B-8: "each
 --    change logs timestamp + acting admin"). Cron-driven automatic
@@ -3998,6 +4020,48 @@ end $$;
 
 grant execute on function accept_consent(consent_document_slug, text) to authenticated;
 
+-- Booking safety terms: the caller agrees for one booking they are part of.
+-- The role comes from the booking (seeker = member, companion = trainer), never
+-- from the client, and so does the activity. Idempotent per version, keeping
+-- the first time. accept_booking and the payment insert trigger check for it.
+create or replace function accept_booking_terms(
+  p_booking_id uuid,
+  p_terms_version text,
+  p_locale text
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  b bookings%rowtype;
+begin
+  if v_uid is null then raise exception 'not authenticated'; end if;
+  if p_terms_version is null or p_terms_version !~ '^[0-9A-Za-z._-]{1,40}$' then
+    raise exception 'booking_terms_invalid_version';
+  end if;
+  if p_locale is null or p_locale not in ('zh', 'en') then
+    raise exception 'booking_terms_invalid_locale';
+  end if;
+
+  select * into b from bookings
+  where id = p_booking_id and (seeker_id = v_uid or companion_id = v_uid);
+  if not found then raise exception 'booking_not_found'; end if;
+
+  insert into booking_terms_acceptances (
+    booking_id, user_id, role, activity_slug, terms_version, locale
+  ) values (
+    b.id, v_uid,
+    case when b.companion_id = v_uid then 'companion' else 'seeker' end,
+    b.activity_slug, p_terms_version, p_locale
+  )
+  on conflict (booking_id, user_id, terms_version) do nothing;
+end $$;
+
+revoke all on function accept_booking_terms(uuid, text, text) from public, anon;
+grant execute on function accept_booking_terms(uuid, text, text) to authenticated;
+
 -- ---------------------------------------------------------------------------
 -
 
@@ -6681,6 +6745,7 @@ as $$
 declare
   v jsonb;
   v_history jsonb;
+  v_terms jsonb;
 begin
   if not is_platform_admin() then raise exception 'forbidden'; end if;
 
@@ -6726,7 +6791,21 @@ begin
   left join users a on a.id = e.actor_id
   where e.payment_id = p_id;
 
-  return v || jsonb_build_object('history', v_history);
+  -- Booking safety terms each side agreed to (trainer before accepting,
+  -- member before paying), oldest first.
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'role', t.role,
+    'user_name', u.display_name,
+    'activity_slug', t.activity_slug,
+    'terms_version', t.terms_version,
+    'locale', t.locale,
+    'accepted_at', t.accepted_at
+  ) order by t.accepted_at asc), '[]'::jsonb) into v_terms
+  from booking_terms_acceptances t
+  left join users u on u.id = t.user_id
+  where t.booking_id = (v->>'booking_id')::uuid;
+
+  return v || jsonb_build_object('history', v_history, 'terms_agreements', v_terms);
 end $$;
 
 revoke all on function save_bank_account(text, text, text, text, text) from public, anon;
@@ -7276,6 +7355,11 @@ create or replace function accept_booking(p_id uuid)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_seeker_id uuid;
 begin
+  -- Booking safety terms: the trainer agrees first (accept_booking_terms).
+  if exists (select 1 from bookings where id = p_id and companion_id = auth.uid() and status = 'requested')
+     and not exists (select 1 from booking_terms_acceptances where booking_id = p_id and user_id = auth.uid() and role = 'companion') then
+    raise exception 'booking_terms_not_accepted';
+  end if;
   update bookings set status = 'pending_payment'::booking_status where id = p_id and companion_id = auth.uid() and status = 'requested' and not is_free and agreed_price > 0 returning seeker_id into v_seeker_id;
   if v_seeker_id is null then raise exception 'accept not allowed'; end if;
   perform start_conversation(v_seeker_id);
@@ -7289,9 +7373,16 @@ select cron.schedule('expire-stale-booking-requests', '*/15 * * * *', $$select e
 
 create or replace function require_accepted_booking_for_payment()
 returns trigger language plpgsql set search_path = public as $$
-declare v_status booking_status;
+declare v_status booking_status; v_seeker uuid;
 begin
-  if new.status = 'created' then select status into v_status from bookings where id = new.booking_id for key share; if v_status <> 'pending_payment' then raise exception 'payment_booking_not_payable'; end if; end if;
+  if new.status = 'created' then
+    select status, seeker_id into v_status, v_seeker from bookings where id = new.booking_id for key share;
+    if v_status <> 'pending_payment' then raise exception 'payment_booking_not_payable'; end if;
+    -- Booking safety terms: the member agrees before any checkout (accept_booking_terms).
+    if not exists (select 1 from booking_terms_acceptances where booking_id = new.booking_id and user_id = v_seeker and role = 'seeker') then
+      raise exception 'payment_terms_not_accepted';
+    end if;
+  end if;
   return new;
 end $$;
 drop trigger if exists payments_require_accepted_booking on payments;

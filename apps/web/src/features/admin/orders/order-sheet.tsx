@@ -24,9 +24,11 @@ import { StatusBadge } from "@/shared/components/atoms/status-badge";
 import { useLocale } from "@/shared/hooks/use-locale";
 import { MessageRow, TableFrame, ntd } from "../dashboard/dashboard-parts";
 import { orderBadge } from "./order-actions";
+import { OrderTermsAgreements } from "./order-terms-agreements";
 
 /** Read-only side sheet with everything about one order: amounts and fees,
- *  settlement, hold and service state, and the ledger history as a table.
+ *  settlement, hold and service state, both sides' safety-terms agreements,
+ *  and the ledger history as a table.
  *  (Ledger actions live in the orders table's "⋯" menu.) */
 export function OrderSheet({
   open,
@@ -130,6 +132,8 @@ export function OrderSheet({
                   {detail.admin_hold_reason}
                 </p>
               )}
+
+              <OrderTermsAgreements agreements={detail.terms_agreements} />
 
               <section className="space-y-3">
                 <h3 className="text-sm font-semibold">{t("orders.history")}</h3>

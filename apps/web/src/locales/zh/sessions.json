@@ -21,8 +21,8 @@
     "expired": "已過期"
   },
   "roles": {
-    "asSeeker": "預約對象",
-    "asCompanion": "你的學員"
+    "asSeeker": "預約陪練",
+    "asCompanion": "預約用戶"
   },
   "detail": {
     "activity": "項目",
@@ -95,5 +95,17 @@
   "refund": {
     "refund_requested": "已申請退款",
     "refunded": "已退款"
+  },
+  "errors": {
+    "timeOverlap": "這個時段你已經向這位陪練預約了，請選擇其他時間。",
+    "undatedRequestOpen": "你已經有一筆還沒選時間的預約請求。這次請選好日期與開始時間，或先等陪練回覆。",
+    "openRequestLimit": "你向這位陪練送出的待處理預約太多了，請等陪練回覆或先完成付款，再繼續預約。",
+    "openBookingExists": "你和這位陪練已有一筆進行中的預約，請等陪練回覆或完成付款後再預約。",
+    "pastTime": "這個時間已經過了，請選擇其他時間。",
+    "selfBooking": "不能預約自己。",
+    "offeringUnavailable": "這個方案目前無法預約，請重新整理頁面後再試。",
+    "unavailable": "目前無法向這位陪練預約。",
+    "signedOut": "請先登入再繼續。",
+    "actionNotAllowed": "這筆預約的狀態已經改變，請重新整理頁面後再試。"
   }
 }

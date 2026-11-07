@@ -127,6 +127,12 @@ for the same booking is already `paid` with `refund_status = 'none'`, the new ro
   `payment_failed`. A unique violation is mapped to the existing
   "you already have an open booking with this companion" error. Live data had no duplicates
   when the index was created.
+  **[updated 2026-11-07]** Replaced so a member can book several days ahead with one trainer:
+  `create_booking` takes a per-pair advisory lock, then refuses a time overlapping one of the
+  pair's live bookings (`booking_time_overlap`) and a 21st unpaid open booking
+  (`booking_open_request_limit`); the partial unique index
+  `bookings_one_undated_open_per_pair_idx` keeps one open request without a time
+  (`booking_undated_request_open`).
 - **Issue 6 — `mark_service_completed`:** the loop selects `for update of pay skip locked` and
   writes the event only if `service_completed_at` was still null.
 - **Issue 7 — `save_training_plan`:** at most 100 plans per user (the user row is locked first)

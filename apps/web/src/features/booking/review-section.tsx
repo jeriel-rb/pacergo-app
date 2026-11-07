@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/shared/components/ui/toast";
 import { submitReview } from "./review-actions";
+import { bookingErrorKey } from "./booking-errors";
 
 /** Review affordance on a completed booking. Only the trainee reviews the trainer. */
 export function ReviewSection({
@@ -110,7 +111,7 @@ function ReviewDialog({
       toast.show(t("toast.reviewSubmitted"), "success");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("error"));
+      setError(t(bookingErrorKey(e)));
       toast.show(t("toast.reviewFailed"), "destructive");
     } finally {
       setSaving(false);

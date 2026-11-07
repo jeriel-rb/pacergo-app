@@ -20,6 +20,7 @@ import {
   cancelBooking,
   completeBooking,
 } from "./booking-actions";
+import { bookingErrorKey } from "./booking-errors";
 
 type Action = {
   key: BookingAction;
@@ -87,11 +88,11 @@ export function BookingActionsBar({
       toast.show(t(`toast.${action.key}`), "success");
       router.refresh();
     } catch (e) {
-      const message = e instanceof Error ? e.message : t("error");
+      const message = e instanceof Error ? e.message : "";
       setError(
         message.includes("booking_terms_not_accepted")
           ? tLegal("bookingTerms.notAccepted")
-          : message,
+          : t(bookingErrorKey(e)),
       );
       toast.show(t("toast.actionFailed"), "destructive");
     } finally {

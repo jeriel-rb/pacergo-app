@@ -196,6 +196,16 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
 - The wording is a draft awaiting the client's legal review (titles say so). Replace
   it and bump the version when the final text arrives.
 
+## Booking requests
+
+- A member can hold **several open bookings with the same trainer** (book a few
+  days ahead before the first session); each still needs the trainer's Accept and
+  its own payment. `create_booking` refuses overlapping times for the pair, a second
+  open request without a time, and more than 20 unpaid open bookings per pair.
+- Server refusals reach the UI through `bookingErrorKey`
+  (`features/booking/booking-errors.ts`) → `sessions.errors.*`; add a new refusal
+  there in both languages, never show the raw Postgres message.
+
 ## Profile validation
 
 - Body facts (age 13–100, height 90–275 cm, weight 25–250 kg) are bounded by

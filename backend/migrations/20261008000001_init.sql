@@ -592,10 +592,13 @@ create index if not exists bookings_seeker_idx on bookings (seeker_id);
 
 create index if not exists bookings_companion_idx on bookings (companion_id);
 
--- One open request per seeker/companion. Accepted and later states are not open.
-create unique index if not exists bookings_one_open_per_pair_idx
+-- A member may hold several open bookings with one trainer (book a few days
+-- ahead before the first session); create_booking refuses overlapping times.
+-- Only one open request WITHOUT a time per seeker/companion.
+create unique index if not exists bookings_one_undated_open_per_pair_idx
   on bookings (seeker_id, companion_id)
-  where status in ('requested', 'pending_payment', 'payment_processing', 'payment_failed');
+  where scheduled_start is null
+    and status in ('requested', 'pending_payment', 'payment_processing', 'payment_failed');
 
 create index if not exists notifications_user_idx on notifications (user_id, created_at desc);
 
@@ -7302,9 +7305,13 @@ grant execute on function companion_reviews(uuid, int, int) to anon, authenticat
 -- Consolidated booking, payment and chat policy (2026-10-23).
 -- Requests expire after 24 hours; paid bookings become payable only after the
 -- trainer accepts. A conversation is created atomically on acceptance.
+-- A member can book several days with the same trainer before the first
+-- session (2026-11-07); each booking still needs the trainer's Accept. Refused:
+-- a time overlapping one of the pair's live bookings, a second open request
+-- without a time, and more than 20 unpaid open bookings per pair (anti-spam).
 create or replace function create_booking(p_companion_id uuid, p_offering_id uuid, p_scheduled_start timestamptz, p_duration_min int, p_location_name text, p_seeker_note text)
 returns uuid language plpgsql security definer set search_path = public as $$
-declare v_seeker uuid := auth.uid(); v_id uuid; o record; seeker_u record; comp_u record; v_constraint text;
+declare v_seeker uuid := auth.uid(); v_id uuid; o record; seeker_u record; comp_u record; v_constraint text; v_minutes int;
 begin
   if v_seeker is null then raise exception 'not authenticated'; end if;
   perform ensure_user_profile_row(v_seeker);
@@ -7315,15 +7322,33 @@ begin
   if exists (select 1 from blocks where (blocker_id = v_seeker and blocked_id = p_companion_id) or (blocker_id = p_companion_id and blocked_id = v_seeker)) then raise exception 'booking not available'; end if;
   select lo.tier, lo.price_ntd, lo.is_free, lo.session_minutes, a.slug as activity_slug into o from listing_offerings lo join companion_listings cl on cl.id = lo.listing_id join activities a on a.id = lo.activity_id where lo.id = p_offering_id and cl.user_id = p_companion_id and cl.status = 'active';
   if not found then raise exception 'offering not available'; end if;
+  v_minutes := least(greatest(coalesce(o.session_minutes, 60), 15), 480);
+  -- One pair's requests run one at a time, so two at once can't both pass the
+  -- checks below (released at commit).
+  perform pg_advisory_xact_lock(hashtextextended('create_booking:' || v_seeker::text || ':' || p_companion_id::text, 0));
+  if (select count(*) from bookings where seeker_id = v_seeker and companion_id = p_companion_id
+      and status in ('requested', 'pending_payment', 'payment_processing', 'payment_failed')) >= 20 then
+    raise exception 'booking_open_request_limit';
+  end if;
+  if p_scheduled_start is not null and exists (
+    select 1 from bookings
+    where seeker_id = v_seeker and companion_id = p_companion_id
+      and status in ('requested', 'pending_payment', 'payment_processing', 'payment_failed', 'accepted')
+      and scheduled_start is not null
+      and scheduled_start < p_scheduled_start + make_interval(mins => v_minutes)
+      and p_scheduled_start < scheduled_start + make_interval(mins => coalesce(duration_min, 60))
+  ) then
+    raise exception 'booking_time_overlap';
+  end if;
   select display_name, photo_url into seeker_u from users where id = v_seeker;
   select display_name, photo_url into comp_u from users where id = p_companion_id;
   begin
     insert into bookings (seeker_id, companion_id, offering_id, activity_slug, tier, status, scheduled_start, duration_min, location_name, agreed_price, is_free, seeker_note, seeker_name, seeker_photo, companion_name, companion_photo)
-    values (v_seeker, p_companion_id, p_offering_id, o.activity_slug, o.tier, 'requested', p_scheduled_start, least(greatest(coalesce(o.session_minutes, 60), 15), 480), p_location_name, o.price_ntd, o.is_free, p_seeker_note, seeker_u.display_name, seeker_u.photo_url, comp_u.display_name, comp_u.photo_url)
+    values (v_seeker, p_companion_id, p_offering_id, o.activity_slug, o.tier, 'requested', p_scheduled_start, v_minutes, p_location_name, o.price_ntd, o.is_free, p_seeker_note, seeker_u.display_name, seeker_u.photo_url, comp_u.display_name, comp_u.photo_url)
     returning id into v_id;
   exception when unique_violation then
     get stacked diagnostics v_constraint = constraint_name;
-    if v_constraint = 'bookings_one_open_per_pair_idx' then raise exception 'you already have an open booking with this companion'; end if;
+    if v_constraint = 'bookings_one_undated_open_per_pair_idx' then raise exception 'booking_undated_request_open'; end if;
     raise;
   end;
   return v_id;

@@ -34,6 +34,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/shared/components/ui/toast";
 import { createBooking } from "./booking-actions";
+import { bookingErrorKey } from "./booking-errors";
 import { BookingWhenField } from "./booking-when-field";
 
 /** Booking request form (modal). Triggered from the trainer detail CTA. */
@@ -107,7 +108,7 @@ export function BookingSheet({
       // URL locale (pathname), not i18n language — keeps nav consistent after switch.
       router.push(getLocalizedPath(`/sessions/${id}`, routeLocale));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("error"));
+      setError(t(bookingErrorKey(err)));
       toast.show(t("toast.requestFailed"), "destructive");
     } finally {
       setSubmitting(false);

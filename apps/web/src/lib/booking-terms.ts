@@ -11,7 +11,7 @@ import type { BookingRole } from "@pacergo/shared";
  * is written to `booking_terms_acceptances.terms_version` with each agreement,
  * so a record says exactly which text the person saw.
  */
-export const BOOKING_TERMS_VERSION = "2026-11-05";
+export const BOOKING_TERMS_VERSION = "2026-11-08";
 
 /** Activities with their own safety section. Others show the general terms only. */
 export const BOOKING_TERMS_ACTIVITIES = ["gym", "walking", "running", "hiking", "hyrox"] as const;

@@ -50,9 +50,9 @@ beforeEach(() => vi.clearAllMocks());
 describe("NotificationsView — trainer request review", () => {
   it("opens a dialog with the reviewer's reason when a rejection is clicked", () => {
     renderView([n({})]);
-    fireEvent.click(screen.getByRole("button", { name: /Your trainer request was rejected/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Your companion application was rejected/ }));
     const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByText("Trainer request rejected")).toBeInTheDocument();
+    expect(within(dialog).getByText("Companion application rejected")).toBeInTheDocument();
     expect(within(dialog).getByText("The scan is blurry.")).toBeInTheDocument();
     expect(within(dialog).getByText(/NASM-CPT/)).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
@@ -67,7 +67,7 @@ describe("NotificationsView — trainer request review", () => {
 
   it("shows an approval as plain text, not a button", () => {
     renderView([n({ type: "verification_approved" })]);
-    expect(screen.getByText("Your trainer request was approved")).toBeInTheDocument();
+    expect(screen.getByText("Your companion application was approved")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 

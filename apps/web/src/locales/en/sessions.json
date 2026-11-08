@@ -1,7 +1,7 @@
 {
   "title": "My Sessions",
   "subtitle": "Your training bookings and history",
-  "empty": "No bookings yet. Book a session from a trainer's page to get started.",
+  "empty": "No bookings yet. Book a session from a companion's page to get started.",
   "back": "Back",
   "flexible": "Time to be confirmed",
   "groups": {
@@ -21,7 +21,7 @@
     "expired": "Expired"
   },
   "roles": {
-    "asSeeker": "Trainer",
+    "asSeeker": "Companion",
     "asCompanion": "Your client"
   },
   "detail": {
@@ -32,8 +32,8 @@
     "price": "Price",
     "note": "Note",
     "obstacle": "What they said is in the way",
-    "awaitingAcceptance": "Waiting for the trainer to accept. This request expires automatically after 24 hours.",
-    "acceptedAwaitingPayment": "Your trainer accepted. Complete payment to confirm the session.",
+    "awaitingAcceptance": "Waiting for the companion to accept. This request expires automatically after 24 hours.",
+    "acceptedAwaitingPayment": "Your companion accepted. Complete payment to confirm the booking.",
     "obstacles": {
       "lack_of_time": "Lack of time",
       "lack_of_knowledge": "Lack of knowledge",
@@ -42,7 +42,7 @@
       "lack_of_equipment": "Lack of equipment",
       "never_tried": "I've never tried"
     },
-    "refundRequested": "A refund has been requested for this booking. It is returned to the original payment method; the trainer is not paid for it.",
+    "refundRequested": "A refund has been requested for this booking. It is returned to the original payment method; the companion is not paid for it.",
     "refunded": "This booking's payment has been refunded to the original payment method."
   },
   "actions": {
@@ -53,13 +53,13 @@
     "pay": "Pay securely",
     "viewPayment": "View payment"
   },
-  "cancelTrainerOnly": "Need to cancel or change the time? Message your trainer — only trainers can cancel a booking.",
+  "cancelTrainerOnly": "Need to cancel or change the time? Message your companion — only companions can cancel a booking.",
   "book": {
     "title": "Book a session",
     "subtitle": "Send a booking request to {{name}}",
     "offering": "Choose a plan",
     "when": "Preferred time",
-    "whenHint": "Only the trainer's open days and times can be picked (Taipei time, GMT+8). Optional — you can also agree on a time later.",
+    "whenHint": "Only the companion's open days and times can be picked (Taipei time, GMT+8). Optional — you can also agree on a time later.",
     "location": "Location",
     "locationPlaceholder": "e.g. World Gym, Xinyi, Taipei",
     "note": "Note",
@@ -68,7 +68,7 @@
     "whenDate": "Date",
     "pickDayFirst": "Pick a day to see open start times.",
     "startTime": "Start time",
-    "noAvailability": "This trainer hasn't set available times yet. Send your request and agree on a time in chat."
+    "noAvailability": "This companion hasn't set available times yet. Send your request and agree on a time in chat."
   },
   "review": {
     "title": "Leave a review",
@@ -97,14 +97,14 @@
     "refunded": "Refunded"
   },
   "errors": {
-    "timeOverlap": "You already have a booking with this trainer at that time. Pick another time.",
-    "undatedRequestOpen": "You already have a request with this trainer that has no time yet. Pick a date and start time for this one, or wait for the trainer to reply.",
-    "openRequestLimit": "You have too many open requests with this trainer. Wait for replies or pay for accepted ones before booking more.",
-    "openBookingExists": "You already have an open booking with this trainer. Wait for their reply or finish paying before booking again.",
+    "timeOverlap": "You already have a booking with this companion at that time. Pick another time.",
+    "undatedRequestOpen": "You already have a request with this companion that has no time yet. Pick a date and start time for this one, or wait for the companion to reply.",
+    "openRequestLimit": "You have too many open requests with this companion. Wait for replies or pay for accepted ones before booking more.",
+    "openBookingExists": "You already have an open booking with this companion. Wait for their reply or finish paying before booking again.",
     "pastTime": "That time has already passed. Pick another time.",
     "selfBooking": "You can't book yourself.",
     "offeringUnavailable": "This plan can't be booked right now. Refresh the page and try again.",
-    "unavailable": "You can't book this trainer right now.",
+    "unavailable": "You can't book this companion right now.",
     "signedOut": "Please sign in first.",
     "actionNotAllowed": "This booking has changed. Refresh the page and try again."
   }

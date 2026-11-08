@@ -1,7 +1,7 @@
 {
   "hero": {
     "eyebrow": "AI 訓練規劃 × 真人陪練",
-    "headline": "AI 幫你規劃，真人陪你完成。",
+    "headline": "AI 幫你規劃，陪練陪你完成。",
     "sub": "從個人化訓練計畫、陪練媒合到訓練執行，PacerGo 讓每一次訓練更有方向，也更容易持續。",
     "cta_primary": "免費開始",
     "cta_secondary": "看看怎麼運作",
@@ -159,7 +159,7 @@
   "cta": {
     "eyebrow": "從 Web App 開始",
     "title_1": "AI 幫你規劃，",
-    "title_highlight": "真人陪你完成。",
+    "title_highlight": "陪練陪你完成。",
     "sub": "AI 幫你建立方向，真人陪練幫你持續完成。",
     "submit": "免費開始",
     "launching": "台灣上線中 · 繁體中文 & English"

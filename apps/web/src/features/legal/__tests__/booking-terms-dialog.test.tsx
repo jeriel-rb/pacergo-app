@@ -126,4 +126,24 @@ describe("Booking safety terms copy", () => {
       );
     expect(keys(zh.bookingTerms).sort()).toEqual(keys(en.bookingTerms).sort());
   });
+
+  // Client wording (2026-11-08): a companion provides a service, not a class,
+  // and is a workout companion, not a trainer.
+  it("calls it a service by a companion, never a class or a trainer", () => {
+    const text = (copy: typeof en.bookingTerms) => JSON.stringify(copy);
+    expect(text(zh.bookingTerms)).not.toMatch(/課程|上課|授課|課前|課後|堂課|陪練師|學員/);
+    expect(text(en.bookingTerms)).not.toMatch(/\b(course|class|trainers?|trainees?|coach(es|ing)?)\b/i);
+  });
+
+  it("keeps gym equipment rules in the gym section only", () => {
+    const gymOnly = /槓鈴|深蹲|臥推|barbell|squat|bench/i;
+    for (const copy of [en.bookingTerms, zh.bookingTerms]) {
+      expect(copy.seeker.body).not.toMatch(gymOnly);
+      expect(copy.companion.body).not.toMatch(gymOnly);
+      for (const slug of BOOKING_TERMS_ACTIVITIES.filter((s) => s !== "gym")) {
+        expect(copy.activities[slug].body).not.toMatch(gymOnly);
+      }
+      expect(copy.activities.gym.body).toMatch(gymOnly);
+    }
+  });
 });

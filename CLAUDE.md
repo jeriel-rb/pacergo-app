@@ -193,8 +193,10 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
 - **Rollout order:** the table + `accept_booking_terms` + admin RPC must be live before
   the web deploy, and the two refusals only after it — otherwise the deployed app's
   Accept/Pay break.
-- The wording is a draft awaiting the client's legal review (titles say so). Replace
-  it and bump the version when the final text arrives.
+- The wording is the client-reviewed revision of 2026-11-08 (version `2026-11-08`),
+  with the client's titles. The member terms' refund section describes the real
+  process (only the companion cancels; full refund before completion; card refunds
+  are automatic, other methods go to staff). Keep it in step if that process changes.
 
 ## Booking requests
 
@@ -216,6 +218,13 @@ animate them, list thumbnails use `frame-1`. Cooldowns are real stretches only, 
   outside the bounds.
 
 ## Conventions / gotchas
+
+- **Wording (client, 2026-11-08):** in text members and companions see, a companion
+  provides a **service** (服務), never a course/class (課程/上課/授課/堂課), and is a
+  **companion / workout companion** (陪練), never a trainer (陪練師), coach or 學員's
+  teacher; the other side is a **member** (會員), not 學員/trainee. Code identifiers
+  (`trainer`, `companion_id`) stay as they are. Academic "coursework" in proof
+  requirements and certificate names (ACE Personal Trainer) are fine.
 
 - The user/profile table is **`users`** (NOT `profiles`), FK column **`user_id`**
   (NOT `profile_id`). `auth.users` is separate (Supabase auth); `public.users` is

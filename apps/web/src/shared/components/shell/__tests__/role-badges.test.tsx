@@ -30,25 +30,25 @@ describe("RoleBadges (next to the bell)", () => {
   it("tags a non-trainer as Member", () => {
     renderBadges({ is_companion: false, is_admin: false });
     expect(screen.getByText("Member")).toBeInTheDocument();
-    expect(screen.queryByText("Trainer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Companion")).not.toBeInTheDocument();
     expect(screen.queryByText("Admin")).not.toBeInTheDocument();
   });
 
-  it("tags a trainer as Trainer, never also Member", () => {
+  it("tags a companion as Companion, never also Member", () => {
     renderBadges({ is_companion: true });
-    expect(screen.getByText("Trainer")).toBeInTheDocument();
+    expect(screen.getByText("Companion")).toBeInTheDocument();
     expect(screen.queryByText("Member")).not.toBeInTheDocument();
   });
 
-  it("adds Admin on top of the Member / Trainer split", () => {
+  it("adds Admin on top of the Member / Companion split", () => {
     renderBadges({ is_companion: true, is_admin: true });
-    expect(screen.getByText("Trainer")).toBeInTheDocument();
+    expect(screen.getByText("Companion")).toBeInTheDocument();
     expect(screen.getByText("Admin")).toBeInTheDocument();
   });
 
   it("keeps both tags on one line, never stacked", () => {
     renderBadges({ is_companion: true, is_admin: true });
-    const row = screen.getByText("Trainer").parentElement!;
+    const row = screen.getByText("Companion").parentElement!;
     expect(row).toContainElement(screen.getByText("Admin"));
     expect(row.className).toMatch(/\bflex\b/);
     expect(row.className).toMatch(/\bflex-nowrap\b/);
@@ -71,7 +71,7 @@ describe("RoleBadges (next to the bell)", () => {
     const member = screen.getByText("Member").className;
     const admin = screen.getByText("Admin").className;
     renderBadges({ is_companion: true });
-    const trainer = screen.getByText("Trainer").className;
+    const trainer = screen.getByText("Companion").className;
 
     const hue = (c: string) => c.match(/\bbg-(\w+)-\d+/)?.[1];
     expect(new Set([hue(member), hue(trainer), hue(admin)]).size).toBe(3);

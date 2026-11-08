@@ -85,7 +85,7 @@ describe("Home → Recent bookings", () => {
   it("has an empty state that points to the trainers list", () => {
     renderRecent([]);
     expect(screen.getByText("No bookings yet")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Find a trainer" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Find a companion" })).toHaveAttribute(
       "href",
       "/en/trainers",
     );

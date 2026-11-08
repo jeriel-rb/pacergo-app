@@ -1,7 +1,7 @@
 {
   "home": "Home",
   "community": "Community",
-  "trainers": "Trainers",
+  "trainers": "Companions",
   "messages": "Messages",
   "myPlans": "My Plans",
   "settings": "Settings",
@@ -11,7 +11,7 @@
   "nutrition": "Nutrition",
   "role": {
     "member": "Member",
-    "trainer": "Trainer",
+    "trainer": "Companion",
     "admin": "Admin"
   }
 }

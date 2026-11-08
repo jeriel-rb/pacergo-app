@@ -25,7 +25,7 @@
   "recentBookings": {
     "title": "最近預約",
     "emptyTitle": "還沒有預約",
-    "emptyBody": "向陪練預約一堂課後，就會顯示在這裡。",
+    "emptyBody": "向陪練預約服務後，就會顯示在這裡。",
     "findTrainer": "尋找陪練"
   },
   "weeklyProgress": "本週訓練進度",
@@ -64,7 +64,7 @@
   "openPlan": "開啟我的訓練計畫",
   "profileSetup": {
     "title": "簡單介紹一下你",
-    "subtitle": "只需約 20 秒，幫助我們為你推薦合適的教練與夥伴。你也可以先略過。",
+    "subtitle": "只需約 20 秒，幫助我們為你推薦合適的陪練。你也可以先略過。",
     "activity": "你主要的運動類型？",
     "level": "你目前的程度",
     "city": "城市／服務地區",

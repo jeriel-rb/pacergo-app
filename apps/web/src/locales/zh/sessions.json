@@ -1,7 +1,7 @@
 {
   "title": "我的預約",
   "subtitle": "你的訓練預約與紀錄",
-  "empty": "還沒有任何預約。在陪練頁面預約一堂課開始吧。",
+  "empty": "還沒有任何預約。到陪練頁面預約服務開始吧。",
   "back": "返回",
   "flexible": "時間待確認",
   "groups": {
@@ -31,9 +31,9 @@
     "location": "地點",
     "price": "費用",
     "note": "備註",
-    "obstacle": "學員說目前的阻礙是",
+    "obstacle": "會員說目前的阻礙是",
     "awaitingAcceptance": "等待陪練接受；此預約請求將在 24 小時後自動到期。",
-    "acceptedAwaitingPayment": "陪練已接受，請完成付款以確認這堂課。",
+    "acceptedAwaitingPayment": "陪練已接受，請完成付款以確認這次預約。",
     "obstacles": {
       "lack_of_time": "沒有時間",
       "lack_of_knowledge": "缺乏知識",

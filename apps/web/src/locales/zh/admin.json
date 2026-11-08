@@ -150,7 +150,7 @@
       }
     },
     "viewProfile": "查看陪練頁面",
-    "rules": "陪練餘額 = 已付款、課程已結束且 24 小時保留期已過之訂單的 95% 應收金額；已取消、已退款或暫停中的訂單不計入。標記「已撥款」會結清該筆涵蓋的訂單，回復狀態則會取消結清。"
+    "rules": "陪練餘額 = 已付款、服務已結束且 24 小時保留期已過之訂單的 95% 應收金額；已取消、已退款或暫停中的訂單不計入。標記「已撥款」會結清該筆涵蓋的訂單，回復狀態則會取消結清。"
   },
   "exports": {
     "title": "資料匯出 (CSV)",
@@ -244,7 +244,7 @@
     },
     "events": {
       "service_completed_auto": "服務完成（自動）",
-      "service_completed_by_session": "服務完成（課堂標記完成）",
+      "service_completed_by_session": "服務完成（服務時間結束自動標記）",
       "service_completed_admin_correction": "服務完成（管理員）",
       "service_completed_admin_reverted": "已清除服務完成",
       "admin_hold_set": "已暫停",
@@ -283,14 +283,14 @@
     "searchPlaceholder": "搜尋名稱…",
     "noMatches": "沒有符合搜尋的訂單。",
     "eligibleSince": "自 {{when}} 起可撥款",
-    "eligibleAfterSession": "課程結束登記後 24 小時",
+    "eligibleAfterSession": "服務完成登記後 24 小時",
     "notEligible": "目前狀態下不可撥款",
-    "settlementNotice": "課程結束時間過後系統會自動登記服務完成（每 15 分鐘檢查）。除非訂單被取消、退款或暫停，24 小時後即可撥款。",
+    "settlementNotice": "服務結束時間過後系統會自動登記服務完成（每 15 分鐘檢查）。除非訂單被取消、退款或暫停，24 小時後即可撥款。",
     "terms": {
       "title": "安全條款同意紀錄",
       "role": {
         "seeker": "會員",
-        "companion": "陪練師"
+        "companion": "陪練"
       },
       "missing": "無紀錄",
       "detail": "{{when}} · 版本 {{version}} · {{language}}",
@@ -298,7 +298,7 @@
         "zh": "中文",
         "en": "英文"
       },
-      "notice": "2026-11-05 起，陪練師接單前、會員付款前都須同意；更早的訂單沒有紀錄。"
+      "notice": "2026-11-05 起，陪練接單前、會員付款前都須同意；更早的訂單沒有紀錄。"
     }
   },
   "pagination": {

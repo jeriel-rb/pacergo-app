@@ -4,9 +4,9 @@
   "prompt": "Ready to train together today?",
   "hero": {
     "title": "Find your training partner",
-    "subtitle_one": "{{count}} pro trainer waiting for you",
-    "subtitle_other": "{{count}} pro trainers waiting for you",
-    "cta": "Browse trainers"
+    "subtitle_one": "{{count}} pro companion waiting for you",
+    "subtitle_other": "{{count}} pro companions waiting for you",
+    "cta": "Browse companions"
   },
   "actions": {
     "find": "Find partner",
@@ -25,8 +25,8 @@
   "recentBookings": {
     "title": "Recent bookings",
     "emptyTitle": "No bookings yet",
-    "emptyBody": "Book a session with a trainer and it'll show up here.",
-    "findTrainer": "Find a trainer"
+    "emptyBody": "Book a session with a companion and it'll show up here.",
+    "findTrainer": "Find a companion"
   },
   "weeklyProgress": "This week's progress",
   "weeklyCount": "{{done}}/{{total}} workouts done",
@@ -41,15 +41,15 @@
   "tools": "Your tools",
   "myTrainer": "Your partner",
   "myTrainerHint": "Once you connect, your regular training partner shows up here.",
-  "recommended": "Recommended trainers",
+  "recommended": "Recommended companions",
   "viewAll": "View all",
-  "saveTrainer": "Save trainer",
+  "saveTrainer": "Save companion",
   "moreActivities": "Also offers",
   "moreActivitiesAria": "Show {{count}} more activities",
-  "unsaveTrainer": "Remove saved trainer",
+  "unsaveTrainer": "Remove saved companion",
   "toast": {
-    "saveFailed": "Couldn't save that trainer. Please try again.",
-    "unsaveFailed": "Couldn't remove that trainer. Please try again.",
+    "saveFailed": "Couldn't save that companion. Please try again.",
+    "unsaveFailed": "Couldn't remove that companion. Please try again.",
     "weeklyGoalSaved": "Weekly goal saved",
     "weeklyGoalFailed": "Couldn't save your weekly goal. Please try again."
   },
@@ -64,7 +64,7 @@
   "openPlan": "Open my training plan",
   "profileSetup": {
     "title": "Tell us about you",
-    "subtitle": "Takes about 20 seconds and helps us show you the right trainers and partners. You can skip this.",
+    "subtitle": "Takes about 20 seconds and helps us show you the right companions. You can skip this.",
     "activity": "What do you mainly train?",
     "level": "Your current level",
     "city": "City / service area",

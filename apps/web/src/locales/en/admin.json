@@ -290,7 +290,7 @@
       "title": "Safety terms",
       "role": {
         "seeker": "Member",
-        "companion": "Trainer"
+        "companion": "Companion"
       },
       "missing": "Not recorded",
       "detail": "{{when}} · version {{version}} · {{language}}",
@@ -298,7 +298,7 @@
         "zh": "Chinese",
         "en": "English"
       },
-      "notice": "Required from 2026-11-05: trainers agree before accepting, members before paying. Older orders have no record."
+      "notice": "Required from 2026-11-05: companions agree before accepting, members before paying. Older orders have no record."
     }
   },
   "pagination": {

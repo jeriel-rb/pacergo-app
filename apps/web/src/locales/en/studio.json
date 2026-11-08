@@ -1,14 +1,14 @@
 {
-  "title": "Trainer Studio",
+  "title": "Companion Studio",
   "subtitle": "Manage your listing, plans, and bookable times",
   "viewRequests": "View booking requests",
   "intro": {
-    "title": "Become a trainer",
+    "title": "Become a companion",
     "body": "Fill in your listing, add at least one plan and upload proof for its activity (sports-background proof for Tier C), then submit it for an admin to review. Every tier takes effect only after approval."
   },
   "application": {
     "pendingTitle": "Application under review",
-    "pendingBody": "An admin is reviewing your trainer application and proof. Once approved, you'll be a trainer and can use your verified tiers.",
+    "pendingBody": "An admin is reviewing your companion application and proof. Once approved, you'll be a companion and can use your verified tiers.",
     "rejectedTitle": "Application not approved",
     "rejectedBody": "An admin did not approve this application. Update your listing and submit it again."
   },
@@ -45,7 +45,7 @@
   },
   "listing": {
     "title": "Listing",
-    "subtitle": "Help seekers get to know you",
+    "subtitle": "Help members get to know you",
     "headline": "Headline",
     "headlinePlaceholder": "e.g. Friendly strength buddy, build the habit with me",
     "bio": "About you",
@@ -54,7 +54,7 @@
     "areaPlaceholder": "e.g. Xinyi, Taipei",
     "status": "Status",
     "conductRequired": "Please agree to the Partner Conduct Rules to publish your first listing.",
-    "needPlanAndAvailability": "Add a price plan and at least one availability slot before saving. Every tier, including Tier C, needs a price so you appear in recommended trainers."
+    "needPlanAndAvailability": "Add a price plan and at least one availability slot before saving. Every tier, including Tier C, needs a price so you appear in recommended companions."
   },
   "offerings": {
     "title": "Plans & pricing",
@@ -124,7 +124,7 @@
     "error": "Something went wrong. Please try again.",
     "ordersTitle": "Orders",
     "ordersEmpty": "No orders yet.",
-    "unknownSeeker": "Trainee",
+    "unknownSeeker": "Member",
     "eligible": "Eligible",
     "pendingHold": "Pending hold",
     "settled": "Settled",
@@ -183,11 +183,11 @@
     "missingBody": "Every tier, including C, is now reviewed. These plans aren't verified yet: {{activities}}. In Plans & pricing, pick the activity and upload your proof."
   },
   "eligibility": {
-    "title": "Trainer eligibility",
+    "title": "Companion eligibility",
     "birthdate": "Date of birth",
-    "birthdateHint": "Trainers must be 18 or older.",
-    "attest": "I confirm that I am 18 or older and that all information and documents I provide are true, accurate and my own. I understand that PacerGo may reject or revoke my trainer status if any of it is false, and that I am responsible for any resulting legal consequences.",
-    "under18": "Trainers must be 18 or older.",
+    "birthdateHint": "Companions must be 18 or older.",
+    "attest": "I confirm that I am 18 or older and that all information and documents I provide are true, accurate and my own. I understand that PacerGo may reject or revoke my companion status if any of it is false, and that I am responsible for any resulting legal consequences.",
+    "under18": "Companions must be 18 or older.",
     "birthdateRequired": "Please enter your date of birth.",
     "required": "Please enter your date of birth and confirm the information is true."
   },

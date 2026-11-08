@@ -38,15 +38,15 @@ describe("Settings sheet → account links (no detour through Profile)", () => {
     openSheet({ ...base, is_companion: true, is_admin: true });
     const href = (name: string) => screen.getByRole("link", { name }).getAttribute("href");
     expect(href("My sessions")).toBe("/en/sessions");
-    expect(href("Saved trainers")).toBe("/en/saved");
-    expect(href("Trainer studio")).toBe("/en/studio");
+    expect(href("Saved companions")).toBe("/en/saved");
+    expect(href("Companion Studio")).toBe("/en/studio");
     expect(href("Support")).toBe("/en/support");
     expect(href("Admin console")).toBe("/en/admin");
   });
 
   it("invites a member to become a trainer and hides the admin console", () => {
     openSheet({ ...base, is_companion: false, is_admin: false });
-    expect(screen.getByRole("link", { name: "Become a trainer" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Become a companion" })).toHaveAttribute(
       "href",
       "/en/studio",
     );

@@ -9,15 +9,15 @@
     "booking_declined": "Your booking was declined",
     "booking_cancelled": "A booking was cancelled",
     "booking_completed": "Session complete — leave a review!",
-    "verification_approved": "Your trainer request was approved",
-    "verification_rejected": "Your trainer request was rejected — tap to see why",
+    "verification_approved": "Your companion application was approved",
+    "verification_rejected": "Your companion application was rejected — tap to see why",
     "default": "You have a new notification"
   },
   "rejection": {
-    "title": "Trainer request rejected",
+    "title": "Companion application rejected",
     "reason": "Reason from the reviewer",
     "noReason": "No reason was provided.",
-    "hint": "You can upload a new document from Trainer Studio.",
+    "hint": "You can upload a new document from Companion Studio.",
     "close": "Close"
   }
 }

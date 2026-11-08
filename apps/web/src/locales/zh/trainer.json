@@ -30,7 +30,7 @@
   "bidding": "競標制",
   "ratingDialog": {
     "title": "{{name}} 的評價",
-    "description": "與 {{name}} 訓練過的學員所留下的評分與留言",
+    "description": "與 {{name}} 訓練過的會員所留下的評分與留言",
     "stars": "{{count}} 顆星（滿分 5 顆）",
     "open": "查看評價",
     "error": "無法載入評價，點擊重試。",
